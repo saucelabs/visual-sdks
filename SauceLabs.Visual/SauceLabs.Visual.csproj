@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>SauceLabs.Visual</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://github.com/saucelabs/visual-csharp-client/blob/main/LICENSE</PackageLicenseUrl>
+    <language>en-US</language>
+    <NeutralLanguage>en</NeutralLanguage>
+
+    <PackageId>SauceLabs.Visual.Client</PackageId>
+    <Version>0.0.1</Version>
+    <Title>Sauce Labs Visual Binding</Title>
+    <PackageTags>saucelabs sauce labs visual testing screenshot capture dom</PackageTags>
+    <RepositoryUrl>https://github.com/saucelabs/visual-csharp-client</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLanguage>en-US</PackageLanguage>
+    <Copyright>Sauce Labs</Copyright>
+    <Authors>Sauce Labs</Authors>
+    <Owners>Sauce Labs</Owners>
+    <Company>Sauce Labs</Company>
+    <Description>Sauce Labs Visual's integration with C# allows customers to run Visual Testing while running their Selenium sessions.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>
