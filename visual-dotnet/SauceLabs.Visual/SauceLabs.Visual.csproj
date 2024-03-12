@@ -1,10 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>SauceLabs.Visual</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseUrl>https://github.com/saucelabs/visual-csharp-client/blob/main/LICENSE</PackageLicenseUrl>
@@ -23,10 +21,21 @@
     <Owners>Sauce Labs</Owners>
     <Company>Sauce Labs</Company>
     <Description>Sauce Labs Visual's integration with C# allows customers to run Visual Testing while running their Selenium sessions.</Description>
+    <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AnyRetry" Version="1.0.31" />
+    <PackageReference Include="GraphQL.Client" Version="6.0.2" />
+    <PackageReference Include="GraphQL.Client.Abstractions" Version="6.0.2" />
+    <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.0.2" />
+    <PackageReference Include="GraphQL.Primitives" Version="6.0.2" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
+  </ItemGroup>
 
 </Project>

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SauceLabs.Visual", "SauceLabs.Visual/SauceLabs.Visual.csproj", "{B9A3D6E4-7844-4BE4-9605-A4C00DFFD068}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SauceLabs.Visual.Tests", "SauceLabs.Visual.Tests\SauceLabs.Visual.Tests.csproj", "{6D07FB36-1E01-4D6A-853F-E1548DBE234C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B9A3D6E4-7844-4BE4-9605-A4C00DFFD068}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9A3D6E4-7844-4BE4-9605-A4C00DFFD068}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9A3D6E4-7844-4BE4-9605-A4C00DFFD068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

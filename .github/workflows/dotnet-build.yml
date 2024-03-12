@@ -2,7 +2,11 @@ name: .NET
 
 on:
   push:
+    paths:
+      - 'visual-dotnet/**'
   pull_request:
+    paths:
+      - 'visual-dotnet/**'
 
 jobs:
   build:
@@ -16,11 +20,16 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install dotnet-format tool
         run: dotnet tool install -g dotnet-format
+        working-directory: visual-dotnet
       - name: Restore dependencies
         run: dotnet restore
+        working-directory: visual-dotnet
       - name: Run dotnet format
         run: dotnet format '.' --verify-no-changes
+        working-directory: visual-dotnet
       - name: Build
         run: dotnet build .\SauceLabs.Visual\SauceLabs.Visual.csproj --no-restore
+        working-directory: visual-dotnet
       - name: Test
         run: dotnet test --verbosity normal
+        working-directory: visual-dotnet
