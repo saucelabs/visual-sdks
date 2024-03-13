@@ -4,14 +4,14 @@
     <RootNamespace>SauceLabs.Visual</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/saucelabs/visual-csharp-client/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/saucelabs/visual-sdks/blob/main/LICENSE</PackageLicenseUrl>
     <language>en-US</language>
     <NeutralLanguage>en</NeutralLanguage>
-    <PackageId>SauceLabs.Visual.Client</PackageId>
+    <PackageId>SauceLabs.Visual</PackageId>
     <Version>0.0.1</Version>
     <Title>Sauce Labs Visual Binding</Title>
     <PackageTags>saucelabs sauce labs visual testing screenshot capture dom</PackageTags>
-    <RepositoryUrl>https://github.com/saucelabs/visual-csharp-client</RepositoryUrl>
+    <RepositoryUrl>https://github.com/saucelabs/visual-sdks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLanguage>en-US</PackageLanguage>
     <Copyright>Sauce Labs</Copyright>
