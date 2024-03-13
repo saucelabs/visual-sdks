@@ -71,5 +71,7 @@ jobs:
       - name: Github Release
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: true
           tag_name: ${{ steps.upgrade.outputs.tag_name }}
-          files: ./SauceLabs.Visual/bin/Release/SauceLabs.Visual.${{ steps.upgrade.outputs.version }}.nupkg
+          files: visual-dotnet\SauceLabs.Visual\bin\Release\SauceLabs.Visual.${{ steps.upgrade.outputs.version }}.nupkg
+          generate_release_notes: true
