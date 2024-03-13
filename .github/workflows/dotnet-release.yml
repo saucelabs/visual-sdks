@@ -62,11 +62,11 @@ jobs:
       - name: pack artifact
         run: dotnet pack .\SauceLabs.Visual\SauceLabs.Visual.csproj -c Release
 
-      # - name: publish artifact
-      #   run: |
-      #     $version = "${{ steps.upgrade.outputs.version }}"
-      #     $apiKey = "${{ secrets.NUGET_API_KEY }}"
-      #     dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+      - name: publish artifact
+        run: |
+          $version = "${{ steps.upgrade.outputs.version }}"
+          $apiKey = "${{ secrets.NUGET_API_KEY }}"
+          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
 
       - name: Github Release
         uses: softprops/action-gh-release@v2
