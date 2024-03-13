@@ -4,7 +4,6 @@
     <RootNamespace>SauceLabs.Visual</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/saucelabs/visual-sdks/blob/main/LICENSE</PackageLicenseUrl>
     <language>en-US</language>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageId>SauceLabs.Visual</PackageId>
