@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>SauceLabs.Visual</RootNamespace>
@@ -8,7 +7,6 @@
     <PackageLicenseUrl>https://github.com/saucelabs/visual-csharp-client/blob/main/LICENSE</PackageLicenseUrl>
     <language>en-US</language>
     <NeutralLanguage>en</NeutralLanguage>
-
     <PackageId>SauceLabs.Visual.Client</PackageId>
     <Version>0.0.1</Version>
     <Title>Sauce Labs Visual Binding</Title>
@@ -24,11 +22,9 @@
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AnyRetry" Version="1.0.31" />
     <PackageReference Include="GraphQL.Client" Version="6.0.2" />
@@ -37,5 +33,4 @@
     <PackageReference Include="GraphQL.Primitives" Version="6.0.2" />
     <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
   </ItemGroup>
-
 </Project>
