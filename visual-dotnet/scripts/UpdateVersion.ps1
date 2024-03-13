@@ -1,36 +1,36 @@
 param (
     [Parameter(Mandatory=$true)][string]$projectFile,
-    [Parameter(Mandatory=$true)][string]$flavor
+    [Parameter(Mandatory=$true)][string]$releaseType
 )
 
 function Update-Version {
     param (
         [string]$version,
-        [string]$flavor
+        [string]$releaseType
     )
     [Int32[]]$subVersion = $version.Split('.')
 
-    if ($flavor.Equals("major")) {
+    if ($releaseType.Equals("major")) {
         $subVersion[0] = $subVersion[0] + 1
         $subVersion[1] = 0
         $subVersion[2] = 0
     }
 
-    if ($flavor.Equals("minor")) {
+    if ($releaseType.Equals("minor")) {
         $subVersion[1] = $subVersion[1] + 1
         $subVersion[2] = 0
     }
 
-    if ($flavor.Equals("patch")) {
+    if ($releaseType.Equals("patch")) {
         $subVersion[2] = $subVersion[2] + 1
     }
     return $subVersion -join "."
 };
 
 
-$possibleFlavor = "major","minor","patch"
-if (!$possibleFlavor.Contains($flavor)) {
-    throw "$flavor is not a valid upgrade"
+$possibleReleaseType = "major","minor","patch"
+if (!$possibleReleaseType.Contains($releaseType)) {
+    throw "$releaseType is not a valid upgrade"
 }
 
 if (!$projectFile.EndsWith(".csproj")) {
@@ -41,10 +41,9 @@ if (!$projectFile.EndsWith(".csproj")) {
 
 $versionElement = $projectContent.SelectSingleNode("//Project/PropertyGroup/Version")
 
-Write-Output $versionElement
 [string]$version = $versionElement.InnerText
-[string]$newVersion = Update-Version -version $version -flavor $flavor
+[string]$newVersion = Update-Version -version $version -releaseType $releaseType
 
 $versionElement.InnerText = $newVersion
-
 $projectContent.Save($projectFile)
+Write-Output $newVersion

@@ -7,21 +7,14 @@ on:
         description: 'Release type - major, minor or patch'
         required: true
         default: 'minor'
-      preReleaseFlavor:
-        description: 'Pre-Release flavor - rc, beta, or anything'
-        required: false
-        default: ''
 
 defaults:
   run:
     working-directory: visual-dotnet
 
 jobs:
-  
-
-  build:
+  checks:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3
@@ -32,4 +25,51 @@ jobs:
       - run: dotnet restore
       - run: dotnet build .\SauceLabs.Visual\SauceLabs.Visual.csproj --no-restore
       - run: dotnet test --verbosity normal
-  
+
+  release:
+    runs-on: windows-latest
+    needs:
+      - checks
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          git config --global user.name "sauce-visual-bot"
+          git config --global user.email "visual@saucelabs.com"
+
+      - name: upgrade & push version
+        id: upgrade
+        run: |
+          $newVersion = .\scripts\UpdateVersion.ps1 -project .\SauceLabs.Visual\SauceLabs.Visual.csproj -releaseType ${{ github.event.inputs.releaseType }}
+          git add ./SauceLabs.Visual/SauceLabs.Visual.csproj
+          git commit -m "[release] dotnet-$newVersion"
+          git tag "dotnet-$newVersion"
+          git push
+          git push origin "dotnet-$newVersion"
+
+          "tag_name=dotnet-$newVersion" | Out-File -Append $Env:GITHUB_OUTPUT
+          "version=$newVersion" | Out-File -Append $Env:GITHUB_OUTPUT
+
+      - name: build artifact
+        run: dotnet build .\SauceLabs.Visual\SauceLabs.Visual.csproj -c Release
+
+      - name: pack artifact
+        run: dotnet pack .\SauceLabs.Visual\SauceLabs.Visual.csproj -c Release
+
+      - name: publish artifact
+        run: |
+          $version = "${{ steps.upgrade.outputs.version }}"
+          $apiKey = "${{ secrets.NUGET_API_KEY }}"
+          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+
+      - name: Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.upgrade.outputs.tag_name }}
+          files: ./SauceLabs.Visual/bin/Release/SauceLabs.Visual.${{ steps.upgrade.outputs.version }}.nupkg
