@@ -129,10 +129,9 @@ namespace SauceLabs.Visual
         /// <summary>
         /// <c>VisualResults</c> returns the results of screenshot comparison.
         /// </summary>
-        /// <param name="buildId">the id of the build to check.</param>
         /// <returns>a dictionary containing <c>DiffStatus</c> and the number of screenshot in that status.</returns>
         /// <exception cref="VisualClientException"></exception>
-        public async Task<Dictionary<DiffStatus, int>> VisualResults(string buildId)
+        public async Task<Dictionary<DiffStatus, int>> VisualResults()
         {
             var policyOptions = new RetryPolicyOptions
             {
@@ -140,7 +139,7 @@ namespace SauceLabs.Visual
                 MaxRetryInterval = TimeSpan.FromSeconds(5),
                 MaxRetrySteps = 10
             };
-            var result = await Retry.Do(async () => await FetchVisualResults(buildId),
+            var result = await Retry.Do(async () => await FetchVisualResults(Build.Id),
                 retryInterval: TimeSpan.FromMilliseconds(100),
                 retryLimit: 10,
                 retryPolicy: RetryPolicy.ExponentialBackoff,
