@@ -4,7 +4,10 @@ Sauce Labs Visual for C# expose Sauce Labs Visual Testing for your C# project wi
 
 # Installation
 
-[TO BE COMPLETED WHEN AVAILABLE WITH NUGET]
+Add SauceLabs.Visual to your current project
+```sh
+dotnet add package SauceLabs.Visual
+```
 
 # How to use
 
