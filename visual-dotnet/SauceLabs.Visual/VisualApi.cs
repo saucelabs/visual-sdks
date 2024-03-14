@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
 {
-    internal class VisualApi<T> where T : IHasCapabilities, IHasSessionId
+    internal class VisualApi<T> : IDisposable where T : IHasCapabilities, IHasSessionId
     {
         private readonly string _username;
         private readonly string _accessKey;
@@ -43,11 +44,6 @@ namespace SauceLabs.Visual
                 },
                 serializer: new NewtonsoftJsonSerializer(serializerOptions),
                 httpClient);
-        }
-
-        ~VisualApi()
-        {
-            _graphQlClient.Dispose();
         }
 
         public async Task<GraphQLResponse<ServerResponse<CreateBuild>>> CreateBuild(CreateBuildIn input)
@@ -97,6 +93,11 @@ namespace SauceLabs.Visual
                 OperationName = operationName,
                 Variables = variables
             };
+        }
+
+        public void Dispose()
+        {
+            _graphQlClient.Dispose();
         }
     }
 }
