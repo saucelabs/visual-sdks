@@ -112,11 +112,11 @@ namespace SauceLabs.Visual
 
         public void Dispose()
         {
-            _api.Dispose();
             if (!_externalBuild)
             {
                 FinishBuild(Build);
             }
+            _api.Dispose();
         }
 
         /// <summary>
