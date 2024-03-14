@@ -110,12 +110,19 @@ namespace SauceLabs.Visual
             return result.Result.Id;
         }
 
-        public void Dispose()
+        /// <summary>
+        /// <c>Cleanup</c> set a correct status to the build. No action should be made after that calling <c>Cleanup</c>.
+        /// </summary>
+        public async Task Cleanup()
         {
             if (!_externalBuild)
             {
-                FinishBuild(Build);
+                await FinishBuild(Build);
             }
+        }
+
+        public void Dispose()
+        {
             _api.Dispose();
         }
 
