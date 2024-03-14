@@ -32,18 +32,8 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey)
+        public VisualClient(WebDriver wd, Region region, string username, string accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
         {
-            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
-            _sessionId = wd.SessionId.ToString();
-            _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
-            var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
-            var metadata = response.EnsureValidResponse();
-            _sessionMetadataBlob = metadata.Result.Blob;
-
-            var createBuildResponse = CreateBuild(new CreateBuildOptions()).Result;
-            Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
-            _externalBuild = false;
         }
 
         /// <summary>
