@@ -115,7 +115,7 @@ namespace SauceLabs.Visual
             _api.Dispose();
             if (!_externalBuild)
             {
-                FinishBuild(Build).Wait();
+                FinishBuild(Build);
             }
         }
 
