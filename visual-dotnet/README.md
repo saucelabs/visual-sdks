@@ -32,6 +32,6 @@ dotnet add package SauceLabs.Visual
 - Get results of Visual Tests and run assertions on it
   ```csharp
   var results = await visualClient.VisualResults(visualBuild.Id);
-  // verify that no visual check has differences
+  // verify that no differences have been detected
   Assert.AreEqual(0, results[DiffStatus.Approved]);
   ```
