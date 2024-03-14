@@ -33,6 +33,6 @@
     <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.0.2" />
     <PackageReference Include="GraphQL.Primitives" Version="6.0.2" />
     <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
-    <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 </Project>
