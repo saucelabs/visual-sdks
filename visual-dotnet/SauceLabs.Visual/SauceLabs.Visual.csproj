@@ -14,6 +14,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/saucelabs/visual-sdks/tree/main/visual-dotnet</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageLanguage>en-US</PackageLanguage>
     <Copyright>Sauce Labs</Copyright>
     <Authors>Sauce Labs</Authors>
@@ -34,5 +35,6 @@
     <PackageReference Include="GraphQL.Primitives" Version="6.0.2" />
     <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
     <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="images\icon.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 </Project>
