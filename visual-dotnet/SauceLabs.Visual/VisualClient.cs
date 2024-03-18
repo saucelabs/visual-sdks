@@ -66,7 +66,7 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public VisualClient(WebDriver wd, Region region, string? username, string? accessKey, CreateBuildOptions buildOptions)
         {
-            if (!StringUtils.HasContent(username) || !StringUtils.HasContent(accessKey))
+            if (string.IsNullOrEmpty(username?.Trim()) || string.IsNullOrEmpty(accessKey?.Trim()))
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
@@ -155,14 +155,14 @@ namespace SauceLabs.Visual
         /// <returns></returns>
         private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
         {
-            if (StringUtils.HasContent(buildId))
+            if (string.IsNullOrEmpty(buildId?.Trim()))
             {
-                return await FindBuildById(buildId!);
+                return await FindBuildById(buildId!.Trim());
             }
 
-            if (StringUtils.HasContent(customId))
+            if (string.IsNullOrEmpty(customId?.Trim()))
             {
-                return await TryFindBuildByCustomId(customId!);
+                return await TryFindBuildByCustomId(customId!.Trim());
             }
             return null;
         }
