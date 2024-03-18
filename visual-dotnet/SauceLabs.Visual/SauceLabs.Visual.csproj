@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AnyRetry" Version="1.0.31" />
+    <PackageReference Include="Polly" Version="8.3.1" />
     <PackageReference Include="GraphQL.Client" Version="6.0.2" />
     <PackageReference Include="GraphQL.Client.Abstractions" Version="6.0.2" />
     <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.0.2" />
