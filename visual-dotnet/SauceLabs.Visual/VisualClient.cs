@@ -24,6 +24,7 @@ namespace SauceLabs.Visual
         public VisualBuild Build { get; }
         private readonly bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
+        private ResiliencePipeline _retryPipeline;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
