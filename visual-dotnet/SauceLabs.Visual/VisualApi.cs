@@ -73,6 +73,15 @@ namespace SauceLabs.Visual
             return await _graphQlClient.SendQueryAsync<ServerResponse<Build>>(request);
         }
 
+        public async Task<GraphQLResponse<ServerResponse<Build>>> BuildByCustomId(string customId)
+        {
+            var request = CreateAuthenticatedRequest(BuildByCustomIdQuery.OperationDocument, BuildByCustomIdQuery.OperationName, new
+            {
+                input = customId
+            });
+            return await _graphQlClient.SendQueryAsync<ServerResponse<Build>>(request);
+        }
+
         public async Task<GraphQLResponse<ServerResponse<WebDriverSessionInfo>>> WebDriverSessionInfo(string jobId, string sessionId)
         {
             var request = CreateAuthenticatedRequest(WebDriverSessionInfoQuery.OperationDocument, WebDriverSessionInfoQuery.OperationName, new { jobId, sessionId });

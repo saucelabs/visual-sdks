@@ -1,12 +1,12 @@
 namespace SauceLabs.Visual.GraphQL
 {
-    internal static class BuildQuery
+    internal static class BuildByCustomIdQuery
     {
-        public const string OperationName = "build";
+        public const string OperationName = "buildByCustomId";
 
         public const string OperationDocument = @"
-            query build($input: UUID!) {
-                result: build(input: $input) {
+            query buildByCustomId($input: UUID!) {
+                result: buildByCustomId(customId: $input) {
                     id,
                     url,
                     name,

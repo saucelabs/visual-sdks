@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Client.Http;
 using OpenQA.Selenium;
 using Polly;
 using Polly.Retry;
@@ -78,9 +80,20 @@ namespace SauceLabs.Visual
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            var createBuildResponse = CreateBuild(buildOptions).Result;
-            Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
-            _externalBuild = false;
+
+
+            var build = GetEffectiveBuild(Environment.GetEnvironmentVariable("SAUCE_VISUAL_BUILD_ID"), Environment.GetEnvironmentVariable("SAUCE_VISUAL_CUSTOM_ID")).Result;
+            if (build != null)
+            {
+                Build = build;
+                _externalBuild = true;
+            }
+            else
+            {
+                var createBuildResponse = CreateBuild(buildOptions).Result;
+                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
+                _externalBuild = false;
+            }
 
             _retryPipeline = new ResiliencePipelineBuilder()
                 .AddRetry(new RetryStrategyOptions()
@@ -91,6 +104,70 @@ namespace SauceLabs.Visual
                 })
                 .AddTimeout(TimeSpan.FromSeconds(15))
                 .Build();
+        }
+
+        /// <summary>
+        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
+        /// </summary>
+        /// <param name="buildId"></param>
+        /// <returns>the matching build</returns>
+        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
+        private async Task<VisualBuild> FindBuildById(string buildId)
+        {
+            var response = await _api.Build(buildId);
+            if (response.Data?.Result == null)
+            {
+                throw new VisualClientException($@"build {buildId} was not found");
+            }
+
+            var build = response.Data.Result;
+            if (build.Mode != BuildMode.Running)
+            {
+                throw new VisualClientException($"build {build.Id} is not RUNNING");
+            }
+            return new VisualBuild(build.Id, build.Url);
+        }
+
+        /// <summary>
+        /// <c>TryFindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
+        /// </summary>
+        /// <param name="customId"></param>
+        /// <returns>the matching build or null</returns>
+        /// <exception cref="VisualClientException">when build has an invalid state</exception>
+        private async Task<VisualBuild?> TryFindBuildByCustomId(string customId)
+        {
+            var response = await _api.BuildByCustomId(customId);
+            if (response.Data?.Result == null)
+            {
+                return null;
+            }
+
+            var build = response.Data.Result;
+            if (build.Mode != BuildMode.Running)
+            {
+                throw new VisualClientException($"build {build.Id} is not RUNNING");
+            }
+            return new VisualBuild(build.Id, build.Url);
+        }
+
+        /// <summary>
+        /// <c>GetEffectiveBuild</c> tries to find the build matching the criterion provided by the user.
+        /// </summary>
+        /// <param name="buildId"></param>
+        /// <param name="customId"></param>
+        /// <returns></returns>
+        private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
+        {
+            if (!string.IsNullOrEmpty(buildId))
+            {
+                return await FindBuildById(buildId);
+            }
+
+            if (!string.IsNullOrEmpty(customId))
+            {
+                return await TryFindBuildByCustomId(customId);
+            }
+            return null;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual.GraphQL
 {
@@ -10,15 +11,15 @@ namespace SauceLabs.Visual.GraphQL
         public string Name { get; }
         [JsonProperty("url")]
         public string Url { get; }
-        [JsonProperty("status")]
-        public string Status { get; }
+        [JsonProperty("mode")]
+        public BuildMode Mode { get; }
 
-        public Build(string id, string name, string url, string status)
+        public Build(string id, string name, string url, BuildMode mode)
         {
             Id = id;
             Name = name;
             Url = url;
-            Status = status;
+            Mode = mode;
         }
     }
 }
