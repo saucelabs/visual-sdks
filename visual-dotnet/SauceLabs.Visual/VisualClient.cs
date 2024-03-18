@@ -31,6 +31,25 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
+        public VisualClient(WebDriver wd, Region region) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"))
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="buildOptions">the options of the build creation</param>
+        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"), buildOptions)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
         public VisualClient(WebDriver wd, Region region, string username, string accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
@@ -47,6 +66,11 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(accessKey))
+            {
+                throw new VisualClientException("Username or Access Key not set");
+            }
+
             _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
