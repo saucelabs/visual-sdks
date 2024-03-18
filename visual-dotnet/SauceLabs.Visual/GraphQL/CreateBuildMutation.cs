@@ -12,7 +12,8 @@ namespace SauceLabs.Visual.GraphQL
                     url,
                     project,
                     branch,
-                    name
+                    name,
+                    defaultBranch
                 }
             }
         ";

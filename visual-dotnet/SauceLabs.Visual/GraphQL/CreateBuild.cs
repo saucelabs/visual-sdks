@@ -16,8 +16,10 @@ namespace SauceLabs.Visual.GraphQL
         public string? Branch { get; }
         [JsonProperty("customId")]
         public string? CustomId { get; }
+        [JsonProperty("defaultBranch")]
+        public string? DefaultBranch { get; }
 
-        public CreateBuild(string id, string name, string url, string? project, string? branch, string? customId)
+        public CreateBuild(string id, string name, string url, string? project, string? branch, string? customId, string? defaultBranch)
         {
             Id = id;
             Name = name;
@@ -25,6 +27,7 @@ namespace SauceLabs.Visual.GraphQL
             Project = project;
             Branch = branch;
             CustomId = customId;
+            DefaultBranch = defaultBranch;
         }
     }
 }

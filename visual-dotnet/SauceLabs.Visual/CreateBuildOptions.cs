@@ -13,5 +13,6 @@ namespace SauceLabs.Visual
         public string? Project { get; set; }
         public string? Branch { get; set; }
         public string? CustomId { get; set; }
+        public string? DefaultBranch { get; set; }
     }
 }

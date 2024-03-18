@@ -12,5 +12,7 @@ namespace SauceLabs.Visual.GraphQL
         public string? Branch { get; set; }
         [JsonProperty("customId")]
         public string? CustomId { get; set; }
+        [JsonProperty("defaultBranch")]
+        public string? DefaultBranch { get; set; }
     }
 }
