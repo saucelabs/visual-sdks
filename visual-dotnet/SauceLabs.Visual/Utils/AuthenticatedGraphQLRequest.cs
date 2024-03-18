@@ -23,7 +23,7 @@ namespace SauceLabs.Visual.Utils
                 return message;
             }
 
-            var authenticationString = $"{Username.Trim()}:{AccessKey.Trim()}";
+            var authenticationString = $"{Username!.Trim()}:{AccessKey!.Trim()}";
             var base64EncodedAuthenticationString =
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
             message.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
