@@ -65,7 +65,7 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(accessKey))
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(accessKey))
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
