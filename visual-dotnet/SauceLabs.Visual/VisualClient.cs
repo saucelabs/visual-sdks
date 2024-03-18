@@ -31,7 +31,7 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
-        public VisualClient(WebDriver wd, Region region) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"))
+        public VisualClient(WebDriver wd, Region region) : this(wd, region, EnvVars.Username, EnvVars.AccessKey)
         {
         }
 
@@ -41,7 +41,7 @@ namespace SauceLabs.Visual
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"), buildOptions)
+        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions)
         {
         }
 
@@ -71,14 +71,14 @@ namespace SauceLabs.Visual
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
+            _api ??= new VisualApi<WebDriver>(wd, region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
             var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            var build = GetEffectiveBuild(Environment.GetEnvironmentVariable("SAUCE_VISUAL_BUILD_ID"), Environment.GetEnvironmentVariable("SAUCE_VISUAL_CUSTOM_ID")).Result;
+            var build = GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId).Result;
             if (build != null)
             {
                 Build = build;
@@ -86,6 +86,7 @@ namespace SauceLabs.Visual
             }
             else
             {
+                buildOptions.CustomId ??= EnvVars.CustomId;
                 var createBuildResponse = CreateBuild(buildOptions).Result;
                 Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
                 _externalBuild = false;

@@ -5,7 +5,7 @@ namespace SauceLabs.Visual.GraphQL
         public const string OperationName = "buildByCustomId";
 
         public const string OperationDocument = @"
-            query buildByCustomId($input: UUID!) {
+            query buildByCustomId($input: String!) {
                 result: buildByCustomId(customId: $input) {
                     id,
                     url,
