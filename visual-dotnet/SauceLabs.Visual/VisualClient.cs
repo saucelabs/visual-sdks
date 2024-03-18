@@ -106,6 +106,7 @@ namespace SauceLabs.Visual
                 Project = options?.Project,
                 Branch = options?.Branch,
                 CustomId = options?.CustomId,
+                DefaultBranch = options?.DefaultBranch,
             })).EnsureValidResponse();
             return new VisualBuild(result.Result.Id, result.Result.Url);
         }
