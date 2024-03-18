@@ -43,6 +43,20 @@ namespace SauceLabs.Visual
             };
         }
 
+        public static Region FromWebDriverUrl(string url)
+        {
+            var parsedUrl = new Uri(url);
+            return parsedUrl.Host switch
+            {
+                "ondemand.saucelabs.com" => UsWest1,
+                "ondemand.us-west-1.saucelabs.com" => UsWest1,
+                "ondemand.eu-central-1.saucelabs.com" => EuCentral1,
+                "ondemand.us-east-4.saucelabs.com" => UsEast4,
+                "ondemand.staging.saucelabs.net" => Staging,
+                _ => throw new VisualClientException($"{parsedUrl.Host} is not recognized as Sauce Labs region")
+            };
+        }
+
         public static Region UsWest1 => new Region("https://api.us-west-1.saucelabs.com/v1/visual/graphql");
         public static Region UsEast4 => new Region("https://api.us-east-4.saucelabs.com/v1/visual/graphql");
         public static Region EuCentral1 => new Region("https://api.eu-central-1.saucelabs.com/v1/visual/graphql");
