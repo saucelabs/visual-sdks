@@ -71,7 +71,7 @@ namespace SauceLabs.Visual
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api ??= new VisualApi<WebDriver>(wd, region, username, accessKey);
+            _api ??= new VisualApi<WebDriver>(wd, region, username!, accessKey!);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
             var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
@@ -157,12 +157,12 @@ namespace SauceLabs.Visual
         {
             if (!string.IsNullOrEmpty(buildId))
             {
-                return await FindBuildById(buildId);
+                return await FindBuildById(buildId!);
             }
 
             if (!string.IsNullOrEmpty(customId))
             {
-                return await TryFindBuildByCustomId(customId);
+                return await TryFindBuildByCustomId(customId!);
             }
             return null;
         }
