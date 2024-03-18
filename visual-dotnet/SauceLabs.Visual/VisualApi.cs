@@ -22,7 +22,7 @@ namespace SauceLabs.Visual
         public VisualApi(T webdriver, Region region, string username, string accessKey, HttpClient? httpClient = null)
         {
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(accessKey))
+            if (!StringUtils.HasContent(username) || !StringUtils.HasContent(accessKey))
             {
                 throw new VisualClientException(
                     "Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
