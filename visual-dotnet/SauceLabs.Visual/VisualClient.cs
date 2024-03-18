@@ -52,7 +52,7 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
+        public VisualClient(WebDriver wd, Region region, string? username, string? accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
         {
         }
 
@@ -64,7 +64,7 @@ namespace SauceLabs.Visual
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        public VisualClient(WebDriver wd, Region region, string? username, string? accessKey, CreateBuildOptions buildOptions)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(accessKey))
             {
