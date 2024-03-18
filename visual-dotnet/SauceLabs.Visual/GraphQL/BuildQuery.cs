@@ -6,7 +6,7 @@ namespace SauceLabs.Visual.GraphQL
 
         public const string OperationDocument = @"
             query build($input: UUID!) {
-                result: build(input: $input) {
+                result: build(id: $input) {
                     id,
                     url,
                     name,
