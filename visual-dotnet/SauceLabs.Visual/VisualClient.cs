@@ -40,7 +40,7 @@ namespace SauceLabs.Visual
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions): this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"), buildOptions)
+        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"), buildOptions)
         {
         }
 
