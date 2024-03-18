@@ -18,12 +18,12 @@ namespace SauceLabs.Visual.Utils
             IGraphQLJsonSerializer serializer)
         {
             var message = base.ToHttpRequestMessage(options, serializer);
-            if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(AccessKey))
+            if (string.IsNullOrEmpty(Username?.Trim()) || string.IsNullOrEmpty(AccessKey?.Trim()))
             {
                 return message;
             }
 
-            var authenticationString = $"{Username}:{AccessKey}";
+            var authenticationString = $"{Username.Trim()}:{AccessKey.Trim()}";
             var base64EncodedAuthenticationString =
                 Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
             message.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
