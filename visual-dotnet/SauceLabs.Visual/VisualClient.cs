@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AnyRetry;
-using AnyRetry.Math;
 using OpenQA.Selenium;
+using Polly;
+using Polly.Retry;
 using SauceLabs.Visual.GraphQL;
 using SauceLabs.Visual.Models;
 using SauceLabs.Visual.Utils;
@@ -24,6 +24,7 @@ namespace SauceLabs.Visual
         public VisualBuild Build { get; }
         private readonly bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
+        private ResiliencePipeline _retryPipeline;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -80,6 +81,16 @@ namespace SauceLabs.Visual
             var createBuildResponse = CreateBuild(buildOptions).Result;
             Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
             _externalBuild = false;
+
+            _retryPipeline = new ResiliencePipelineBuilder()
+                .AddRetry(new RetryStrategyOptions()
+                {
+                    Name = "VisualRetryPolicy",
+                    Delay = TimeSpan.FromSeconds(1),
+                    MaxRetryAttempts = 10
+                })
+                .AddTimeout(TimeSpan.FromSeconds(15))
+                .Build();
         }
 
         /// <summary>
@@ -157,26 +168,7 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException"></exception>
         public async Task<Dictionary<DiffStatus, int>> VisualResults()
         {
-            var policyOptions = new RetryPolicyOptions
-            {
-                EasingFunction = EasingFunction.ExponentialEaseOut,
-                MaxRetryInterval = TimeSpan.FromSeconds(5),
-                MaxRetrySteps = 10
-            };
-            var result = await Retry.Do(async () => await FetchVisualResults(Build.Id),
-                retryInterval: TimeSpan.FromMilliseconds(100),
-                retryLimit: 10,
-                retryPolicy: RetryPolicy.ExponentialBackoff,
-                retryPolicyOptions: policyOptions,
-                onFailure: null,
-                mustReturnTrueBeforeFail: null,
-                exceptionTypes: typeof(VisualClientException)
-                );
-            if (result == null)
-            {
-                throw new VisualClientException("diff results were not available in time");
-            }
-            return result;
+            return await _retryPipeline.ExecuteAsync(async token => await FetchVisualResults(Build.Id));
         }
 
         private async Task<Dictionary<DiffStatus, int>> FetchVisualResults(string buildId)

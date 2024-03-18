@@ -4,7 +4,10 @@ Sauce Labs Visual for C# expose Sauce Labs Visual Testing for your C# project wi
 
 # Installation
 
-[TO BE COMPLETED WHEN AVAILABLE WITH NUGET]
+Add SauceLabs.Visual to your current project
+```sh
+dotnet add package SauceLabs.Visual
+```
 
 # How to use
 
@@ -29,6 +32,6 @@ Sauce Labs Visual for C# expose Sauce Labs Visual Testing for your C# project wi
 - Get results of Visual Tests and run assertions on it
   ```csharp
   var results = await visualClient.VisualResults(visualBuild.Id);
-  // verify if any check is unapproved
-  Assert.AreEqual(0, results[DiffStatus.Unapproved]);
+  // verify that no differences have been detected
+  Assert.AreEqual(0, results[DiffStatus.Approved]);
   ```
