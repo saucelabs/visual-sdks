@@ -85,4 +85,36 @@ public class VisualApiTest
         Assert.AreEqual("project-name", resp?.Data.Result.Project);
         Assert.AreEqual("branch-name", resp?.Data.Result.Branch);
     }
+
+    [Test]
+    public async Task TestBuildByBuildIdWithValidMode()
+    {
+        MockedHandler.Clear();
+        var base64EncodedAuthenticationString =
+            Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_username}:{_accessKey}"));
+        MockedHandler
+            .Expect(HttpMethod.Post, "https://api.staging.saucelabs.net/v1/visual/*")
+            .WithHeaders($"Authorization: Basic {base64EncodedAuthenticationString}")
+            .WithPartialContent($"\"operationName\":\"{BuildQuery.OperationName}\"")
+            .Respond("application/json", "{\"data\":{\"result\":{\"id\":\"buildId\",\"url\": \"https://app.staging.saucelabs.net/visual/builds/fd54fb6f-83b7-4c0b-af8d-da2b191c0a3b\",\"name\":\"dummy-build\",\"mode\":\"COMPLETED\"}}}");
+        var resp = await Api.Build("buildId");
+        Assert.IsNotNull(resp.Data);
+        Assert.IsNotNull(resp.Data.Result);
+    }
+
+    [Test]
+    public async Task TestBuildByBuildIdWithInvalidMode()
+    {
+        MockedHandler.Clear();
+        var base64EncodedAuthenticationString =
+            Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_username}:{_accessKey}"));
+        MockedHandler
+            .Expect(HttpMethod.Post, "https://api.staging.saucelabs.net/v1/visual/*")
+            .WithHeaders($"Authorization: Basic {base64EncodedAuthenticationString}")
+            .WithPartialContent($"\"operationName\":\"{BuildQuery.OperationName}\"")
+            .Respond("application/json", "{\"data\":{\"result\":{\"id\":\"buildId\",\"url\": \"https://app.staging.saucelabs.net/visual/builds/fd54fb6f-83b7-4c0b-af8d-da2b191c0a3b\",\"name\":\"dummy-build\",\"mode\":\"COMPLETED\"}}}");
+        var resp = await Api.Build("buildId");
+        Assert.IsNotNull(resp.Data);
+        Assert.IsNotNull(resp.Data.Result);
+    }
 }

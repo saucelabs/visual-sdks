@@ -1,3 +1,5 @@
+using SauceLabs.Visual.Models;
+
 namespace SauceLabs.Visual
 {
     /// <summary>
@@ -8,10 +10,15 @@ namespace SauceLabs.Visual
         public string Id { get; internal set; }
         public string Url { get; internal set; }
 
-        internal VisualBuild(string id, string url)
+        public BuildMode Mode { get; internal set; }
+
+        internal VisualBuild(string id, string url, BuildMode mode)
         {
             Id = id;
             Url = url;
+            Mode = mode;
         }
+
+        internal bool IsRunning() => Mode == BuildMode.Running;
     }
 }

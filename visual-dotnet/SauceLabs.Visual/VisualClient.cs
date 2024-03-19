@@ -24,14 +24,14 @@ namespace SauceLabs.Visual
         public VisualBuild Build { get; }
         private readonly bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
-        private ResiliencePipeline _retryPipeline;
+        private readonly ResiliencePipeline _retryPipeline;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
-        public VisualClient(WebDriver wd, Region region) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"))
+        public VisualClient(WebDriver wd, Region region) : this(wd, region, EnvVars.Username, EnvVars.AccessKey)
         {
         }
 
@@ -41,7 +41,7 @@ namespace SauceLabs.Visual
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, Environment.GetEnvironmentVariable("SAUCE_USERNAME"), Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY"), buildOptions)
+        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions)
         {
         }
 
@@ -66,7 +66,7 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(accessKey))
+            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
@@ -78,9 +78,23 @@ namespace SauceLabs.Visual
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            var createBuildResponse = CreateBuild(buildOptions).Result;
-            Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
-            _externalBuild = false;
+            var build = GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId).Result;
+            if (build != null)
+            {
+                if (!build.IsRunning())
+                {
+                    throw new VisualClientException($"build {build.Id} is not RUNNING");
+                }
+                Build = build;
+                _externalBuild = true;
+            }
+            else
+            {
+                buildOptions.CustomId ??= EnvVars.CustomId;
+                var createBuildResponse = CreateBuild(buildOptions).Result;
+                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
+                _externalBuild = false;
+            }
 
             _retryPipeline = new ResiliencePipelineBuilder()
                 .AddRetry(new RetryStrategyOptions()
@@ -91,6 +105,64 @@ namespace SauceLabs.Visual
                 })
                 .AddTimeout(TimeSpan.FromSeconds(15))
                 .Build();
+        }
+
+        /// <summary>
+        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
+        /// </summary>
+        /// <param name="buildId"></param>
+        /// <returns>the matching build</returns>
+        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
+        private async Task<VisualBuild> FindBuildById(string buildId)
+        {
+            try
+            {
+                var build = (await _api.Build(buildId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
+            {
+                throw new VisualClientException($@"build {buildId} was not found");
+            }
+        }
+
+        /// <summary>
+        /// <c>FindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
+        /// </summary>
+        /// <param name="customId"></param>
+        /// <returns>the matching build or null</returns>
+        /// <exception cref="VisualClientException">when build has an invalid state</exception>
+        private async Task<VisualBuild?> FindBuildByCustomId(string customId)
+        {
+            try
+            {
+                var build = (await _api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// <c>GetEffectiveBuild</c> tries to find the build matching the criterion provided by the user.
+        /// </summary>
+        /// <param name="buildId"></param>
+        /// <param name="customId"></param>
+        /// <returns></returns>
+        private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
+        {
+            if (!StringUtils.IsNullOrEmpty(buildId))
+            {
+                return await FindBuildById(buildId!.Trim());
+            }
+
+            if (StringUtils.IsNullOrEmpty(customId))
+            {
+                return await FindBuildByCustomId(customId!.Trim());
+            }
+            return null;
         }
 
         /// <summary>
@@ -108,7 +180,7 @@ namespace SauceLabs.Visual
                 CustomId = options?.CustomId,
                 DefaultBranch = options?.DefaultBranch,
             })).EnsureValidResponse();
-            return new VisualBuild(result.Result.Id, result.Result.Url);
+            return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
         }
 
         /// <summary>

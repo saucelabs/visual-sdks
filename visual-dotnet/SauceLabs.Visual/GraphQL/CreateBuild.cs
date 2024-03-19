@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual.GraphQL
 {
@@ -10,6 +11,8 @@ namespace SauceLabs.Visual.GraphQL
         public string Name { get; }
         [JsonProperty("url")]
         public string Url { get; }
+        [JsonProperty("mode")]
+        public BuildMode Mode { get; }
         [JsonProperty("project")]
         public string? Project { get; }
         [JsonProperty("branch")]
@@ -19,11 +22,12 @@ namespace SauceLabs.Visual.GraphQL
         [JsonProperty("defaultBranch")]
         public string? DefaultBranch { get; }
 
-        public CreateBuild(string id, string name, string url, string? project, string? branch, string? customId, string? defaultBranch)
+        public CreateBuild(string id, string name, string url, BuildMode mode, string? project, string? branch, string? customId, string? defaultBranch)
         {
             Id = id;
             Name = name;
             Url = url;
+            Mode = mode;
             Project = project;
             Branch = branch;
             CustomId = customId;

@@ -22,7 +22,7 @@ namespace SauceLabs.Visual
         public VisualApi(T webdriver, Region region, string username, string accessKey, HttpClient? httpClient = null)
         {
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(accessKey))
+            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
             {
                 throw new VisualClientException(
                     "Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
@@ -62,6 +62,24 @@ namespace SauceLabs.Visual
                 }
             });
             return await _graphQlClient.SendQueryAsync<ServerResponse<FinishBuild>>(request);
+        }
+
+        public async Task<GraphQLResponse<ServerResponse<Build>>> Build(string buildId)
+        {
+            var request = CreateAuthenticatedRequest(BuildQuery.OperationDocument, BuildQuery.OperationName, new
+            {
+                input = buildId
+            });
+            return await _graphQlClient.SendQueryAsync<ServerResponse<Build>>(request);
+        }
+
+        public async Task<GraphQLResponse<ServerResponse<Build>>> BuildByCustomId(string customId)
+        {
+            var request = CreateAuthenticatedRequest(BuildByCustomIdQuery.OperationDocument, BuildByCustomIdQuery.OperationName, new
+            {
+                input = customId
+            });
+            return await _graphQlClient.SendQueryAsync<ServerResponse<Build>>(request);
         }
 
         public async Task<GraphQLResponse<ServerResponse<WebDriverSessionInfo>>> WebDriverSessionInfo(string jobId, string sessionId)
