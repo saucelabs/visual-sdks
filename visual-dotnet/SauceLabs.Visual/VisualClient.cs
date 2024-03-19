@@ -21,7 +21,7 @@ namespace SauceLabs.Visual
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
-        public VisualBuild? Build { get; private set; }
+        public VisualBuild Build { get; private set; }
         private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
@@ -222,7 +222,6 @@ namespace SauceLabs.Visual
         /// <returns></returns>
         public async Task<string> VisualCheck(string name, VisualCheckOptions? options = null)
         {
-            if (Build == null) throw new VisualClientException("no visual build available");
             var ignored = new List<RegionIn>();
             ignored.AddRange(options?.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options?.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
@@ -245,7 +244,6 @@ namespace SauceLabs.Visual
         /// </summary>
         public async Task Cleanup()
         {
-            if (Build == null) throw new VisualClientException("no visual build available");
             if (!_externalBuild)
             {
                 await FinishBuild(Build);
@@ -264,7 +262,6 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException"></exception>
         public async Task<Dictionary<DiffStatus, int>> VisualResults()
         {
-            if (Build == null) throw new VisualClientException("no visual build available");
             return await _retryPipeline.ExecuteAsync(async token => await FetchVisualResults(Build.Id));
         }
 
