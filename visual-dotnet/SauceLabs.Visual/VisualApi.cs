@@ -22,13 +22,13 @@ namespace SauceLabs.Visual
         public VisualApi(T webdriver, Region region, string username, string accessKey, HttpClient? httpClient = null)
         {
 
-            if (string.IsNullOrEmpty(username?.Trim()) || string.IsNullOrEmpty(accessKey?.Trim()))
+            if (username.IsEmpty() || accessKey.IsEmpty())
             {
                 throw new VisualClientException(
                     "Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
             }
-            _username = username!.Trim();
-            _accessKey = accessKey!.Trim();
+            _username = username.Trim();
+            _accessKey = accessKey.Trim();
 
             httpClient ??= new HttpClient();
 

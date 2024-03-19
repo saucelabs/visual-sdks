@@ -66,12 +66,12 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            if (string.IsNullOrEmpty(username?.Trim()) || string.IsNullOrEmpty(accessKey?.Trim()))
+            if (username.IsEmpty() || accessKey.IsEmpty())
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api = new VisualApi<WebDriver>(wd, region, username!, accessKey!);
+            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
             var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
@@ -155,14 +155,14 @@ namespace SauceLabs.Visual
         /// <returns></returns>
         private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
         {
-            if (string.IsNullOrEmpty(buildId?.Trim()))
+            if (buildId != null && !buildId.IsEmpty())
             {
-                return await FindBuildById(buildId!.Trim());
+                return await FindBuildById(buildId.Trim());
             }
 
-            if (string.IsNullOrEmpty(customId?.Trim()))
+            if (customId != null && !customId.IsEmpty())
             {
-                return await TryFindBuildByCustomId(customId!.Trim());
+                return await TryFindBuildByCustomId(customId.Trim());
             }
             return null;
         }

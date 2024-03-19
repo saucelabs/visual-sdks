@@ -18,7 +18,7 @@ namespace SauceLabs.Visual.Utils
             IGraphQLJsonSerializer serializer)
         {
             var message = base.ToHttpRequestMessage(options, serializer);
-            if (string.IsNullOrEmpty(Username?.Trim()) || string.IsNullOrEmpty(AccessKey?.Trim()))
+            if (Username == null || Username.IsEmpty() || AccessKey == null || AccessKey.IsEmpty())
             {
                 return message;
             }
