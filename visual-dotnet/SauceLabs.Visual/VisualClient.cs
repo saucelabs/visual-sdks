@@ -19,10 +19,10 @@ namespace SauceLabs.Visual
         private readonly VisualApi<WebDriver> _api;
         private readonly string _sessionId;
         private readonly string _jobId;
-        private readonly string _sessionMetadataBlob;
+        private string? _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
-        public VisualBuild Build { get; }
-        private readonly bool _externalBuild;
+        public VisualBuild Build { get; private set; }
+        private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -31,8 +31,9 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
-        public VisualClient(WebDriver wd, Region region) : this(wd, region, EnvVars.Username, EnvVars.AccessKey)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region)
         {
+            return await Create(wd, region, EnvVars.Username, EnvVars.AccessKey, new CreateBuildOptions());
         }
 
         /// <summary>
@@ -41,8 +42,9 @@ namespace SauceLabs.Visual
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, CreateBuildOptions buildOptions)
         {
+            return await Create(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions);
         }
 
         /// <summary>
@@ -52,8 +54,9 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey)
         {
+            return await Create(wd, region, username, accessKey, new CreateBuildOptions());
         }
 
         /// <summary>
@@ -64,21 +67,20 @@ namespace SauceLabs.Visual
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
-            {
-                throw new VisualClientException("Username or Access Key not set");
-            }
+            var client = new VisualClient(wd, Region.UsWest1, username, accessKey);
+            await client.SetupBuild(buildOptions);
+            return client;
+        }
 
-            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
-            _sessionId = wd.SessionId.ToString();
-            _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
-            var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
+        private async Task SetupBuild(CreateBuildOptions buildOptions)
+        {
+            var response = await this._api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            var build = GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId).Result;
+            var build = await GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
             if (build != null)
             {
                 if (!build.IsRunning())
@@ -91,10 +93,29 @@ namespace SauceLabs.Visual
             else
             {
                 buildOptions.CustomId ??= EnvVars.CustomId;
-                var createBuildResponse = CreateBuild(buildOptions).Result;
+                var createBuildResponse = await CreateBuild(buildOptions);
                 Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
                 _externalBuild = false;
             }
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="username">the Sauce Labs username</param>
+        /// <param name="accessKey">the Sauce Labs access key</param>
+        private VisualClient(WebDriver wd, Region region, string username, string accessKey)
+        {
+            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
+            {
+                throw new VisualClientException("Username or Access Key not set");
+            }
+
+            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
+            _sessionId = wd.SessionId.ToString();
+            _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
             _retryPipeline = new ResiliencePipelineBuilder()
                 .AddRetry(new RetryStrategyOptions()
@@ -212,7 +233,7 @@ namespace SauceLabs.Visual
                 diffingMethod: options?.DiffingMethod ?? DiffingMethod.Simple,
                 regions: ignored.ToArray(),
                 sessionId: _sessionId,
-                sessionMetadata: _sessionMetadataBlob,
+                sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options?.CaptureDom ?? CaptureDom))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
