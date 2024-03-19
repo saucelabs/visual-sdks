@@ -81,6 +81,10 @@ namespace SauceLabs.Visual
             var build = GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId).Result;
             if (build != null)
             {
+                if (!build.IsRunning())
+                {
+                    throw new VisualClientException($"build {build.Id} is not RUNNING");
+                }
                 Build = build;
                 _externalBuild = true;
             }
@@ -88,7 +92,7 @@ namespace SauceLabs.Visual
             {
                 buildOptions.CustomId ??= EnvVars.CustomId;
                 var createBuildResponse = CreateBuild(buildOptions).Result;
-                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url);
+                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
                 _externalBuild = false;
             }
 
@@ -111,18 +115,15 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
         private async Task<VisualBuild> FindBuildById(string buildId)
         {
-            var response = await _api.Build(buildId);
-            if (response.Data?.Result == null)
+            try
+            {
+                var build = (await _api.Build(buildId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
             {
                 throw new VisualClientException($@"build {buildId} was not found");
             }
-
-            var build = response.Data.Result;
-            if (build.Mode != BuildMode.Running)
-            {
-                throw new VisualClientException($"build {build.Id} is not RUNNING");
-            }
-            return new VisualBuild(build.Id, build.Url);
         }
 
         /// <summary>
@@ -133,18 +134,15 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException">when build has an invalid state</exception>
         private async Task<VisualBuild?> TryFindBuildByCustomId(string customId)
         {
-            var response = await _api.BuildByCustomId(customId);
-            if (response.Data?.Result == null)
+            try
+            {
+                var build = (await _api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
             {
                 return null;
             }
-
-            var build = response.Data.Result;
-            if (build.Mode != BuildMode.Running)
-            {
-                throw new VisualClientException($"build {build.Id} is not RUNNING");
-            }
-            return new VisualBuild(build.Id, build.Url);
         }
 
         /// <summary>
@@ -182,7 +180,7 @@ namespace SauceLabs.Visual
                 CustomId = options?.CustomId,
                 DefaultBranch = options?.DefaultBranch,
             })).EnsureValidResponse();
-            return new VisualBuild(result.Result.Id, result.Result.Url);
+            return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
         }
 
         /// <summary>
