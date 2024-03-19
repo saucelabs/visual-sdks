@@ -179,7 +179,7 @@ namespace SauceLabs.Visual
                 return await FindBuildById(buildId!.Trim());
             }
 
-            if (StringUtils.IsNullOrEmpty(customId))
+            if (!StringUtils.IsNullOrEmpty(customId))
             {
                 return await FindBuildByCustomId(customId!.Trim());
             }
