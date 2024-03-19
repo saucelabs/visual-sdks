@@ -127,12 +127,12 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>TryFindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
+        /// <c>FindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
         /// </summary>
         /// <param name="customId"></param>
         /// <returns>the matching build or null</returns>
         /// <exception cref="VisualClientException">when build has an invalid state</exception>
-        private async Task<VisualBuild?> TryFindBuildByCustomId(string customId)
+        private async Task<VisualBuild?> FindBuildByCustomId(string customId)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace SauceLabs.Visual
 
             if (StringUtils.IsNullOrEmpty(customId))
             {
-                return await TryFindBuildByCustomId(customId!.Trim());
+                return await FindBuildByCustomId(customId!.Trim());
             }
             return null;
         }
