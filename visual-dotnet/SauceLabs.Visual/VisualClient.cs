@@ -69,30 +69,34 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            var client = new VisualClient(wd, Region.UsWest1, username, accessKey, buildOptions);
+            var client = new VisualClient(wd, Region.UsWest1, username, accessKey);
+            await client.SetupBuild(buildOptions);
+            return client;
+        }
 
-            var response = await client._api.WebDriverSessionInfo(client._jobId, client._sessionId);
+        private async Task SetupBuild(CreateBuildOptions buildOptions)
+        {
+            var response = await this._api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
-            client._sessionMetadataBlob = metadata.Result.Blob;
+            _sessionMetadataBlob = metadata.Result.Blob;
 
-            var build = await client.GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
+            var build = await GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
             if (build != null)
             {
                 if (!build.IsRunning())
                 {
                     throw new VisualClientException($"build {build.Id} is not RUNNING");
                 }
-                client.Build = build;
-                client._externalBuild = true;
+                Build = build;
+                _externalBuild = true;
             }
             else
             {
                 buildOptions.CustomId ??= EnvVars.CustomId;
-                var createBuildResponse = await client.CreateBuild(buildOptions);
-                client.Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
-                client._externalBuild = false;
+                var createBuildResponse = await CreateBuild(buildOptions);
+                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
+                _externalBuild = false;
             }
-            return client;
         }
 
         /// <summary>
@@ -102,8 +106,7 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        /// <param name="buildOptions">the options of the build creation</param>
-        private VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        private VisualClient(WebDriver wd, Region region, string username, string accessKey)
         {
             if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
             {
