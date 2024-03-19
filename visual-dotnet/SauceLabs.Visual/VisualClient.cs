@@ -19,10 +19,10 @@ namespace SauceLabs.Visual
         private readonly VisualApi<WebDriver> _api;
         private readonly string _sessionId;
         private readonly string _jobId;
-        private readonly string _sessionMetadataBlob;
+        private string _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
-        public VisualBuild Build { get; }
-        private readonly bool _externalBuild;
+        public VisualBuild Build { get; private set; }
+        private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -31,8 +31,9 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
-        public VisualClient(WebDriver wd, Region region) : this(wd, region, EnvVars.Username, EnvVars.AccessKey)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region)
         {
+            return await Create(wd, region, EnvVars.Username, EnvVars.AccessKey, new CreateBuildOptions());
         }
 
         /// <summary>
@@ -41,8 +42,9 @@ namespace SauceLabs.Visual
         /// <param name="wd">the instance of the WebDriver session</param>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, CreateBuildOptions buildOptions) : this(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, CreateBuildOptions buildOptions)
         {
+            return await Create(wd, region, EnvVars.Username, EnvVars.AccessKey, buildOptions);
         }
 
         /// <summary>
@@ -52,8 +54,9 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey) : this(wd, region, username, accessKey, new CreateBuildOptions())
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey)
         {
+            return await Create(wd, region, username, accessKey, new CreateBuildOptions());
         }
 
         /// <summary>
@@ -64,7 +67,43 @@ namespace SauceLabs.Visual
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        {
+            var client = new VisualClient(wd, Region.UsWest1, username, accessKey, buildOptions);
+
+            var response = await client._api.WebDriverSessionInfo(client._jobId, client._sessionId);
+            var metadata = response.EnsureValidResponse();
+            client._sessionMetadataBlob = metadata.Result.Blob;
+
+            var build = await client.GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
+            if (build != null)
+            {
+                if (!build.IsRunning())
+                {
+                    throw new VisualClientException($"build {build.Id} is not RUNNING");
+                }
+                client.Build = build;
+                client._externalBuild = true;
+            }
+            else
+            {
+                buildOptions.CustomId ??= EnvVars.CustomId;
+                var createBuildResponse = await client.CreateBuild(buildOptions);
+                client.Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
+                client._externalBuild = false;
+            }
+            return client;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="username">the Sauce Labs username</param>
+        /// <param name="accessKey">the Sauce Labs access key</param>
+        /// <param name="buildOptions">the options of the build creation</param>
+        private VisualClient(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
             if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
             {
@@ -74,27 +113,6 @@ namespace SauceLabs.Visual
             _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
-            var response = _api.WebDriverSessionInfo(_jobId, _sessionId).Result;
-            var metadata = response.EnsureValidResponse();
-            _sessionMetadataBlob = metadata.Result.Blob;
-
-            var build = GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId).Result;
-            if (build != null)
-            {
-                if (!build.IsRunning())
-                {
-                    throw new VisualClientException($"build {build.Id} is not RUNNING");
-                }
-                Build = build;
-                _externalBuild = true;
-            }
-            else
-            {
-                buildOptions.CustomId ??= EnvVars.CustomId;
-                var createBuildResponse = CreateBuild(buildOptions).Result;
-                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
-                _externalBuild = false;
-            }
 
             _retryPipeline = new ResiliencePipelineBuilder()
                 .AddRetry(new RetryStrategyOptions()
