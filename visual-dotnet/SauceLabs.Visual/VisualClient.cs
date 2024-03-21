@@ -26,6 +26,11 @@ namespace SauceLabs.Visual
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
+        public string? CurrentTestName { get; set; }
+        public string? CurrentTestClass { get; set; }
+
+        #region Create
+
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
         /// </summary>
@@ -69,10 +74,13 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            var client = new VisualClient(wd, region, username, accessKey);
+            var client = new VisualClient(wd, Region.UsWest1, username, accessKey);
             await client.SetupBuild(buildOptions);
             return client;
         }
+        #endregion
+
+        #region Setup
 
         private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
@@ -204,6 +212,8 @@ namespace SauceLabs.Visual
             return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
         }
 
+        #endregion
+
         /// <summary>
         /// <c>FinishBuild</c> finishes a build
         /// </summary>
@@ -235,7 +245,9 @@ namespace SauceLabs.Visual
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options?.CaptureDom ?? CaptureDom,
-                clipSelector: options?.ClipSelector
+                clipSelector: options?.ClipSelector,
+                suiteName: CurrentTestClass,
+                testName: CurrentTestName
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
