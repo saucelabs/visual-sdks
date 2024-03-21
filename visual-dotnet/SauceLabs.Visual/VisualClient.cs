@@ -269,6 +269,12 @@ namespace SauceLabs.Visual
             _api.Dispose();
         }
 
+        public void ResetCurrentTest()
+        {
+            CurrentTestClass = null;
+            CurrentTestName = null;
+        }
+
         /// <summary>
         /// <c>VisualResults</c> returns the results of screenshot comparison.
         /// </summary>

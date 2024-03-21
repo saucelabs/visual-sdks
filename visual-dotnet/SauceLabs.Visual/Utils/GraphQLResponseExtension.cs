@@ -3,7 +3,7 @@ using GraphQL;
 
 namespace SauceLabs.Visual.Utils
 {
-    public static class GraphQLResponseExtension
+    internal static class GraphQLResponseExtension
     {
         public static T EnsureValidResponse<T>(this GraphQLResponse<T> response)
         {

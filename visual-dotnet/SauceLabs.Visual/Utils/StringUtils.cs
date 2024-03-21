@@ -1,6 +1,6 @@
 namespace SauceLabs.Visual.Utils
 {
-    public static class StringUtils
+    internal static class StringUtils
     {
         /// <summary>
         /// <c>IsNullOrEmpty</c> checks that the string null, empty or contains only whitespaces.
