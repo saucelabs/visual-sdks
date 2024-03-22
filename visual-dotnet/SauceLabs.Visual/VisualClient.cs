@@ -78,7 +78,7 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            var client = new VisualClient(wd, Region.UsWest1, username, accessKey);
+            var client = new VisualClient(wd, region, username, accessKey);
             await client.SetupBuild(buildOptions);
             return client;
         }
