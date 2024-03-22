@@ -229,14 +229,8 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            if (!string.IsNullOrEmpty(callerMemberName) && options.HasIncompleteTestContext())
-            {
-                var stack = new StackTrace();
-                var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
-                options.SuiteName ??= frame?.GetMethod().DeclaringType?.FullName ?? _previousSuiteName;
-                options.TestName ??= callerMemberName;
-                _previousSuiteName = options.SuiteName;
-            }
+            options.PopulateTestContext(callerMemberName, _previousSuiteName);
+            _previousSuiteName = options.SuiteName;
             return VisualCheckAsync(name, options);
         }
 

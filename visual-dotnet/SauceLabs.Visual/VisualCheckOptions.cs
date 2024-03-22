@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Linq;
 using OpenQA.Selenium;
 using SauceLabs.Visual.Models;
 
@@ -24,6 +26,17 @@ namespace SauceLabs.Visual
         /// </summary>
         public string? TestName { get; set; }
 
-        internal bool HasIncompleteTestContext() => string.IsNullOrEmpty(SuiteName) || string.IsNullOrEmpty(TestName);
+        private bool HasIncompleteTestContext() => string.IsNullOrEmpty(SuiteName) || string.IsNullOrEmpty(TestName);
+
+        internal void PopulateTestContext(string callerMemberName, string? previousSuiteName)
+        {
+            if (!string.IsNullOrEmpty(callerMemberName) && HasIncompleteTestContext())
+            {
+                var stack = new StackTrace();
+                var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
+                SuiteName ??= frame?.GetMethod().DeclaringType?.FullName ?? previousSuiteName;
+                TestName ??= callerMemberName;
+            }
+        }
     }
 }
