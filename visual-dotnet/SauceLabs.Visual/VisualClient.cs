@@ -29,11 +29,7 @@ namespace SauceLabs.Visual
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
-        public string? CurrentTestClass { get; set; }
-        public string? CurrentTestName { get; set; }
         private string? _previousTestClass = null;
-
-        #region Create
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -82,9 +78,6 @@ namespace SauceLabs.Visual
             await client.SetupBuild(buildOptions);
             return client;
         }
-        #endregion
-
-        #region Setup
 
         private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
@@ -217,8 +210,6 @@ namespace SauceLabs.Visual
             })).EnsureValidResponse();
             return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
         }
-
-        #endregion
 
         /// <summary>
         /// <c>FinishBuild</c> finishes a build
