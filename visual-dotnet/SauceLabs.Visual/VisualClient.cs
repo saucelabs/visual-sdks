@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using Polly;
@@ -25,6 +26,8 @@ namespace SauceLabs.Visual
         private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
+
+        private string? _previousSuiteName = null;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -220,22 +223,33 @@ namespace SauceLabs.Visual
         /// <param name="name">the name of the screenshot</param>
         /// <param name="options">the configuration for the screenshot capture and comparison</param>
         /// <returns></returns>
-        public async Task<string> VisualCheck(string name, VisualCheckOptions? options = null)
+        public Task<string> VisualCheck(string name, VisualCheckOptions? options = null,
+            [CallerMemberName] string callerMemberName = "")
+        {
+            options ??= new VisualCheckOptions();
+            options.EnsureTestContextIsPopulated(callerMemberName, _previousSuiteName);
+            _previousSuiteName = options.SuiteName;
+            return VisualCheckAsync(name, options);
+        }
+
+        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
             var ignored = new List<RegionIn>();
-            ignored.AddRange(options?.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options?.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
 
             var result = (await _api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
                 name: name,
                 jobId: _jobId,
-                diffingMethod: options?.DiffingMethod ?? DiffingMethod.Simple,
+                diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
                 regions: ignored.ToArray(),
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
-                captureDom: options?.CaptureDom ?? CaptureDom,
-                clipSelector: options?.ClipSelector
+                captureDom: options.CaptureDom ?? CaptureDom,
+                clipSelector: options.ClipSelector,
+                suiteName: options.SuiteName,
+                testName: options.TestName
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;

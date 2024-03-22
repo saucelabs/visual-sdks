@@ -38,7 +38,9 @@ namespace SauceLabs.Visual.GraphQL
             DiffingMethod diffingMethod,
             RegionIn[] regions,
             bool captureDom,
-            string? clipSelector
+            string? clipSelector,
+            string? suiteName,
+            string? testName
         )
         {
             BuildUuid = buildUuid;
@@ -50,6 +52,8 @@ namespace SauceLabs.Visual.GraphQL
             SessionId = sessionId;
             CaptureDom = captureDom;
             ClipSelector = clipSelector;
+            SuiteName = suiteName;
+            TestName = testName;
         }
     }
 }
