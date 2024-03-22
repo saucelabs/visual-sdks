@@ -234,7 +234,9 @@ namespace SauceLabs.Visual
                 regions: ignored.ToArray(),
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
-                captureDom: options?.CaptureDom ?? CaptureDom))).EnsureValidResponse();
+                captureDom: options?.CaptureDom ?? CaptureDom,
+                clipSelector: options?.ClipSelector
+            ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
         }

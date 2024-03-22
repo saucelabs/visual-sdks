@@ -26,6 +26,9 @@ namespace SauceLabs.Visual.GraphQL
         [JsonProperty("captureDom")]
         public bool? CaptureDom { get; set; }
 
+        [JsonProperty("clipSelector")]
+        public string? ClipSelector { get; set; }
+
         public CreateSnapshotFromWebDriverIn(
             string buildUuid,
             string name,
@@ -34,7 +37,8 @@ namespace SauceLabs.Visual.GraphQL
             string sessionMetadata,
             DiffingMethod diffingMethod,
             RegionIn[] regions,
-            bool captureDom
+            bool captureDom,
+            string? clipSelector
         )
         {
             BuildUuid = buildUuid;
@@ -45,6 +49,7 @@ namespace SauceLabs.Visual.GraphQL
             SessionMetadata = sessionMetadata;
             SessionId = sessionId;
             CaptureDom = captureDom;
+            ClipSelector = clipSelector;
         }
     }
 }
