@@ -23,5 +23,7 @@ namespace SauceLabs.Visual
         /// <c>TestName</c> manually set the TestName of the Test.
         /// </summary>
         public string? TestName { get; set; }
+
+        internal bool HasIncompleteTestContext() => string.IsNullOrEmpty(SuiteName) || string.IsNullOrEmpty(TestName);
     }
 }

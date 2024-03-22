@@ -229,7 +229,7 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            if (!string.IsNullOrEmpty(callerMemberName) && (string.IsNullOrEmpty(options.SuiteName) || string.IsNullOrEmpty(options.TestName)))
+            if (!string.IsNullOrEmpty(callerMemberName) && options.HasIncompleteTestContext())
             {
                 var stack = new StackTrace();
                 var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
