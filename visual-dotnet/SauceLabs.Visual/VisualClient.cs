@@ -253,7 +253,6 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-
             var ignored = new List<RegionIn>();
             ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
