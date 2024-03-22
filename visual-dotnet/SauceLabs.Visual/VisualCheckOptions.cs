@@ -15,7 +15,7 @@ namespace SauceLabs.Visual
         public bool? CaptureDom { get; set; }
         public string? ClipSelector { get; set; }
 
-        public string? ClassName { get; set; }
+        public string? SuiteName { get; set; }
         public string? TestName { get; set; }
     }
 }

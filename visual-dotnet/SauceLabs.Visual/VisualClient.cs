@@ -29,7 +29,7 @@ namespace SauceLabs.Visual
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
-        private string? _previousTestClass = null;
+        private string? _previousSuiteName = null;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -231,13 +231,13 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            if (!string.IsNullOrEmpty(callerMemberName) && (string.IsNullOrEmpty(options.ClassName) || string.IsNullOrEmpty(options.TestName)))
+            if (!string.IsNullOrEmpty(callerMemberName) && (string.IsNullOrEmpty(options.SuiteName) || string.IsNullOrEmpty(options.TestName)))
             {
                 var stack = new StackTrace();
                 var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
-                options.ClassName ??= frame?.GetMethod().DeclaringType?.FullName ?? _previousTestClass;
+                options.SuiteName ??= frame?.GetMethod().DeclaringType?.FullName ?? _previousSuiteName;
                 options.TestName ??= callerMemberName;
-                _previousTestClass = options.ClassName;
+                _previousSuiteName = options.SuiteName;
             }
             return VisualCheckAsync(name, options);
         }
@@ -259,7 +259,7 @@ namespace SauceLabs.Visual
                 captureDom: options?.CaptureDom ?? CaptureDom,
                 clipSelector: options?.ClipSelector,
                 captureDom: options.CaptureDom ?? CaptureDom,
-                suiteName: options.ClassName,
+                suiteName: options.SuiteName,
                 testName: options.TestName
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
