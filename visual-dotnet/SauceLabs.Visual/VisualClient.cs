@@ -198,12 +198,10 @@ namespace SauceLabs.Visual
         /// <returns>a <c>VisualBuild</c> instance</returns>
         private async Task<VisualBuild> CreateBuild(CreateBuildOptions? options = null)
         {
-            var projectName = options?.Project ?? Assembly.GetExecutingAssembly().FullName;
-
             var result = (await _api.CreateBuild(new CreateBuildIn
             {
                 Name = options?.Name,
-                Project = projectName,
+                Project = options?.Project,
                 Branch = options?.Branch,
                 CustomId = options?.CustomId,
                 DefaultBranch = options?.DefaultBranch,
