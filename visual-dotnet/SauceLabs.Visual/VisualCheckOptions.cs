@@ -15,7 +15,13 @@ namespace SauceLabs.Visual
         public bool? CaptureDom { get; set; }
         public string? ClipSelector { get; set; }
 
+        /// <summary>
+        /// <c>SuiteName</c> manually set the SuiteName of the Test.
+        /// </summary>
         public string? SuiteName { get; set; }
+        /// <summary>
+        /// <c>TestName</c> manually set the TestName of the Test.
+        /// </summary>
         public string? TestName { get; set; }
     }
 }
