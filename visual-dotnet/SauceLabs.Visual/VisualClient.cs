@@ -254,9 +254,8 @@ namespace SauceLabs.Visual
                 regions: ignored.ToArray(),
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
-                captureDom: options?.CaptureDom ?? CaptureDom,
-                clipSelector: options?.ClipSelector,
                 captureDom: options.CaptureDom ?? CaptureDom,
+                clipSelector: options.ClipSelector,
                 suiteName: options.SuiteName,
                 testName: options.TestName
             ))).EnsureValidResponse();
