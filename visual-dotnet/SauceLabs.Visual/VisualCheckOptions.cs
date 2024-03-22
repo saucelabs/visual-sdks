@@ -28,15 +28,17 @@ namespace SauceLabs.Visual
 
         private bool HasIncompleteTestContext() => string.IsNullOrEmpty(SuiteName) || string.IsNullOrEmpty(TestName);
 
-        internal void PopulateTestContext(string callerMemberName, string? previousSuiteName)
+        internal void EnsureTestContextIsPopulated(string callerMemberName, string? previousSuiteName)
         {
-            if (!string.IsNullOrEmpty(callerMemberName) && HasIncompleteTestContext())
+            if (string.IsNullOrEmpty(callerMemberName) || HasIncompleteTestContext())
             {
-                var stack = new StackTrace();
-                var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
-                SuiteName ??= frame?.GetMethod().DeclaringType?.FullName ?? previousSuiteName;
-                TestName ??= callerMemberName;
+                return;
             }
+
+            var stack = new StackTrace();
+            var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
+            SuiteName ??= frame?.GetMethod().DeclaringType?.FullName ?? previousSuiteName;
+            TestName ??= callerMemberName;
         }
     }
 }

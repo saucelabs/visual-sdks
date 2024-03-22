@@ -229,7 +229,7 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            options.PopulateTestContext(callerMemberName, _previousSuiteName);
+            options.EnsureTestContextIsPopulated(callerMemberName, _previousSuiteName);
             _previousSuiteName = options.SuiteName;
             return VisualCheckAsync(name, options);
         }
