@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using Polly;
@@ -26,8 +29,9 @@ namespace SauceLabs.Visual
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
-        public string? CurrentTestName { get; set; }
         public string? CurrentTestClass { get; set; }
+        public string? CurrentTestName { get; set; }
+        private string? _previousTestClass = null;
 
         #region Create
 
@@ -201,10 +205,12 @@ namespace SauceLabs.Visual
         /// <returns>a <c>VisualBuild</c> instance</returns>
         private async Task<VisualBuild> CreateBuild(CreateBuildOptions? options = null)
         {
+            var projectName = options?.Project ?? Assembly.GetExecutingAssembly().FullName;
+
             var result = (await _api.CreateBuild(new CreateBuildIn
             {
                 Name = options?.Name,
-                Project = options?.Project,
+                Project = projectName,
                 Branch = options?.Branch,
                 CustomId = options?.CustomId,
                 DefaultBranch = options?.DefaultBranch,
@@ -230,24 +236,41 @@ namespace SauceLabs.Visual
         /// <param name="name">the name of the screenshot</param>
         /// <param name="options">the configuration for the screenshot capture and comparison</param>
         /// <returns></returns>
-        public async Task<string> VisualCheck(string name, VisualCheckOptions? options = null)
+        public Task<string> VisualCheck(string name, VisualCheckOptions? options = null,
+            [CallerMemberName] string callerMemberName = "")
         {
+            options ??= new VisualCheckOptions();
+            if (!string.IsNullOrEmpty(callerMemberName) && (string.IsNullOrEmpty(options.ClassName) || string.IsNullOrEmpty(options.TestName)))
+            {
+                var stack = new StackTrace();
+                var frame = stack.GetFrames()?.FirstOrDefault(f => f.GetMethod().Name == callerMemberName);
+                options.ClassName ??= frame?.GetMethod().DeclaringType?.FullName ?? _previousTestClass;
+                options.TestName ??= callerMemberName;
+                _previousTestClass = options.ClassName;
+            }
+            return VisualCheckAsync(name, options);
+        }
+
+        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
+        {
+
             var ignored = new List<RegionIn>();
-            ignored.AddRange(options?.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options?.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
 
             var result = (await _api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
                 name: name,
                 jobId: _jobId,
-                diffingMethod: options?.DiffingMethod ?? DiffingMethod.Simple,
+                diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
                 regions: ignored.ToArray(),
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options?.CaptureDom ?? CaptureDom,
                 clipSelector: options?.ClipSelector,
-                suiteName: CurrentTestClass,
-                testName: CurrentTestName
+                captureDom: options.CaptureDom ?? CaptureDom,
+                suiteName: options.ClassName,
+                testName: options.TestName
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
@@ -267,12 +290,6 @@ namespace SauceLabs.Visual
         public void Dispose()
         {
             _api.Dispose();
-        }
-
-        public void ResetCurrentTest()
-        {
-            CurrentTestClass = null;
-            CurrentTestName = null;
         }
 
         /// <summary>
