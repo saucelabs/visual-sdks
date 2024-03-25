@@ -88,13 +88,6 @@ namespace SauceLabs.Visual
             if (_sharedBuild != null)
             {
                 Build = _sharedBuild;
-                var copiedApi = _api.Clone();
-                var buildId = Build.Id;
-                _sharedBuild.Close = async () =>
-                {
-                    await copiedApi.FinishBuild(buildId);
-                    copiedApi.Dispose();
-                };
                 return;
             }
 
@@ -116,6 +109,12 @@ namespace SauceLabs.Visual
             Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode)
             {
                 IsExternal = false
+            };
+            var copiedApi = _api.Clone();
+            Build.Close = async () =>
+            {
+                await copiedApi.FinishBuild(Build.Id);
+                copiedApi.Dispose();
             };
             _sharedBuild = Build;
         }
@@ -278,11 +277,16 @@ namespace SauceLabs.Visual
         /// </summary>
         public static async Task Cleanup()
         {
-            if (_sharedBuild?.Close != null)
+            if (_sharedBuild == null)
+            {
+                return;
+            }
+
+            if (_sharedBuild.Close != null)
             {
                 await _sharedBuild.Close();
+                _sharedBuild = null;
             }
-            _sharedBuild = null;
         }
 
         public void Dispose()
