@@ -30,7 +30,7 @@ namespace SauceLabs.Visual
 
         internal void EnsureTestContextIsPopulated(string callerMemberName, string? previousSuiteName)
         {
-            if (string.IsNullOrEmpty(callerMemberName) || HasIncompleteTestContext())
+            if (string.IsNullOrEmpty(callerMemberName) || !HasIncompleteTestContext())
             {
                 return;
             }
