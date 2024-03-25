@@ -15,7 +15,7 @@ namespace SauceLabs.Visual
         public BuildMode Mode { get; internal set; }
 
         internal bool IsExternal { get; set; } = false;
-        internal Func<Task>? Closer;
+        internal Func<Task>? Close;
 
         internal VisualBuild(string id, string url, BuildMode mode)
         {

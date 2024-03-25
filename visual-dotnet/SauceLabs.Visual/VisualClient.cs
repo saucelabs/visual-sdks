@@ -90,7 +90,11 @@ namespace SauceLabs.Visual
                 Build = _sharedBuild;
                 var copiedApi = _api.Clone();
                 var buildId = Build.Id;
-                _sharedBuild.Closer = async () => await copiedApi.FinishBuild(buildId);
+                _sharedBuild.Close = async () =>
+                {
+                    await copiedApi.FinishBuild(buildId);
+                    copiedApi.Dispose();
+                };
                 return;
             }
 
@@ -274,9 +278,9 @@ namespace SauceLabs.Visual
         /// </summary>
         public static async Task Cleanup()
         {
-            if (_sharedBuild?.Closer != null)
+            if (_sharedBuild?.Close != null)
             {
-                await _sharedBuild.Closer();
+                await _sharedBuild.Close();
             }
             _sharedBuild = null;
         }
