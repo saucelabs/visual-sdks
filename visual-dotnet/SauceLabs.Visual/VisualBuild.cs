@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual
@@ -11,6 +13,9 @@ namespace SauceLabs.Visual
         public string Url { get; internal set; }
 
         public BuildMode Mode { get; internal set; }
+
+        internal bool IsExternal { get; set; } = false;
+        internal Func<Task>? Closer;
 
         internal VisualBuild(string id, string url, BuildMode mode)
         {

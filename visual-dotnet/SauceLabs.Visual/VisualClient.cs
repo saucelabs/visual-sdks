@@ -17,7 +17,9 @@ namespace SauceLabs.Visual
     /// </summary>
     public class VisualClient : IDisposable
     {
-        private readonly VisualApi<WebDriver> _api;
+        private static VisualBuild? _sharedBuild;
+
+        private readonly VisualApi _api;
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
@@ -73,15 +75,24 @@ namespace SauceLabs.Visual
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
             var client = new VisualClient(wd, region, username, accessKey);
-            await client.SetupBuild(buildOptions);
+            await client.SetupBuild(region, username, accessKey, buildOptions);
             return client;
         }
 
-        private async Task SetupBuild(CreateBuildOptions buildOptions)
+        private async Task SetupBuild(Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            var response = await this._api.WebDriverSessionInfo(_jobId, _sessionId);
+            var response = await _api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
+
+            if (_sharedBuild != null)
+            {
+                Build = _sharedBuild;
+                var copiedApi = _api.Clone();
+                var buildId = Build.Id;
+                _sharedBuild.Closer = async () => await copiedApi.FinishBuild(buildId);
+                return;
+            }
 
             var build = await GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
             if (build != null)
@@ -91,15 +102,18 @@ namespace SauceLabs.Visual
                     throw new VisualClientException($"build {build.Id} is not RUNNING");
                 }
                 Build = build;
-                _externalBuild = true;
+                Build.IsExternal = true;
+                _sharedBuild = Build;
+                return;
             }
-            else
+
+            buildOptions.CustomId ??= EnvVars.CustomId;
+            var createBuildResponse = await CreateBuild(buildOptions);
+            Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode)
             {
-                buildOptions.CustomId ??= EnvVars.CustomId;
-                var createBuildResponse = await CreateBuild(buildOptions);
-                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
-                _externalBuild = false;
-            }
+                IsExternal = false
+            };
+            _sharedBuild = Build;
         }
 
         /// <summary>
@@ -116,7 +130,7 @@ namespace SauceLabs.Visual
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
+            _api = new VisualApi(region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
@@ -258,12 +272,13 @@ namespace SauceLabs.Visual
         /// <summary>
         /// <c>Cleanup</c> set a correct status to the build. No action should be made after that calling <c>Cleanup</c>.
         /// </summary>
-        public async Task Cleanup()
+        public static async Task Cleanup()
         {
-            if (!_externalBuild)
+            if (_sharedBuild?.Closer != null)
             {
-                await FinishBuild(Build);
+                await _sharedBuild.Closer();
             }
+            _sharedBuild = null;
         }
 
         public void Dispose()
