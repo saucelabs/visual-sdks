@@ -75,11 +75,11 @@ namespace SauceLabs.Visual
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
             var client = new VisualClient(wd, region, username, accessKey);
-            await client.SetupBuild(region, username, accessKey, buildOptions);
+            await client.SetupBuild(buildOptions);
             return client;
         }
 
-        private async Task SetupBuild(Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
             var response = await _api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
