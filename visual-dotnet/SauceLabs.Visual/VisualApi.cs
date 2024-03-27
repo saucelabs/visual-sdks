@@ -14,7 +14,7 @@ namespace SauceLabs.Visual
 {
     internal class VisualApi : IDisposable
     {
-        private readonly Region _region;
+        internal readonly Region Region;
         private readonly string _username;
         private readonly string _accessKey;
         private readonly GraphQLHttpClient _graphQlClient;
@@ -28,7 +28,7 @@ namespace SauceLabs.Visual
                     "Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
             }
 
-            _region = region;
+            Region = region;
             _username = username.Trim();
             _accessKey = accessKey.Trim();
 
@@ -122,7 +122,7 @@ namespace SauceLabs.Visual
 
         internal VisualApi Clone()
         {
-            return new VisualApi(_region, _username, _accessKey);
+            return new VisualApi(Region, _username, _accessKey);
         }
     }
 }

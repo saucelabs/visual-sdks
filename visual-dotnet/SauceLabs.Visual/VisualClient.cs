@@ -17,15 +17,12 @@ namespace SauceLabs.Visual
     /// </summary>
     public class VisualClient : IDisposable
     {
-        private static VisualBuild? _sharedBuild;
-
-        private readonly VisualApi _api;
+        internal readonly VisualApi Api;
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
         public VisualBuild Build { get; private set; }
-        private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -81,42 +78,11 @@ namespace SauceLabs.Visual
 
         private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
-            var response = await _api.WebDriverSessionInfo(_jobId, _sessionId);
+            var response = await Api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            if (_sharedBuild != null)
-            {
-                Build = _sharedBuild;
-                return;
-            }
-
-            var build = await GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
-            if (build != null)
-            {
-                if (!build.IsRunning())
-                {
-                    throw new VisualClientException($"build {build.Id} is not RUNNING");
-                }
-                Build = build;
-                Build.IsExternal = true;
-                _sharedBuild = Build;
-                return;
-            }
-
-            buildOptions.CustomId ??= EnvVars.CustomId;
-            var createBuildResponse = await CreateBuild(buildOptions);
-            Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode)
-            {
-                IsExternal = false
-            };
-            var copiedApi = _api.Clone();
-            Build.Close = async () =>
-            {
-                await copiedApi.FinishBuild(Build.Id);
-                copiedApi.Dispose();
-            };
-            _sharedBuild = Build;
+            Build = await BuildFactory.Get(this, buildOptions);
         }
 
         /// <summary>
@@ -133,7 +99,7 @@ namespace SauceLabs.Visual
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api = new VisualApi(region, username, accessKey);
+            Api = new VisualApi(region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
@@ -154,11 +120,11 @@ namespace SauceLabs.Visual
         /// <param name="buildId"></param>
         /// <returns>the matching build</returns>
         /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
-        private async Task<VisualBuild> FindBuildById(string buildId)
+        internal async Task<VisualBuild> FindBuildById(string buildId)
         {
             try
             {
-                var build = (await _api.Build(buildId)).EnsureValidResponse().Result;
+                var build = (await Api.Build(buildId)).EnsureValidResponse().Result;
                 return new VisualBuild(build.Id, build.Url, build.Mode);
             }
             catch (VisualClientException)
@@ -173,11 +139,11 @@ namespace SauceLabs.Visual
         /// <param name="customId"></param>
         /// <returns>the matching build or null</returns>
         /// <exception cref="VisualClientException">when build has an invalid state</exception>
-        private async Task<VisualBuild?> FindBuildByCustomId(string customId)
+        internal async Task<VisualBuild?> FindBuildByCustomId(string customId)
         {
             try
             {
-                var build = (await _api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+                var build = (await Api.BuildByCustomId(customId)).EnsureValidResponse().Result;
                 return new VisualBuild(build.Id, build.Url, build.Mode);
             }
             catch (VisualClientException)
@@ -207,30 +173,12 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>CreateBuild</c> creates a new Visual build.
-        /// </summary>
-        /// <param name="options">the options for the build creation</param>
-        /// <returns>a <c>VisualBuild</c> instance</returns>
-        private async Task<VisualBuild> CreateBuild(CreateBuildOptions? options = null)
-        {
-            var result = (await _api.CreateBuild(new CreateBuildIn
-            {
-                Name = options?.Name,
-                Project = options?.Project,
-                Branch = options?.Branch,
-                CustomId = options?.CustomId,
-                DefaultBranch = options?.DefaultBranch,
-            })).EnsureValidResponse();
-            return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
-        }
-
-        /// <summary>
         /// <c>FinishBuild</c> finishes a build
         /// </summary>
         /// <param name="build">the build to finish</param>
         private async Task FinishBuild(VisualBuild build)
         {
-            (await _api.FinishBuild(build.Id)).EnsureValidResponse();
+            (await Api.FinishBuild(build.Id)).EnsureValidResponse();
         }
 
         /// <summary>
@@ -255,7 +203,7 @@ namespace SauceLabs.Visual
             ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
 
-            var result = (await _api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
+            var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
                 name: name,
                 jobId: _jobId,
@@ -273,25 +221,27 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>Cleanup</c> set a correct status to the build. No action should be made after that calling <c>Cleanup</c>.
+        /// <c>Cleanup</c> set a correct status to the build. No action should be made after calling <c>Cleanup</c>.
         /// </summary>
-        public static async Task Cleanup()
+        public async Task Cleanup()
         {
-            if (_sharedBuild == null)
+            if (Build.Close != null)
             {
-                return;
+                await Build.Close();
             }
+        }
 
-            if (_sharedBuild.Close != null)
-            {
-                await _sharedBuild.Close();
-                _sharedBuild = null;
-            }
+        /// <summary>
+        /// <c>CloseBuilds</c> closes all builds that have been open during that test session. No action should be made after calling <c>CloseBuilds</c>.
+        /// </summary>
+        public static async Task CloseBuilds()
+        {
+            await BuildFactory.CloseBuilds();
         }
 
         public void Dispose()
         {
-            _api.Dispose();
+            Api.Dispose();
         }
 
         /// <summary>
@@ -315,7 +265,7 @@ namespace SauceLabs.Visual
                 { DiffStatus.Rejected, 0 }
             };
 
-            var result = (await _api.DiffForTestResult(buildId)).EnsureValidResponse();
+            var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
             result.Result.Nodes
                 .Where(n => _screenshotIds.Contains(n.Id))
                 .Aggregate(dict, (counts, node) =>
