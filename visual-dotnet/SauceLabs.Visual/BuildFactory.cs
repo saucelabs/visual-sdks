@@ -44,7 +44,50 @@ namespace SauceLabs.Visual
             }
         }
 
-        public static async Task CloseBuilds()
+        /// <summary>
+        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
+        /// </summary>
+        /// <param name="api">a <c>VisualApi</c> object</param>
+        /// <param name="buildId">the <c>buildId</c> to look for</param>
+        /// <returns>the matching build</returns>
+        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
+        private static async Task<VisualBuild> FindBuildById(VisualApi api, string buildId)
+        {
+            try
+            {
+                var build = (await api.Build(buildId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
+            {
+                throw new VisualClientException($@"build {buildId} was not found");
+            }
+        }
+
+        /// <summary>
+        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
+        /// </summary>
+        /// <param name="api">a <c>VisualApi</c> object</param>
+        /// <param name="customId">the <c>customId</c> to look for</param>
+        /// <returns>the matching build</returns>
+        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
+        private static async Task<VisualBuild?> FindBuildByCustomId(VisualApi api, string customId)
+        {
+            try
+            {
+                var build = (await api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+                return new VisualBuild(build.Id, build.Url, build.Mode);
+            }
+            catch (VisualClientException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// <c>CloseBuilds</c> closes all build that are still open.
+        /// </summary>
+        internal static async Task CloseBuilds()
         {
             var builds = _builds.Values.ToArray();
             foreach (var build in builds)
@@ -64,7 +107,7 @@ namespace SauceLabs.Visual
         /// <returns>a <c>VisualBuild</c> instance</returns>
         private static async Task<VisualBuild> Create(VisualClient client, CreateBuildOptions options)
         {
-            var build = await GetEffectiveBuild(client, EnvVars.BuildId, EnvVars.CustomId);
+            var build = await GetEffectiveBuild(client.Api, EnvVars.BuildId, EnvVars.CustomId);
             if (build != null)
             {
                 if (!build.IsRunning())
@@ -101,16 +144,23 @@ namespace SauceLabs.Visual
             return build;
         }
 
-        private static async Task<VisualBuild?> GetEffectiveBuild(VisualClient client, string? buildId, string? customId)
+        /// <summary>
+        /// <c>GetEffectiveBuild</c> tries to find the build matching the criterion provided by the user.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="buildId"></param>
+        /// <param name="customId"></param>
+        /// <returns></returns>
+        private static async Task<VisualBuild?> GetEffectiveBuild(VisualApi api, string? buildId, string? customId)
         {
             if (!StringUtils.IsNullOrEmpty(buildId))
             {
-                return await client.FindBuildById(buildId!.Trim());
+                return await FindBuildById(api, buildId!.Trim());
             }
 
             if (!StringUtils.IsNullOrEmpty(customId))
             {
-                return await client.FindBuildByCustomId(customId!.Trim());
+                return await FindBuildByCustomId(api, customId!.Trim());
             }
             return null;
         }

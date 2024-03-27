@@ -115,64 +115,6 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
-        /// </summary>
-        /// <param name="buildId"></param>
-        /// <returns>the matching build</returns>
-        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
-        internal async Task<VisualBuild> FindBuildById(string buildId)
-        {
-            try
-            {
-                var build = (await Api.Build(buildId)).EnsureValidResponse().Result;
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
-            {
-                throw new VisualClientException($@"build {buildId} was not found");
-            }
-        }
-
-        /// <summary>
-        /// <c>FindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
-        /// </summary>
-        /// <param name="customId"></param>
-        /// <returns>the matching build or null</returns>
-        /// <exception cref="VisualClientException">when build has an invalid state</exception>
-        internal async Task<VisualBuild?> FindBuildByCustomId(string customId)
-        {
-            try
-            {
-                var build = (await Api.BuildByCustomId(customId)).EnsureValidResponse().Result;
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// <c>GetEffectiveBuild</c> tries to find the build matching the criterion provided by the user.
-        /// </summary>
-        /// <param name="buildId"></param>
-        /// <param name="customId"></param>
-        /// <returns></returns>
-        private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
-        {
-            if (!StringUtils.IsNullOrEmpty(buildId))
-            {
-                return await FindBuildById(buildId!.Trim());
-            }
-
-            if (!StringUtils.IsNullOrEmpty(customId))
-            {
-                return await FindBuildByCustomId(customId!.Trim());
-            }
-            return null;
-        }
-
-        /// <summary>
         /// <c>FinishBuild</c> finishes a build
         /// </summary>
         /// <param name="build">the build to finish</param>
@@ -184,9 +126,9 @@ namespace SauceLabs.Visual
         /// <summary>
         /// <c>VisualCheck</c> captures a screenshot and queue it for processing.
         /// </summary>
-        /// <param name="build">the build that will contain the screenshot</param>
         /// <param name="name">the name of the screenshot</param>
         /// <param name="options">the configuration for the screenshot capture and comparison</param>
+        /// <param name="callerMemberName">the member name of the caller (automated) </param>
         /// <returns></returns>
         public Task<string> VisualCheck(string name, VisualCheckOptions? options = null,
             [CallerMemberName] string callerMemberName = "")
