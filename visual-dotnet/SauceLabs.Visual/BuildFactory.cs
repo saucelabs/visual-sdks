@@ -8,24 +8,24 @@ namespace SauceLabs.Visual
 {
     internal static class BuildFactory
     {
-        private static readonly Dictionary<Region, VisualBuild> _builds = new Dictionary<Region, VisualBuild>();
+        private static readonly Dictionary<string, VisualBuild> _builds = new Dictionary<string, VisualBuild>();
 
         internal static async Task<VisualBuild> Get(VisualClient client, CreateBuildOptions options)
         {
             // Check if there is already a build for the current region.
-            if (_builds.TryGetValue(client.Api.Region, out var build))
+            if (_builds.TryGetValue(client.Api.Region.Name, out var build))
             {
                 return build;
             }
 
             var createdBuild = await Create(client, options);
-            _builds[client.Api.Region] = createdBuild;
+            _builds[client.Api.Region.Name] = createdBuild;
             return createdBuild;
         }
 
         private static void Disregard(VisualBuild build)
         {
-            Region? key = null;
+            string? key = null;
             var enumerator = _builds.GetEnumerator();
             while (enumerator.MoveNext())
             {
