@@ -82,7 +82,7 @@ namespace SauceLabs.Visual
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            Build = await BuildFactory.Get(this, buildOptions);
+            Build = await BuildFactory.Get(Api, buildOptions);
         }
 
         /// <summary>

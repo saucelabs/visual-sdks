@@ -10,16 +10,16 @@ namespace SauceLabs.Visual
     {
         private static readonly Dictionary<string, VisualBuild> Builds = new Dictionary<string, VisualBuild>();
 
-        internal static async Task<VisualBuild> Get(VisualClient client, CreateBuildOptions options)
+        internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
             // Check if there is already a build for the current region.
-            if (Builds.TryGetValue(client.Api.Region.Name, out var build))
+            if (Builds.TryGetValue(api.Region.Name, out var build))
             {
                 return build;
             }
 
-            var createdBuild = await Create(client, options);
-            Builds[client.Api.Region.Name] = createdBuild;
+            var createdBuild = await Create(api, options);
+            Builds[api.Region.Name] = createdBuild;
             return createdBuild;
         }
 
@@ -109,9 +109,9 @@ namespace SauceLabs.Visual
         /// <param name="client">the client used for the build creation</param>
         /// <param name="options">the options for the build creation</param>
         /// <returns>a <c>VisualBuild</c> instance</returns>
-        private static async Task<VisualBuild> Create(VisualClient client, CreateBuildOptions options)
+        private static async Task<VisualBuild> Create(VisualApi api, CreateBuildOptions options)
         {
-            var build = await GetEffectiveBuild(client.Api, EnvVars.BuildId, EnvVars.CustomId);
+            var build = await GetEffectiveBuild(api, EnvVars.BuildId, EnvVars.CustomId);
             if (build != null)
             {
                 if (!build.IsRunning())
@@ -125,7 +125,7 @@ namespace SauceLabs.Visual
             }
 
             options.CustomId ??= EnvVars.CustomId;
-            var result = (await client.Api.CreateBuild(new CreateBuildIn
+            var result = (await api.CreateBuild(new CreateBuildIn
             {
                 Name = options.Name,
                 Project = options.Project,
@@ -136,10 +136,10 @@ namespace SauceLabs.Visual
 
             build = new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode)
             {
-                IsExternal = false,
+                IsExternal = false
             };
 
-            var copiedApi = client.Api.Clone();
+            var copiedApi = api.Clone();
             build.Close = async () =>
             {
                 await copiedApi.FinishBuild(build.Id);
