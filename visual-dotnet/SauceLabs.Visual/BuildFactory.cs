@@ -23,6 +23,10 @@ namespace SauceLabs.Visual
             return createdBuild;
         }
 
+        /// <summary>
+        /// <c>Disregard</c> removes the build from the known builds.
+        /// </summary>
+        /// <param name="build">the build to remove</param>
         private static void Disregard(VisualBuild build)
         {
             string? key = null;
