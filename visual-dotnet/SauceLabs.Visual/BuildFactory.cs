@@ -29,19 +29,7 @@ namespace SauceLabs.Visual
         /// <param name="build">the build to remove</param>
         private static void Disregard(VisualBuild build)
         {
-            string? key = null;
-            var enumerator = Builds.GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                if (enumerator.Current.Value != build)
-                {
-                    continue;
-                }
-                key = enumerator.Current.Key;
-                break;
-            }
-            enumerator.Dispose();
-
+            var key = (from entry in Builds where entry.Value == build select entry.Key).FirstOrDefault();
             if (key != null)
             {
                 Builds.Remove(key);
