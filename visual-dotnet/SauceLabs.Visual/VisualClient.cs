@@ -171,7 +171,7 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>CloseBuilds</c> closes all builds that have been open during that test session. No action should be made after calling <c>CloseBuilds</c>.
+        /// <c>Finish</c> ensures that all known build are closed. No action should be made after calling <c>Finish</c>.
         /// </summary>
         public static async Task Finish()
         {
