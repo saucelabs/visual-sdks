@@ -50,13 +50,37 @@ namespace SauceLabs.Visual
             var key = FindRegionByBuild(build);
             if (key != null)
             {
-                var entry = Builds[key];
+                await Close(key, Builds[key]);
+            }
+        }
+
+        /// <summary>
+        /// <c>Close</c> finishes and forget about <c>build</c>
+        /// </summary>
+        /// <param name="region">the build to finish</param>
+        /// <param name="entry">the api/build pair</param>
+        private static async Task Close(string region, ApiBuildPair entry)
+        {
+            if (!entry.Build.IsExternal)
+            {
                 if (!entry.Build.IsExternal)
                 {
                     await entry.Api.FinishBuild(entry.Build.Id);
                 }
+            }
+            Builds.Remove(region);
+            entry.Api.Dispose();
+        }
 
-                Builds.Remove(key);
+        /// <summary>
+        /// <c>CloseBuilds</c> closes all build that are still open.
+        /// </summary>
+        internal static async Task CloseBuilds()
+        {
+            var regions = Builds.Keys;
+            foreach (var region in regions)
+            {
+                await Close(region, Builds[region]);
             }
         }
 
@@ -97,24 +121,6 @@ namespace SauceLabs.Visual
             catch (VisualClientException)
             {
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// <c>CloseBuilds</c> closes all build that are still open.
-        /// </summary>
-        internal static async Task CloseBuilds()
-        {
-            var regions = Builds.Keys.ToArray();
-            foreach (var region in regions)
-            {
-                var entry = Builds[region];
-                if (!entry.Build.IsExternal)
-                {
-                    await entry.Api.FinishBuild(entry.Build.Id);
-                }
-                entry.Api.Dispose();
-                Builds.Remove(region);
             }
         }
 
