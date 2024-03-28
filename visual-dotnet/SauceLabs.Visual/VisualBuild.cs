@@ -14,6 +14,9 @@ namespace SauceLabs.Visual
 
         public BuildMode Mode { get; internal set; }
 
+        /// <summary>
+        /// <c>IsExternal</c> represents if the build lifecycle is managed outside of the current context.
+        /// </summary>
         internal bool IsExternal { get; set; } = false;
 
         internal VisualBuild(string id, string url, BuildMode mode)
