@@ -9,24 +9,24 @@ namespace SauceLabs.Visual
 {
     internal static class BuildFactory
     {
-        private static readonly Dictionary<string, Tuple<VisualApi, VisualBuild>> Builds = new Dictionary<string, Tuple<VisualApi, VisualBuild>>();
+        private static readonly Dictionary<string, ApiBuildPair> Builds = new Dictionary<string, ApiBuildPair>();
 
         internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
             // Check if there is already a build for the current region.
             if (Builds.TryGetValue(api.Region.Name, out var build))
             {
-                return build.Item2;
+                return build.Build;
             }
 
             var createdBuild = await Create(api, options);
-            Builds[api.Region.Name] = new Tuple<VisualApi, VisualBuild>(api.Clone(), createdBuild);
+            Builds[api.Region.Name] = new ApiBuildPair(api.Clone(), createdBuild);
             return createdBuild;
         }
 
         private static string? FindRegionByBuild(VisualBuild build)
         {
-            return (from entry in Builds where entry.Value.Item2 == build select entry.Key).FirstOrDefault();
+            return (from entry in Builds where entry.Value.Build == build select entry.Key).FirstOrDefault();
         }
 
         internal static async Task Close(VisualBuild build)
@@ -35,7 +35,7 @@ namespace SauceLabs.Visual
             if (key != null)
             {
                 var entry = Builds[key];
-                await entry.Item1.FinishBuild(entry.Item2.Id);
+                await entry.Api.FinishBuild(entry.Build.Id);
                 Builds.Remove(key);
             }
         }
@@ -101,9 +101,9 @@ namespace SauceLabs.Visual
             var builds = Builds.Values.ToArray();
             foreach (var entry in builds)
             {
-                if (!entry.Item2.IsExternal)
+                if (!entry.Build.IsExternal)
                 {
-                    await entry.Item1.FinishBuild(entry.Item2.Id);
+                    await entry.Api.FinishBuild(entry.Build.Id);
                 }
             }
         }
