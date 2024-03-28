@@ -167,16 +167,13 @@ namespace SauceLabs.Visual
         /// </summary>
         public async Task Cleanup()
         {
-            if (Build.Close != null)
-            {
-                await Build.Close();
-            }
+            await BuildFactory.Close(Build);
         }
 
         /// <summary>
         /// <c>CloseBuilds</c> closes all builds that have been open during that test session. No action should be made after calling <c>CloseBuilds</c>.
         /// </summary>
-        public static async Task CloseBuilds()
+        public static async Task Finish()
         {
             await BuildFactory.CloseBuilds();
         }

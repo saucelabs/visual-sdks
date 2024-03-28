@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,19 +9,35 @@ namespace SauceLabs.Visual
 {
     internal static class BuildFactory
     {
-        private static readonly Dictionary<string, VisualBuild> Builds = new Dictionary<string, VisualBuild>();
+        private static readonly Dictionary<string, Tuple<VisualApi, VisualBuild>> Builds = new Dictionary<string, Tuple<VisualApi, VisualBuild>>();
 
         internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
             // Check if there is already a build for the current region.
             if (Builds.TryGetValue(api.Region.Name, out var build))
             {
-                return build;
+                return build.Item2;
             }
 
             var createdBuild = await Create(api, options);
-            Builds[api.Region.Name] = createdBuild;
+            Builds[api.Region.Name] = new Tuple<VisualApi, VisualBuild>(api.Clone(), createdBuild);
             return createdBuild;
+        }
+
+        private static string? FindRegionByBuild(VisualBuild build)
+        {
+            return (from entry in Builds where entry.Value.Item2 == build select entry.Key).FirstOrDefault();
+        }
+
+        internal static async Task Close(VisualBuild build)
+        {
+            var key = FindRegionByBuild(build);
+            if (key != null)
+            {
+                var entry = Builds[key];
+                await entry.Item1.FinishBuild(entry.Item2.Id);
+                Builds.Remove(key);
+            }
         }
 
         /// <summary>
@@ -29,7 +46,7 @@ namespace SauceLabs.Visual
         /// <param name="build">the build to remove</param>
         private static void Disregard(VisualBuild build)
         {
-            var key = (from entry in Builds where entry.Value == build select entry.Key).FirstOrDefault();
+            var key = FindRegionByBuild(build);
             if (key != null)
             {
                 Builds.Remove(key);
@@ -82,11 +99,11 @@ namespace SauceLabs.Visual
         internal static async Task CloseBuilds()
         {
             var builds = Builds.Values.ToArray();
-            foreach (var build in builds)
+            foreach (var entry in builds)
             {
-                if (build.Close != null)
+                if (!entry.Item2.IsExternal)
                 {
-                    await build.Close();
+                    await entry.Item1.FinishBuild(entry.Item2.Id);
                 }
             }
         }
@@ -94,7 +111,7 @@ namespace SauceLabs.Visual
         /// <summary>
         /// <c>CreateBuild</c> creates a new Visual build.
         /// </summary>
-        /// <param name="client">the client used for the build creation</param>
+        /// <param name="api">the api client used for the build creation</param>
         /// <param name="options">the options for the build creation</param>
         /// <returns>a <c>VisualBuild</c> instance</returns>
         private static async Task<VisualBuild> Create(VisualApi api, CreateBuildOptions options)
@@ -108,7 +125,6 @@ namespace SauceLabs.Visual
                 }
 
                 build.IsExternal = true;
-                build.Close = async () => Disregard(build);
                 return build;
             }
 
@@ -125,13 +141,6 @@ namespace SauceLabs.Visual
             build = new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode)
             {
                 IsExternal = false
-            };
-
-            var copiedApi = api.Clone();
-            build.Close = async () =>
-            {
-                await copiedApi.FinishBuild(build.Id);
-                Disregard(build);
             };
             return build;
         }
