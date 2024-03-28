@@ -98,13 +98,16 @@ namespace SauceLabs.Visual
         /// </summary>
         internal static async Task CloseBuilds()
         {
-            var builds = Builds.Values.ToArray();
-            foreach (var entry in builds)
+            var regions = Builds.Keys.ToArray();
+            foreach (var region in regions)
             {
+                var entry = Builds[region];
                 if (!entry.Build.IsExternal)
                 {
                     await entry.Api.FinishBuild(entry.Build.Id);
                 }
+                entry.Api.Dispose();
+                Builds.Remove(region);
             }
         }
 
