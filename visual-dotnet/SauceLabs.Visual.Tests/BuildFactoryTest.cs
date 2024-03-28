@@ -38,7 +38,8 @@ public class BuildFactoryTest
             Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_username}:{_accessKey}"));
         var regions = new[] { Region.Staging, Region.UsEast4, Region.EuCentral1, Region.UsWest1 };
         // BackendDefinitionBehavior.Always;
-        foreach (var r in regions){
+        foreach (var r in regions)
+        {
             MockedHandler
                 .When(r.Value.ToString())
                 .WithHeaders($"Authorization: Basic {base64EncodedAuthenticationString}")
