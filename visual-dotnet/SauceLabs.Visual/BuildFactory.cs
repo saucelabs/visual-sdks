@@ -51,20 +51,11 @@ namespace SauceLabs.Visual
             if (key != null)
             {
                 var entry = Builds[key];
-                await entry.Api.FinishBuild(entry.Build.Id);
-                Builds.Remove(key);
-            }
-        }
+                if (!entry.Build.IsExternal)
+                {
+                    await entry.Api.FinishBuild(entry.Build.Id);
+                }
 
-        /// <summary>
-        /// <c>Disregard</c> removes the build from the known builds.
-        /// </summary>
-        /// <param name="build">the build to remove</param>
-        private static void Disregard(VisualBuild build)
-        {
-            var key = FindRegionByBuild(build);
-            if (key != null)
-            {
                 Builds.Remove(key);
             }
         }
