@@ -10,6 +10,14 @@ namespace SauceLabs.Visual
     {
         private static readonly Dictionary<string, ApiBuildPair> Builds = new Dictionary<string, ApiBuildPair>();
 
+        /// <summary>
+        /// <c>Get</c> returns the build matching with the requested region.
+        /// If none is available, it returns a newly created build with <c>options</c>.
+        /// It will also clone the input <c>api</c> to be able to close the build later.
+        /// </summary>
+        /// <param name="api">the api to use to create build</param>
+        /// <param name="options">the options to use when creating the build</param>
+        /// <returns></returns>
         internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
             // Check if there is already a build for the current region.
@@ -23,11 +31,20 @@ namespace SauceLabs.Visual
             return createdBuild;
         }
 
+        /// <summary>
+        /// <c>FindRegionByBuild</c> returns the region matching the passed build.
+        /// </summary>
+        /// <param name="build"></param>
+        /// <returns>the matching region name</returns>
         private static string? FindRegionByBuild(VisualBuild build)
         {
             return (from entry in Builds where entry.Value.Build == build select entry.Key).FirstOrDefault();
         }
 
+        /// <summary>
+        /// <c>Close</c> finishes and forget about <c>build</c>
+        /// </summary>
+        /// <param name="build">the build to finish</param>
         internal static async Task Close(VisualBuild build)
         {
             var key = FindRegionByBuild(build);
