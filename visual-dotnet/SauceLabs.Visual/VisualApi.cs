@@ -7,19 +7,19 @@ using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
-using OpenQA.Selenium;
 using SauceLabs.Visual.GraphQL;
 using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
 {
-    internal class VisualApi<T> : IDisposable where T : IHasCapabilities, IHasSessionId
+    internal class VisualApi : IDisposable
     {
+        internal readonly Region Region;
         private readonly string _username;
         private readonly string _accessKey;
         private readonly GraphQLHttpClient _graphQlClient;
 
-        public VisualApi(T webdriver, Region region, string username, string accessKey, HttpClient? httpClient = null)
+        public VisualApi(Region region, string username, string accessKey, HttpClient? httpClient = null)
         {
 
             if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
@@ -27,6 +27,8 @@ namespace SauceLabs.Visual
                 throw new VisualClientException(
                     "Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
             }
+
+            Region = region;
             _username = username.Trim();
             _accessKey = accessKey.Trim();
 
@@ -116,6 +118,11 @@ namespace SauceLabs.Visual
         public void Dispose()
         {
             _graphQlClient.Dispose();
+        }
+
+        internal VisualApi Clone()
+        {
+            return new VisualApi(Region, _username, _accessKey);
         }
     }
 }

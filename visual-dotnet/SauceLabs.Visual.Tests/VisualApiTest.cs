@@ -12,7 +12,7 @@ namespace SauceLabs.Visual.Tests;
 
 public class VisualApiTest
 {
-    internal VisualApi<MockedWebDriver>? Api { get; set; }
+    internal VisualApi? Api { get; set; }
     internal MockedWebDriver? WdMock { get; set; }
     internal MockHttpMessageHandler? MockedHandler { get; set; }
 
@@ -27,7 +27,7 @@ public class VisualApiTest
 
         var caps = new MockedCapabilities(new Dictionary<string, object> { { "jobUuid", _jobUuid } });
         WdMock = new MockedWebDriver(caps, _jobUuid);
-        Api = new VisualApi<MockedWebDriver>(WdMock, Region.Staging, _username, _accessKey, MockedHandler.ToHttpClient());
+        Api = new VisualApi(Region.Staging, _username, _accessKey, MockedHandler.ToHttpClient());
     }
 
     [Test]
