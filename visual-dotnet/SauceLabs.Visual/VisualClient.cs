@@ -17,13 +17,12 @@ namespace SauceLabs.Visual
     /// </summary>
     public class VisualClient : IDisposable
     {
-        private readonly VisualApi<WebDriver> _api;
+        internal readonly VisualApi Api;
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
         public VisualBuild Build { get; private set; }
-        private bool _externalBuild;
         public bool CaptureDom { get; set; } = false;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -79,27 +78,11 @@ namespace SauceLabs.Visual
 
         private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
-            var response = await this._api.WebDriverSessionInfo(_jobId, _sessionId);
+            var response = await Api.WebDriverSessionInfo(_jobId, _sessionId);
             var metadata = response.EnsureValidResponse();
             _sessionMetadataBlob = metadata.Result.Blob;
 
-            var build = await GetEffectiveBuild(EnvVars.BuildId, EnvVars.CustomId);
-            if (build != null)
-            {
-                if (!build.IsRunning())
-                {
-                    throw new VisualClientException($"build {build.Id} is not RUNNING");
-                }
-                Build = build;
-                _externalBuild = true;
-            }
-            else
-            {
-                buildOptions.CustomId ??= EnvVars.CustomId;
-                var createBuildResponse = await CreateBuild(buildOptions);
-                Build = new VisualBuild(createBuildResponse.Id, createBuildResponse.Url, createBuildResponse.Mode);
-                _externalBuild = false;
-            }
+            Build = await BuildFactory.Get(Api, buildOptions);
         }
 
         /// <summary>
@@ -116,7 +99,7 @@ namespace SauceLabs.Visual
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            _api = new VisualApi<WebDriver>(wd, region, username, accessKey);
+            Api = new VisualApi(region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
@@ -132,96 +115,20 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>FindBuildById</c> returns the build identified by <c>buildId</c>
-        /// </summary>
-        /// <param name="buildId"></param>
-        /// <returns>the matching build</returns>
-        /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
-        private async Task<VisualBuild> FindBuildById(string buildId)
-        {
-            try
-            {
-                var build = (await _api.Build(buildId)).EnsureValidResponse().Result;
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
-            {
-                throw new VisualClientException($@"build {buildId} was not found");
-            }
-        }
-
-        /// <summary>
-        /// <c>FindBuildByCustomId</c> returns the build identified by <c>customId</c> or null if not found
-        /// </summary>
-        /// <param name="customId"></param>
-        /// <returns>the matching build or null</returns>
-        /// <exception cref="VisualClientException">when build has an invalid state</exception>
-        private async Task<VisualBuild?> FindBuildByCustomId(string customId)
-        {
-            try
-            {
-                var build = (await _api.BuildByCustomId(customId)).EnsureValidResponse().Result;
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// <c>GetEffectiveBuild</c> tries to find the build matching the criterion provided by the user.
-        /// </summary>
-        /// <param name="buildId"></param>
-        /// <param name="customId"></param>
-        /// <returns></returns>
-        private async Task<VisualBuild?> GetEffectiveBuild(string? buildId, string? customId)
-        {
-            if (!StringUtils.IsNullOrEmpty(buildId))
-            {
-                return await FindBuildById(buildId!.Trim());
-            }
-
-            if (!StringUtils.IsNullOrEmpty(customId))
-            {
-                return await FindBuildByCustomId(customId!.Trim());
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// <c>CreateBuild</c> creates a new Visual build.
-        /// </summary>
-        /// <param name="options">the options for the build creation</param>
-        /// <returns>a <c>VisualBuild</c> instance</returns>
-        private async Task<VisualBuild> CreateBuild(CreateBuildOptions? options = null)
-        {
-            var result = (await _api.CreateBuild(new CreateBuildIn
-            {
-                Name = options?.Name,
-                Project = options?.Project,
-                Branch = options?.Branch,
-                CustomId = options?.CustomId,
-                DefaultBranch = options?.DefaultBranch,
-            })).EnsureValidResponse();
-            return new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode);
-        }
-
-        /// <summary>
         /// <c>FinishBuild</c> finishes a build
         /// </summary>
         /// <param name="build">the build to finish</param>
         private async Task FinishBuild(VisualBuild build)
         {
-            (await _api.FinishBuild(build.Id)).EnsureValidResponse();
+            (await Api.FinishBuild(build.Id)).EnsureValidResponse();
         }
 
         /// <summary>
         /// <c>VisualCheck</c> captures a screenshot and queue it for processing.
         /// </summary>
-        /// <param name="build">the build that will contain the screenshot</param>
         /// <param name="name">the name of the screenshot</param>
         /// <param name="options">the configuration for the screenshot capture and comparison</param>
+        /// <param name="callerMemberName">the member name of the caller (automated) </param>
         /// <returns></returns>
         public Task<string> VisualCheck(string name, VisualCheckOptions? options = null,
             [CallerMemberName] string callerMemberName = "")
@@ -238,7 +145,7 @@ namespace SauceLabs.Visual
             ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
 
-            var result = (await _api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
+            var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
                 name: name,
                 jobId: _jobId,
@@ -256,19 +163,24 @@ namespace SauceLabs.Visual
         }
 
         /// <summary>
-        /// <c>Cleanup</c> set a correct status to the build. No action should be made after that calling <c>Cleanup</c>.
+        /// <c>Cleanup</c> set a correct status to the build. No action should be made after calling <c>Cleanup</c>.
         /// </summary>
         public async Task Cleanup()
         {
-            if (!_externalBuild)
-            {
-                await FinishBuild(Build);
-            }
+            await BuildFactory.Close(Build);
+        }
+
+        /// <summary>
+        /// <c>Finish</c> ensures that all known build are closed. No action should be made after calling <c>Finish</c>.
+        /// </summary>
+        public static async Task Finish()
+        {
+            await BuildFactory.CloseBuilds();
         }
 
         public void Dispose()
         {
-            _api.Dispose();
+            Api.Dispose();
         }
 
         /// <summary>
@@ -292,7 +204,7 @@ namespace SauceLabs.Visual
                 { DiffStatus.Rejected, 0 }
             };
 
-            var result = (await _api.DiffForTestResult(buildId)).EnsureValidResponse();
+            var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
             result.Result.Nodes
                 .Where(n => _screenshotIds.Contains(n.Id))
                 .Aggregate(dict, (counts, node) =>

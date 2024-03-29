@@ -8,17 +8,20 @@ namespace SauceLabs.Visual
     /// </summary>
     public class Region
     {
-        private Region(Uri value)
+        private Region(string name, Uri value)
         {
             Value = value;
+            Name = name;
         }
 
-        private Region(string value)
+        private Region(string name, string value)
         {
+            Name = name;
             Value = new Uri(value);
         }
 
         public Uri Value { get; }
+        public string Name { get; }
 
         public override string ToString()
         {
@@ -43,9 +46,9 @@ namespace SauceLabs.Visual
             };
         }
 
-        public static Region UsWest1 => new Region("https://api.us-west-1.saucelabs.com/v1/visual/graphql");
-        public static Region UsEast4 => new Region("https://api.us-east-4.saucelabs.com/v1/visual/graphql");
-        public static Region EuCentral1 => new Region("https://api.eu-central-1.saucelabs.com/v1/visual/graphql");
-        public static Region Staging => new Region("https://api.staging.saucelabs.net/v1/visual/graphql");
+        public static Region UsWest1 => new Region("us-west-1", "https://api.us-west-1.saucelabs.com/v1/visual/graphql");
+        public static Region UsEast4 => new Region("us-east-4", "https://api.us-east-4.saucelabs.com/v1/visual/graphql");
+        public static Region EuCentral1 => new Region("eu-central-1", "https://api.eu-central-1.saucelabs.com/v1/visual/graphql");
+        public static Region Staging => new Region("staging", "https://api.staging.saucelabs.net/v1/visual/graphql");
     }
 }
