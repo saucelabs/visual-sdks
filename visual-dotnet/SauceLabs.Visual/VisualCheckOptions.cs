@@ -26,7 +26,10 @@ namespace SauceLabs.Visual
         /// </summary>
         public string? TestName { get; set; }
 
-        private bool HasCompleteTestContext() => !string.IsNullOrEmpty(SuiteName) & !string.IsNullOrEmpty(TestName);
+        private bool HasCompleteTestContext()
+        {
+            return string.IsNullOrEmpty(SuiteName) & !string.IsNullOrEmpty(TestName);
+        }
 
         internal void EnsureTestContextIsPopulated(string callerMemberName, string? previousSuiteName)
         {
