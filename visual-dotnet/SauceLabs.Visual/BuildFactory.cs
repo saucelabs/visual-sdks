@@ -38,7 +38,7 @@ namespace SauceLabs.Visual
         /// <returns>the matching region name</returns>
         private static string? FindRegionByBuild(VisualBuild build)
         {
-            return (from entry in Builds where entry.Value.Build == build select entry.Key).FirstOrDefault();
+            return Builds.Where(n => n.Value.Build == build).Select(n => n.Key).FirstOrDefault();
         }
 
         /// <summary>
@@ -63,10 +63,7 @@ namespace SauceLabs.Visual
         {
             if (!entry.Build.IsExternal)
             {
-                if (!entry.Build.IsExternal)
-                {
-                    await entry.Api.FinishBuild(entry.Build.Id);
-                }
+                await entry.Api.FinishBuild(entry.Build.Id);
             }
             Builds.Remove(region);
             entry.Api.Dispose();
