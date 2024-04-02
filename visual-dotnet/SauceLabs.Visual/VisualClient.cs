@@ -156,7 +156,8 @@ namespace SauceLabs.Visual
                 captureDom: options.CaptureDom ?? CaptureDom,
                 clipSelector: options.ClipSelector,
                 suiteName: options.SuiteName,
-                testName: options.TestName
+                testName: options.TestName,
+                fullPageConfig: options.FullPageConfig?.ToFullPageConfigIn()
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
