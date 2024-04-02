@@ -11,23 +11,12 @@ namespace SauceLabs.Visual
     /// </summary>
     public class VisualCheckOptions
     {
-        private FullPageConfig? _fullPageConfig;
         public DiffingMethod? DiffingMethod { get; set; }
         public IgnoreRegion[]? IgnoreRegions { get; set; }
         public IWebElement[]? IgnoreElements { get; set; }
         public bool? CaptureDom { get; set; }
         public bool? FullPage { get; set; }
-        public FullPageConfig? FullPageConfig
-        {
-            get
-            {
-                return FullPage != false ? _fullPageConfig ?? new FullPageConfig() : null;
-            }
-            set
-            {
-                _fullPageConfig = value;
-            }
-        }
+        public FullPageConfig? FullPageConfig { get; set; }
         public string? ClipSelector { get; set; }
 
         /// <summary>
