@@ -21,7 +21,7 @@ namespace SauceLabs.Visual
         {
             get
             {
-                return _fullPageConfig ?? (FullPage == true ? new FullPageConfig() : null);
+                return FullPage != false ? _fullPageConfig ?? new FullPageConfig() : null;
             }
             set
             {
