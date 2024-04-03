@@ -144,7 +144,12 @@ namespace SauceLabs.Visual
             var ignored = new List<RegionIn>();
             ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            var fullPageConfig = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
+
+            FullPageConfigIn? fullPageConfigIn = null;
+            if (options.FullPage == true)
+            {
+                fullPageConfigIn = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
+            }
 
             var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
@@ -158,7 +163,7 @@ namespace SauceLabs.Visual
                 clipSelector: options.ClipSelector,
                 suiteName: options.SuiteName,
                 testName: options.TestName,
-                fullPageConfig: options.FullPage != false ? fullPageConfig : null
+                fullPageConfig: fullPageConfigIn
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
