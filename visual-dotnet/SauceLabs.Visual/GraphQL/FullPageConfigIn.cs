@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace SauceLabs.Visual.GraphQL
@@ -8,6 +8,6 @@ namespace SauceLabs.Visual.GraphQL
         [JsonProperty("delayAfterScrollMs")]
         public int? DelayAfterScrollMs { get; set; }
         [JsonProperty("hideAfterFirstScroll")]
-        public IEnumerable? HideAfterFirstScroll { get; set; }
+        public IEnumerable<string>? HideAfterFirstScroll { get; set; }
     }
 }

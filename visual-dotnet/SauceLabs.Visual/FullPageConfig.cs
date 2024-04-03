@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using SauceLabs.Visual.GraphQL;
 
 namespace SauceLabs.Visual
@@ -6,7 +6,7 @@ namespace SauceLabs.Visual
     public class FullPageConfig
     {
         public int? DelayAfterScrollMs { get; set; }
-        public IEnumerable? HideAfterFirstScroll { get; set; }
+        public IEnumerable<string>? HideAfterFirstScroll { get; set; }
 
         internal FullPageConfigIn ToFullPageConfigIn()
         {
