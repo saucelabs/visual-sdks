@@ -16,20 +16,17 @@ class SauceLabsVisual:
         self._create_client()
 
     def _create_client(self):
-        region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
         username = environ.get("SAUCE_USERNAME")
         access_key = environ.get("SAUCE_ACCESS_KEY")
 
         if username is None or access_key is None:
             raise Exception(
-                'Sauce Labs credentials not set. Please check that you set correctly your `user` '
-                'and `key`.'
+                'Sauce Labs credentials not set. Please check that you set correctly your '
+                '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
 
-        transport = AIOHTTPTransport(
-            url=region_url,
-            auth=BasicAuth(environ.get("SAUCE_USERNAME"), environ.get("SAUCE_ACCESS_KEY")),
-        )
+        region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
+        transport = AIOHTTPTransport(url=region_url, auth=BasicAuth(username, access_key))
         self.client = Client(transport=transport)
 
     def get_client(self) -> Client:
