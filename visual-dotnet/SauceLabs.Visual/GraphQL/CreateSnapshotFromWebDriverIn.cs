@@ -28,6 +28,8 @@ namespace SauceLabs.Visual.GraphQL
 
         [JsonProperty("clipSelector")]
         public string? ClipSelector { get; set; }
+        [JsonProperty("fullPageConfig")]
+        public FullPageConfigIn? FullPageConfig { get; set; }
 
         public CreateSnapshotFromWebDriverIn(
             string buildUuid,
@@ -40,7 +42,8 @@ namespace SauceLabs.Visual.GraphQL
             bool captureDom,
             string? clipSelector,
             string? suiteName,
-            string? testName
+            string? testName,
+            FullPageConfigIn? fullPageConfig
         )
         {
             BuildUuid = buildUuid;
@@ -54,6 +57,7 @@ namespace SauceLabs.Visual.GraphQL
             ClipSelector = clipSelector;
             SuiteName = suiteName;
             TestName = testName;
+            FullPageConfig = fullPageConfig;
         }
     }
 }

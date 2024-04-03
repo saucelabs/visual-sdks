@@ -15,6 +15,8 @@ namespace SauceLabs.Visual
         public IgnoreRegion[]? IgnoreRegions { get; set; }
         public IWebElement[]? IgnoreElements { get; set; }
         public bool? CaptureDom { get; set; }
+        public bool? FullPage { get; set; }
+        public FullPageConfig? FullPageConfig { get; set; }
         public string? ClipSelector { get; set; }
 
         /// <summary>
