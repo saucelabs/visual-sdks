@@ -1,0 +1,10 @@
+[project]
+name = "saucelabs_visual"
+version = "0.0.0"
+dependencies=[
+    "aiohttp",
+    "gql",
+]
+
+[tool.setuptools.packages.find]
+where = ["src/"]
