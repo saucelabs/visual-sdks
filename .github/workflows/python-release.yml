@@ -51,9 +51,11 @@ jobs:
         id: upgrade
         run: |
           bump-my-version bump ${{ github.event.inputs.releaseType }}
-          newVersion=$(bump-my-version show current_version)
+          new_version=$(bump-my-version show current_version)
+          tag_name="python-$new_version"
           git push
-          git push origin "python-$newVersion"
+          git push origin "$tag_name"
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
       - name: Build
         run: python -m build
@@ -63,3 +65,11 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_KEY }}
         run: twine upload dist/*
+
+      - name: Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          tag_name: ${{ steps.upgrade.outputs.tag_name }}
+          files: visual-python/dist/*
+          generate_release_notes: true
