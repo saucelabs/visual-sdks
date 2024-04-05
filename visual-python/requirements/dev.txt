@@ -1,0 +1,5 @@
+# Development & local build requirements
+-r user.txt
+-r build.txt
+robotframework==7.0.0
+robotframework-seleniumlibrary==6.2.0

@@ -1,0 +1,75 @@
+name: Python (Release)
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Release type - major, minor or patch'
+        required: true
+        default: 'minor'
+        options:
+          - 'major'
+          - 'minor'
+          - 'patch'
+
+defaults:
+  run:
+    working-directory: visual-python
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Python build utilities
+        run: pip install -r requirements/build.txt
+      - name: Build
+        run: python -m build
+
+  pypi-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Python build utilities
+        run: pip install -r requirements/build.txt
+
+      - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          git config --global user.name "sauce-visual-bot"
+          git config --global user.email "visual@saucelabs.com"        
+
+      - name: upgrade & push version
+        id: upgrade
+        run: |
+          bump-my-version bump ${{ github.event.inputs.releaseType }}
+          new_version=$(bump-my-version show current_version)
+          tag_name="python-$new_version"
+          git push
+          git push origin "$tag_name"
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: python -m build
+
+      - name: Publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_KEY }}
+        run: twine upload dist/*
+
+      - name: Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          tag_name: ${{ steps.upgrade.outputs.tag_name }}
+          files: visual-python/dist/*
+          generate_release_notes: true
