@@ -143,9 +143,9 @@ namespace SauceLabs.Visual
 
             options.CustomId ??= EnvVars.CustomId;
             options.Name ??= EnvVars.BuildName;
-            options.Project ??= EnvVars.ProjectName;
-            options.Branch ??= EnvVars.BranchName;
-            options.DefaultBranch ??= EnvVars.DefaultBranchName;
+            options.Project ??= EnvVars.Project;
+            options.Branch ??= EnvVars.Branch;
+            options.DefaultBranch ??= EnvVars.DefaultBranch;
             var result = (await api.CreateBuild(new CreateBuildIn
             {
                 Name = options.Name,

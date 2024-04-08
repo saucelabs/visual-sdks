@@ -4,10 +4,10 @@ namespace SauceLabs.Visual.Utils
 {
     internal class EnvVars
     {
-        internal static string ProjectName => Environment.GetEnvironmentVariable("SAUCE_VISUAL_PROJECT") ?? "";
-        internal static string BranchName => Environment.GetEnvironmentVariable("SAUCE_VISUAL_BRANCH") ?? "";
+        internal static string Project => Environment.GetEnvironmentVariable("SAUCE_VISUAL_PROJECT") ?? "";
+        internal static string Branch => Environment.GetEnvironmentVariable("SAUCE_VISUAL_BRANCH") ?? "";
 
-        internal static string DefaultBranchName =>
+        internal static string DefaultBranch =>
             Environment.GetEnvironmentVariable("SAUCE_VISUAL_DEFAULT_BRANCH") ?? "";
 
         internal static string BuildName => Environment.GetEnvironmentVariable("SAUCE_VISUAL_BUILD_NAME") ?? "";
