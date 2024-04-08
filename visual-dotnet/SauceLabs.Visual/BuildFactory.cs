@@ -140,21 +140,18 @@ namespace SauceLabs.Visual
                 build.IsExternal = true;
                 return build;
             }
-
+            
             options.CustomId ??= EnvVars.CustomId;
-            options.Name ??= EnvVars.BuildName;
-            options.Project ??= EnvVars.Project;
-            options.Branch ??= EnvVars.Branch;
-            options.DefaultBranch ??= EnvVars.DefaultBranch;
             var result = (await api.CreateBuild(new CreateBuildIn
             {
-                Name = options.Name,
-                Project = options.Project,
-                Branch = options.Branch,
+                Name = !StringUtils.IsNullOrEmpty(EnvVars.BuildName) ? EnvVars.BuildName : options.Name,
+                Project = !StringUtils.IsNullOrEmpty(EnvVars.Project) ? EnvVars.Project : options.Project,
+                Branch = !StringUtils.IsNullOrEmpty(EnvVars.Branch) ? EnvVars.Branch : options.Branch,
+                DefaultBranch = !StringUtils.IsNullOrEmpty(EnvVars.DefaultBranch)
+                    ? EnvVars.DefaultBranch
+                    : options.DefaultBranch,
                 CustomId = options.CustomId,
-                DefaultBranch = options.DefaultBranch,
             })).EnsureValidResponse();
-
             build = new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode)
             {
                 IsExternal = false
