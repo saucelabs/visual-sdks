@@ -81,7 +81,6 @@ class SauceLabsVisual:
             full_page_config: str = None,
     ):
         session_id = self._get_selenium_id()
-        meta = self.client.get_selenium_metadata(session_id)
 
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
@@ -92,7 +91,6 @@ class SauceLabsVisual:
         return self.client.create_snapshot_from_webdriver(
             name=name,
             session_id=session_id,
-            meta=meta,
             test_name=BuiltIn().get_variable_value('\${TEST NAME}'),
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
