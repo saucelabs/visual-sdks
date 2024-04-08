@@ -140,7 +140,7 @@ namespace SauceLabs.Visual
                 build.IsExternal = true;
                 return build;
             }
-            
+
             options.CustomId ??= EnvVars.CustomId;
             var result = (await api.CreateBuild(new CreateBuildIn
             {
@@ -152,6 +152,7 @@ namespace SauceLabs.Visual
                     : options.DefaultBranch,
                 CustomId = options.CustomId,
             })).EnsureValidResponse();
+
             build = new VisualBuild(result.Result.Id, result.Result.Url, result.Result.Mode)
             {
                 IsExternal = false
