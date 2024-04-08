@@ -1,5 +1,5 @@
 from os import environ
-from typing import List
+from typing import List, Union
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport, BasicAuth
@@ -10,7 +10,8 @@ from saucelabs_visual.typing import IgnoreRegion, FullPageConfig
 
 class SauceLabsVisual:
     client: Client = None
-    build_id: str = None
+    build_id: Union[str, None] = None
+    meta_cache: dict = {}
 
     def __init__(self):
         self._create_client()
@@ -92,9 +93,11 @@ class SauceLabsVisual:
             """
         )
         values = {"id": self.build_id}
+        self.meta_cache.clear()
+        self.build_id = None
         return self.client.execute(query, variable_values=values)
 
-    def get_selenium_metadata(self, session_id: str):
+    def get_selenium_metadata(self, session_id: str) -> str:
         query = gql(
             # language=GraphQL
             """
@@ -120,11 +123,19 @@ class SauceLabsVisual:
         meta = self.client.execute(query, variable_values=values)
         return meta['meta']['blob']
 
+    def _get_meta(self, session_id: str) -> str:
+        meta = self.meta_cache.get(session_id)
+
+        if meta is None:
+            meta = self.get_selenium_metadata(session_id)
+            self.meta_cache[session_id] = meta
+
+        return meta
+
     def create_snapshot_from_webdriver(
             self,
             name: str,
             session_id: str,
-            meta: str,
             test_name: str = None,
             suite_name: str = None,
             capture_dom: bool = False,
@@ -164,6 +175,7 @@ class SauceLabsVisual:
             }
             """
         )
+        meta = self._get_meta(session_id)
         values = {
             "name": name,
             "sessionId": session_id,
