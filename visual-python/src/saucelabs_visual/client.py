@@ -36,9 +36,9 @@ class SauceLabsVisual:
     def create_build(
             self,
             name: str = environ.get('SAUCE_VISUAL_BUILD_NAME') or None,
-            project: str = environ.get('SAUCE_VISUAL_PROJECT_NAME') or None,
-            branch: str = environ.get('SAUCE_VISUAL_BRANCH_NAME') or None,
-            default_branch: str = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH_NAME') or None,
+            project: str = environ.get('SAUCE_VISUAL_PROJECT') or None,
+            branch: str = environ.get('SAUCE_VISUAL_BRANCH') or None,
+            default_branch: str = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH') or None,
             custom_id: str = environ.get('SAUCE_VISUAL_CUSTOM_ID') or None,
             keep_alive_timeout: int = None
     ):
