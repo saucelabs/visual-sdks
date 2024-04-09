@@ -144,12 +144,10 @@ namespace SauceLabs.Visual
             options.CustomId ??= EnvVars.CustomId;
             var result = (await api.CreateBuild(new CreateBuildIn
             {
-                Name = !StringUtils.IsNullOrEmpty(EnvVars.BuildName) ? EnvVars.BuildName : options.Name,
-                Project = !StringUtils.IsNullOrEmpty(EnvVars.Project) ? EnvVars.Project : options.Project,
-                Branch = !StringUtils.IsNullOrEmpty(EnvVars.Branch) ? EnvVars.Branch : options.Branch,
-                DefaultBranch = !StringUtils.IsNullOrEmpty(EnvVars.DefaultBranch)
-                    ? EnvVars.DefaultBranch
-                    : options.DefaultBranch,
+                Name = StringUtils.ValueOrDefault(EnvVars.BuildName, options.Name),
+                Project = StringUtils.ValueOrDefault(EnvVars.Project, options.Project),
+                Branch = StringUtils.ValueOrDefault(EnvVars.Branch, options.Branch),
+                DefaultBranch = StringUtils.ValueOrDefault(EnvVars.DefaultBranch, options.DefaultBranch),
                 CustomId = options.CustomId,
             })).EnsureValidResponse();
 

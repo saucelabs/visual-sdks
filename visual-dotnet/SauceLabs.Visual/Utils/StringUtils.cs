@@ -11,5 +11,10 @@ namespace SauceLabs.Visual.Utils
         {
             return string.IsNullOrEmpty(value?.Trim());
         }
+
+        public static string? ValueOrDefault(string? value, string? defaultValue)
+        {
+            return !IsNullOrEmpty(value) ? value : defaultValue;
+        }
     }
 }
