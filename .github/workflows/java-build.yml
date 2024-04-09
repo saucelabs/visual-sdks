@@ -1,0 +1,21 @@
+name: Java (build)
+
+on:
+  push:
+    paths:
+      - 'visual-java/**'
+  pull_request:
+    paths:
+      - 'visual-java/**'
+
+defaults:
+  run:
+    working-directory: visual-java
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
