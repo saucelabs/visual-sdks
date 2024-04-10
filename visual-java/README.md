@@ -34,23 +34,30 @@ testImplementation 'com.saucelabs.visual:java-client:LATEST VERSION'
 
 ## How to use
 
-- Instantiate `VisualClient` object
+- Instantiate `VisualApi` object
   ```java
   import com.saucelabs.visual.DataCenter;
-  //...   
-  DataCenter dataCenter = DataCenter.US_WEST_1;
-  var visualClient = await VisualClient.Create(Driver, datacenter);
+  import com.saucelabs.visual.VisualApi;
+  import org.openqa.selenium.remote.RemoteWebDriver;
+  //...
+  RemoteWebDriver driver = new RemoteWebDriver(webDriverUrl, capabilities);
+  VisualApi visual = new VisualApi.Builder(driver, sauceUsername, sauceAccessKey, DataCenter.US_WEST_1).build();
   ```
 
 - Invoke Visual Testing
   ```java
-  var checkOptions = new VisualCheckOptions() { CaptureDom = true };
-  await visualClient.VisualCheck("Home Page", checkOptions);
+  import com.saucelabs.visual.CheckOptions;   
+  //...
+  CheckOptions checkOptions = new CheckOptions.Builder().withCaptureDom(true).build();
+  visual.sauceVisualCheck("Home Page", checkOptions);
   ```
 
 - Get results of Visual Tests and run assertions on it
   ```java
-  var results = await visualClient.VisualResults(visualBuild.Id);
+  import com.saucelabs.visual.graphql.type.DiffStatus;
+  import org.junit.jupiter.api.Assertions;
+  //...
+  Map<DiffStatus, Integer> results = visual.sauceVisualResults();
   // verify that no differences have been detected
-  Assert.AreEqual(0, results[DiffStatus.Approved]);
+  Assertions.assertEquals(0, results.get(DiffStatus.APPROVED));
   ```
