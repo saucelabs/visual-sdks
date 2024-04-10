@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Disabled;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
-public class CreateBuildMutationTest {
+class CreateBuildMutationTest {
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     String json =
         mapper.writeValueAsString(
@@ -21,7 +21,7 @@ public class CreateBuildMutationTest {
 
   @Test
   @Disabled
-  public void executeRequest() {
+  void executeRequest() {
     GraphQLClient client =
         new GraphQLClient(
             "https://api.us-west-1.saucelabs.com/v1/visual/graphql", "username", "access-key");
