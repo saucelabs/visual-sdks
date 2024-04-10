@@ -234,8 +234,8 @@
   <url>https://www.saucelabs.com</url>
   <licenses>
     <license>
-      <name>The MIT License</name>
-      <url>https://github.com/saucelabs/visual-java/blob/master/LICENSE</url>
+      <name>Apache-2.0</name>
+      <url>https://github.com/saucelabs/visual-sdks/blob/main/LICENSE</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -245,22 +245,16 @@
   </organization>
   <developers>
     <developer>
-      <name>Kerem Beygo</name>
-      <email>kerem.beygo@saucelabs.com</email>
-      <organization>Sauce Labs</organization>
-      <organizationUrl>https://www.saucelabs.com/</organizationUrl>
-    </developer>
-    <developer>
-      <name>Andreas Lüdeke</name>
-      <email>andreas.luedeke@saucelabs.com</email>
+      <name>Sauce Visual Team</name>
+      <email>visualteam@saucelabs.com</email>
       <organization>Sauce Labs</organization>
       <organizationUrl>https://www.saucelabs.com/</organizationUrl>
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git@gitlab.tools.saucelabs.net:rd/iris/iris.git</connection>
-    <developerConnection>scm:git:git@gitlab.tools.saucelabs.net:rd/iris/iris.git</developerConnection>
-    <url>git@gitlab.tools.saucelabs.net:rd/iris/iris.git</url>
+    <connection>scm:git:git@github.com:saucelabs/visual-sdks.git</connection>
+    <developerConnection>scm:git:git@github.com:saucelabs/visual-sdks.git</developerConnection>
+    <url>git@github.com:saucelabs/visual-sdks.git</url>
     <tag>HEAD</tag>
   </scm>
 

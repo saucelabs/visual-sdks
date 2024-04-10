@@ -30,3 +30,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
+  maven-repository-publish:
+    runs-on: ubuntu-latest
+
