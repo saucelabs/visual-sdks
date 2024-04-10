@@ -28,7 +28,7 @@ class SauceLabsVisual:
 
         region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
         transport = AIOHTTPTransport(url=region_url, auth=BasicAuth(username, access_key))
-        self.client = Client(transport=transport)
+        self.client = Client(transport=transport, execute_timeout=90)
 
     def get_client(self) -> Client:
         return self.client
