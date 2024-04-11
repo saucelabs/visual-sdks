@@ -36,6 +36,7 @@ testImplementation 'com.saucelabs.visual:java-client:LATEST VERSION'
 
 - Instantiate `VisualApi` object
   ```java
+  
   import com.saucelabs.visual.DataCenter;
   import com.saucelabs.visual.VisualApi;
   import org.openqa.selenium.remote.RemoteWebDriver;
@@ -46,6 +47,7 @@ testImplementation 'com.saucelabs.visual:java-client:LATEST VERSION'
 
 - Invoke Visual Testing
   ```java
+  
   import com.saucelabs.visual.CheckOptions;   
   //...
   CheckOptions checkOptions = new CheckOptions.Builder().withCaptureDom(true).build();
@@ -54,6 +56,7 @@ testImplementation 'com.saucelabs.visual:java-client:LATEST VERSION'
 
 - Get results of Visual Tests and run assertions on it
   ```java
+  
   import com.saucelabs.visual.graphql.type.DiffStatus;
   import org.junit.jupiter.api.Assertions;
   //...
