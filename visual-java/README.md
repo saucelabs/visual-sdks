@@ -1,6 +1,6 @@
 # Sauce Labs Visual for Java
 
-Sauce Labs Visual for Java expose Sauce Labs Visual Testing for your Java project with Selenium.
+Sauce Labs Visual for Java exposes Sauce Labs Visual Testing for your Java project with Selenium.
 
 ## Installation
 
