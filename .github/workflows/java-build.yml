@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - 'visual-java/**'
+      - .github/workflows/java-build.yml
 
 defaults:
   run:
