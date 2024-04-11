@@ -245,8 +245,8 @@
   </organization>
   <developers>
     <developer>
-      <name>Sauce Visual Team</name>
-      <email>visualteam@saucelabs.com</email>
+      <name>Sauce Labs Visual Team</name>
+      <email>visual.team@saucelabs.com</email>
       <organization>Sauce Labs</organization>
       <organizationUrl>https://www.saucelabs.com/</organizationUrl>
     </developer>
