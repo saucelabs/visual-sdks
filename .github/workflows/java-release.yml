@@ -48,14 +48,14 @@ jobs:
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
       - name: Import GPG signing key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Release to Maven repo
         run: |
-          mvn -P release -Dgpg.passphrase=${{ secrets.MAVEN_SIGNING_KEY_PASSPHRASE }} \
+          mvn -P release -Dgpg.passphrase=${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }} \
               -Drevision=${{ steps.upgrade.outputs.version }} deploy
         env:
           MVN_CENTRAL_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
