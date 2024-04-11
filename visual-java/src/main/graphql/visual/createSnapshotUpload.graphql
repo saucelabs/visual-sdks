@@ -1,0 +1,7 @@
+mutation createSnapshotUpload($input: SnapshotUploadIn!) {
+  result: createSnapshotUpload(input: $input) {
+    id
+    buildId
+    uploadUrl
+  }
+}

@@ -1,0 +1,5 @@
+query build($input: UUID!) {
+  result: build(id: $input) {
+    url
+  }
+}

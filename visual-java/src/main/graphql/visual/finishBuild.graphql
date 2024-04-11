@@ -1,0 +1,8 @@
+mutation FinishBuild($input: FinishBuildIn!) {
+  result: finishBuild(input: $input) {
+    id
+    name
+    status
+    url
+  }
+}

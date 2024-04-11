@@ -1,0 +1,9 @@
+query webdriverSession($input: ID!) {
+  result: webdriverSession(sessionId: $input) {
+    blob
+    operatingSystem
+    operatingSystemVersion
+    browser
+    browserVersion
+  }
+}

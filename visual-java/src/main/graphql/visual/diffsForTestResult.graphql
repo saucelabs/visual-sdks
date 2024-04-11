@@ -1,0 +1,8 @@
+query diffsForTestResult($input: UUID!) {
+  result: diffs(condition: { buildId: $input }) {
+    nodes {
+      id
+      status
+    }
+  }
+}
