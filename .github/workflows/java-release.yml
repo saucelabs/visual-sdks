@@ -17,19 +17,28 @@ defaults:
     working-directory: visual-java
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java
+      - name: Import GPG signing key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
+      - name: Set up Maven Central Repository
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '11'
-          cache: 'maven'
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
-
-  maven-repository-publish:
-    runs-on: ubuntu-latest
+          distribution: 'temurin'
+          server-id: ossrh
+          server-username: MVN_CENTRAL_USERNAME
+          server-password: MVN_CENTRAL_PASSWORD
+      - name: Release to Maven repo
+        run: |
+          mvn -P release -Dgpg.passphrase=${{ secrets.MAVEN_SIGNING_KEY_PASSPHRASE }} \
+              -Drevision=0.3.384 deploy
+        env:
+          MVN_CENTRAL_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
+          MVN_CENTRAL_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
 
