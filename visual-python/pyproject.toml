@@ -1,6 +1,6 @@
 [project]
 name = "saucelabs_visual"
-version = "0.0.4"
+version = "0.0.5"
 description = "Python bindings for Sauce Labs Visual"
 dependencies=[
     "aiohttp",
