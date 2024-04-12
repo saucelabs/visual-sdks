@@ -30,6 +30,12 @@ jobs:
           server-id: ossrh
           server-username: MVN_CENTRAL_USERNAME
           server-password: MVN_CENTRAL_PASSWORD
+      
+      - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          git config --global user.name "sauce-visual-bot"
+          git config --global user.email "visual@saucelabs.com" 
 
       - name: upgrade & push version
         id: upgrade
