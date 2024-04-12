@@ -41,7 +41,7 @@ class SauceLabsVisual:
 
         return FullPageConfig(
             delay_after_scroll_ms=parsed_value.get('delay_after_scroll_ms'),
-            hide_after_first_scroll=parsed_value.get('delay_after_scroll_ms'),
+            hide_after_first_scroll=parsed_value.get('hide_after_first_scroll'),
         ) if parsed_value is not None else None
 
     @keyword(name="Create Visual Build")
