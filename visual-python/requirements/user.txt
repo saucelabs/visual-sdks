@@ -1,3 +1,4 @@
 # End-user requirements
-aiohttp==3.9.3
 gql==3.5.0
+requests>=2.1.0
+requests-toolbelt>=1.0.0

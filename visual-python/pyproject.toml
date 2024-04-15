@@ -3,7 +3,8 @@ name = "saucelabs_visual"
 version = "0.0.5"
 description = "Python bindings for Sauce Labs Visual"
 dependencies=[
-    "aiohttp",
+    "requests",
+    "requests-toolbelt",
     "gql",
 ]
 readme = "README.md"
