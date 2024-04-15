@@ -38,12 +38,12 @@ class SauceLabsVisual:
 
     def create_build(
             self,
-            name: str = environ.get('SAUCE_VISUAL_BUILD_NAME') or None,
-            project: str = environ.get('SAUCE_VISUAL_PROJECT') or None,
-            branch: str = environ.get('SAUCE_VISUAL_BRANCH') or None,
-            default_branch: str = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH') or None,
-            custom_id: str = environ.get('SAUCE_VISUAL_CUSTOM_ID') or None,
-            keep_alive_timeout: int = None
+            name: Union[str, None] = environ.get('SAUCE_VISUAL_BUILD_NAME'),
+            project: Union[str, None] = environ.get('SAUCE_VISUAL_PROJECT'),
+            branch: Union[str, None] = environ.get('SAUCE_VISUAL_BRANCH'),
+            default_branch: Union[str, None] = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH'),
+            custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
+            keep_alive_timeout: Union[int, None] = None
     ):
         query = gql(
             # language=GraphQL
@@ -139,12 +139,12 @@ class SauceLabsVisual:
             self,
             name: str,
             session_id: str,
-            test_name: str = None,
-            suite_name: str = None,
+            test_name: Union[str, None] = None,
+            suite_name: Union[str, None] = None,
             capture_dom: bool = False,
-            clip_selector: str = None,
-            ignore_regions: List[IgnoreRegion] = None,
-            full_page_config: FullPageConfig = None,
+            clip_selector: Union[str, None] = None,
+            ignore_regions: Union[List[IgnoreRegion], None] = None,
+            full_page_config: Union[FullPageConfig, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
         query = gql(

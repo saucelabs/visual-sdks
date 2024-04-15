@@ -1,4 +1,5 @@
 from ast import literal_eval
+from os import environ
 from typing import List, Union
 
 from SeleniumLibrary import SeleniumLibrary
@@ -50,12 +51,13 @@ class SauceLabsVisual:
             # Params 'duplicated' here, so we get type casting and named parameters provided by
             # Robot Framework for free.
             self,
-            name: str = None,
-            project: str = None,
-            branch: str = None,
-            default_branch: str = None,
-            custom_id: str = None,
-            keep_alive_timeout: int = None
+            name: Union[str, None] = environ.get('SAUCE_VISUAL_BUILD_NAME'),
+            project: Union[str, None] = environ.get('SAUCE_VISUAL_PROJECT'),
+            branch: Union[str, None] = environ.get('SAUCE_VISUAL_BRANCH'),
+            default_branch: Union[str, None] = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH'),
+            custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
+            keep_alive_timeout: int = None,
+            **kwargs,
     ):
         result = self.client.create_build(
             name=name,
@@ -65,12 +67,12 @@ class SauceLabsVisual:
             custom_id=custom_id,
             keep_alive_timeout=keep_alive_timeout,
         )
-        logger.info(self.client.get_build_created_link(), True, True)
+        logger.info(self.client.get_build_created_link(), also_console=True)
         return result
 
     @keyword(name="Finish Visual Build")
     def finish_visual_build(self):
-        logger.info(self.client.get_build_finished_link(), True, True)
+        logger.info(self.client.get_build_finished_link(), also_console=True)
         return self.client.finish_build()
 
     @keyword(name="Visual Snapshot")
@@ -80,9 +82,9 @@ class SauceLabsVisual:
             self,
             name: str,
             capture_dom: bool = False,
-            clip_selector: str = None,
-            ignore_regions: List[IgnoreRegion] = None,
-            full_page_config: str = None,
+            clip_selector: Union[str, None] = None,
+            ignore_regions: Union[List[IgnoreRegion], None] = None,
+            full_page_config: Union[str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
         session_id = self._get_selenium_id()
