@@ -1,0 +1,11 @@
+query buildByCustomId($input: String!) {
+  result: buildByCustomId(customId: $input) {
+    id
+    name
+    url
+    status
+    project
+    branch
+    mode
+  }
+}

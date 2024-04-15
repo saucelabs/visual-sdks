@@ -1,0 +1,89 @@
+{
+  "name": "@saucelabs/cypress-visual-plugin",
+  "version": "0.0.1",
+  "description": "Cypress plugin for Sauce Visual Testing",
+  "main": "build/index.cjs",
+  "module": "build/index.js",
+  "types": "build/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^16.13 || >=18"
+  },
+  "typeScriptVersion": "5.1.6",
+  "keywords": [
+    "cypress",
+    "saucelabs",
+    "visual"
+  ],
+  "exports": {
+    ".": {
+      "require": "./build/index.cjs",
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./commands": {
+      "require": "./build/commands.cjs",
+      "import": "./build/commands.js",
+      "types": "./build/commands.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "cypress": "^12.0.0 || ^13.0.0"
+  },
+  "dependencies": {
+    "@saucelabs/visual": "0.0.1",
+    "chalk": "^5.3.0",
+    "exponential-backoff": "^3.1.1",
+    "macos-release": "^3.2.0",
+    "node-fetch": "^3.3.1",
+    "tsup": "^7.2.0"
+  },
+  "tsup": {
+    "entry": [
+      "./src/commands.ts",
+      "./src/index.ts"
+    ],
+    "dts": true,
+    "outDir": "./build",
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "noExternal": [
+      "chalk",
+      "macos-release"
+    ]
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^2.0.1",
+    "@types/cypress": "^1.1.3",
+    "@types/node": "^20.4.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^29.5.0",
+    "jest-junit-reporter": "^1.1.0",
+    "prettier": "^2.8.8",
+    "ts-node": "^10.9.1",
+    "tsc-watch": "^6.0.4",
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "test": "jest --collect-coverage",
+    "watch": "tsc-watch --declaration -p .",
+    "test:cjs": "node ./test-cjs.cjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

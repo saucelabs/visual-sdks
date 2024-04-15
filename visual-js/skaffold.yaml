@@ -1,0 +1,66 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: clients
+build:
+  local:
+    push: false
+    useDockerCLI: true
+    useBuildkit: true
+  artifacts:
+    - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+      docker:
+          target: build
+
+profiles:
+  - name: release
+    build:
+      artifacts:
+        - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+          docker:
+              target: release
+              secrets:
+                - id: npmregistrytoken
+                  src: ./.secrets/NPM_REGISTRY_TOKEN
+              buildArgs:
+                VERSION: '{{ .VERSION }}'
+
+  - name: cypress-test
+    build:
+      artifacts:
+        - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+          docker:
+              target: cypress-test
+              buildArgs:
+                SAUCE_USERNAME: '{{ .SAUCE_USERNAME }}'
+                SAUCE_ACCESS_KEY: '{{ .SAUCE_ACCESS_KEY }}'
+
+  - name: nightwatch-test
+    build:
+      artifacts:
+        - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+          docker:
+              target: nightwatch-test
+              buildArgs:
+                SAUCE_USERNAME: '{{ .SAUCE_USERNAME }}'
+                SAUCE_ACCESS_KEY: '{{ .SAUCE_ACCESS_KEY }}'
+
+  - name: wdio-test
+    build:
+      artifacts:
+        - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+          docker:
+              target: wdio-test
+              buildArgs:
+                SAUCE_USERNAME: '{{ .SAUCE_USERNAME }}'
+                SAUCE_ACCESS_KEY: '{{ .SAUCE_ACCESS_KEY }}'
+
+  - name: storybook-test
+    build:
+      artifacts:
+        - image: 'quay.io/saucelabs/THIS_IS_NEVER_PUSHED'
+          docker:
+              target: storybook-test
+              buildArgs:
+                SAUCE_USERNAME: '{{ .SAUCE_USERNAME }}'
+                SAUCE_ACCESS_KEY: '{{ .SAUCE_ACCESS_KEY }}'

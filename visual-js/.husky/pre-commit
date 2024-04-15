@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+(
+  cd js
+  npx lint-staged
+)
+
+(
+  cd js-wdio
+  npx lint-staged
+)

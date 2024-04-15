@@ -1,0 +1,19 @@
+{
+  "extends": "@tsconfig/node18/tsconfig.json",
+  "compilerOptions": {
+    "module": "ES6",
+    "target": "ES6",
+    "types": [
+      "@types/node",
+      "cypress",
+      "node"
+    ],
+    "lib": [
+      "DOM"
+    ],
+    "outDir": "./build/"
+  },
+  "include": [
+    "src/**/*",
+  ]
+}

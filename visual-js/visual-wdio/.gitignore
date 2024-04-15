@@ -1,0 +1,4 @@
+.work
+build/
+coverage/
+yarn.lock
