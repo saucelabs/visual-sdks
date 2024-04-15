@@ -4,9 +4,10 @@ from typing import List, Union
 from SeleniumLibrary import SeleniumLibrary
 from robot.api.deco import library, keyword
 from robot.libraries.BuiltIn import BuiltIn
+from robot.api import logger
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
 
 
 @library(scope='GLOBAL')
@@ -56,7 +57,7 @@ class SauceLabsVisual:
             custom_id: str = None,
             keep_alive_timeout: int = None
     ):
-        return self.client.create_build(
+        result = self.client.create_build(
             name=name,
             project=project,
             branch=branch,
@@ -64,9 +65,12 @@ class SauceLabsVisual:
             custom_id=custom_id,
             keep_alive_timeout=keep_alive_timeout,
         )
+        logger.info(self.client.get_build_created_link(), True, True)
+        return result
 
     @keyword(name="Finish Visual Build")
     def finish_visual_build(self):
+        logger.info(self.client.get_build_finished_link(), True, True)
         return self.client.finish_build()
 
     @keyword(name="Visual Snapshot")
@@ -79,6 +83,7 @@ class SauceLabsVisual:
             clip_selector: str = None,
             ignore_regions: List[IgnoreRegion] = None,
             full_page_config: str = None,
+            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
         session_id = self._get_selenium_id()
 
@@ -97,4 +102,5 @@ class SauceLabsVisual:
             clip_selector=clip_selector,
             ignore_regions=ignore_regions,
             full_page_config=parsed_fpc,
+            diffing_method=diffing_method,
         )

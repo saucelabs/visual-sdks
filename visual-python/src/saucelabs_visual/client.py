@@ -6,13 +6,14 @@ from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
 
 
 class SauceLabsVisual:
     client: Client = None
     build_id: Union[str, None] = None
     meta_cache: dict = {}
+    region: Region = None
 
     def __init__(self):
         self._create_client()
@@ -27,7 +28,8 @@ class SauceLabsVisual:
                 '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
 
-        region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
+        self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
+        region_url = self.region.graphql_endpoint
         transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key))
         self.client = Client(transport=transport, execute_timeout=90)
 
@@ -143,6 +145,7 @@ class SauceLabsVisual:
             clip_selector: str = None,
             ignore_regions: List[IgnoreRegion] = None,
             full_page_config: FullPageConfig = None,
+            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
         query = gql(
             # language=GraphQL
@@ -158,6 +161,7 @@ class SauceLabsVisual:
                 $clipSelector: String,
                 $ignoreRegions: [RegionIn!],
                 $fullPageConfig: FullPageConfigIn,
+                $diffingMethod: DiffingMethod,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -170,6 +174,7 @@ class SauceLabsVisual:
                     clipSelector: $clipSelector,
                     ignoreRegions: $ignoreRegions,
                     fullPageConfig: $fullPageConfig,
+                    diffingMethod: $diffingMethod,
                 }){
                     id
                 }
@@ -191,5 +196,19 @@ class SauceLabsVisual:
                 "delayAfterScrollMs": full_page_config.get('delay_after_scroll_ms'),
                 "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),
             } if full_page_config is not None else None,
+            "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
         }
         return self.client.execute(query, variable_values=values)
+
+    def get_build_link(self) -> str:
+        """
+        Get the dashboard build link for viewing the current build on Sauce Labs.
+        :return:
+        """
+        return self.region.build_url(self.build_id)
+
+    def get_build_created_link(self) -> str:
+        return f'Sauce Labs Visual build created:\t{self.get_build_link()}'
+
+    def get_build_finished_link(self) -> str:
+        return f'Sauce Labs Visual build finished:\t{self.get_build_link()}'
