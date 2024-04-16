@@ -6,9 +6,11 @@ from SeleniumLibrary import SeleniumLibrary
 from robot.api.deco import library, keyword
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
+from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
+from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region
 
 
 @library(scope='GLOBAL')
@@ -45,6 +47,58 @@ class SauceLabsVisual:
             delay_after_scroll_ms=parsed_value.get('delay_after_scroll_ms'),
             hide_after_first_scroll=parsed_value.get('hide_after_first_scroll'),
         ) if parsed_value is not None else None
+
+    def _parse_ignore_regions(
+            self,
+            ignore_regions: List[Union[IgnoreRegion, str, WebElement]],
+    ) -> List[IgnoreRegion]:
+        """
+        Parse ignore regions passed through Robot to allow selectors, web elements, and dicts --
+        validating those regions.
+        :param ignore_regions:
+        :return:
+        """
+        selenium_library = self._get_selenium_library()
+        parsed_ignore_regions: List[Union[IgnoreRegion, None]] = []
+        elements_to_query: List[WebElement] = []
+
+        for ignore_region in ignore_regions:
+            literal_type = type(ignore_region)
+            if literal_type is IgnoreRegion:
+                parsed_ignore_regions.append(ignore_region)
+            elif literal_type is dict:
+                parsed_ignore_regions.append(
+                    ignore_region_from_dict(ignore_region)
+                )
+            elif literal_type is str:
+                elements_to_query.extend(
+                    selenium_library.get_webelements(ignore_region)
+                )
+            elif literal_type is WebElement:
+                elements_to_query.append(ignore_region)
+
+        for element in elements_to_query:
+            rect = element.rect
+            region = IgnoreRegion(
+                width=rect.get('width'),
+                height=rect.get('height'),
+                x=rect.get('x'),
+                y=rect.get('y'),
+            )
+            parsed_ignore_regions.append(region)
+
+        return [
+            region for region in parsed_ignore_regions if self._is_valid_ignore_region(region)
+        ]
+
+    def _is_valid_ignore_region(self, region: IgnoreRegion):
+        if is_valid_ignore_region(region):
+            return True
+        else:
+            logger.warn(
+                f'Invalid ignore region "{region}" supplied for visual snapshot. Skipping.'
+            )
+            return False
 
     @keyword(name="Create Visual Build")
     def create_visual_build(
@@ -83,7 +137,7 @@ class SauceLabsVisual:
             name: str,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
-            ignore_regions: Union[List[IgnoreRegion], None] = None,
+            ignore_regions: List[Union[IgnoreRegion, str, WebElement]] = None,
             full_page_config: Union[str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
@@ -93,7 +147,11 @@ class SauceLabsVisual:
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
         # to set proper default / optional values.
         parsed_fpc = self._parse_full_page_config(full_page_config) if (
-                    type(full_page_config) is str) else None
+                type(full_page_config) is str) else None
+
+        # Convert selectors into WebElements & ignore regions
+        parsed_ignore_regions = self._parse_ignore_regions(
+            ignore_regions) if ignore_regions is not None else None
 
         return self.client.create_snapshot_from_webdriver(
             name=name,
@@ -102,7 +160,7 @@ class SauceLabsVisual:
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
             clip_selector=clip_selector,
-            ignore_regions=ignore_regions,
+            ignore_regions=parsed_ignore_regions,
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
         )
