@@ -29,6 +29,8 @@ jobs:
         run: pip install -r requirements/build.txt
       - name: Build
         run: python -m build
+      - name: Test
+        run: pytest
 
   pypi-publish:
     runs-on: ubuntu-latest
