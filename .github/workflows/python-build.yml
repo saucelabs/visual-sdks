@@ -27,4 +27,4 @@ jobs:
       - name: Build
         run: python -m build
       - name: Test
-        run: pytest
+        run: python -m pytest
