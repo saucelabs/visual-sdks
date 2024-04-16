@@ -18,3 +18,19 @@ class DiffingMethod(Enum):
     BALANCED = 'BALANCED'
     EXPERIMENTAL = 'EXPERIMENTAL'
     SIMPLE = 'SIMPLE'
+
+
+class BuildMode(Enum):
+    COMPLETED = 'COMPLETED'
+    RUNNING = 'RUNNING'
+
+
+class BuildStatus(Enum):
+    APPROVED = 'APPROVED'
+    EMPTY = 'EMPTY'
+    EQUAL = 'EQUAL'
+    ERRORED = 'ERRORED'
+    QUEUED = 'QUEUED'
+    REJECTED = 'REJECTED'
+    RUNNING = 'RUNNING'
+    UNAPPROVED = 'UNAPPROVED'

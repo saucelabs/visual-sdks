@@ -9,8 +9,10 @@ from robot.api import logger
 from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
-from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildMode, \
+    BuildStatus
+from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
+    create_table_from_build_status
 
 
 @library(scope='GLOBAL')
@@ -113,7 +115,7 @@ class SauceLabsVisual:
             keep_alive_timeout: int = None,
             **kwargs,
     ):
-        result = self.client.create_build(
+        self.client.create_build(
             name=name,
             project=project,
             branch=branch,
@@ -122,12 +124,11 @@ class SauceLabsVisual:
             keep_alive_timeout=keep_alive_timeout,
         )
         logger.info(self.client.get_build_created_link(), also_console=True)
-        return result
 
     @keyword(name="Finish Visual Build")
     def finish_visual_build(self):
         logger.info(self.client.get_build_finished_link(), also_console=True)
-        return self.client.finish_build()
+        self.client.finish_build()
 
     @keyword(name="Visual Snapshot")
     def visual_snapshot(
@@ -153,7 +154,7 @@ class SauceLabsVisual:
         parsed_ignore_regions = self._parse_ignore_regions(
             ignore_regions) if ignore_regions is not None else None
 
-        return self.client.create_snapshot_from_webdriver(
+        self.client.create_snapshot_from_webdriver(
             name=name,
             session_id=session_id,
             test_name=BuiltIn().get_variable_value('\${TEST NAME}'),
@@ -164,3 +165,38 @@ class SauceLabsVisual:
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
         )
+
+    @keyword(name="Visual Build Status")
+    def visual_build_status(
+            self,
+            wait: bool = True,
+            timeout: int = 60,
+            fail_on_error: bool = True,
+            fail_on_changes: bool = False,
+    ):
+        result = self.client.get_build_status(
+            wait=wait,
+            timeout=timeout,
+        )
+
+        fail_message = None
+
+        if fail_on_error:
+            if result['result']['mode'] == BuildMode.RUNNING.value:
+                fail_message = 'Failed to finish Visual build in time.'
+
+        if (
+            fail_on_changes and
+            result['result']['mode'] == BuildMode.COMPLETED.value and
+            result['result']['status'] not in [
+                BuildStatus.APPROVED.value,
+                BuildStatus.EQUAL.value,
+            ]
+        ):
+            fail_message = 'Sauce Visual detected one or more visual changes. Please review.'
+
+        table = create_table_from_build_status(result)
+        logger.info(table, html=True, also_console=True)
+
+        if fail_message:
+            BuiltIn().fail(fail_message)

@@ -1,12 +1,14 @@
+from datetime import datetime, timedelta
 from os import environ
 from typing import List, Union
+from time import sleep
 
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildMode
 
 
 class SauceLabsVisual:
@@ -97,7 +99,6 @@ class SauceLabsVisual:
         )
         values = {"id": self.build_id}
         self.meta_cache.clear()
-        self.build_id = None
         return self.client.execute(query, variable_values=values)
 
     def get_selenium_metadata(self, session_id: str) -> str:
@@ -199,6 +200,52 @@ class SauceLabsVisual:
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
         }
         return self.client.execute(query, variable_values=values)
+
+    def get_build_status(
+            self,
+            wait: bool = True,
+            timeout: int = 60,
+    ):
+        query = gql(
+            # language=GraphQL
+            """
+            query buildStatus($buildId: UUID!) {
+                result: build(id: $buildId) {
+                    id
+                    name
+                    url
+                    mode
+                    status
+                    unapprovedCount: diffCountExtended(input: { status: UNAPPROVED })
+                    approvedCount: diffCountExtended(input: { status: APPROVED })
+                    rejectedCount: diffCountExtended(input: { status: REJECTED })
+                    equalCount: diffCountExtended(input: { status: EQUAL })
+                    erroredCount: diffCountExtended(input: { status: ERRORED })
+                    queuedCount: diffCountExtended(input: { status: QUEUED })
+                }
+            }
+            """
+        )
+        values = {
+            "buildId": self.build_id,
+        }
+
+        if not wait:
+            return self.client.execute(query, variable_values=values)
+
+        cutoff_time = datetime.now() + timedelta(seconds=timeout)
+        build = None
+        result = None
+
+        while build is None and datetime.now() < cutoff_time:
+            result = self.client.execute(query, variable_values=values)
+            if result['result']['mode'] == BuildMode.COMPLETED.value:
+                build = result
+            else:
+                sleep(min(10, timeout))
+
+        # Return the successful build if available, else, the last run
+        return build if build is not None else result
 
     def get_build_link(self) -> str:
         """

@@ -6,6 +6,7 @@ dependencies=[
     "requests",
     "requests-toolbelt",
     "gql",
+    "tabulate",
 ]
 readme = "README.md"
 
