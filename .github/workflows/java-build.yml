@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'visual-java/**'
+      - 'tests/**'
       - .github/workflows/java-build.yml
   pull_request:
     paths:
@@ -27,3 +28,26 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push to local registry
+        uses: docker/build-push-action@v5
+        with:
+          context: '{{defaultContext}}:visual-java'
+          tags: saucelabs/visual-java
+          file: Dockerfile
+          load: true
+      - name: Run the integration tests
+        run: |
+          npm ci
+          npm run test
+        working-directory: tests
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          CONTAINER_IMAGE_NAME: saucelabs/visual-java

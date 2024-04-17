@@ -3,13 +3,11 @@ FROM eclipse-temurin:11-jdk-alpine AS runner
 RUN mkdir -p /workspace
 WORKDIR /workspace
 
-COPY ./tests/java/.mvn/ /workspace/.mvn
-COPY ./tests/java/src /workspace/src
-COPY ./tests/java/pom.xml /workspace/
-COPY ./tests/java/mvnw /workspace/
+COPY ./.mvn /workspace/.mvn
+COPY ./src /workspace/src
+COPY ./pom.xml /workspace/
+COPY ./mvnw /workspace/
 
-RUN ./mvnw versions:use-latest-releases versions:commit
-RUN ./mvnw dependency:go-offline -q
-RUN ./mvnw clean test-compile
+RUN ./mvnw -q clean test-compile
 
-ENTRYPOINT ["./mvnw", "test" ,"-Dtest=InventoryTest"]
+ENTRYPOINT ["./mvnw", "-q", "test" ,"-Dtest=com.saucelabs.visual.integration.**"]
