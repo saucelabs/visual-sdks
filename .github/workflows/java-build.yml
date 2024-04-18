@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - 'visual-java/**'
-      - 'tests/**'
       - .github/workflows/java-build.yml
   pull_request:
     paths:
