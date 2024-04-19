@@ -78,6 +78,8 @@ describe('Build-configuring env vars', () => {
       expect(build?.project).toBe(SAUCE_VISUAL_PROJECT);
       expect(build?.branch).toBe(SAUCE_VISUAL_BRANCH);
       expect(build?.defaultBranch).toBe(SAUCE_VISUAL_DEFAULT_BRANCH);
+
+      console.log(`SAUCE_VISUAL_PROJECT: ${SAUCE_VISUAL_PROJECT}`);
     },
     15 * 1000
   );

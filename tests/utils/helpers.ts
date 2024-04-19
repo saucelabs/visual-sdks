@@ -6,12 +6,14 @@ export const RE_VISUAL_BUILD_LINK =
 export const RE_VISUAL_BUILD_ID =
   /([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/g;
 
-export const randomId = randomBytes(8).toString('hex');
+export const runIdOrRandomId = process.env.GITHUB_RUN_ID
+  ? process.env.GITHUB_RUN_ID + process.env.GITHUB_RUN_ATTEMPT
+  : randomBytes(8).toString('hex');
 
-export const SAUCE_VISUAL_PROJECT = `E2E test project - ${randomId}`;
-export const SAUCE_VISUAL_BRANCH = `E2E test branch - ${randomId}`;
-export const SAUCE_VISUAL_DEFAULT_BRANCH = `E2E test default branch - ${randomId}`;
-export const SAUCE_VISUAL_BUILD_NAME = `E2E test build name - ${randomId}`;
+export const SAUCE_VISUAL_PROJECT = `E2E test project - ${runIdOrRandomId}`;
+export const SAUCE_VISUAL_BRANCH = `E2E test branch - ${runIdOrRandomId}`;
+export const SAUCE_VISUAL_DEFAULT_BRANCH = `E2E test default branch - ${runIdOrRandomId}`;
+export const SAUCE_VISUAL_BUILD_NAME = `E2E test build name - ${runIdOrRandomId}`;
 
 export const waitStatusForBuild = async function (
   api: VisualApi,
