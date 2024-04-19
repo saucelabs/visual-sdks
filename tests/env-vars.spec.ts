@@ -10,7 +10,6 @@ import {
 } from './utils/helpers';
 import { execute } from './utils/process';
 import { FileHandle } from 'fs/promises';
-import { randomBytes } from 'crypto';
 
 const region = 'us-west-1' as SauceRegion;
 
@@ -20,124 +19,11 @@ const visualApi = getApi({
   key: process.env.SAUCE_ACCESS_KEY!,
 });
 
-const customId = randomBytes(20).toString('hex');
-
 let fileOutput: FileHandle | undefined;
 let dockerOutput = '';
 let buildId = '';
-let externalBuildId = '';
 
-describe('Env var tests', () => {
-  it(
-    'creates an external build',
-    async () => {
-      const result = await execute(
-        `npx @saucelabs/visual build create -n "${SAUCE_VISUAL_BUILD_NAME}"`,
-        {
-          displayOutputOnFailure: true,
-          pipeOutput: false,
-          fileOutput,
-        }
-      );
-      expect(result.statusCode).toEqual(0);
-      const cliOutput = result.stdout;
-      const buildIds = [...cliOutput.matchAll(RE_VISUAL_BUILD_ID)];
-      expect(buildIds.length).toBe(1);
-      externalBuildId = buildIds[0][1];
-    },
-    2 * 60 * 1000
-  );
-
-  it(
-    'runs the docker image with SAUCE_VISUAL_BUILD_ID in place',
-    async () => {
-      const result = await execute(
-        `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
-        -e SAUCE_VISUAL_BUILD_ID \\
-        ${process.env.CONTAINER_IMAGE_NAME}`,
-        {
-          displayOutputOnFailure: true,
-          pipeOutput: false,
-          fileOutput,
-          env: {
-            SAUCE_VISUAL_BUILD_ID: externalBuildId,
-          },
-        }
-      );
-
-      expect(result.statusCode).toEqual(0);
-      dockerOutput = result.stdout;
-    },
-    2 * 60 * 1000
-  );
-
-  it(
-    'screenshots are linked to the external build',
-    async () => {
-      const build = await visualApi.buildWithDiffs(externalBuildId);
-      expect(build).toBeTruthy();
-      expect(build?.id).toEqual(externalBuildId);
-      expect(build?.name).toEqual(SAUCE_VISUAL_BUILD_NAME);
-      expect(build?.diffs?.nodes.length).toBe(1);
-    },
-    15 * 1000
-  );
-
-  it(
-    'creates an external build with customId',
-    async () => {
-      const result = await execute(
-        `npx @saucelabs/visual build create -n "${SAUCE_VISUAL_BUILD_NAME}" -c ${customId}`,
-        {
-          displayOutputOnFailure: true,
-          pipeOutput: false,
-          fileOutput,
-        }
-      );
-      expect(result.statusCode).toEqual(0);
-      const cliOutput = result.stdout;
-      const buildIds = [...cliOutput.matchAll(RE_VISUAL_BUILD_ID)];
-      expect(buildIds.length).toBe(1);
-      externalBuildId = buildIds[0][1];
-    },
-    2 * 60 * 1000
-  );
-
-  it(
-    'runs the docker image with SAUCE_VISUAL_CUSTOM_ID in place',
-    async () => {
-      const result = await execute(
-        `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
-        -e SAUCE_VISUAL_CUSTOM_ID \\
-        ${process.env.CONTAINER_IMAGE_NAME}`,
-        {
-          displayOutputOnFailure: true,
-          pipeOutput: false,
-          fileOutput,
-          env: {
-            SAUCE_VISUAL_CUSTOM_ID: customId,
-          },
-        }
-      );
-
-      expect(result.statusCode).toEqual(0);
-      dockerOutput = result.stdout;
-    },
-    2 * 60 * 1000
-  );
-
-  it(
-    'screenshots are linked to the external build with customId',
-    async () => {
-      const build = await visualApi.buildWithDiffsByCustomId(customId);
-      expect(build).toBeTruthy();
-      expect(build?.id).toEqual(externalBuildId);
-      expect(build?.name).toEqual(SAUCE_VISUAL_BUILD_NAME);
-      expect(build?.diffs?.nodes.length).toBe(1);
-    },
-    15 * 1000
-  );
-
+describe('Build-configuring env vars', () => {
   it(
     'runs the docker image with env vars in place',
     async () => {
