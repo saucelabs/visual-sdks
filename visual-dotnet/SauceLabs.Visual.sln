@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SauceLabs.Visual", "SauceLa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SauceLabs.Visual.Tests", "SauceLabs.Visual.Tests\SauceLabs.Visual.Tests.csproj", "{6D07FB36-1E01-4D6A-853F-E1548DBE234C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SauceLabs.Visual.IntegrationTests", "SauceLabs.Visual.IntegrationTests\SauceLabs.Visual.IntegrationTests.csproj", "{77A9E41F-CBB4-4E52-A3CE-8131E59B379D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D07FB36-1E01-4D6A-853F-E1548DBE234C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77A9E41F-CBB4-4E52-A3CE-8131E59B379D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A9E41F-CBB4-4E52-A3CE-8131E59B379D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A9E41F-CBB4-4E52-A3CE-8131E59B379D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A9E41F-CBB4-4E52-A3CE-8131E59B379D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
