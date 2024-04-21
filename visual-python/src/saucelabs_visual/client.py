@@ -14,6 +14,7 @@ from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod,
 class SauceLabsVisual:
     client: Client = None
     build_id: Union[str, None] = None
+    build_url: Union[str, None] = None
     meta_cache: dict = {}
     region: Region = None
 
@@ -82,6 +83,7 @@ class SauceLabsVisual:
         }
         build = self.client.execute(query, variable_values=values)
         self.build_id = build['createBuild']['id']
+        self.build_url = build['createBuild']['url']
         return build
 
     def finish_build(self):
@@ -252,7 +254,7 @@ class SauceLabsVisual:
         Get the dashboard build link for viewing the current build on Sauce Labs.
         :return:
         """
-        return self.region.build_url(self.build_id)
+        return self.build_url
 
     def get_build_created_link(self) -> str:
         return f'Sauce Labs Visual build created:\t{self.get_build_link()}'
