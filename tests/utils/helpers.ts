@@ -7,7 +7,7 @@ export const RE_VISUAL_BUILD_ID =
   /([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/g;
 
 export const runIdOrRandomId = process.env.GITHUB_RUN_ID
-  ? process.env.GITHUB_RUN_ID + process.env.GITHUB_RUN_ATTEMPT
+  ? `Github: ${process.env.GITHUB_RUN_ID}${process.env.GITHUB_RUN_ATTEMPT}`
   : randomBytes(8).toString('hex');
 
 export const SAUCE_VISUAL_PROJECT = `E2E test project - ${runIdOrRandomId}`;

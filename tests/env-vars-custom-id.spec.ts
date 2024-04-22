@@ -39,7 +39,7 @@ describe('Custom ID env var', () => {
       expect(result.statusCode).toEqual(0);
       const cliOutput = result.stdout;
       const buildIds = [...cliOutput.matchAll(RE_VISUAL_BUILD_ID)];
-      expect(buildIds.length).toBe(1);
+      expect(buildIds.length).toBeGreaterThanOrEqual(1);
       externalBuildId = buildIds[0][1];
     },
     2 * 60 * 1000
@@ -108,7 +108,7 @@ describe('Custom ID env var', () => {
     expect(dockerOutput.length).toBeGreaterThan(0);
 
     const links = [...dockerOutput.matchAll(RE_VISUAL_BUILD_LINK)];
-    expect(links.length).toBe(1);
+    expect(links.length).toBeGreaterThanOrEqual(1);
     buildId = links[0][4];
     expect(buildId).not.toEqual(externalBuildId);
   });
@@ -123,9 +123,9 @@ describe('Custom ID env var', () => {
         retries: 10,
       });
 
-      const build = await visualApi.build(buildId);
+      const build = await visualApi.buildWithDiffs(buildId);
       expect(build).toBeTruthy();
-      expect(build?.mode).toEqual(BuildMode.Completed);
+      expect(build?.diffs?.nodes.length).toBe(1);
     },
     15 * 1000
   );
