@@ -93,6 +93,11 @@ namespace SauceLabs.Visual
             try
             {
                 var build = (await api.Build(buildId)).EnsureValidResponse().Result;
+                if (build == null)
+                {
+                    throw new VisualClientException("not found");
+                }
+
                 return new VisualBuild(build.Id, build.Url, build.Mode);
             }
             catch (VisualClientException)
@@ -113,6 +118,11 @@ namespace SauceLabs.Visual
             try
             {
                 var build = (await api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+                if (build == null)
+                {
+                    throw new VisualClientException("not found");
+                }
+
                 return new VisualBuild(build.Id, build.Url, build.Mode);
             }
             catch (VisualClientException)
