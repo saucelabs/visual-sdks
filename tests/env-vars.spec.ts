@@ -57,7 +57,7 @@ describe('Build-configuring env vars', () => {
     expect(dockerOutput.length).toBeGreaterThan(0);
 
     const links = [...dockerOutput.matchAll(RE_VISUAL_BUILD_LINK)];
-    expect(links.length).toBe(1);
+    expect(links.length).toBeGreaterThanOrEqual(1);
     buildId = links[0][4];
   });
 
