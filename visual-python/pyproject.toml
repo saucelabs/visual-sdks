@@ -6,6 +6,7 @@ dependencies=[
     "requests",
     "requests-toolbelt",
     "gql",
+    "tabulate",
 ]
 readme = "README.md"
 
@@ -24,3 +25,9 @@ include = [
 [project.urls]
 Homepage = "https://github.com/saucelabs/visual-sdks/tree/main/visual-python"
 Issues = "https://github.com/saucelabs/visual-sdks/issues"
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+addopts = [
+    "--import-mode=importlib",
+]
