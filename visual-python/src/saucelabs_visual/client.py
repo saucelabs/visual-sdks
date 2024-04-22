@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 from os import environ
-from typing import List, Union
 from time import sleep
+from typing import List, Union
 
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildMode
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus
 
 
 class SauceLabsVisual:
@@ -241,7 +241,13 @@ class SauceLabsVisual:
 
         while build is None and datetime.now() < cutoff_time:
             result = self.client.execute(query, variable_values=values)
-            if result['result']['mode'] == BuildMode.COMPLETED.value:
+
+            if result['result'] is None:
+                raise ValueError(
+                    'Sauce Visual build has been deleted or you do not have access to view it.'
+                )
+
+            if result['result']['status'] != BuildStatus.RUNNING.value:
                 build = result
             else:
                 sleep(min(10, timeout))

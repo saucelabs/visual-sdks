@@ -3,16 +3,15 @@ from os import environ
 from typing import List, Union
 
 from SeleniumLibrary import SeleniumLibrary
+from robot.api import logger
 from robot.api.deco import library, keyword
 from robot.libraries.BuiltIn import BuiltIn
-from robot.api import logger
 from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildMode, \
-    BuildStatus
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
-    create_table_from_build_status
+    create_table_from_build_status, is_build_errored, is_build_failed
 
 
 @library(scope='GLOBAL')
@@ -179,24 +178,19 @@ class SauceLabsVisual:
             timeout=timeout,
         )
 
-        fail_message = None
+        fail_message: Union[None, str] = None
 
-        if fail_on_error:
-            if result['result']['mode'] == BuildMode.RUNNING.value:
-                fail_message = 'Failed to finish Visual build in time.'
+        if fail_on_error and is_build_errored(result):
+            fail_message = ('Failed to finish Visual build in time or one or more errors was '
+                            'detected in the build.')
 
-        if (
-            fail_on_changes and
-            result['result']['mode'] == BuildMode.COMPLETED.value and
-            result['result']['status'] not in [
-                BuildStatus.APPROVED.value,
-                BuildStatus.EQUAL.value,
-            ]
-        ):
+        if fail_on_changes and is_build_failed(result):
             fail_message = 'Sauce Visual detected one or more visual changes. Please review.'
 
         table = create_table_from_build_status(result)
         logger.info(table, html=True, also_console=True)
 
+        # If an error message is present (a user has opted in) then fail the build by using Robot's
+        # error builtin, so we get an erroneous response in the CLI and Suite Teardown / log.
         if fail_message:
             BuiltIn().fail(fail_message)
