@@ -32,9 +32,10 @@ public class LoginPage
         await VisualClient.VisualCheck("Login Page");
     }
 
-    [OneTimeTearDown]
+    [TearDown]
     public async Task Teardown()
     {
+        await VisualClient.Finish();
         Driver?.Quit();
         VisualClient?.Dispose();
     }
