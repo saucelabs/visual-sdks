@@ -22,7 +22,7 @@ namespace SauceLabs.Visual
         /// <summary>
         /// <c>EnableOnly</c> allows to specify which changes to consider globaly.
         /// </summary>
-        public DiffingOption[]? EnableOnly  { get; set; }
+        public DiffingOption[]? EnableOnly { get; set; }
 
         /// <summary>
         /// <c>Disable</c> allows to specify which changes to ignore globally.
