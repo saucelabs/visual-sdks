@@ -15,7 +15,7 @@ namespace SauceLabs.Visual.Models
         public void Enable(DiffingOption opt) => SetOption(opt, true);
         public void Disable(DiffingOption opt) => SetOption(opt, false);
 
-        internal void SetOption(DiffingOption opt, bool value)
+        private void SetOption(DiffingOption opt, bool value)
         {
             var mapping = new Dictionary<DiffingOption, Func<bool, bool>>()
             {
