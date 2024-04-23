@@ -19,6 +19,14 @@ namespace SauceLabs.Visual
         public FullPageConfig? FullPageConfig { get; set; }
         public string? ClipSelector { get; set; }
 
+        public DiffingOption[]? EnableOnly  { get; set; }
+        public DiffingOption[]? Disable { get; set; }
+
+        /// <summary>
+        /// <c>Regions</c> allows to specify what kind of checks needs to be done in a specific region.
+        /// </summary>
+        public SelectiveRegion[]? Regions { get; set; }
+
         /// <summary>
         /// <c>SuiteName</c> manually set the SuiteName of the Test.
         /// </summary>
