@@ -2,7 +2,8 @@ from os import environ
 from typing import List, Union
 
 from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport, BasicAuth
+from gql.transport.requests import RequestsHTTPTransport
+from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig
@@ -27,7 +28,7 @@ class SauceLabsVisual:
             )
 
         region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
-        transport = AIOHTTPTransport(url=region_url, auth=BasicAuth(username, access_key))
+        transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key))
         self.client = Client(transport=transport, execute_timeout=90)
 
     def get_client(self) -> Client:
