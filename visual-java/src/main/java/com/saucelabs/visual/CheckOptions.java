@@ -53,7 +53,6 @@ public class CheckOptions {
   private DiffingOptionsIn diffingOptions;
   private Boolean captureDom;
   private String clipSelector;
-
   private FullPageScreenshotConfig fullPageScreenshotConfig;
 
   public static class Builder {
