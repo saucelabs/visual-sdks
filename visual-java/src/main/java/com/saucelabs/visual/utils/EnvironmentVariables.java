@@ -1,5 +1,7 @@
 package com.saucelabs.visual.utils;
 
+import java.util.Optional;
+
 public class EnvironmentVariables {
 
   private EnvironmentVariables() {}
@@ -15,5 +17,14 @@ public class EnvironmentVariables {
 
   public static boolean isNotBlank(String str) {
     return str != null && !str.trim().isEmpty();
+  }
+
+  public static Optional<String> firstNonBlank(String... values) {
+    for (String value : values) {
+      if (isNotBlank(value)) {
+        return Optional.of(value);
+      }
+    }
+    return Optional.empty();
   }
 }

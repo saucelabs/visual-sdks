@@ -1,5 +1,6 @@
 package com.saucelabs.visual;
 
+import static com.saucelabs.visual.utils.EnvironmentVariables.firstNonBlank;
 import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
 
 import com.saucelabs.visual.exception.VisualApiException;
@@ -227,48 +228,25 @@ public class VisualApi {
     }
 
     public String getName() {
-      if (isNotBlank(name)) {
-        return name;
-      }
       if (isNotBlank(EnvironmentVariables.BUILD_NAME_DEPRECATED)) {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
-        return EnvironmentVariables.BUILD_NAME_DEPRECATED;
       }
-      if (isNotBlank(EnvironmentVariables.BUILD_NAME)) {
-        return EnvironmentVariables.BUILD_NAME;
-      }
-      return "";
+      return firstNonBlank(
+              name, EnvironmentVariables.BUILD_NAME_DEPRECATED, EnvironmentVariables.BUILD_NAME)
+          .orElse("");
     }
 
     public String getProject() {
-      if (isNotBlank(project)) {
-        return project;
-      }
-      if (isNotBlank(EnvironmentVariables.PROJECT_NAME)) {
-        return EnvironmentVariables.PROJECT_NAME;
-      }
-      return "";
+      return firstNonBlank(project, EnvironmentVariables.PROJECT_NAME).orElse("");
     }
 
     public String getBranch() {
-      if (isNotBlank(branch)) {
-        return branch;
-      }
-      if (isNotBlank(EnvironmentVariables.BRANCH_NAME)) {
-        return EnvironmentVariables.BRANCH_NAME;
-      }
-      return "";
+      return firstNonBlank(branch, EnvironmentVariables.BRANCH_NAME).orElse("");
     }
 
     public String getDefaultBranch() {
-      if (isNotBlank(defaultBranch)) {
-        return defaultBranch;
-      }
-      if (isNotBlank(EnvironmentVariables.DEFAULT_BRANCH_NAME)) {
-        return EnvironmentVariables.DEFAULT_BRANCH_NAME;
-      }
-      return "";
+      return firstNonBlank(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME).orElse("");
     }
   }
 
