@@ -5,11 +5,8 @@
     "visual",
     "visual-storybook",
     "visual-wdio",
-    "visual-wdio-example",
     "visual-cypress",
-    "visual-cypress-example",
-    "visual-nightwatch",
-    "visual-nightwatch-example"
+    "visual-nightwatch"
   ],
   "devDependencies": {
     "husky": "8.0.0",
