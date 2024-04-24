@@ -1,7 +1,6 @@
 package com.saucelabs.visual;
 
-import static com.saucelabs.visual.utils.EnvironmentVariables.firstNonBlank;
-import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
+import static com.saucelabs.visual.utils.EnvironmentVariables.*;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
@@ -232,21 +231,21 @@ public class VisualApi {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
       }
-      return firstNonBlank(
-              name, EnvironmentVariables.BUILD_NAME_DEPRECATED, EnvironmentVariables.BUILD_NAME)
-          .orElse("");
+      return valueOrDefault(
+          valueOrDefault(name, EnvironmentVariables.BUILD_NAME),
+          EnvironmentVariables.BUILD_NAME_DEPRECATED);
     }
 
     public String getProject() {
-      return firstNonBlank(project, EnvironmentVariables.PROJECT_NAME).orElse("");
+      return valueOrDefault(project, EnvironmentVariables.PROJECT_NAME);
     }
 
     public String getBranch() {
-      return firstNonBlank(branch, EnvironmentVariables.BRANCH_NAME).orElse("");
+      return valueOrDefault(branch, EnvironmentVariables.BRANCH_NAME);
     }
 
     public String getDefaultBranch() {
-      return firstNonBlank(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME).orElse("");
+      return valueOrDefault(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME);
     }
   }
 
