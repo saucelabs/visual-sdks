@@ -1,0 +1,35 @@
+name: JS (build)
+
+on:
+  push:
+    paths:
+      - 'visual-js/**'
+      - .github/workflows/js-build.yml
+  pull_request:
+    paths:
+      - 'visual-js/**'
+      - .github/workflows/js-build.yml
+
+defaults:
+  run:
+    working-directory: visual-js
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Build with lerna
+        run: |
+          corepack enable
+          yarn install
+          npx lerna run lint
+          npx lerna run build
+          npx lerna run test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}

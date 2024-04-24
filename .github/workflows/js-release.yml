@@ -1,0 +1,35 @@
+name: JS (release)
+
+on:
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: visual-js
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          git config --global user.name "sauce-visual-bot"
+          git config --global user.email "visual@saucelabs.com"
+      - name: Build
+        run: |
+          corepack enable
+          yarn install
+          npx lerna run build
+      - name: upgrade & publish version(s)
+        run: |
+          npx changeset version
+          npx changeset publish
+      - name: Push to git
+        run: |
+          git push --follow-tags
