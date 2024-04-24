@@ -12,21 +12,24 @@ from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod,
 
 
 class SauceLabsVisual:
-    client: Client = None
+    _client: Client = None
     build_id: Union[str, None] = None
     build_url: Union[str, None] = None
     meta_cache: dict = {}
     region: Region = None
 
-    def __init__(self):
-        self._create_client()
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = self._create_client()
+        return self._client
 
     def _create_client(self):
         username = environ.get("SAUCE_USERNAME")
         access_key = environ.get("SAUCE_ACCESS_KEY")
 
         if username is None or access_key is None:
-            raise Exception(
+            raise RuntimeError(
                 'Sauce Labs credentials not set. Please check that you set correctly your '
                 '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
@@ -34,10 +37,7 @@ class SauceLabsVisual:
         self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
         region_url = self.region.graphql_endpoint
         transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key))
-        self.client = Client(transport=transport, execute_timeout=90)
-
-    def get_client(self) -> Client:
-        return self.client
+        return Client(transport=transport, execute_timeout=90)
 
     def create_build(
             self,
