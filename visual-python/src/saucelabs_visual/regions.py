@@ -6,13 +6,14 @@ class Region:
     aliases: List[str] = []
     graphql_endpoint: str
     job_url_template: str
+    visual_url_template: str
 
     def __init__(
             self,
             name: str,
             aliases: List[str],
             graphql_endpoint: str,
-            job_url_template: str
+            job_url_template: str,
     ):
         self.name = name
         self.aliases = aliases
@@ -21,6 +22,9 @@ class Region:
 
     def job_url(self, job_id: str) -> str:
         return self.job_url_template.format(JOB_ID=job_id)
+
+    def build_url(self, build_id: str) -> str:
+        return self.visual_url_template.format(BUILD_ID=build_id)
 
     @staticmethod
     def from_name(region_name: str) -> 'Region':

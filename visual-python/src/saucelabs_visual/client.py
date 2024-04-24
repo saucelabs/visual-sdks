@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 from os import environ
+from time import sleep
 from typing import List, Union
 
 from gql import Client, gql
@@ -6,13 +8,15 @@ from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus
 
 
 class SauceLabsVisual:
     client: Client = None
     build_id: Union[str, None] = None
+    build_url: Union[str, None] = None
     meta_cache: dict = {}
+    region: Region = None
 
     def __init__(self):
         self._create_client()
@@ -27,7 +31,8 @@ class SauceLabsVisual:
                 '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
 
-        region_url = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1').graphql_endpoint
+        self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
+        region_url = self.region.graphql_endpoint
         transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key))
         self.client = Client(transport=transport, execute_timeout=90)
 
@@ -36,12 +41,12 @@ class SauceLabsVisual:
 
     def create_build(
             self,
-            name: str = environ.get('SAUCE_VISUAL_BUILD_NAME') or None,
-            project: str = environ.get('SAUCE_VISUAL_PROJECT') or None,
-            branch: str = environ.get('SAUCE_VISUAL_BRANCH') or None,
-            default_branch: str = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH') or None,
-            custom_id: str = environ.get('SAUCE_VISUAL_CUSTOM_ID') or None,
-            keep_alive_timeout: int = None
+            name: Union[str, None] = environ.get('SAUCE_VISUAL_BUILD_NAME'),
+            project: Union[str, None] = environ.get('SAUCE_VISUAL_PROJECT'),
+            branch: Union[str, None] = environ.get('SAUCE_VISUAL_BRANCH'),
+            default_branch: Union[str, None] = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH'),
+            custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
+            keep_alive_timeout: Union[int, None] = None
     ):
         query = gql(
             # language=GraphQL
@@ -78,6 +83,7 @@ class SauceLabsVisual:
         }
         build = self.client.execute(query, variable_values=values)
         self.build_id = build['createBuild']['id']
+        self.build_url = build['createBuild']['url']
         return build
 
     def finish_build(self):
@@ -95,7 +101,6 @@ class SauceLabsVisual:
         )
         values = {"id": self.build_id}
         self.meta_cache.clear()
-        self.build_id = None
         return self.client.execute(query, variable_values=values)
 
     def get_selenium_metadata(self, session_id: str) -> str:
@@ -137,12 +142,13 @@ class SauceLabsVisual:
             self,
             name: str,
             session_id: str,
-            test_name: str = None,
-            suite_name: str = None,
+            test_name: Union[str, None] = None,
+            suite_name: Union[str, None] = None,
             capture_dom: bool = False,
-            clip_selector: str = None,
-            ignore_regions: List[IgnoreRegion] = None,
-            full_page_config: FullPageConfig = None,
+            clip_selector: Union[str, None] = None,
+            ignore_regions: Union[List[IgnoreRegion], None] = None,
+            full_page_config: Union[FullPageConfig, None] = None,
+            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
     ):
         query = gql(
             # language=GraphQL
@@ -158,6 +164,7 @@ class SauceLabsVisual:
                 $clipSelector: String,
                 $ignoreRegions: [RegionIn!],
                 $fullPageConfig: FullPageConfigIn,
+                $diffingMethod: DiffingMethod,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -170,6 +177,7 @@ class SauceLabsVisual:
                     clipSelector: $clipSelector,
                     ignoreRegions: $ignoreRegions,
                     fullPageConfig: $fullPageConfig,
+                    diffingMethod: $diffingMethod,
                 }){
                     id
                 }
@@ -191,5 +199,71 @@ class SauceLabsVisual:
                 "delayAfterScrollMs": full_page_config.get('delay_after_scroll_ms'),
                 "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),
             } if full_page_config is not None else None,
+            "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
         }
         return self.client.execute(query, variable_values=values)
+
+    def get_build_status(
+            self,
+            wait: bool = True,
+            timeout: int = 60,
+    ):
+        query = gql(
+            # language=GraphQL
+            """
+            query buildStatus($buildId: UUID!) {
+                result: build(id: $buildId) {
+                    id
+                    name
+                    url
+                    mode
+                    status
+                    unapprovedCount: diffCountExtended(input: { status: UNAPPROVED })
+                    approvedCount: diffCountExtended(input: { status: APPROVED })
+                    rejectedCount: diffCountExtended(input: { status: REJECTED })
+                    equalCount: diffCountExtended(input: { status: EQUAL })
+                    erroredCount: diffCountExtended(input: { status: ERRORED })
+                    queuedCount: diffCountExtended(input: { status: QUEUED })
+                }
+            }
+            """
+        )
+        values = {
+            "buildId": self.build_id,
+        }
+
+        if not wait:
+            return self.client.execute(query, variable_values=values)
+
+        cutoff_time = datetime.now() + timedelta(seconds=timeout)
+        build = None
+        result = None
+
+        while build is None and datetime.now() < cutoff_time:
+            result = self.client.execute(query, variable_values=values)
+
+            if result['result'] is None:
+                raise ValueError(
+                    'Sauce Visual build has been deleted or you do not have access to view it.'
+                )
+
+            if result['result']['status'] != BuildStatus.RUNNING.value:
+                build = result
+            else:
+                sleep(min(10, timeout))
+
+        # Return the successful build if available, else, the last run
+        return build if build is not None else result
+
+    def get_build_link(self) -> str:
+        """
+        Get the dashboard build link for viewing the current build on Sauce Labs.
+        :return:
+        """
+        return self.build_url
+
+    def get_build_created_link(self) -> str:
+        return f'Sauce Labs Visual build created:\t{self.get_build_link()}'
+
+    def get_build_finished_link(self) -> str:
+        return f'Sauce Labs Visual build finished:\t{self.get_build_link()}'
