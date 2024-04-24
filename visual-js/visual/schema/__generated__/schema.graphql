@@ -254,6 +254,7 @@ type Build implements Node {
   """Full-text search ranking when filtered by `fullText`."""
   fullTextRank: Float
   id: UUID!
+  keepAliveTimeout: Int
   mode: BuildMode!
   name: String!
 
@@ -369,6 +370,12 @@ input BuildIn {
   branch: String
   customId: String
   defaultBranch: String
+
+  """
+  A positive integer that is the time in seconds that the Build is allowed to be in the RUNNING state after the last snapshot was created or updated.
+  The number clipped to the interval [1;86400].
+  """
+  keepAliveTimeout: Int
   name: String
   project: String
 }
@@ -489,6 +496,7 @@ input CreateSnapshotFromWebDriverIn {
   """
   clipSelector: String
   diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
 
   """
   Enable full page screenshot using scroll-and-stitch strategy.
@@ -569,6 +577,7 @@ type Diff implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  options: DiffingOption
 
   """Reads a single `Snapshot` that is related to this `Diff`."""
   snapshot: Snapshot
@@ -690,8 +699,27 @@ Method to use for diffing.
 SIMPLE is the default.
 """
 enum DiffingMethod {
+  BALANCED
   EXPERIMENTAL
   SIMPLE
+}
+
+type DiffingOption {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
+}
+
+input DiffingOptionsIn {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
 }
 
 """A connection to a list of `Diff` values."""
@@ -748,14 +776,32 @@ input FinishBuildIn {
 }
 
 input FullPageConfigIn {
+  """Adjust address bar padding on iOS and Android for viewport cutout."""
+  addressBarShadowPadding: Float
+
   """
   Delay in ms after scrolling and before taking screenshots.
   A slight delay can be helpful if the page is using lazy loading when scrolling
   """
   delayAfterScrollMs: Int
 
-  """Hide elements on the page after first scroll by css selectors"""
+  """Disable CSS animations and the input caret in the app."""
+  disableCSSAnimation: Boolean
+
+  """Hide elements on the page after first scroll by css selectors."""
   hideAfterFirstScroll: [String]
+
+  """Hide all scrollbars in the app."""
+  hideScrollBars: Boolean
+
+  """
+  Limit the number of screenshots taken for scrolling and stitching.
+  Default and max value is 10
+  """
+  scrollLimit: Int
+
+  """Adjust toolbar padding on iOS and Android for viewport cutout."""
+  toolBarShadowPadding: Int
 }
 
 scalar FullText
@@ -772,11 +818,6 @@ input FullTextFilter {
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
-
-type Job {
-  id: ID!
-  webdriverSession: WebdriverSession
-}
 
 """
 The root mutation type which contains root level fields which mutate data.
@@ -1240,6 +1281,7 @@ type Rect {
 }
 
 type Region {
+  diffingOptions: DiffingOption
   height: Int!
   name: String
   width: Int!
@@ -1248,6 +1290,7 @@ type Region {
 }
 
 input RegionIn {
+  diffingOptions: DiffingOptionsIn
   height: Int!
   name: String
   width: Int!
@@ -1422,6 +1465,7 @@ input SnapshotIn {
   device: String
   devicePixelRatio: Float
   diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
   ignoreRegions: [RegionIn!]
   jobUrl: String
   name: String!
@@ -1583,15 +1627,6 @@ type WebdriverSession {
 }
 
 scalar WebdriverSessionBlob
-
-"""This type has the same members as `WebdriverSession`."""
-input WebdriverSessionIn {
-  browser: Browser
-  browserVersion: String
-  deviceName: String
-  operatingSystem: OperatingSystem
-  operatingSystemVersion: String
-}
 
 input WebdriverSessionInfoIn {
   jobId: ID!

@@ -39,6 +39,7 @@ import {
 } from './regions.js';
 
 export * from './graphql/__generated__/graphql.js';
+export * from './selective-region.js';
 
 const clientVersion = 'PKG_VERSION';
 

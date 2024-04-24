@@ -23,6 +23,8 @@ query buildWithDiffs($input: UUID!) {
         diffClusters {
           x
           y
+          width
+          height
         }
       }
     }

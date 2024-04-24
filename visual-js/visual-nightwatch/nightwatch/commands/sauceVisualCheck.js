@@ -55,7 +55,10 @@ module.exports = class SauceVisualCheck extends EventEmitter {
       sessionId,
       options: {
         webdriver: { host, port },
-        sauceVisualService: { captureDom: globalCaptureDom = false } = {},
+        sauceVisualService: {
+          captureDom: globalCaptureDom = false,
+          fullPage,
+        } = {},
       },
     } = nightwatchBrowserObject;
     const sauceConfig = {
@@ -88,7 +91,7 @@ module.exports = class SauceVisualCheck extends EventEmitter {
         sessionMetadata: metaInfo,
         suiteName,
         testName,
-        fullPageConfig: getFullPageConfig(options.fullPage),
+        fullPageConfig: getFullPageConfig(fullPage, options.fullPage),
         clipSelector: options.clipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,
       });

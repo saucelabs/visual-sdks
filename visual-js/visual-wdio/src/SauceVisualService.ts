@@ -15,6 +15,11 @@ import {
   SauceRegion,
   getFullPageConfig,
   BuildMode,
+  DiffingOptionsIn,
+  SelectiveRegionOptions,
+  selectiveRegionToRegionIn,
+  selectiveRegionOptionsToDiffingOptions,
+  FullPageScreenshotOptions,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
@@ -86,6 +91,7 @@ type SauceVisualServiceOptions = {
   captureDom?: boolean;
   clipSelector?: string;
   region?: SauceRegion;
+  fullPage?: FullPageScreenshotOptions;
 };
 
 // This type is derived from what provides Cucumber as framework
@@ -102,8 +108,12 @@ type CucumberWorld = {
   };
 };
 
+type WdioSelectiveRegion = { element: Ignorable } & SelectiveRegionOptions;
+
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
+
+  regions?: Array<WdioSelectiveRegion>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
@@ -113,12 +123,8 @@ export type CheckOptions = {
    */
   captureDom?: boolean;
   diffingMethod?: DiffingMethod;
-  fullPage?:
-    | boolean
-    | {
-        delayAfterScrollMs?: number;
-        hideAfterFirstScroll?: string[];
-      };
+  disable?: [keyof DiffingOptionsIn];
+  fullPage?: FullPageScreenshotOptions;
 };
 
 export let uploadedDiffIds: string[] = [];
@@ -227,8 +233,19 @@ async function toIgnoreRegionIn(ignorables: Ignorable[]): Promise<RegionIn[]> {
     .filter((r) => 0 < r.width * r.height);
 }
 
+async function wdioSelectiveRegionToRegionIn(
+  list: WdioSelectiveRegion[],
+): Promise<RegionIn[]> {
+  const intermediate = [];
+  for (const wdioRegion of list) {
+    const [plainRegion] = await toIgnoreRegionIn([wdioRegion.element]);
+    intermediate.push({ ...wdioRegion, ...plainRegion });
+  }
+  return selectiveRegionToRegionIn(intermediate);
+}
+
 /**
- * This services are actually 2 instances at runtimet. OnPrepare and onComplete are executed by one instance and the before hook by another.
+ * This services are actually 2 instances at runtime. OnPrepare and onComplete are executed by one instance and the before hook by another.
  * Those instances cannot share state thus we recreate the api object all the time and share the build id by env variable.
  */
 export default class SauceVisualService implements Services.ServiceInstance {
@@ -237,6 +254,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   diffingMethod: DiffingMethod | undefined;
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
+  fullPage?: FullPageScreenshotOptions;
   apiClient: VisualApi;
 
   constructor(
@@ -247,6 +265,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
     this.diffingMethod = options.diffingMethod;
     this.captureDom = options.captureDom;
     this.clipSelector = options.clipSelector;
+    this.fullPage = options.fullPage;
     this.apiClient = getApi(
       {
         ...this.config,
@@ -273,13 +292,13 @@ export default class SauceVisualService implements Services.ServiceInstance {
       try {
         build = await this.apiClient.createBuild({
           name:
-            SAUCE_VISUAL_BUILD_NAME ||
             this.options.buildName ||
+            SAUCE_VISUAL_BUILD_NAME ||
             'WebdriverIO Visual Testing',
-          project: SAUCE_VISUAL_PROJECT || this.options.project || null,
-          branch: SAUCE_VISUAL_BRANCH || this.options.branch || null,
+          project: this.options.project || SAUCE_VISUAL_PROJECT || null,
+          branch: this.options.branch || SAUCE_VISUAL_BRANCH || null,
           defaultBranch:
-            SAUCE_VISUAL_DEFAULT_BRANCH || this.options.defaultBranch || null,
+            this.options.defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH || null,
         });
       } catch (e: unknown) {
         const errorMessage = ensureError(e).message ?? 'Unknown error';
@@ -456,7 +475,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
     ) =>
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
-      const ignoreRegions = await toIgnoreRegionIn(options.ignore ?? []);
+      const ignoreRegions = [
+        ...(await toIgnoreRegionIn(options.ignore ?? [])),
+        ...(await wdioSelectiveRegionToRegionIn(options.regions ?? [])),
+      ];
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
@@ -468,11 +490,14 @@ export default class SauceVisualService implements Services.ServiceInstance {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        diffingOptions: selectiveRegionOptionsToDiffingOptions({
+          disableOnly: options.disable ?? [],
+        }),
         sessionMetadata: metaInfo,
         diffingMethod: options.diffingMethod || this.diffingMethod,
         suiteName: this.test?.parent,
         testName: this.test?.title,
-        fullPageConfig: getFullPageConfig(options.fullPage),
+        fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));
       log.info('Check result', result);

@@ -2,6 +2,7 @@ import 'nightwatch';
 import {
   DiffingMethod,
   DiffStatus as DiffStatusInternal,
+  FullPageScreenshotOptions,
 } from '@saucelabs/visual';
 
 const ignoreRegionType: Type<RegionIn> = type({
@@ -16,12 +17,7 @@ type Ignorable = string | IgnoreRegion;
 type CheckOptions = {
   ignore?: Array<Ignorable>;
   diffingMethod?: DiffingMethod;
-  fullPage?:
-    | boolean
-    | {
-    delayAfterScrollMs?: number;
-    hideAfterFirstScroll?: string[];
-  };
+  fullPage?: FullPageScreenshotOptions;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
    */

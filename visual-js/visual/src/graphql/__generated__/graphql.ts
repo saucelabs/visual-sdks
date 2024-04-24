@@ -218,6 +218,7 @@ export type Build = Node & {
   /** Full-text search ranking when filtered by `fullText`. */
   fullTextRank: Maybe<Scalars['Float']>;
   id: Scalars['UUID'];
+  keepAliveTimeout: Maybe<Scalars['Int']>;
   mode: BuildMode;
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
@@ -316,6 +317,11 @@ export type BuildIn = {
   branch?: InputMaybe<Scalars['String']>;
   customId?: InputMaybe<Scalars['String']>;
   defaultBranch?: InputMaybe<Scalars['String']>;
+  /**
+   * A positive integer that is the time in seconds that the Build is allowed to be in the RUNNING state after the last snapshot was created or updated.
+   * The number clipped to the interval [1;86400].
+   */
+  keepAliveTimeout?: InputMaybe<Scalars['Int']>;
   name?: InputMaybe<Scalars['String']>;
   project?: InputMaybe<Scalars['String']>;
 };
@@ -421,6 +427,7 @@ export type CreateSnapshotFromWebDriverIn = {
   /** A querySelector compatible selector of an element that we should crop the screenshot to. */
   clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /**
    * Enable full page screenshot using scroll-and-stitch strategy.
    * Limitation: Currently, this feature is supported only on desktop browsers.
@@ -478,6 +485,7 @@ export type Diff = Node & {
   id: Scalars['UUID'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
+  options: Maybe<DiffingOption>;
   /** Reads a single `Snapshot` that is related to this `Diff`. */
   snapshot: Maybe<Snapshot>;
   snapshotId: Scalars['UUID'];
@@ -573,9 +581,29 @@ export type DiffStatusFilter = {
  * SIMPLE is the default.
  */
 export enum DiffingMethod {
+  Balanced = 'BALANCED',
   Experimental = 'EXPERIMENTAL',
   Simple = 'SIMPLE'
 }
+
+export type DiffingOption = {
+  __typename?: 'DiffingOption';
+  content: Maybe<Scalars['Boolean']>;
+  dimensions: Maybe<Scalars['Boolean']>;
+  position: Maybe<Scalars['Boolean']>;
+  structure: Maybe<Scalars['Boolean']>;
+  style: Maybe<Scalars['Boolean']>;
+  visual: Maybe<Scalars['Boolean']>;
+};
+
+export type DiffingOptionsIn = {
+  content?: InputMaybe<Scalars['Boolean']>;
+  dimensions?: InputMaybe<Scalars['Boolean']>;
+  position?: InputMaybe<Scalars['Boolean']>;
+  structure?: InputMaybe<Scalars['Boolean']>;
+  style?: InputMaybe<Scalars['Boolean']>;
+  visual?: InputMaybe<Scalars['Boolean']>;
+};
 
 /** A connection to a list of `Diff` values. */
 export type DiffsConnection = {
@@ -627,25 +655,32 @@ export type FinishBuildIn = {
 };
 
 export type FullPageConfigIn = {
+  /** Adjust address bar padding on iOS and Android for viewport cutout. */
+  addressBarShadowPadding?: InputMaybe<Scalars['Float']>;
   /**
    * Delay in ms after scrolling and before taking screenshots.
    * A slight delay can be helpful if the page is using lazy loading when scrolling
    */
   delayAfterScrollMs?: InputMaybe<Scalars['Int']>;
-  /** Hide elements on the page after first scroll by css selectors */
+  /** Disable CSS animations and the input caret in the app. */
+  disableCSSAnimation?: InputMaybe<Scalars['Boolean']>;
+  /** Hide elements on the page after first scroll by css selectors. */
   hideAfterFirstScroll?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  /** Hide all scrollbars in the app. */
+  hideScrollBars?: InputMaybe<Scalars['Boolean']>;
+  /**
+   * Limit the number of screenshots taken for scrolling and stitching.
+   * Default and max value is 10
+   */
+  scrollLimit?: InputMaybe<Scalars['Int']>;
+  /** Adjust toolbar padding on iOS and Android for viewport cutout. */
+  toolBarShadowPadding?: InputMaybe<Scalars['Int']>;
 };
 
 /** A filter to be used against FullText fields. All fields are combined with a logical ‘and.’ */
 export type FullTextFilter = {
   /** Performs a full text search on the field. */
   matches?: InputMaybe<Scalars['String']>;
-};
-
-export type Job = {
-  __typename?: 'Job';
-  id: Scalars['ID'];
-  webdriverSession: Maybe<WebdriverSession>;
 };
 
 /** The root mutation type which contains root level fields which mutate data. */
@@ -1074,6 +1109,7 @@ export type Rect = {
 
 export type Region = {
   __typename?: 'Region';
+  diffingOptions: Maybe<DiffingOption>;
   height: Scalars['Int'];
   name: Maybe<Scalars['String']>;
   width: Scalars['Int'];
@@ -1082,6 +1118,7 @@ export type Region = {
 };
 
 export type RegionIn = {
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
   height: Scalars['Int'];
   name?: InputMaybe<Scalars['String']>;
   width: Scalars['Int'];
@@ -1195,6 +1232,7 @@ export type SnapshotIn = {
   device?: InputMaybe<Scalars['String']>;
   devicePixelRatio?: InputMaybe<Scalars['Float']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   jobUrl?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
@@ -1326,15 +1364,6 @@ export type WebdriverSession = {
   viewportWidth: Maybe<Scalars['Int']>;
 };
 
-/** This type has the same members as `WebdriverSession`. */
-export type WebdriverSessionIn = {
-  browser?: InputMaybe<Browser>;
-  browserVersion?: InputMaybe<Scalars['String']>;
-  deviceName?: InputMaybe<Scalars['String']>;
-  operatingSystem?: InputMaybe<OperatingSystem>;
-  operatingSystemVersion?: InputMaybe<Scalars['String']>;
-};
-
 export type WebdriverSessionInfoIn = {
   jobId: Scalars['ID'];
   sessionId: Scalars['ID'];
@@ -1366,7 +1395,7 @@ export type BuildWithDiffsQueryVariables = Exact<{
 }>;
 
 
-export type BuildWithDiffsQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number } | null> }> } } | null };
+export type BuildWithDiffsQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } | null };
 
 export type BuildWithDiffsByCustomIdQueryVariables = Exact<{
   input: Scalars['String'];
@@ -1449,7 +1478,7 @@ export type WebdriverSessionInfoQuery = { __typename?: 'Query', result: { __type
 export const BuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"build"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildQuery, BuildQueryVariables>;
 export const BuildByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildByCustomIdQuery, BuildByCustomIdQueryVariables>;
 export const BuildStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","alias":{"kind":"Name","value":"unapprovedCount"},"name":{"kind":"Name","value":"diffCount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"UNAPPROVED"}}]}]}}]}}]} as unknown as DocumentNode<BuildStatusQuery, BuildStatusQueryVariables>;
-export const BuildWithDiffsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsQuery, BuildWithDiffsQueryVariables>;
+export const BuildWithDiffsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsQuery, BuildWithDiffsQueryVariables>;
 export const BuildWithDiffsByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffsByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsByCustomIdQuery, BuildWithDiffsByCustomIdQueryVariables>;
 export const CreateBuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createBuild"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BuildIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<CreateBuildMutation, CreateBuildMutationVariables>;
 export const CreateSnapshotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SnapshotIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"uploadId"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotMutation, CreateSnapshotMutationVariables>;
