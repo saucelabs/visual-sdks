@@ -16,11 +16,14 @@ from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_regi
 
 @library(scope='GLOBAL')
 class SauceLabsVisual:
-    client: Client = None
+    _client: Client = None
     selenium_library_key: Union[str, None] = None
 
-    def __init__(self):
-        self.client = Client()
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = Client()
+        return self._client
 
     def _get_selenium_library(self) -> SeleniumLibrary:
         all_libraries: dict = BuiltIn().get_library_instance(all=True)
