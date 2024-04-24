@@ -79,9 +79,9 @@
   "scripts": {
     "build": "tsup",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --collect-coverage",
+    "test-ignored": "jest --collect-coverage",
     "watch": "tsc-watch --declaration -p .",
-    "test:cjs": "node ./test-cjs.cjs"
+    "test": "node ./test-cjs.cjs"
   },
   "publishConfig": {
     "access": "public"

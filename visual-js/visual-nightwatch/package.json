@@ -32,7 +32,7 @@
   },
   "scripts": {
     "lint": "eslint \"{nightwatch,utils}/**/*.js\"",
-    "test": "jest --collect-coverage"
+    "test-ignored": "jest --collect-coverage"
   },
   "publishConfig": {
     "access": "public"
