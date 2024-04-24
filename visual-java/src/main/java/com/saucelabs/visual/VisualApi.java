@@ -227,6 +227,9 @@ public class VisualApi {
     }
 
     public String getName() {
+      if (isNotBlank(name)) {
+        return name;
+      }
       if (isNotBlank(EnvironmentVariables.BUILD_NAME_DEPRECATED)) {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
@@ -235,28 +238,37 @@ public class VisualApi {
       if (isNotBlank(EnvironmentVariables.BUILD_NAME)) {
         return EnvironmentVariables.BUILD_NAME;
       }
-      return name;
+      return "";
     }
 
     public String getProject() {
+      if (isNotBlank(project)) {
+        return project;
+      }
       if (isNotBlank(EnvironmentVariables.PROJECT_NAME)) {
         return EnvironmentVariables.PROJECT_NAME;
       }
-      return project;
+      return "";
     }
 
     public String getBranch() {
+      if (isNotBlank(branch)) {
+        return branch;
+      }
       if (isNotBlank(EnvironmentVariables.BRANCH_NAME)) {
         return EnvironmentVariables.BRANCH_NAME;
       }
-      return branch;
+      return "";
     }
 
     public String getDefaultBranch() {
+      if (isNotBlank(defaultBranch)) {
+        return defaultBranch;
+      }
       if (isNotBlank(EnvironmentVariables.DEFAULT_BRANCH_NAME)) {
         return EnvironmentVariables.DEFAULT_BRANCH_NAME;
       }
-      return defaultBranch;
+      return "";
     }
   }
 
