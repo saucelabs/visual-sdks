@@ -17,12 +17,32 @@ from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_regi
 @library(scope='GLOBAL')
 class SauceLabsVisual:
     client: Client = None
+    selenium_library_key: Union[str, None] = None
 
     def __init__(self):
         self.client = Client()
 
     def _get_selenium_library(self) -> SeleniumLibrary:
-        return BuiltIn().get_library_instance('SeleniumLibrary')
+        all_libraries: dict = BuiltIn().get_library_instance(all=True)
+
+        # SeleniumLibrary may be imported under another name if an alias is provided -- ex:
+        #
+        # Library           SeleniumLibrary    AS    slib
+        #
+        # Instead of importing by static name, we'll get all imported libraries and iterate over
+        # them to find the instance of SeleniumLibrary and cache that key.
+        if self.selenium_library_key is None:
+            for key, value in all_libraries.items():
+                if type(value) is SeleniumLibrary:
+                    self.selenium_library_key = key
+                    break
+
+        if self.selenium_library_key is None:
+            raise RuntimeError(
+                'SeleniumLibrary instance not found in Robot. Is it imported in your project?'
+            )
+
+        return BuiltIn().get_library_instance(self.selenium_library_key)
 
     def _get_selenium_id(self) -> str:
         return self._get_selenium_library().get_session_id()
