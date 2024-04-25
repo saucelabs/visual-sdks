@@ -27,9 +27,11 @@ jobs:
           yarn install
           npx lerna run build
       - name: upgrade & publish version(s)
+        ## TODO version and publish commands need to be adjusted when we're confident with the pipeline
         run: |
-          npx changeset version
-          npx changeset publish
-      - name: Push to git
-        run: |
-          git push --follow-tags
+          npx changeset version --snapshot migration
+          npx changeset publish --no-git-tag --snapshot
+      ## TODO enable the git tagging when we're confident with the pipeline
+      ##- name: Push to git
+      ##  run: |
+      ##    git push --follow-tags
