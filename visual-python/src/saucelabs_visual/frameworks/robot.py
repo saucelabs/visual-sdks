@@ -88,9 +88,7 @@ class SauceLabsVisual:
 
         for ignore_region in ignore_regions:
             literal_type = type(ignore_region)
-            if literal_type is IgnoreRegion:
-                parsed_ignore_regions.append(ignore_region)
-            elif literal_type is dict:
+            if literal_type is dict:
                 parsed_ignore_regions.append(
                     ignore_region_from_dict(ignore_region)
                 )
@@ -102,14 +100,7 @@ class SauceLabsVisual:
                 elements_to_query.append(ignore_region)
 
         for element in elements_to_query:
-            rect = element.rect
-            region = IgnoreRegion(
-                width=rect.get('width'),
-                height=rect.get('height'),
-                x=rect.get('x'),
-                y=rect.get('y'),
-            )
-            parsed_ignore_regions.append(region)
+            parsed_ignore_regions.append(ignore_region_from_dict(element.rect))
 
         return [
             region for region in parsed_ignore_regions if self._is_valid_ignore_region(region)
