@@ -1,6 +1,7 @@
 package com.saucelabs.visual;
 
-import static com.saucelabs.visual.utils.EnvironmentVariables.*;
+import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
+import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
