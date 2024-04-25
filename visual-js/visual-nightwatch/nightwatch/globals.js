@@ -57,11 +57,11 @@ const globals = {
       ({ url: visualBuildUrl } = build);
     } else {
       const sauceBuildData = {
-        name: SAUCE_VISUAL_BUILD_NAME || buildName || 'Nightwatch Visual Demo',
-        project:
-          SAUCE_VISUAL_PROJECT || project || 'Nightwatch Visual Examples',
-        branch: SAUCE_VISUAL_BRANCH || branch || 'main',
-        defaultBranch: SAUCE_VISUAL_DEFAULT_BRANCH || defaultBranch,
+        name:
+          buildName || SAUCE_VISUAL_BUILD_NAME || 'Nightwatch Visual Testing',
+        project: project || SAUCE_VISUAL_PROJECT,
+        branch: branch || SAUCE_VISUAL_BRANCH,
+        defaultBranch: defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH,
       };
       try {
         ({ id: visualBuildId, url: visualBuildUrl } = await getApi(

@@ -292,13 +292,13 @@ export default class SauceVisualService implements Services.ServiceInstance {
       try {
         build = await this.apiClient.createBuild({
           name:
-            SAUCE_VISUAL_BUILD_NAME ||
             this.options.buildName ||
+            SAUCE_VISUAL_BUILD_NAME ||
             'WebdriverIO Visual Testing',
-          project: SAUCE_VISUAL_PROJECT || this.options.project || null,
-          branch: SAUCE_VISUAL_BRANCH || this.options.branch || null,
+          project: this.options.project || SAUCE_VISUAL_PROJECT || null,
+          branch: this.options.branch || SAUCE_VISUAL_BRANCH || null,
           defaultBranch:
-            SAUCE_VISUAL_DEFAULT_BRANCH || this.options.defaultBranch || null,
+            this.options.defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH || null,
         });
       } catch (e: unknown) {
         const errorMessage = ensureError(e).message ?? 'Unknown error';

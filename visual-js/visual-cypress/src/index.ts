@@ -200,23 +200,23 @@ class CypressSauceVisual {
     try {
       const { id, url } = await this.api.createBuild({
         name:
-          SAUCE_VISUAL_BUILD_NAME ||
           config.saucelabs?.buildName ||
+          SAUCE_VISUAL_BUILD_NAME ||
           'Cypress Visual Testing',
         project:
+          config.saucelabs?.project ||
           SAUCE_VISUAL_PROJECT ||
           SAUCE_VISUAL_PROJECT_NAME ||
-          config.saucelabs?.project ||
           null,
         branch:
+          config.saucelabs?.branch ||
           SAUCE_VISUAL_BRANCH ||
           SAUCE_VISUAL_BRANCH_NAME ||
-          config.saucelabs?.branch ||
           null,
         defaultBranch:
+          config.saucelabs?.defaultBranch ||
           SAUCE_VISUAL_DEFAULT_BRANCH ||
           SAUCE_VISUAL_DEFAULT_BRANCH_NAME ||
-          config.saucelabs?.defaultBranch ||
           null,
         customId: SAUCE_VISUAL_CUSTOM_ID || null,
       });
