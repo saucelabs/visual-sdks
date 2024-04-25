@@ -16,4 +16,8 @@ public class EnvironmentVariables {
   public static boolean isNotBlank(String str) {
     return str != null && !str.trim().isEmpty();
   }
+
+  public static String valueOrDefault(String str, String defaultValue) {
+    return isNotBlank(str) ? str : defaultValue;
+  }
 }
