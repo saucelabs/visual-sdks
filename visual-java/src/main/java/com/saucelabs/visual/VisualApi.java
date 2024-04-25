@@ -95,7 +95,7 @@ public class VisualApi {
         api.setCaptureDom(this.captureDom);
       }
       if (this.fullPageScreenshotConfig != null) {
-        api.setFullPageScreenshotConfig(this.fullPageScreenshotConfig);
+        api.enableFullPageScreenshots(this.fullPageScreenshotConfig);
       }
       return api;
     }
@@ -201,10 +201,17 @@ public class VisualApi {
 
   /**
    * Enables full page screenshots
-   *
-   * @param fullPageScreenshotConfig activation of DOM Capture.
    */
-  public void setFullPageScreenshotConfig(FullPageScreenshotConfig fullPageScreenshotConfig) {
+  public void enableFullPageScreenshots() {
+    this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+
+  /**
+   * Enables full page screenshots
+   *
+   * @param fullPageScreenshotConfig config for full page screenshots
+   */
+  public void enableFullPageScreenshots(FullPageScreenshotConfig fullPageScreenshotConfig) {
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
   }
 
