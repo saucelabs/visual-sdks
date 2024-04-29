@@ -8,7 +8,8 @@ from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
+    DiffingOptions
 
 PKG_VERSION = '0.0.10'
 
@@ -153,6 +154,7 @@ class SauceLabsVisual:
             ignore_regions: Union[List[IgnoreRegion], None] = None,
             full_page_config: Union[FullPageConfig, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_options: Union[DiffingOptions, None] = None,
     ):
         query = gql(
             # language=GraphQL
@@ -169,6 +171,7 @@ class SauceLabsVisual:
                 $ignoreRegions: [RegionIn!],
                 $fullPageConfig: FullPageConfigIn,
                 $diffingMethod: DiffingMethod,
+                $diffingOptions: DiffingOptionsIn,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -182,6 +185,7 @@ class SauceLabsVisual:
                     ignoreRegions: $ignoreRegions,
                     fullPageConfig: $fullPageConfig,
                     diffingMethod: $diffingMethod,
+                    diffingOptions: $diffingOptions,
                 }){
                     id
                 }
@@ -204,6 +208,7 @@ class SauceLabsVisual:
                 "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),
             } if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
+            "diffingOptions": diffing_options,
         }
         return self.client.execute(query, variable_values=values)
 

@@ -1,5 +1,16 @@
-from typing import TypedDict, List, Optional
 from enum import Enum
+from typing import List
+
+from typing_extensions import TypedDict, NotRequired
+
+
+class DiffingOptions(TypedDict):
+    content: NotRequired[bool]
+    dimensions: NotRequired[bool]
+    position: NotRequired[bool]
+    structure: NotRequired[bool]
+    style: NotRequired[bool]
+    visual: NotRequired[bool]
 
 
 class IgnoreRegion(TypedDict):
@@ -7,11 +18,13 @@ class IgnoreRegion(TypedDict):
     y: int
     height: int
     width: int
+    diffingOptions: NotRequired[DiffingOptions]
+    name: NotRequired[dict]
 
 
 class FullPageConfig(TypedDict):
-    delay_after_scroll_ms: Optional[int]
-    hide_after_first_scroll: Optional[List[str]]
+    delay_after_scroll_ms: NotRequired[int]
+    hide_after_first_scroll: NotRequired[List[str]]
 
 
 class DiffingMethod(Enum):

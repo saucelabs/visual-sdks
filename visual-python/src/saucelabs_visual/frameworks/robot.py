@@ -9,7 +9,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
 
@@ -154,6 +154,7 @@ class SauceLabsVisual:
             ignore_regions: List[Union[IgnoreRegion, str, WebElement]] = None,
             full_page_config: Union[str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_options: Union[DiffingOptions, None] = None,
     ):
         session_id = self._get_selenium_id()
 
@@ -177,6 +178,7 @@ class SauceLabsVisual:
             ignore_regions=parsed_ignore_regions,
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
+            diffing_options=diffing_options,
         )
 
     @keyword(name="Visual Build Status")
