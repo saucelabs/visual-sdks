@@ -34,7 +34,7 @@ namespace SauceLabs.Visual.Utils
                 return diffingOptions;
             } },
         };
-        private DiffingOptionsIn? SetOptions(DiffingOption[]? enableOnly, DiffingOption[]? disable)
+        internal static DiffingOptionsIn? SelectiveRegionToDiffingOptions(DiffingOption[]? enableOnly, DiffingOption[]? disable)
         {
             if (enableOnly != null)
             {

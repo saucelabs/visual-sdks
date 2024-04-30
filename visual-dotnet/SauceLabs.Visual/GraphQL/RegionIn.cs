@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using SauceLabs.Visual.Models;
+using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual.GraphQL
 {
@@ -71,7 +72,7 @@ namespace SauceLabs.Visual.GraphQL
                 Height = region.Element.Size.Height;
             }
 
-            DiffingOptions = new DiffingOptionsIn();
+            DiffingOptions = DiffingOptionsBuilder.SelectiveRegionToDiffingOptions(region.EnableOnly, region.Disable);
         }
     }
 }
