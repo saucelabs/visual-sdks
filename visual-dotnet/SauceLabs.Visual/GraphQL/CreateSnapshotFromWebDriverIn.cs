@@ -9,6 +9,8 @@ namespace SauceLabs.Visual.GraphQL
         public string BuildUuid { get; }
         [JsonProperty("diffingMethod")]
         public DiffingMethod DiffingMethod { get; }
+        [JsonProperty("diffingOptions")]
+        public DiffingOptionsIn? DiffingOptions { get; set; }
         [JsonProperty("ignoreRegions")]
         public RegionIn[] IgnoreRegions { get; }
         [JsonProperty("jobId")]

@@ -16,6 +16,8 @@ namespace SauceLabs.Visual.GraphQL
         public int Width { get; }
         [JsonProperty("height")]
         public int Height { get; }
+        [JsonProperty("diffingOptions")]
+        public DiffingOptionsIn? DiffingOptions { get; }
 
         public RegionIn(int x, int y, int width, int height)
         {
@@ -29,10 +31,21 @@ namespace SauceLabs.Visual.GraphQL
             Name = name;
         }
 
+        public RegionIn(int x, int y, int width, int height, DiffingOptionsIn diffingOptions) : this(x, y, width, height)
+        {
+            DiffingOptions = diffingOptions;
+        }
+
         public RegionIn(IWebElement input) : this(input.Location.X, input.Location.Y, input.Size.Width, input.Size.Height)
         { }
 
+        public RegionIn(IWebElement input, DiffingOptionsIn diffingOption) : this(input.Location.X, input.Location.Y, input.Size.Width, input.Size.Height, diffingOption)
+        { }
+
         public RegionIn(IgnoreRegion input) : this(input.X, input.Y, input.Width, input.Height)
+        { }
+
+        public RegionIn(IgnoreRegion input, DiffingOptionsIn diffingOptions) : this(input.X, input.Y, input.Width, input.Height, diffingOptions)
         { }
     }
 }
