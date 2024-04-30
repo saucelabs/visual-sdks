@@ -39,13 +39,39 @@ namespace SauceLabs.Visual.GraphQL
         public RegionIn(IWebElement input) : this(input.Location.X, input.Location.Y, input.Size.Width, input.Size.Height)
         { }
 
-        public RegionIn(IWebElement input, DiffingOptionsIn diffingOption) : this(input.Location.X, input.Location.Y, input.Size.Width, input.Size.Height, diffingOption)
-        { }
-
         public RegionIn(IgnoreRegion input) : this(input.X, input.Y, input.Width, input.Height)
         { }
 
-        public RegionIn(IgnoreRegion input, DiffingOptionsIn diffingOptions) : this(input.X, input.Y, input.Width, input.Height, diffingOptions)
-        { }
+        public RegionIn(SelectiveRegion region)
+        {
+            if (region.Region != null && region.Element != null)
+            {
+                throw new VisualClientException("ambiguous ignored region. Only one of 'region' or 'element' has to be specified.");
+            }
+
+            if (region.Region == null && region.Element == null)
+            {
+                throw new VisualClientException("invalid ignored region. 'region' or 'element' has to be specified.");
+            }
+
+            if (region.Region != null)
+            {
+                Name = region.Region.Name;
+                X = region.Region.X;
+                Y = region.Region.Y;
+                Width = region.Region.Width;
+                Height = region.Region.Height;
+            }
+            if (region.Element != null)
+            {
+                Name = region.Element.TagName;
+                X = region.Element.Location.X;
+                Y = region.Element.Location.Y;
+                Width = region.Element.Size.Width;
+                Height = region.Element.Size.Height;
+            }
+
+            DiffingOptions = new DiffingOptionsIn();
+        }
     }
 }
