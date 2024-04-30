@@ -36,7 +36,7 @@ namespace SauceLabs.Visual.Utils
         };
         internal static DiffingOptionsIn? SelectiveRegionToDiffingOptions(DiffingOption[]? enableOnly, DiffingOption[]? disable)
         {
-            if (enableOnly != null)
+            if (enableOnly?.Length > 0)
             {
                 var options = new DiffingOptionsIn(false);
                 foreach (var opt in enableOnly)
@@ -49,7 +49,7 @@ namespace SauceLabs.Visual.Utils
                 return options;
             }
 
-            if (disable != null)
+            if (disable?.Length > 0)
             {
                 var options = new DiffingOptionsIn(true);
                 foreach (var opt in disable)

@@ -164,7 +164,8 @@ namespace SauceLabs.Visual
                 clipSelector: options.ClipSelector,
                 suiteName: options.SuiteName,
                 testName: options.TestName,
-                fullPageConfig: fullPageConfigIn
+                fullPageConfig: fullPageConfigIn,
+                diffingOptions: DiffingOptionsBuilder.SelectiveRegionToDiffingOptions(options.EnableOnly, options.Disable)
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;

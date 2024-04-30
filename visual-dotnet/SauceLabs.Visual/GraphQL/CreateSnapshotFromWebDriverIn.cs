@@ -45,7 +45,8 @@ namespace SauceLabs.Visual.GraphQL
             string? clipSelector,
             string? suiteName,
             string? testName,
-            FullPageConfigIn? fullPageConfig
+            FullPageConfigIn? fullPageConfig,
+            DiffingOptionsIn? diffingOptions
         )
         {
             BuildUuid = buildUuid;
@@ -60,6 +61,7 @@ namespace SauceLabs.Visual.GraphQL
             SuiteName = suiteName;
             TestName = testName;
             FullPageConfig = fullPageConfig;
+            DiffingOptions = diffingOptions;
         }
     }
 }
