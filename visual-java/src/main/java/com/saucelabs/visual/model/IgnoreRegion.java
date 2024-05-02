@@ -13,8 +13,8 @@ public class IgnoreRegion {
   private int width;
   private int x;
   private int y;
-  private List<DiffingOption> enableOnly;
-  private List<DiffingOption> disableOnly;
+  private List<String> enableOnly;
+  private List<String> disableOnly;
 
   public IgnoreRegion(String name, int x, int y, int width, int height) {
     this.name = name;
@@ -24,31 +24,7 @@ public class IgnoreRegion {
     this.y = y;
   }
 
-  public IgnoreRegion(
-      String name,
-      int x,
-      int y,
-      int width,
-      int height,
-      List<DiffingOption> enableOnly,
-      List<DiffingOption> disableOnly) {
-    this.name = name;
-    this.height = height;
-    this.width = width;
-    this.x = x;
-    this.y = y;
-    this.enableOnly = enableOnly;
-  }
-
   public IgnoreRegion(int x, int y, int width, int height) {
-    this.name = "";
-    this.height = height;
-    this.width = width;
-    this.x = x;
-    this.y = y;
-  }
-
-  public IgnoreRegion(int x, int y, int width, int height, DiffingOption opts) {
     this.name = "";
     this.height = height;
     this.width = width;
@@ -96,19 +72,27 @@ public class IgnoreRegion {
     this.y = y;
   }
 
-  public void setDisableOnly(List<DiffingOption> disableOnly) {
+  public void disableOnly(List<String> options) {
+    disableOnly = options;
+  }
+
+  public void setDisableOnly(List<String> disableOnly) {
     this.disableOnly = disableOnly;
   }
 
-  public List<DiffingOption> getDisableOnly() {
+  public List<String> getDisableOnly() {
     return disableOnly;
   }
 
-  public void setEnableOnly(List<DiffingOption> enableOnly) {
+  public void enableOnly(List<String> options) {
+    enableOnly = options;
+  }
+
+  public void setEnableOnly(List<String> enableOnly) {
     this.enableOnly = enableOnly;
   }
 
-  public List<DiffingOption> getEnableOnly() {
+  public List<String> getEnableOnly() {
     return enableOnly;
   }
 

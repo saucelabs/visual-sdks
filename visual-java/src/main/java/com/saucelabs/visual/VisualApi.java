@@ -1,12 +1,12 @@
 package com.saucelabs.visual;
 
+import static com.saucelabs.visual.model.DiffingOption.*;
 import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
 import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
-import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
@@ -373,7 +373,7 @@ public class VisualApi {
   }
 
   private DiffingOptionsIn.Builder setDiffingOptionValue(
-      DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
+      DiffingOptionsIn.Builder builder, String key, boolean value) {
     switch (key) {
       case Content:
         return builder.withContent(value);
@@ -392,10 +392,10 @@ public class VisualApi {
   }
 
   private Optional<DiffingOptionsIn> generateDiffingOptions(
-      List<DiffingOption> enableOnly, List<DiffingOption> disableOnly) {
+      List<String> enableOnly, List<String> disableOnly) {
     if (enableOnly != null && !enableOnly.isEmpty()) {
       DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
-      for (DiffingOption option : DiffingOption.values()) {
+      for (String option : DiffingOptionValues) {
         setDiffingOptionValue(builder, option, enableOnly.contains(option));
       }
       return Optional.of(builder.build());
@@ -403,7 +403,7 @@ public class VisualApi {
 
     if (disableOnly != null && !disableOnly.isEmpty()) {
       DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
-      for (DiffingOption option : DiffingOption.values()) {
+      for (String option : DiffingOptionValues) {
         setDiffingOptionValue(builder, option, !disableOnly.contains(option));
       }
       return Optional.of(builder.build());

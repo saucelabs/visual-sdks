@@ -1,6 +1,5 @@
 package com.saucelabs.visual;
 
-import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import java.util.ArrayList;
@@ -26,8 +25,8 @@ public class CheckOptions {
       Boolean captureDom,
       String clipSelector,
       FullPageScreenshotConfig fullPageScreenshotConfig,
-      List<DiffingOption> enableOnly,
-      List<DiffingOption> disableOnly) {
+      List<String> enableOnly,
+      List<String> disableOnly) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
     this.testName = testName;
@@ -50,8 +49,8 @@ public class CheckOptions {
   private String clipSelector;
 
   private FullPageScreenshotConfig fullPageScreenshotConfig;
-  private List<DiffingOption> enableOnly;
-  private List<DiffingOption> disableOnly;
+  private List<String> enableOnly;
+  private List<String> disableOnly;
 
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
@@ -62,8 +61,8 @@ public class CheckOptions {
     private Boolean captureDom;
     private String clipSelector;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
-    private List<DiffingOption> enableOnly;
-    private List<DiffingOption> disableOnly;
+    private List<String> enableOnly;
+    private List<String> disableOnly;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
       this.ignoreElements = ignoreElements;
@@ -105,12 +104,12 @@ public class CheckOptions {
       return this;
     }
 
-    public Builder enableOnly(List<DiffingOption> enableOnly) {
+    public Builder enableOnly(List<String> enableOnly) {
       this.enableOnly = enableOnly;
       return this;
     }
 
-    public Builder disableOnly(List<DiffingOption> disableOnly) {
+    public Builder disableOnly(List<String> disableOnly) {
       this.disableOnly = disableOnly;
       return this;
     }
@@ -198,19 +197,19 @@ public class CheckOptions {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
   }
 
-  public void setEnableOnly(List<DiffingOption> enableOnly) {
+  public void setEnableOnly(List<String> enableOnly) {
     this.enableOnly = enableOnly;
   }
 
-  public List<DiffingOption> getEnableOnly() {
+  public List<String> getEnableOnly() {
     return enableOnly;
   }
 
-  public void setDisableOnly(List<DiffingOption> disableOnly) {
+  public void setDisableOnly(List<String> disableOnly) {
     this.disableOnly = disableOnly;
   }
 
-  public List<DiffingOption> getDisableOnly() {
+  public List<String> getDisableOnly() {
     return disableOnly;
   }
 }
