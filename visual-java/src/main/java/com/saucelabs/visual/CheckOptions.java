@@ -197,7 +197,7 @@ public class CheckOptions {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
   }
 
-  public void setEnableOnly(List<String> enableOnly) {
+  public void enableOnly(List<String> enableOnly) {
     this.enableOnly = enableOnly;
   }
 
@@ -205,7 +205,7 @@ public class CheckOptions {
     return enableOnly;
   }
 
-  public void setDisableOnly(List<String> disableOnly) {
+  public void disableOnly(List<String> disableOnly) {
     this.disableOnly = disableOnly;
   }
 
