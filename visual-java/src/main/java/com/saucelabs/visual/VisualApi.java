@@ -5,10 +5,8 @@ import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
-import com.saucelabs.visual.graphql.type.Diff;
-import com.saucelabs.visual.graphql.type.DiffStatus;
-import com.saucelabs.visual.graphql.type.DiffingMethod;
-import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
@@ -362,6 +360,8 @@ public class VisualApi {
 
     input.setFullPageConfig(options.getFullPageScreenshotConfig());
 
+    input.diffingOptions = generateDiffingOptions(options.getEnableOnly(), options.getDisableOnly());
+
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
         this.client.execute(mutation, CreateSnapshotFromWebDriverMutation.Data.class);
@@ -369,6 +369,43 @@ public class VisualApi {
       uploadedDiffIds.addAll(
           check.result.diffs.getNodes().stream().map(Diff::getId).collect(Collectors.toList()));
     }
+  }
+
+  private DiffingOptionsIn.Builder setValue(DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
+    switch (key) {
+        case Content:
+          builder.withContent(value);
+            break;
+        case Dimensions:
+          builder.withDimensions(value);
+            break;
+        case Position:
+          builder.withPosition(value);
+            break;
+        case Structure:
+          builder.withStructure(value);
+            break;
+        case Style:
+          builder.withStyle(value);
+            break;
+        case Visual:
+          builder.withVisual(value);
+            break;
+    }
+    return builder;
+  }
+
+  private Optional<DiffingOptionsIn> generateDiffingOptions(List<DiffingOption> enableOnly, List<DiffingOption> disableOnly) {
+    if (enableOnly != null && !enableOnly.isEmpty()) {
+      DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+
+    }
+
+    if (disableOnly != null && !disableOnly.isEmpty()) {
+
+    }
+
+    return Optional.empty();
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
