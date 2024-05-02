@@ -371,26 +371,20 @@ public class VisualApi {
     }
   }
 
-  private DiffingOptionsIn.Builder setValue(DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
+  private DiffingOptionsIn.Builder setDiffingOptionValue(DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
     switch (key) {
-        case Content:
-          builder.withContent(value);
-            break;
-        case Dimensions:
-          builder.withDimensions(value);
-            break;
-        case Position:
-          builder.withPosition(value);
-            break;
-        case Structure:
-          builder.withStructure(value);
-            break;
-        case Style:
-          builder.withStyle(value);
-            break;
-        case Visual:
-          builder.withVisual(value);
-            break;
+      case Content:
+        return builder.withContent(value);
+      case Dimensions:
+        return builder.withDimensions(value);
+      case Position:
+        return builder.withPosition(value);
+      case Structure:
+        return builder.withStructure(value);
+      case Style:
+        return builder.withStyle(value);
+      case Visual:
+        return builder.withVisual(value);
     }
     return builder;
   }
@@ -398,13 +392,19 @@ public class VisualApi {
   private Optional<DiffingOptionsIn> generateDiffingOptions(List<DiffingOption> enableOnly, List<DiffingOption> disableOnly) {
     if (enableOnly != null && !enableOnly.isEmpty()) {
       DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
-
+      for (DiffingOption option : DiffingOption.values()) {
+        setDiffingOptionValue(builder, option, enableOnly.contains(option));
+      }
+      return Optional.of(builder.build());
     }
 
     if (disableOnly != null && !disableOnly.isEmpty()) {
-
+      DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+      for (DiffingOption option : DiffingOption.values()) {
+        setDiffingOptionValue(builder, option, !disableOnly.contains(option));
+      }
+      return Optional.of(builder.build());
     }
-
     return Optional.empty();
   }
 
@@ -414,6 +414,8 @@ public class VisualApi {
     }
 
     switch (options.getDiffingMethod()) {
+      case BALANCED:
+        return DiffingMethod.BALANCED;
       case EXPERIMENTAL:
         return DiffingMethod.EXPERIMENTAL;
       default:
