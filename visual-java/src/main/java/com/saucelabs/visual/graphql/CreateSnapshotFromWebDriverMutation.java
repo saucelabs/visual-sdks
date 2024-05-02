@@ -41,6 +41,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<FullPageScreenshotConfig> fullPageConfig = Optional.empty();
 
+    public Optional<DiffingOptionsIn> diffingOptions = Optional.empty();
+
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
         DiffingMethod diffingMethod,
