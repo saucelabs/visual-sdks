@@ -1,5 +1,6 @@
 package com.saucelabs.visual;
 
+import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import java.util.ArrayList;
@@ -10,7 +11,8 @@ public class CheckOptions {
 
   public enum DiffingMethod {
     SIMPLE,
-    EXPERIMENTAL
+    EXPERIMENTAL,
+    BALANCED,
   }
 
   public CheckOptions() {}
@@ -23,7 +25,9 @@ public class CheckOptions {
       DiffingMethod diffingMethod,
       Boolean captureDom,
       String clipSelector,
-      FullPageScreenshotConfig fullPageScreenshotConfig) {
+      FullPageScreenshotConfig fullPageScreenshotConfig,
+      List<DiffingOption> enableOnly,
+      List<DiffingOption> disableOnly) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
     this.testName = testName;
@@ -32,6 +36,8 @@ public class CheckOptions {
     this.captureDom = captureDom;
     this.clipSelector = clipSelector;
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+    this.enableOnly = enableOnly;
+    this.disableOnly = disableOnly;
   }
 
   private List<WebElement> ignoreElements = new ArrayList<>();
@@ -44,6 +50,8 @@ public class CheckOptions {
   private String clipSelector;
 
   private FullPageScreenshotConfig fullPageScreenshotConfig;
+  private List<DiffingOption> enableOnly;
+  private List<DiffingOption> disableOnly;
 
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
@@ -54,6 +62,8 @@ public class CheckOptions {
     private Boolean captureDom;
     private String clipSelector;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
+    private List<DiffingOption> enableOnly;
+    private List<DiffingOption> disableOnly;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
       this.ignoreElements = ignoreElements;
@@ -95,6 +105,16 @@ public class CheckOptions {
       return this;
     }
 
+    public Builder enableOnly(List<DiffingOption> enableOnly) {
+      this.enableOnly = enableOnly;
+      return this;
+    }
+
+    public Builder disableOnly(List<DiffingOption> disableOnly) {
+      this.disableOnly = disableOnly;
+      return this;
+    }
+
     public CheckOptions build() {
       return new CheckOptions(
           ignoreElements,
@@ -104,7 +124,9 @@ public class CheckOptions {
           diffingMethod,
           captureDom,
           clipSelector,
-          fullPageScreenshotConfig);
+          fullPageScreenshotConfig,
+          enableOnly,
+          disableOnly);
     }
   }
 
@@ -174,5 +196,19 @@ public class CheckOptions {
 
   public void enableFullPageScreenshots() {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+  public void setEnableOnly(List<DiffingOption> enableOnly) {
+    this.enableOnly = enableOnly;
+  }
+  public List<DiffingOption> getEnableOnly() {
+    return enableOnly;
+  }
+
+  public void setDisableOnly(List<DiffingOption> disableOnly) {
+    this.disableOnly = disableOnly;
+  }
+
+  public List<DiffingOption> getDisableOnly() {
+    return disableOnly;
   }
 }
