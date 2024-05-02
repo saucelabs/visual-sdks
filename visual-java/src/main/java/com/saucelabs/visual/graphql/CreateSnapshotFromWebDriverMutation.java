@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
 import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +79,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setFullPageConfig(FullPageScreenshotConfig fullPageConfig) {
       this.fullPageConfig = Optional.ofNullable(fullPageConfig);
+    }
+
+    public void setDiffingOptions(DiffingOptionsIn diffingOptions) {
+      this.diffingOptions = Optional.of(diffingOptions);
     }
   }
 
