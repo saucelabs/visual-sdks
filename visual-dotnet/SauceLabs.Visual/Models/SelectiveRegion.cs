@@ -12,7 +12,7 @@ namespace SauceLabs.Visual.Models
         public IWebElement? Element { get; set; }
 
         public DiffingOption[]? EnableOnly { get; set; }
-        public DiffingOption[]? Disable { get; set; }
+        public DiffingOption[]? DisableOnly { get; set; }
 
         internal RegionIn ToRegionIn()
         {
@@ -25,7 +25,7 @@ namespace SauceLabs.Visual.Models
                 throw new VisualClientException("invalid selective region. one of 'region' or 'element' has to be specified.");
             }
 
-            var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, Disable);
+            var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, DisableOnly);
             return Region != null ? new RegionIn(Region, diffingOptions) : new RegionIn(Element!, diffingOptions);
         }
     }

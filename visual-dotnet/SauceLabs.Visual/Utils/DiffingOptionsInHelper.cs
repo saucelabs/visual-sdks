@@ -35,7 +35,7 @@ namespace SauceLabs.Visual.Utils
             } },
         };
 
-        internal static DiffingOptionsIn? CreateFromEnableOnlyDisable(IReadOnlyCollection<DiffingOption>? enableOnly, IReadOnlyCollection<DiffingOption>? disable)
+        internal static DiffingOptionsIn? CreateFromEnableOnlyDisable(IReadOnlyCollection<DiffingOption>? enableOnly, IReadOnlyCollection<DiffingOption>? disableOnly)
         {
             if (enableOnly?.Count > 0)
             {
@@ -50,10 +50,10 @@ namespace SauceLabs.Visual.Utils
                 return options;
             }
 
-            if (disable?.Count > 0)
+            if (disableOnly?.Count > 0)
             {
                 var options = new DiffingOptionsIn(true);
-                foreach (var opt in disable)
+                foreach (var opt in disableOnly)
                 {
                     if (Mapping.TryGetValue(opt, out var fn))
                     {
