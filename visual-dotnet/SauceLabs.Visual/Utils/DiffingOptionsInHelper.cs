@@ -5,9 +5,9 @@ using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual.Utils
 {
-    public class DiffingOptionsBuilder
+    public static class DiffingOptionsInHelper
     {
-        static readonly Dictionary<DiffingOption, Func<DiffingOptionsIn, bool, DiffingOptionsIn>> mapping = new Dictionary<DiffingOption, Func<DiffingOptionsIn, bool, DiffingOptionsIn>>()
+        private static readonly Dictionary<DiffingOption, Func<DiffingOptionsIn, bool, DiffingOptionsIn>> Mapping = new Dictionary<DiffingOption, Func<DiffingOptionsIn, bool, DiffingOptionsIn>>()
         {
             { DiffingOption.Content, (diffingOptions, b) => {
                 diffingOptions.Content = b;
@@ -34,14 +34,15 @@ namespace SauceLabs.Visual.Utils
                 return diffingOptions;
             } },
         };
-        internal static DiffingOptionsIn? SelectiveRegionToDiffingOptions(DiffingOption[]? enableOnly, DiffingOption[]? disable)
+
+        internal static DiffingOptionsIn? CreateFromEnableOnlyDisable(IReadOnlyCollection<DiffingOption>? enableOnly, IReadOnlyCollection<DiffingOption>? disable)
         {
-            if (enableOnly?.Length > 0)
+            if (enableOnly?.Count > 0)
             {
                 var options = new DiffingOptionsIn(false);
                 foreach (var opt in enableOnly)
                 {
-                    if (mapping.TryGetValue(opt, out var fn))
+                    if (Mapping.TryGetValue(opt, out var fn))
                     {
                         options = fn(options, true);
                     }
@@ -49,12 +50,12 @@ namespace SauceLabs.Visual.Utils
                 return options;
             }
 
-            if (disable?.Length > 0)
+            if (disable?.Count > 0)
             {
                 var options = new DiffingOptionsIn(true);
                 foreach (var opt in disable)
                 {
-                    if (mapping.TryGetValue(opt, out var fn))
+                    if (Mapping.TryGetValue(opt, out var fn))
                     {
                         options = fn(options, false);
                     }

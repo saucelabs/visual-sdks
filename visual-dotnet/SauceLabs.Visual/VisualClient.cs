@@ -144,7 +144,7 @@ namespace SauceLabs.Visual
             var ignored = new List<RegionIn>();
             ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
             ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options.Regions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignored.AddRange(options.Regions?.Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
 
             FullPageConfigIn? fullPageConfigIn = null;
             if (options.FullPage == true)
@@ -165,7 +165,7 @@ namespace SauceLabs.Visual
                 suiteName: options.SuiteName,
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
-                diffingOptions: DiffingOptionsBuilder.SelectiveRegionToDiffingOptions(options.EnableOnly, options.Disable)
+                diffingOptions: DiffingOptionsInHelper.CreateFromEnableOnlyDisable(options.EnableOnly, options.Disable)
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
