@@ -6,6 +6,10 @@ using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual.Models
 {
+    /// <summary>
+    /// SelectiveRegion describe a region where change kind can be filtered.
+    /// </summary>
+    [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
     public class SelectiveRegion
     {
         public IgnoreRegion? Region { get; set; }
@@ -13,6 +17,11 @@ namespace SauceLabs.Visual.Models
 
         public DiffingOption[]? EnableOnly { get; set; }
         public DiffingOption[]? DisableOnly { get; set; }
+
+        [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
+        public SelectiveRegion()
+        {
+        }
 
         internal RegionIn ToRegionIn()
         {
