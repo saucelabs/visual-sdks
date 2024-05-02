@@ -197,9 +197,11 @@ public class CheckOptions {
   public void enableFullPageScreenshots() {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
   }
+
   public void setEnableOnly(List<DiffingOption> enableOnly) {
     this.enableOnly = enableOnly;
   }
+
   public List<DiffingOption> getEnableOnly() {
     return enableOnly;
   }

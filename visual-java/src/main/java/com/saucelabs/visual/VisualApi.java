@@ -360,7 +360,8 @@ public class VisualApi {
 
     input.setFullPageConfig(options.getFullPageScreenshotConfig());
 
-    input.diffingOptions = generateDiffingOptions(options.getEnableOnly(), options.getDisableOnly());
+    input.diffingOptions =
+        generateDiffingOptions(options.getEnableOnly(), options.getDisableOnly());
 
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
@@ -371,7 +372,8 @@ public class VisualApi {
     }
   }
 
-  private DiffingOptionsIn.Builder setDiffingOptionValue(DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
+  private DiffingOptionsIn.Builder setDiffingOptionValue(
+      DiffingOptionsIn.Builder builder, DiffingOption key, boolean value) {
     switch (key) {
       case Content:
         return builder.withContent(value);
@@ -389,7 +391,8 @@ public class VisualApi {
     return builder;
   }
 
-  private Optional<DiffingOptionsIn> generateDiffingOptions(List<DiffingOption> enableOnly, List<DiffingOption> disableOnly) {
+  private Optional<DiffingOptionsIn> generateDiffingOptions(
+      List<DiffingOption> enableOnly, List<DiffingOption> disableOnly) {
     if (enableOnly != null && !enableOnly.isEmpty()) {
       DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
       for (DiffingOption option : DiffingOption.values()) {

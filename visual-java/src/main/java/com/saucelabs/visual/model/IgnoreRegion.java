@@ -13,6 +13,8 @@ public class IgnoreRegion {
   private int width;
   private int x;
   private int y;
+  private List<DiffingOption> enableOnly;
+  private List<DiffingOption> disableOnly;
 
   public IgnoreRegion(String name, int x, int y, int width, int height) {
     this.name = name;
@@ -22,7 +24,31 @@ public class IgnoreRegion {
     this.y = y;
   }
 
+  public IgnoreRegion(
+      String name,
+      int x,
+      int y,
+      int width,
+      int height,
+      List<DiffingOption> enableOnly,
+      List<DiffingOption> disableOnly) {
+    this.name = name;
+    this.height = height;
+    this.width = width;
+    this.x = x;
+    this.y = y;
+    this.enableOnly = enableOnly;
+  }
+
   public IgnoreRegion(int x, int y, int width, int height) {
+    this.name = "";
+    this.height = height;
+    this.width = width;
+    this.x = x;
+    this.y = y;
+  }
+
+  public IgnoreRegion(int x, int y, int width, int height, DiffingOption opts) {
     this.name = "";
     this.height = height;
     this.width = width;
@@ -68,6 +94,22 @@ public class IgnoreRegion {
 
   public void setY(int y) {
     this.y = y;
+  }
+
+  public void setDisableOnly(List<DiffingOption> disableOnly) {
+    this.disableOnly = disableOnly;
+  }
+
+  public List<DiffingOption> getDisableOnly() {
+    return disableOnly;
+  }
+
+  public void setEnableOnly(List<DiffingOption> enableOnly) {
+    this.enableOnly = enableOnly;
+  }
+
+  public List<DiffingOption> getEnableOnly() {
+    return enableOnly;
   }
 
   public static List<IgnoreRegion> forElement(WebDriver driver, List<WebElement> elements) {
