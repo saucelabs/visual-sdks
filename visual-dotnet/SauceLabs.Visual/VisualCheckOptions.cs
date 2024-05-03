@@ -20,6 +20,21 @@ namespace SauceLabs.Visual
         public string? ClipSelector { get; set; }
 
         /// <summary>
+        /// <c>EnableOnly</c> allows to specify which changes to consider globaly.
+        /// </summary>
+        public DiffingOption? EnableOnly { get; set; }
+
+        /// <summary>
+        /// <c>Disable</c> allows to specify which changes to ignore globally.
+        /// </summary>
+        public DiffingOption? DisableOnly { get; set; }
+
+        /// <summary>
+        /// <c>Regions</c> allows to specify what kind of checks needs to be done in a specific region.
+        /// </summary>
+        public SelectiveRegion[]? Regions { get; set; }
+
+        /// <summary>
         /// <c>SuiteName</c> manually set the SuiteName of the Test.
         /// </summary>
         public string? SuiteName { get; set; }

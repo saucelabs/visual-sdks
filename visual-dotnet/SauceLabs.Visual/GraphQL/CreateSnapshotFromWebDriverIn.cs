@@ -9,6 +9,8 @@ namespace SauceLabs.Visual.GraphQL
         public string BuildUuid { get; }
         [JsonProperty("diffingMethod")]
         public DiffingMethod DiffingMethod { get; }
+        [JsonProperty("diffingOptions")]
+        public DiffingOptionsIn? DiffingOptions { get; set; }
         [JsonProperty("ignoreRegions")]
         public RegionIn[] IgnoreRegions { get; }
         [JsonProperty("jobId")]
@@ -43,7 +45,8 @@ namespace SauceLabs.Visual.GraphQL
             string? clipSelector,
             string? suiteName,
             string? testName,
-            FullPageConfigIn? fullPageConfig
+            FullPageConfigIn? fullPageConfig,
+            DiffingOptionsIn? diffingOptions
         )
         {
             BuildUuid = buildUuid;
@@ -58,6 +61,7 @@ namespace SauceLabs.Visual.GraphQL
             SuiteName = suiteName;
             TestName = testName;
             FullPageConfig = fullPageConfig;
+            DiffingOptions = diffingOptions;
         }
     }
 }
