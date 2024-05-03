@@ -33,49 +33,49 @@ namespace SauceLabs.Visual.Models
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion EnabledRegion(IWebElement element)
+        public static SelectiveRegion EnabledFor(IWebElement element)
         {
             return new SelectiveRegion(element, null, null);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion EnabledRegion(IWebElement element, DiffingOption flags)
+        public static SelectiveRegion EnabledFor(IWebElement element, DiffingOption flags)
         {
             return new SelectiveRegion(element, flags, null);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion EnabledRegion(Region region)
+        public static SelectiveRegion EnabledFor(Region region)
         {
             return new SelectiveRegion(region, DiffingOption.None, null);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion EnabledRegion(Region region, DiffingOption flags)
+        public static SelectiveRegion EnabledFor(Region region, DiffingOption flags)
         {
             return new SelectiveRegion(region, flags, null);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion DisabledRegion(IWebElement element)
+        public static SelectiveRegion DisabledFor(IWebElement element)
         {
             return new SelectiveRegion(element, null, DiffingOption.None);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion DisabledRegion(IWebElement element, DiffingOption flags)
+        public static SelectiveRegion DisabledFor(IWebElement element, DiffingOption flags)
         {
             return new SelectiveRegion(element, null, flags);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion DisabledRegion(Region region)
+        public static SelectiveRegion DisabledFor(Region region)
         {
             return new SelectiveRegion(region, null, DiffingOption.None);
         }
 
         [Obsolete("WARNING: This API is currently unstable. It may be changed at anytime")]
-        public static SelectiveRegion DisabledRegion(Region region, DiffingOption flags)
+        public static SelectiveRegion DisabledFor(Region region, DiffingOption flags)
         {
             return new SelectiveRegion(region, null, flags);
         }
