@@ -396,22 +396,24 @@ public class VisualApi {
 
   private DiffingOptionsIn generateDiffingOptions(
       List<String> enableOnly, List<String> disableOnly) {
-    if (enableOnly != null && !enableOnly.isEmpty()) {
-      DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+    if (enableOnly != null && disableOnly != null) {
+      return null;
+    }
+
+    DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+
+    if (enableOnly != null) {
       for (String option : DiffingOptionValues) {
         setDiffingOptionValue(builder, option, enableOnly.contains(option));
       }
-      return builder.build();
     }
 
-    if (disableOnly != null && !disableOnly.isEmpty()) {
-      DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+    if (disableOnly != null) {
       for (String option : DiffingOptionValues) {
         setDiffingOptionValue(builder, option, !disableOnly.contains(option));
       }
-      return builder.build();
     }
-    return null;
+    return builder.build();
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
