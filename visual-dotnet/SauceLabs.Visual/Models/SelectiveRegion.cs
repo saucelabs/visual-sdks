@@ -83,7 +83,17 @@ namespace SauceLabs.Visual.Models
         internal RegionIn ToRegionIn()
         {
             var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, DisableOnly);
-            return Region != null ? new RegionIn(Region, diffingOptions) : new RegionIn(Element!, diffingOptions);
+            if (Region != null)
+            {
+                return new RegionIn(Region, diffingOptions);
+            }
+
+            if (Element != null)
+            {
+                return new RegionIn(Element, diffingOptions);
+            }
+
+            throw new VisualClientException("No Element nor Region has been passed");
         }
     }
 }
