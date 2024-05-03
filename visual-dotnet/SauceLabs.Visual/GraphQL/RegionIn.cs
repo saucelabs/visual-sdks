@@ -48,7 +48,7 @@ namespace SauceLabs.Visual.GraphQL
         public RegionIn(IgnoreRegion input) : this(input.X, input.Y, input.Width, input.Height)
         { }
 
-        public RegionIn(IgnoreRegion input, DiffingOptionsIn? options) : this(input.X, input.Y, input.Width,
+        public RegionIn(SauceLabs.Visual.Models.Region input, DiffingOptionsIn? options) : this(input.X, input.Y, input.Width,
             input.Height)
         {
             DiffingOptions = options;

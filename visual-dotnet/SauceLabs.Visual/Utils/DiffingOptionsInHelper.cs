@@ -35,31 +35,55 @@ namespace SauceLabs.Visual.Utils
             } },
         };
 
-        internal static DiffingOptionsIn? CreateFromEnableOnlyDisable(IReadOnlyCollection<DiffingOption>? enableOnly, IReadOnlyCollection<DiffingOption>? disableOnly)
+        private static DiffingOptionsIn SetOptions(DiffingOptionsIn opts, DiffingOption flags, bool value)
         {
-            if (enableOnly?.Count > 0)
+            if (flags.HasFlag(DiffingOption.Content))
+            {
+                opts.Content = value;
+            }
+
+            if (flags.HasFlag(DiffingOption.Dimensions))
+            {
+                opts.Dimensions = value;
+            }
+
+            if (flags.HasFlag(DiffingOption.Position))
+            {
+                opts.Position = value;
+            }
+
+            if (flags.HasFlag(DiffingOption.Structure))
+            {
+                opts.Structure = value;
+            }
+
+            if (flags.HasFlag(DiffingOption.Style))
+            {
+                opts.Style = value;
+            }
+
+            if (flags.HasFlag(DiffingOption.Visual))
+            {
+                opts.Visual = value;
+            }
+
+            return opts;
+        }
+
+        internal static DiffingOptionsIn? CreateFromEnableOnlyDisable(DiffingOption? enableOnly, DiffingOption? disableOnly)
+        {
+            if (enableOnly.HasValue)
             {
                 var options = new DiffingOptionsIn(false);
-                foreach (var opt in enableOnly)
-                {
-                    if (Mapping.TryGetValue(opt, out var fn))
-                    {
-                        options = fn(options, true);
-                    }
-                }
+                options = SetOptions(options, enableOnly.Value, true);
                 return options;
             }
 
-            if (disableOnly?.Count > 0)
+            if (disableOnly.HasValue)
             {
                 var options = new DiffingOptionsIn(true);
-                foreach (var opt in disableOnly)
-                {
-                    if (Mapping.TryGetValue(opt, out var fn))
-                    {
-                        options = fn(options, false);
-                    }
-                }
+                options = SetOptions(options, disableOnly.Value, false);
+                return options;
             }
 
             return null;
