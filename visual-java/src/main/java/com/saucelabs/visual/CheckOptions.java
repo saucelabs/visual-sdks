@@ -10,7 +10,8 @@ public class CheckOptions {
 
   public enum DiffingMethod {
     SIMPLE,
-    EXPERIMENTAL
+    EXPERIMENTAL,
+    BALANCED,
   }
 
   public CheckOptions() {}
@@ -23,7 +24,9 @@ public class CheckOptions {
       DiffingMethod diffingMethod,
       Boolean captureDom,
       String clipSelector,
-      FullPageScreenshotConfig fullPageScreenshotConfig) {
+      FullPageScreenshotConfig fullPageScreenshotConfig,
+      List<String> enableOnly,
+      List<String> disableOnly) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
     this.testName = testName;
@@ -32,6 +35,8 @@ public class CheckOptions {
     this.captureDom = captureDom;
     this.clipSelector = clipSelector;
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+    this.enableOnly = enableOnly;
+    this.disableOnly = disableOnly;
   }
 
   private List<WebElement> ignoreElements = new ArrayList<>();
@@ -44,6 +49,8 @@ public class CheckOptions {
   private String clipSelector;
 
   private FullPageScreenshotConfig fullPageScreenshotConfig;
+  private List<String> enableOnly;
+  private List<String> disableOnly;
 
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
@@ -54,6 +61,8 @@ public class CheckOptions {
     private Boolean captureDom;
     private String clipSelector;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
+    private List<String> enableOnly;
+    private List<String> disableOnly;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
       this.ignoreElements = ignoreElements;
@@ -95,6 +104,16 @@ public class CheckOptions {
       return this;
     }
 
+    public Builder enableOnly(List<String> enableOnly) {
+      this.enableOnly = enableOnly;
+      return this;
+    }
+
+    public Builder disableOnly(List<String> disableOnly) {
+      this.disableOnly = disableOnly;
+      return this;
+    }
+
     public CheckOptions build() {
       return new CheckOptions(
           ignoreElements,
@@ -104,7 +123,9 @@ public class CheckOptions {
           diffingMethod,
           captureDom,
           clipSelector,
-          fullPageScreenshotConfig);
+          fullPageScreenshotConfig,
+          enableOnly,
+          disableOnly);
     }
   }
 
@@ -174,5 +195,21 @@ public class CheckOptions {
 
   public void enableFullPageScreenshots() {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+
+  public void enableOnly(List<String> enableOnly) {
+    this.enableOnly = enableOnly;
+  }
+
+  public List<String> getEnableOnly() {
+    return enableOnly;
+  }
+
+  public void disableOnly(List<String> disableOnly) {
+    this.disableOnly = disableOnly;
+  }
+
+  public List<String> getDisableOnly() {
+    return disableOnly;
   }
 }

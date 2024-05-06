@@ -1,14 +1,12 @@
 package com.saucelabs.visual;
 
+import static com.saucelabs.visual.model.DiffingOption.*;
 import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
 import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
-import com.saucelabs.visual.graphql.type.Diff;
-import com.saucelabs.visual.graphql.type.DiffStatus;
-import com.saucelabs.visual.graphql.type.DiffingMethod;
-import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.*;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
@@ -362,6 +360,12 @@ public class VisualApi {
 
     input.setFullPageConfig(options.getFullPageScreenshotConfig());
 
+    DiffingOptionsIn diffingOptionsIn =
+        generateDiffingOptions(options.getEnableOnly(), options.getDisableOnly());
+    if (diffingOptionsIn != null) {
+      input.diffingOptions = Optional.of(diffingOptionsIn);
+    }
+
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
         this.client.execute(mutation, CreateSnapshotFromWebDriverMutation.Data.class);
@@ -371,12 +375,55 @@ public class VisualApi {
     }
   }
 
+  private DiffingOptionsIn.Builder setDiffingOptionValue(
+      DiffingOptionsIn.Builder builder, String key, boolean value) {
+    switch (key) {
+      case Content:
+        return builder.withContent(value);
+      case Dimensions:
+        return builder.withDimensions(value);
+      case Position:
+        return builder.withPosition(value);
+      case Structure:
+        return builder.withStructure(value);
+      case Style:
+        return builder.withStyle(value);
+      case Visual:
+        return builder.withVisual(value);
+    }
+    return builder;
+  }
+
+  private DiffingOptionsIn generateDiffingOptions(
+      List<String> enableOnly, List<String> disableOnly) {
+    if (enableOnly != null && disableOnly != null) {
+      return null;
+    }
+
+    DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+
+    if (enableOnly != null) {
+      for (String option : DiffingOptionValues) {
+        setDiffingOptionValue(builder, option, enableOnly.contains(option));
+      }
+    }
+
+    if (disableOnly != null) {
+      for (String option : DiffingOptionValues) {
+        setDiffingOptionValue(builder, option, !disableOnly.contains(option));
+      }
+    }
+    return builder.build();
+  }
+
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
     if (options == null || options.getDiffingMethod() == null) {
       return null;
     }
 
     switch (options.getDiffingMethod()) {
+      case BALANCED:
+        return DiffingMethod.BALANCED;
       case EXPERIMENTAL:
         return DiffingMethod.EXPERIMENTAL;
       default:
@@ -482,6 +529,7 @@ public class VisualApi {
         .withY(r.getY())
         .withWidth(r.getWidth())
         .withHeight(r.getHeight())
+        .withDiffingOptions(generateDiffingOptions(r.getEnableOnly(), r.getDisableOnly()))
         .build();
   }
 
