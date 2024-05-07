@@ -3,30 +3,20 @@ package com.saucelabs.visual.model;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 
 public enum DiffingFlag {
-  Content(1 << 0),
-  Dimensions(1 << 1),
-  Position(1 << 2),
-  Structure(1 << 3),
-  Style(1 << 4),
-  Visual(1 << 5);
-
-  private final long value;
-
-  DiffingFlag(long value) {
-    this.value = value;
-  }
-
-  public long getValue() {
-    return value;
-  }
+  Content,
+  Dimensions,
+  Position,
+  Structure,
+  Style,
+  Visual;
 
   public void apply(DiffingOptionsIn options, boolean value) {
-    if (0 < (this.value & Content.value)) options.setContent(value);
-    if (0 < (this.value & Dimensions.value)) options.setDimensions(value);
-    if (0 < (this.value & Position.value)) options.setPosition(value);
-    if (0 < (this.value & Structure.value)) options.setStructure(value);
-    if (0 < (this.value & Style.value)) options.setStyle(value);
-    if (0 < (this.value & Visual.value)) options.setVisual(value);
+    if (this == Content) options.setContent(value);
+    if (this == Dimensions) options.setDimensions(value);
+    if (this == Position) options.setPosition(value);
+    if (this == Structure) options.setStructure(value);
+    if (this == Style) options.setStyle(value);
+    if (this == Visual) options.setVisual(value);
   }
 
   public static void setAll(DiffingOptionsIn options, boolean value) {

@@ -2,12 +2,7 @@ package com.saucelabs.visual.model;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Rectangle;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 public class VisualRegion {
@@ -141,37 +136,6 @@ public class VisualRegion {
   public VisualRegion except(DiffingFlag flags) {
     flags.apply(this.options, this.isIgnoreRegion);
     return this;
-  }
-
-  public static List<IgnoreRegion> forElement(WebDriver driver, List<WebElement> elements) {
-    JavascriptExecutor js = (JavascriptExecutor) driver;
-
-    List<Map<String, Long>> rects =
-        (List<Map<String, Long>>)
-            js.executeScript(
-                "return Array.from(arguments[0]).map(function(element) {"
-                    + "  const rect = element.getBoundingClientRect();"
-                    + "  return {"
-                    + "    top: Math.round(rect.top),"
-                    + "    left: Math.round(rect.left),"
-                    + "    width: Math.round(rect.width),"
-                    + "    height: Math.round(rect.height)"
-                    + "  };"
-                    + "});",
-                elements);
-
-    List<IgnoreRegion> ignoreRegions = new ArrayList<>(rects.size());
-    for (Map<String, Long> rect : rects) {
-      // Convert the rect to an IgnoreRegion
-      int x = rect.get("left").intValue();
-      int y = rect.get("top").intValue();
-      int width = rect.get("width").intValue();
-      int height = rect.get("height").intValue();
-
-      ignoreRegions.add(new IgnoreRegion(x, y, width, height));
-    }
-
-    return ignoreRegions;
   }
 
   public RegionIn toRegionIn() {

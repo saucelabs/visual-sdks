@@ -125,7 +125,7 @@ public class CheckOptions {
       return this;
     }
 
-    public Builder withRegion(VisualRegion region) {
+    public Builder addRegion(VisualRegion region) {
       if (this.regions == null) {
         this.regions = new ArrayList<>();
       }
