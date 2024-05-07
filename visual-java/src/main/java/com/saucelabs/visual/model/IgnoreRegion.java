@@ -13,8 +13,6 @@ public class IgnoreRegion {
   private int width;
   private int x;
   private int y;
-  private List<String> enableOnly;
-  private List<String> disableOnly;
 
   public IgnoreRegion(String name, int x, int y, int width, int height) {
     this.name = name;
@@ -70,30 +68,6 @@ public class IgnoreRegion {
 
   public void setY(int y) {
     this.y = y;
-  }
-
-  public void disableOnly(List<String> options) {
-    disableOnly = options;
-  }
-
-  public void setDisableOnly(List<String> disableOnly) {
-    this.disableOnly = disableOnly;
-  }
-
-  public List<String> getDisableOnly() {
-    return disableOnly;
-  }
-
-  public void enableOnly(List<String> options) {
-    enableOnly = options;
-  }
-
-  public void setEnableOnly(List<String> enableOnly) {
-    this.enableOnly = enableOnly;
-  }
-
-  public List<String> getEnableOnly() {
-    return enableOnly;
   }
 
   public static List<IgnoreRegion> forElement(WebDriver driver, List<WebElement> elements) {
