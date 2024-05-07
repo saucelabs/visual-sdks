@@ -450,13 +450,13 @@ public class VisualApi {
     }
 
     List<WebElement> ignoredElements =
-        options.getIgnoreElements() == null ? List.of() : options.getIgnoreElements();
+        options.getIgnoreElements() == null ? Arrays.asList() : options.getIgnoreElements();
 
     List<IgnoreRegion> ignoredRegions =
-        options.getIgnoreRegions() == null ? List.of() : options.getIgnoreRegions();
+        options.getIgnoreRegions() == null ? Arrays.asList() : options.getIgnoreRegions();
 
     List<VisualRegion> visualRegions =
-        options.getIgnoreRegions() == null ? List.of() : options.getRegions();
+        options.getIgnoreRegions() == null ? Arrays.asList() : options.getRegions();
 
     List<RegionIn> result = new ArrayList<>();
     for (int i = 0; i < ignoredElements.size(); i++) {
