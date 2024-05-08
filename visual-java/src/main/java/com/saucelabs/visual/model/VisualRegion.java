@@ -2,6 +2,7 @@ package com.saucelabs.visual.model;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
+import java.util.EnumSet;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
 
@@ -25,6 +26,11 @@ public class VisualRegion {
     this.width = ir.getWidth();
     this.x = ir.getX();
     this.y = ir.getY();
+  }
+
+  public VisualRegion(WebElement element, DiffingOptionsIn diffingOptions) {
+    this.options = diffingOptions;
+    this.element = element;
   }
 
   public static VisualRegion ignoreChangesFor(WebElement element) {
@@ -133,8 +139,10 @@ public class VisualRegion {
     this.y = y;
   }
 
-  public VisualRegion except(DiffingFlag flags) {
-    flags.apply(this.options, this.isIgnoreRegion);
+  public VisualRegion except(EnumSet<DiffingFlag> flags) {
+    for (DiffingFlag f : flags) {
+      f.apply(this.options, this.isIgnoreRegion);
+    }
     return this;
   }
 

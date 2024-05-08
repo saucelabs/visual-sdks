@@ -6,6 +6,7 @@ import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.model.VisualRegion;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import org.openqa.selenium.WebElement;
 
@@ -107,21 +108,31 @@ public class CheckOptions {
       return this;
     }
 
-    public Builder disable(DiffingFlag flags) {
+    public Builder disable(EnumSet<DiffingFlag> flags) {
       if (this.diffingOptions == null) {
         this.diffingOptions = new DiffingOptionsIn();
         DiffingFlag.setAll(this.diffingOptions, true);
       }
-      flags.apply(this.diffingOptions, false);
+      for (DiffingFlag f : flags) f.apply(this.diffingOptions, false);
       return this;
     }
 
-    public Builder enable(DiffingFlag flags) {
+    public Builder enable(EnumSet<DiffingFlag> flags) {
       if (this.diffingOptions == null) {
         this.diffingOptions = new DiffingOptionsIn();
         DiffingFlag.setAll(this.diffingOptions, false);
       }
-      flags.apply(this.diffingOptions, true);
+      for (DiffingFlag f : flags) f.apply(this.diffingOptions, true);
+      return this;
+    }
+
+    public Builder enable(EnumSet<DiffingFlag> flags, WebElement element) {
+      this.regions.add(VisualRegion.ignoreChangesFor(element).except(flags));
+      return this;
+    }
+
+    public Builder disable(EnumSet<DiffingFlag> flags, WebElement element) {
+      this.regions.add(VisualRegion.detectChangesFor(element).except(flags));
       return this;
     }
 
