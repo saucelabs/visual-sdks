@@ -1,8 +1,12 @@
 package com.saucelabs.visual;
 
+import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
+import com.saucelabs.visual.model.DiffingFlag;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
+import com.saucelabs.visual.model.VisualRegion;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import org.openqa.selenium.WebElement;
 
@@ -19,50 +23,50 @@ public class CheckOptions {
   public CheckOptions(
       List<WebElement> ignoreElements,
       List<IgnoreRegion> ignoreRegions,
+      List<VisualRegion> regions,
       String testName,
       String suiteName,
       DiffingMethod diffingMethod,
+      DiffingOptionsIn diffingOptions,
       Boolean captureDom,
       String clipSelector,
-      FullPageScreenshotConfig fullPageScreenshotConfig,
-      List<String> enableOnly,
-      List<String> disableOnly) {
+      FullPageScreenshotConfig fullPageScreenshotConfig) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
+    this.regions = regions;
     this.testName = testName;
     this.suiteName = suiteName;
     this.diffingMethod = diffingMethod;
     this.captureDom = captureDom;
     this.clipSelector = clipSelector;
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
-    this.enableOnly = enableOnly;
-    this.disableOnly = disableOnly;
+    this.diffingOptions = diffingOptions;
   }
 
   private List<WebElement> ignoreElements = new ArrayList<>();
   private List<IgnoreRegion> ignoreRegions = new ArrayList<>();
+  private List<VisualRegion> regions = new ArrayList<>();
 
   private String testName;
   private String suiteName;
   private DiffingMethod diffingMethod;
+  private DiffingOptionsIn diffingOptions;
   private Boolean captureDom;
   private String clipSelector;
 
   private FullPageScreenshotConfig fullPageScreenshotConfig;
-  private List<String> enableOnly;
-  private List<String> disableOnly;
 
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
     private List<IgnoreRegion> ignoreRegions = new ArrayList<>();
+    private List<VisualRegion> regions = new ArrayList<>();
     private String testName;
     private String suiteName;
     private DiffingMethod diffingMethod;
+    private DiffingOptionsIn diffingOptions;
     private Boolean captureDom;
     private String clipSelector;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
-    private List<String> enableOnly;
-    private List<String> disableOnly;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
       this.ignoreElements = ignoreElements;
@@ -104,13 +108,29 @@ public class CheckOptions {
       return this;
     }
 
-    public Builder enableOnly(List<String> enableOnly) {
-      this.enableOnly = enableOnly;
+    public Builder disableOnly(EnumSet<DiffingFlag> flags) {
+      this.diffingOptions = new DiffingOptionsIn();
+      DiffingFlag.setAll(this.diffingOptions, true);
+      for (DiffingFlag f : flags) f.apply(this.diffingOptions, false);
       return this;
     }
 
-    public Builder disableOnly(List<String> disableOnly) {
-      this.disableOnly = disableOnly;
+    public Builder enableOnly(EnumSet<DiffingFlag> flags) {
+      this.diffingOptions = new DiffingOptionsIn();
+      DiffingFlag.setAll(this.diffingOptions, false);
+      for (DiffingFlag f : flags) f.apply(this.diffingOptions, true);
+      return this;
+    }
+
+    public Builder enableOnly(EnumSet<DiffingFlag> flags, WebElement element) {
+
+      this.regions.add(VisualRegion.ignoreChangesFor(element).except(flags));
+      return this;
+    }
+
+    public Builder disableOnly(EnumSet<DiffingFlag> flags, WebElement element) {
+
+      this.regions.add(VisualRegion.detectChangesFor(element).except(flags));
       return this;
     }
 
@@ -118,14 +138,14 @@ public class CheckOptions {
       return new CheckOptions(
           ignoreElements,
           ignoreRegions,
+          regions,
           testName,
           suiteName,
           diffingMethod,
+          diffingOptions,
           captureDom,
           clipSelector,
-          fullPageScreenshotConfig,
-          enableOnly,
-          disableOnly);
+          fullPageScreenshotConfig);
     }
   }
 
@@ -153,6 +173,14 @@ public class CheckOptions {
     this.testName = testName;
   }
 
+  public List<VisualRegion> getRegions() {
+    return regions;
+  }
+
+  public void setRegions(List<VisualRegion> regions) {
+    this.regions = regions;
+  }
+
   public String getSuiteName() {
     return suiteName;
   }
@@ -167,6 +195,10 @@ public class CheckOptions {
 
   public DiffingMethod getDiffingMethod() {
     return diffingMethod;
+  }
+
+  public DiffingOptionsIn getDiffingOptions() {
+    return diffingOptions;
   }
 
   public void setCaptureDom(Boolean captureDom) {
@@ -195,21 +227,5 @@ public class CheckOptions {
 
   public void enableFullPageScreenshots() {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
-  }
-
-  public void enableOnly(List<String> enableOnly) {
-    this.enableOnly = enableOnly;
-  }
-
-  public List<String> getEnableOnly() {
-    return enableOnly;
-  }
-
-  public void disableOnly(List<String> disableOnly) {
-    this.disableOnly = disableOnly;
-  }
-
-  public List<String> getDisableOnly() {
-    return disableOnly;
   }
 }
