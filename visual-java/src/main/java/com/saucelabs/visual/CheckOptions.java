@@ -108,39 +108,29 @@ public class CheckOptions {
       return this;
     }
 
-    public Builder disable(EnumSet<DiffingFlag> flags) {
-      if (this.diffingOptions == null) {
-        this.diffingOptions = new DiffingOptionsIn();
-        DiffingFlag.setAll(this.diffingOptions, true);
-      }
+    public Builder disableOnly(EnumSet<DiffingFlag> flags) {
+      this.diffingOptions = new DiffingOptionsIn();
+      DiffingFlag.setAll(this.diffingOptions, true);
       for (DiffingFlag f : flags) f.apply(this.diffingOptions, false);
       return this;
     }
 
-    public Builder enable(EnumSet<DiffingFlag> flags) {
-      if (this.diffingOptions == null) {
-        this.diffingOptions = new DiffingOptionsIn();
-        DiffingFlag.setAll(this.diffingOptions, false);
-      }
+    public Builder enableOnly(EnumSet<DiffingFlag> flags) {
+      this.diffingOptions = new DiffingOptionsIn();
+      DiffingFlag.setAll(this.diffingOptions, false);
       for (DiffingFlag f : flags) f.apply(this.diffingOptions, true);
       return this;
     }
 
-    public Builder enable(EnumSet<DiffingFlag> flags, WebElement element) {
+    public Builder enableOnly(EnumSet<DiffingFlag> flags, WebElement element) {
+
       this.regions.add(VisualRegion.ignoreChangesFor(element).except(flags));
       return this;
     }
 
-    public Builder disable(EnumSet<DiffingFlag> flags, WebElement element) {
-      this.regions.add(VisualRegion.detectChangesFor(element).except(flags));
-      return this;
-    }
+    public Builder disableOnly(EnumSet<DiffingFlag> flags, WebElement element) {
 
-    public Builder addRegion(VisualRegion region) {
-      if (this.regions == null) {
-        this.regions = new ArrayList<>();
-      }
-      this.regions.add(region);
+      this.regions.add(VisualRegion.detectChangesFor(element).except(flags));
       return this;
     }
 
