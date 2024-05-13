@@ -70,6 +70,11 @@ class SauceLabsVisual:
         return FullPageConfig(
             delay_after_scroll_ms=parsed_value.get('delay_after_scroll_ms'),
             hide_after_first_scroll=parsed_value.get('hide_after_first_scroll'),
+            address_bar_shadow_padding=parsed_value.get('address_bar_shadow_padding'),
+            disable_css_animation=parsed_value.get('disable_css_animation'),
+            hide_scroll_bars=parsed_value.get('hide_scroll_bars'),
+            tool_bar_shadow_padding=parsed_value.get('tool_bar_shadow_padding'),
+            scroll_limit=parsed_value.get('scroll_limit'),
         ) if parsed_value is not None else None
 
     def _parse_ignore_regions(
