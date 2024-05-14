@@ -165,7 +165,7 @@ namespace SauceLabs.Visual
                 suiteName: options.SuiteName,
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
-                diffingOptions: DiffingOptionsInHelper.CreateFromEnableOnlyDisable(options.EnableOnly, options.DisableOnly)
+                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn()
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;

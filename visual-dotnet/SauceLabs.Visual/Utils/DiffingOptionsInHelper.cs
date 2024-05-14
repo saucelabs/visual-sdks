@@ -7,7 +7,7 @@ namespace SauceLabs.Visual.Utils
 {
     public static class DiffingOptionsInHelper
     {
-        private static DiffingOptionsIn SetOptions(DiffingOptionsIn opts, DiffingOption flags, bool value)
+        internal static DiffingOptionsIn SetOptions(DiffingOptionsIn opts, DiffingOption flags, bool value)
         {
             if (flags.HasFlag(DiffingOption.Content))
             {
