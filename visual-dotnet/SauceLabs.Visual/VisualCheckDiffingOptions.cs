@@ -39,14 +39,11 @@ namespace SauceLabs.Visual
             DiffingOptionsIn options;
             if (_mode == DiffingOptionMode.EnableOnly)
             {
-                options = new DiffingOptionsIn(false);
-                options = DiffingOptionsInHelper.SetOptions(options, _flags, true);
+                options = DiffingOptionsInHelper.SetOptions(new DiffingOptionsIn(false), _flags, true);
             }
             else
             {
-                options = new DiffingOptionsIn(true);
-                options = DiffingOptionsInHelper.SetOptions(options, _flags, false);
-                return options;
+                options = DiffingOptionsInHelper.SetOptions(new DiffingOptionsIn(true), _flags, false);
             }
             return options;
         }
