@@ -25,14 +25,14 @@ def is_valid_ignore_region(region: IgnoreRegion) -> bool:
     :return:
     """
     return (
-            type(region['width']) is int and
-            type(region['height']) is int and
-            type(region['x']) is int and
-            type(region['y']) is int and
-            region['width'] > 0 and
-            region['height'] > 0 and
-            region['x'] >= 0 and
-            region['y'] >= 0
+            type(region.width) is int and
+            type(region.height) is int and
+            type(region.x) is int and
+            type(region.y) is int and
+            region.width > 0 and
+            region.height > 0 and
+            region.x >= 0 and
+            region.y >= 0
     )
 
 

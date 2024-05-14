@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from os import environ
 from time import sleep
@@ -236,7 +237,9 @@ class SauceLabsVisual:
             "suiteName": suite_name,
             "captureDom": capture_dom,
             "clipSelector": clip_selector,
-            "ignoreRegions": ignore_regions,
+            "ignoreRegions": [
+                asdict(region) for region in ignore_regions
+            ],
             "fullPageConfig": {
                 "delayAfterScrollMs": full_page_config.get('delay_after_scroll_ms'),
                 "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),

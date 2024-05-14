@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 from typing_extensions import TypedDict, NotRequired
 
@@ -18,13 +19,15 @@ class DiffingOptions(TypedDict):
     visual: NotRequired[bool]
 
 
-class IgnoreRegion(TypedDict):
+@dataclass
+class IgnoreRegion:
     x: int
     y: int
     height: int
     width: int
-    diffingOptions: NotRequired[DiffingOptions]
-    name: NotRequired[dict]
+    diffingOptions: Union[DiffingOptions, None] = None
+    name: Union[str, None] = None
+
 
 class FullPageConfig(TypedDict):
     delay_after_scroll_ms: NotRequired[int]
