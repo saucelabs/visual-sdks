@@ -26,7 +26,7 @@ namespace SauceLabs.Visual
 
         /// <summary>
         /// <c>EnableOnly</c> sets which change types to check for.
-        /// Only <c>BALANCED</c> engine is compatible.
+        /// Compatible only with <c>DiffingMethod.Balanced</c>
         /// </summary>
         public static VisualCheckDiffingOptions EnableOnly(DiffingOption flags)
         {
@@ -35,7 +35,7 @@ namespace SauceLabs.Visual
 
         /// <summary>
         /// <c>DisableOnly</c> sets which change types to ignore.
-        /// Only <c>BALANCED</c> engine is compatible.
+        /// Compatible only with <c>DiffingMethod.Balanced</c>
         /// </summary>
         public static VisualCheckDiffingOptions DisableOnly(DiffingOption flags)
         {
