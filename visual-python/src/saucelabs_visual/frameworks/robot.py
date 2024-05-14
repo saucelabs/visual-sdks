@@ -76,13 +76,13 @@ class SauceLabsVisual:
             parsed_value = {} if literal is True else None
 
         return FullPageConfig(
-            delay_after_scroll_ms=parsed_value.get('delay_after_scroll_ms'),
-            hide_after_first_scroll=parsed_value.get('hide_after_first_scroll'),
-            address_bar_shadow_padding=parsed_value.get('address_bar_shadow_padding'),
-            disable_css_animation=parsed_value.get('disable_css_animation'),
-            hide_scroll_bars=parsed_value.get('hide_scroll_bars'),
-            tool_bar_shadow_padding=parsed_value.get('tool_bar_shadow_padding'),
-            scroll_limit=parsed_value.get('scroll_limit'),
+            delayAfterScrollMs=parsed_value.get('delay_after_scroll_ms'),
+            hideAfterFirstScroll=parsed_value.get('hide_after_first_scroll'),
+            addressBarShadowPadding=parsed_value.get('address_bar_shadow_padding'),
+            disableCSSAnimation=parsed_value.get('disable_css_animation'),
+            hideScrollBars=parsed_value.get('hide_scroll_bars'),
+            toolBarShadowPadding=parsed_value.get('tool_bar_shadow_padding'),
+            scrollLimit=parsed_value.get('scroll_limit'),
         ) if parsed_value is not None else None
 
     def _parse_ignore_regions(
@@ -164,7 +164,6 @@ class SauceLabsVisual:
             default_branch: Union[str, None] = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH'),
             custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
             keep_alive_timeout: int = None,
-            **kwargs,
     ):
         self.client.create_build(
             name=name,

@@ -239,16 +239,8 @@ class SauceLabsVisual:
             "clipSelector": clip_selector,
             "ignoreRegions": [
                 asdict(region) for region in ignore_regions
-            ],
-            "fullPageConfig": {
-                "delayAfterScrollMs": full_page_config.get('delay_after_scroll_ms'),
-                "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),
-                "addressBarShadowPadding": full_page_config.get('address_bar_shadow_padding'),
-                "disableCSSAnimation": full_page_config.get('disable_css_animation'),
-                "hideScrollBars": full_page_config.get('hide_scroll_bars'),
-                "toolBarShadowPadding": full_page_config.get('tool_bar_shadow_padding'),
-                "scrollLimit": full_page_config.get('scroll_limit'),
-            } if full_page_config is not None else None,
+            ] if ignore_regions is not None else None,
+            "fullPageConfig": full_page_config,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
             "diffingOptions": diffing_options,
         }
