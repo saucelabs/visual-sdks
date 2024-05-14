@@ -24,12 +24,12 @@ namespace SauceLabs.Visual
             _flags = flags;
         }
 
-        public VisualCheckDiffingOptions EnableOnly(DiffingOption flags)
+        public static VisualCheckDiffingOptions EnableOnly(DiffingOption flags)
         {
             return new VisualCheckDiffingOptions(DiffingOptionMode.EnableOnly, flags);
         }
 
-        public VisualCheckDiffingOptions DisableOnly(DiffingOption flags)
+        public static VisualCheckDiffingOptions DisableOnly(DiffingOption flags)
         {
             return new VisualCheckDiffingOptions(DiffingOptionMode.DisableOnly, flags);
         }
