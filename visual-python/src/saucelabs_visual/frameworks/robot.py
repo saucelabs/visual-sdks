@@ -133,10 +133,10 @@ class SauceLabsVisual:
             elements: List[WebElement] = region.element if isinstance(region.element, List) else [
                 region.element]
             parsed_ignore_regions.extend(
-                IgnoreRegion(
-                    **element.rect,
+                ignore_region_from_dict(
+                    element.rect,
                     name=region.name,
-                    diffingOptions=region.diffingOptions,
+                    diffing_options=region.diffingOptions,
                 ) for element in elements
             )
 

@@ -1,10 +1,16 @@
-from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus
+from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus, DiffingOptions
 from tabulate import tabulate
 
 
-def ignore_region_from_dict(region: dict) -> IgnoreRegion:
+def ignore_region_from_dict(
+        region: dict,
+        name: str = None,
+        diffing_options: DiffingOptions = None,
+) -> IgnoreRegion:
     """
     Parses & casts values inside an ignore region dict.
+    :param name:
+    :param diffing_options:
     :param region:
     :return:
     """
@@ -13,6 +19,8 @@ def ignore_region_from_dict(region: dict) -> IgnoreRegion:
         height=int(region.get('height')),
         x=int(region.get('x')),
         y=int(region.get('y')),
+        name=name,
+        diffingOptions=diffing_options,
     )
 
     return ignore_region
