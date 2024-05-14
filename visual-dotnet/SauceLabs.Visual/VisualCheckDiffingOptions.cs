@@ -24,11 +24,19 @@ namespace SauceLabs.Visual
             _flags = flags;
         }
 
+        /// <summary>
+        /// <c>EnableOnly</c> sets which change types to check for.
+        /// Only <c>BALANCED</c> engine is compatible.
+        /// </summary>
         public static VisualCheckDiffingOptions EnableOnly(DiffingOption flags)
         {
             return new VisualCheckDiffingOptions(DiffingOptionMode.EnableOnly, flags);
         }
 
+        /// <summary>
+        /// <c>DisableOnly</c> sets which change types to ignore.
+        /// Only <c>BALANCED</c> engine is compatible.
+        /// </summary>
         public static VisualCheckDiffingOptions DisableOnly(DiffingOption flags)
         {
             return new VisualCheckDiffingOptions(DiffingOptionMode.DisableOnly, flags);
