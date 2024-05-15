@@ -1,42 +1,20 @@
 #!/usr/bin/env node
 
-import { program } from 'commander';
+import { Command, program } from 'commander';
 import chalk from 'chalk';
 import {
-  command as buildCommand,
   buildIdOption,
-  options as buildOptions,
   buildStatusCommand,
+  command as buildCommand,
   customIdOption,
+  options as buildOptions,
 } from './cli/build.js';
-import { VisualApiRegion } from './regions.js';
 
-const regionParser = (
-  input: string,
-  _previous: VisualApiRegion,
-): VisualApiRegion => {
-  if (!input) {
-    return VisualApiRegion.fromName('us-west-1');
-  }
-  try {
-    return VisualApiRegion.fromName(input);
-  } catch (e: unknown) {
-    program.error(String(e));
-  }
-};
-
-program
-  .name('visual')
-  .description('Interacts with Sauce Visual')
-  .option<VisualApiRegion>(
-    '-r, --region <region>',
-    'The Sauce Labs region. Options: us-west-1, eu-central-1 (Default: "us-west-1)"',
-    regionParser,
-  )
-  // Implementation for legacy command-line
+const defaultCommand = new Command()
+  .name('default')
   .addOption(buildIdOption)
   .addOption(customIdOption)
-  .action(async () => {
+  .action(async (...args: Parameters<typeof buildStatusCommand>) => {
     console.warn(
       chalk.bold(
         chalk.redBright(
@@ -44,10 +22,12 @@ program
         ),
       ),
     );
-    await buildStatusCommand();
+    await buildStatusCommand(...args);
   });
 
-program.addCommand(buildCommand, buildOptions);
+program.name('visual').description('Interacts with Sauce Visual');
+program.addCommand(defaultCommand, { isDefault: true, hidden: true });
+program.addCommand(buildCommand(), buildOptions);
 
 (async function () {
   try {

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import Table from 'cli-table3';
-import { DiffStatus } from './api.js';
+import { DiffStatus } from './graphql/__generated__/graphql';
 
 const STATUS_ORDER: { colorize: (s: string) => string; statusName: string }[] =
   [
