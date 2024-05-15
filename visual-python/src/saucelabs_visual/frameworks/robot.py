@@ -1,7 +1,7 @@
 from ast import literal_eval
 from dataclasses import dataclass
 from os import environ
-from typing import List, Union
+from typing import List, Union, Literal
 
 from SeleniumLibrary import SeleniumLibrary
 from robot.api import logger
@@ -10,13 +10,14 @@ from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
+    IgnoreBase
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
 
 
 @dataclass
-class IgnoreElementRegion:
+class IgnoreElementRegion(IgnoreBase):
     element: Union[WebElement, List[WebElement]]
     diffingOptions: Union[DiffingOptions, None] = None
     name: Union[str, None] = None
@@ -186,11 +187,19 @@ class SauceLabsVisual:
             element: Union[WebElement, List[WebElement]],
             name: Union[str, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
+            enable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+            disable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
     ):
         return IgnoreElementRegion(
             element=element,
             name=name,
             diffingOptions=diffing_options,
+            enable_only=enable_only,
+            disable_only=disable_only,
         )
 
     @keyword(name="Visual Ignore Region")
@@ -202,6 +211,12 @@ class SauceLabsVisual:
             height: int,
             name: Union[str, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
+            enable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+            disable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
     ):
         return IgnoreRegion(
             x,
@@ -210,6 +225,8 @@ class SauceLabsVisual:
             height,
             name=name,
             diffingOptions=diffing_options,
+            enable_only=enable_only,
+            disable_only=disable_only,
         )
 
     @keyword(name="Visual Snapshot")

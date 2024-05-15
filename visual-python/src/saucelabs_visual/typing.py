@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from enum import Enum
-from typing import List, Union
+from typing import List, Union, Literal
 
 from typing_extensions import TypedDict, NotRequired
 
@@ -19,8 +19,41 @@ class DiffingOptions(TypedDict):
     visual: NotRequired[bool]
 
 
+@dataclass(kw_only=True)
+class IgnoreBase:
+    enable_only: InitVar[Union[List[
+        Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+    ], None]] = None
+    disable_only: InitVar[Union[List[
+        Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+    ], None]] = None
+
+    def __post_init__(
+            self,
+            enable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None],
+            disable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None],
+    ):
+        all_keys = ['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+
+        if enable_only:
+            self.diffingOptions = {
+                **dict.fromkeys(all_keys, False),
+                **dict.fromkeys(enable_only, True),
+            }
+
+        if disable_only:
+            self.diffingOptions = {
+                **dict.fromkeys(all_keys, True),
+                **dict.fromkeys(disable_only, False),
+            }
+
+
 @dataclass
-class IgnoreRegion:
+class IgnoreRegion(IgnoreBase):
     x: int
     y: int
     height: int
