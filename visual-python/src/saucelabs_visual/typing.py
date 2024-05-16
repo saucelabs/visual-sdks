@@ -70,10 +70,6 @@ class FullPageConfig(TypedDict):
     """
     hideAfterFirstScroll: NotRequired[List[str]]
     """
-    Hide elements on the page after first scroll by css selectors.
-    """
-    addressBarShadowPadding: NotRequired[int]
-    """
     Adjust address bar padding on iOS and Android for viewport cutout.
     """
     disableCSSAnimation: NotRequired[bool]
@@ -83,10 +79,6 @@ class FullPageConfig(TypedDict):
     hideScrollBars: NotRequired[bool]
     """
     Hide all scrollbars for the site under test.
-    """
-    toolBarShadowPadding: NotRequired[int]
-    """
-    Adjust toolbar padding on iOS and Android for viewport cutout.
     """
     scrollLimit: NotRequired[int]
     """

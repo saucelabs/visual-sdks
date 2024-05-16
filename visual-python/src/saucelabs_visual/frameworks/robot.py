@@ -79,10 +79,8 @@ class SauceLabsVisual:
         return FullPageConfig(
             delayAfterScrollMs=parsed_value.get('delay_after_scroll_ms'),
             hideAfterFirstScroll=parsed_value.get('hide_after_first_scroll'),
-            addressBarShadowPadding=parsed_value.get('address_bar_shadow_padding'),
             disableCSSAnimation=parsed_value.get('disable_css_animation'),
             hideScrollBars=parsed_value.get('hide_scroll_bars'),
-            toolBarShadowPadding=parsed_value.get('tool_bar_shadow_padding'),
             scrollLimit=parsed_value.get('scroll_limit'),
         ) if parsed_value is not None else None
 
