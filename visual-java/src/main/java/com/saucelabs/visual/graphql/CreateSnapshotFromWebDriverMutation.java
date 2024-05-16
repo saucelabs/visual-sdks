@@ -3,6 +3,7 @@ package com.saucelabs.visual.graphql;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.DiffingMethod;
+import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
@@ -41,9 +42,12 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<FullPageScreenshotConfig> fullPageConfig = Optional.empty();
 
+    public Optional<DiffingOptionsIn> diffingOptions = Optional.empty();
+
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
         DiffingMethod diffingMethod,
+        Optional<DiffingOptionsIn> diffingOptions,
         List<RegionIn> ignoreRegions,
         String jobId,
         String name,
@@ -51,6 +55,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
         String sessionMetadata) {
       this.buildUuid = buildUuid;
       this.diffingMethod = diffingMethod;
+      this.diffingOptions = diffingOptions;
       this.ignoreRegions = ignoreRegions;
       this.jobId = jobId;
       this.name = name;
@@ -76,6 +81,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setFullPageConfig(FullPageScreenshotConfig fullPageConfig) {
       this.fullPageConfig = Optional.ofNullable(fullPageConfig);
+    }
+
+    public void setDiffingOptions(DiffingOptionsIn diffingOptions) {
+      this.diffingOptions = Optional.of(diffingOptions);
     }
   }
 

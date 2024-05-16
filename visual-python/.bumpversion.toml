@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "0.0.9"
+current_version = "0.0.10"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
@@ -20,3 +20,8 @@ commit_args = ""
 filename = "pyproject.toml"
 search = "{current_version}"
 replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "src/saucelabs_visual/client.py"
+search = "PKG_VERSION = '{current_version}'"
+replace = "PKG_VERSION = '{new_version}'"

@@ -10,6 +10,7 @@ from requests.auth import HTTPBasicAuth
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus
 
+PKG_VERSION = '0.0.10'
 
 class SauceLabsVisual:
     _client: Client = None
@@ -36,7 +37,10 @@ class SauceLabsVisual:
 
         self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
         region_url = self.region.graphql_endpoint
-        transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key))
+        user_agent = 'visual-python/{version}'.format(version=PKG_VERSION)
+        transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key), headers={
+            'user-agent': user_agent,
+        })
         return Client(transport=transport, execute_timeout=90)
 
     def create_build(

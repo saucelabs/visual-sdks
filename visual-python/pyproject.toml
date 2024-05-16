@@ -1,6 +1,6 @@
 [project]
 name = "saucelabs_visual"
-version = "0.0.9"
+version = "0.0.10"
 description = "Python bindings for Sauce Labs Visual"
 dependencies=[
     "requests",

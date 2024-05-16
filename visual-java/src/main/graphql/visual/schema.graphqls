@@ -1,3 +1,12 @@
+schema {
+  mutation: Mutation
+  query: Query
+}
+
+type ApplicationSummary {
+  name: String!
+}
+
 input ApproveBuildIn {
   """@deprecated Use `uuid`. This field will be removed in a future update."""
   id: ID
@@ -53,6 +62,7 @@ type Baseline implements Node {
     """The method to use when ordering `Diff`."""
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
+  hasDom: Boolean!
   id: UUID!
   imageUrl: String!
   isLatest: Boolean!
@@ -175,6 +185,23 @@ type Build implements Node {
   createdByOrgId: UUID!
   createdByUser: User!
   createdByUserId: UUID!
+
+  """
+  User provided id for a build.
+  
+  Use `buildByCustomId` to look up a build by its `customId`.
+  
+  Properties:
+  - up to 64 bytes (try to stick to ASCII characters)
+  - in case of colissions, the latest build is returned
+  - collissions may hurt query performance
+  
+  Recommendations:
+  - generate the id from the CI pipeline link by applying a hashing function
+  - prefix/postfix the id with a team id to avoid collisions with other teams, e.g. `sha512(teamId + ':' + url)`
+  """
+  customId: String
+  defaultBranch: String
   diffCount(status: DiffStatus!): Int! @deprecated(reason: "Use diffCountExtended. This will be removed by 2024-02-11.")
 
   """
@@ -233,6 +260,7 @@ type Build implements Node {
   """Full-text search ranking when filtered by `fullText`."""
   fullTextRank: Float
   id: UUID!
+  keepAliveTimeout: Int
   mode: BuildMode!
   name: String!
 
@@ -346,6 +374,14 @@ input BuildFilter {
 
 input BuildIn {
   branch: String
+  customId: String
+  defaultBranch: String
+
+  """
+  A positive integer that is the time in seconds that the Build is allowed to be in the RUNNING state after the last snapshot was created or updated.
+  The number clipped to the interval [1;86400].
+  """
+  keepAliveTimeout: Int
   name: String
   project: String
 }
@@ -435,7 +471,9 @@ enum BuildsOrderBy {
   CREATED_AT_ASC
   CREATED_AT_DESC
   CREATED_BY_ORG_ID_ASC
+  CREATED_BY_ORG_ID_ASC__CUSTOM_ID_ASC
   CREATED_BY_ORG_ID_DESC
+  CREATED_BY_ORG_ID_DESC__CUSTOM_ID_DESC
   CREATED_BY_USER_ID_ASC
   CREATED_BY_USER_ID_DESC
   ID_ASC
@@ -457,8 +495,23 @@ input CreateSnapshotFromWebDriverIn {
   """
   buildId: ID
   buildUuid: UUID
+  captureDom: Boolean
+
+  """
+  A querySelector compatible selector of an element that we should crop the screenshot to.
+  """
+  clipSelector: String
   diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
+
+  """
+  Enable full page screenshot using scroll-and-stitch strategy.
+  Limitation: Currently, this feature is supported only on desktop browsers.
+  """
+  fullPageConfig: FullPageConfigIn
   ignoreRegions: [RegionIn!]
+
+  """This will be mandatory in the future."""
   jobId: String
   name: String!
   sessionId: ID!
@@ -524,12 +577,17 @@ type Diff implements Node {
   diffBounds: Rect
   diffClusters: [Rect]!
   diffingMethod: DiffingMethod!
+
+  """snapshot { uploadId } should be requested at the same moment"""
+  domDiffUrl: String
+  hasDom: Boolean!
   id: UUID!
 
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  options: DiffingOption
 
   """Reads a single `Snapshot` that is related to this `Diff`."""
   snapshot: Snapshot
@@ -651,8 +709,27 @@ Method to use for diffing.
 SIMPLE is the default.
 """
 enum DiffingMethod {
+  BALANCED
   EXPERIMENTAL
   SIMPLE
+}
+
+type DiffingOption {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
+}
+
+input DiffingOptionsIn {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
 }
 
 """A connection to a list of `Diff` values."""
@@ -706,6 +783,35 @@ input FinishBuildIn {
   """@deprecated Use `uuid`. This field will be removed in a future update."""
   id: ID
   uuid: UUID
+}
+
+input FullPageConfigIn {
+  """Adjust address bar padding on iOS and Android for viewport cutout."""
+  addressBarShadowPadding: Float
+
+  """
+  Delay in ms after scrolling and before taking screenshots.
+  A slight delay can be helpful if the page is using lazy loading when scrolling
+  """
+  delayAfterScrollMs: Int
+
+  """Disable CSS animations and the input caret in the app."""
+  disableCSSAnimation: Boolean
+
+  """Hide elements on the page after first scroll by css selectors."""
+  hideAfterFirstScroll: [String]
+
+  """Hide all scrollbars in the app."""
+  hideScrollBars: Boolean
+
+  """
+  Limit the number of screenshots taken for scrolling and stitching.
+  Default and max value is 10
+  """
+  scrollLimit: Int
+
+  """Adjust toolbar padding on iOS and Android for viewport cutout."""
+  toolBarShadowPadding: Int
 }
 
 scalar FullText
@@ -793,6 +899,161 @@ enum OperatingSystem {
   WINDOWS
 }
 
+type Org {
+  id: UUID
+
+  """Reads and enables pagination through a set of `OrgStat`."""
+  orgStats(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: OrgStatCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: OrgStatFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `OrgStat`."""
+    orderBy: [OrgStatsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OrgStatsConnection!
+  statsGroupedByDay(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): OrgStatsGroupedByDayConnection!
+}
+
+type OrgStat implements Node {
+  hour: Datetime!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """Reads a single `Org` that is related to this `OrgStat`."""
+  org: Org
+  orgId: UUID!
+  snapshotsUsed: Int!
+}
+
+"""
+A condition to be used against `OrgStat` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input OrgStatCondition {
+  """Checks for equality with the object’s `orgId` field."""
+  orgId: UUID
+}
+
+"""
+A filter to be used against `OrgStat` object types. All fields are combined with a logical ‘and.’
+"""
+input OrgStatFilter {
+  """Filter by the object’s `orgId` field."""
+  orgId: UUIDFilter
+}
+
+"""A connection to a list of `OrgStat` values."""
+type OrgStatsConnection {
+  """
+  A list of edges which contains the `OrgStat` and cursor to aid in pagination.
+  """
+  edges: [OrgStatsEdge!]!
+
+  """A list of `OrgStat` objects."""
+  nodes: [OrgStat!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `OrgStat` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `OrgStat` edge in the connection."""
+type OrgStatsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `OrgStat` at the end of the edge."""
+  node: OrgStat!
+}
+
+"""A connection to a list of `OrgStatsGroupedByDayRecord` values."""
+type OrgStatsGroupedByDayConnection {
+  """
+  A list of edges which contains the `OrgStatsGroupedByDayRecord` and cursor to aid in pagination.
+  """
+  edges: [OrgStatsGroupedByDayEdge!]!
+
+  """A list of `OrgStatsGroupedByDayRecord` objects."""
+  nodes: [OrgStatsGroupedByDayRecord!]!
+
+  """
+  The count of *all* `OrgStatsGroupedByDayRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `OrgStatsGroupedByDayRecord` edge in the connection."""
+type OrgStatsGroupedByDayEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `OrgStatsGroupedByDayRecord` at the end of the edge."""
+  node: OrgStatsGroupedByDayRecord!
+}
+
+"""The return type of our `statsGroupedByDay` query."""
+type OrgStatsGroupedByDayRecord {
+  day: Datetime
+  snapshotsUsed: Int
+}
+
+"""Methods to use when ordering `OrgStat`."""
+enum OrgStatsOrderBy {
+  NATURAL
+  ORG_ID_ASC
+  ORG_ID_ASC__HOUR_ASC
+  ORG_ID_DESC
+  ORG_ID_DESC__HOUR_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 """Information about pagination in a connection."""
 type PageInfo {
   """When paginating forwards, the cursor to continue."""
@@ -859,6 +1120,7 @@ type Query implements Node {
   """
   branches(filtername: String): [String!]!
   build(id: UUID!): Build
+  buildByCustomId(customId: String!): Build
 
   """Reads a single `Build` using its globally unique `ID`."""
   buildByNodeId(
@@ -954,6 +1216,14 @@ type Query implements Node {
   The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`.
   """
   nodeId: ID!
+  org: Org
+  orgStat(hour: Datetime!, orgId: UUID!): OrgStat
+
+  """Reads a single `OrgStat` using its globally unique `ID`."""
+  orgStatByNodeId(
+    """The globally unique `ID` to be used in selecting a single `OrgStat`."""
+    nodeId: ID!
+  ): OrgStat
 
   """
   List all the build projects that are visible to the current user and that include `filtername`.
@@ -1014,6 +1284,7 @@ type Query implements Node {
 }
 
 type Rect {
+  flags: DiffingOption
   height: Int!
   width: Int!
   x: Int!
@@ -1021,6 +1292,7 @@ type Rect {
 }
 
 type Region {
+  diffingOptions: DiffingOption
   height: Int!
   name: String
   width: Int!
@@ -1029,6 +1301,7 @@ type Region {
 }
 
 input RegionIn {
+  diffingOptions: DiffingOptionsIn
   height: Int!
   name: String
   width: Int!
@@ -1078,7 +1351,9 @@ type Snapshot implements Node {
   build: Build
   buildId: UUID!
   createdAt: Datetime!
+  defaultBranch: String
   device: String
+  devicePixelRatio: Float!
 
   """Reads and enables pagination through a set of `Diff`."""
   diffs(
@@ -1113,6 +1388,7 @@ type Snapshot implements Node {
     """The method to use when ordering `Diff`."""
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
+  domDiffUrl: String
 
   """
   If not null, it indicates that the snapshot is invalid.
@@ -1124,6 +1400,12 @@ type Snapshot implements Node {
   together with the JSON contents of `error`.
   """
   error: JSON
+  hasDom: Boolean!
+
+  """
+  `height` is determined asynchronously and may be null right after snapshot creation.
+  """
+  height: Int
   id: UUID!
   ignoreRegions: [Region]!
   imageUrl: String!
@@ -1147,6 +1429,11 @@ type Snapshot implements Node {
   url: String!
   viewportHeight: Int
   viewportWidth: Int
+
+  """
+  `width` is determined asynchronously and may be null right after snapshot creation.
+  """
+  width: Int
 }
 
 """
@@ -1188,7 +1475,9 @@ input SnapshotIn {
   buildId: ID
   buildUuid: UUID
   device: String
+  devicePixelRatio: Float
   diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
   ignoreRegions: [RegionIn!]
   jobUrl: String
   name: String!
@@ -1212,7 +1501,13 @@ input SnapshotIn {
 
 type SnapshotUpload {
   buildId: UUID!
+  domUploadUrl: String
   id: UUID!
+  imageUploadUrl: String
+
+  """
+  @deprecated "Use imageUploadUrl."
+  """
   uploadUrl: String!
 }
 
@@ -1328,6 +1623,8 @@ type User {
 }
 
 type WebdriverSession {
+  applicationSummary: ApplicationSummary
+
   """
   Encodes all metadata in an opaque scalar that can be passed to `CreateSnapshotFromWebDriver`.
   """
@@ -1346,9 +1643,4 @@ scalar WebdriverSessionBlob
 input WebdriverSessionInfoIn {
   jobId: ID!
   sessionId: ID!
-}
-
-schema {
-  mutation: Mutation
-  query: Query
 }
