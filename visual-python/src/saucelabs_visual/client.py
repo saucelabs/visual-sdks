@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from os import environ
 from time import sleep
@@ -8,9 +9,11 @@ from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
+    DiffingOptions
 
 PKG_VERSION = '0.0.10'
+
 
 class SauceLabsVisual:
     _client: Client = None
@@ -38,9 +41,10 @@ class SauceLabsVisual:
         self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
         region_url = self.region.graphql_endpoint
         user_agent = 'visual-python/{version}'.format(version=PKG_VERSION)
-        transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key), headers={
-            'user-agent': user_agent,
-        })
+        transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key),
+                                          headers={
+                                              'user-agent': user_agent,
+                                          })
         return Client(transport=transport, execute_timeout=90)
 
     def create_build(
@@ -52,6 +56,23 @@ class SauceLabsVisual:
             custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
             keep_alive_timeout: Union[int, None] = None
     ):
+        """
+        Create a Visual build through the Sauce API.
+        :param name: A name to identify this build in the UI. Does not have to be unique.
+        :param project: An optional identifier to group multiple builds together for easier
+            organization in the UI.
+        :param branch: An optional identifier to identify which Version Control branch this build
+            belongs to. Can be used during a branching workflow for easier filtering / comparison
+            in the UI.
+        :param default_branch: The branch we should compare against if no baselines are found for
+            the current branch. See the 'Branching and Merging Workflow' section in our docs:
+            https://docs.saucelabs.com/visual-testing/workflows/ci/
+        :param custom_id: An optional globally unique identifier to recall this build later, such
+            as the pipeline ID in CI so the status can be checked in a later step.
+        :param keep_alive_timeout: An integer, in seconds, for long we should keep the build alive
+            before timing out and reporting an error in the UI.
+        :return:
+        """
         query = gql(
             # language=GraphQL
             """
@@ -153,7 +174,23 @@ class SauceLabsVisual:
             ignore_regions: Union[List[IgnoreRegion], None] = None,
             full_page_config: Union[FullPageConfig, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_options: Union[DiffingOptions, None] = None,
     ):
+        """
+        Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
+        :param name: A name to identify this snapshot in the UI.
+        :param session_id: The session ID for the current running Selenium / Webdriver session.
+        :param test_name: The name of the current suite to group / identify in the UI.
+        :param suite_name: The name of the current test to group / identify in the UI.
+        :param capture_dom: Whether we should capture the DOM while taking a screenshot.
+        :param clip_selector: A CSS selector that we should clip the screenshot to.
+        :param ignore_regions: One or more regions on the page that we should ignore changes in.
+        :param full_page_config: Enable or adjust the behavior of Visual full page screenshots.
+        :param diffing_method: The diffing method we should use for comparison.
+        :param diffing_options: Options to customize the DOM <-> Visual behavior for the BALANCED
+            diffing method.
+        :return:
+        """
         query = gql(
             # language=GraphQL
             """
@@ -169,6 +206,7 @@ class SauceLabsVisual:
                 $ignoreRegions: [RegionIn!],
                 $fullPageConfig: FullPageConfigIn,
                 $diffingMethod: DiffingMethod,
+                $diffingOptions: DiffingOptionsIn,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -182,6 +220,7 @@ class SauceLabsVisual:
                     ignoreRegions: $ignoreRegions,
                     fullPageConfig: $fullPageConfig,
                     diffingMethod: $diffingMethod,
+                    diffingOptions: $diffingOptions,
                 }){
                     id
                 }
@@ -198,12 +237,12 @@ class SauceLabsVisual:
             "suiteName": suite_name,
             "captureDom": capture_dom,
             "clipSelector": clip_selector,
-            "ignoreRegions": ignore_regions,
-            "fullPageConfig": {
-                "delayAfterScrollMs": full_page_config.get('delay_after_scroll_ms'),
-                "hideAfterFirstScroll": full_page_config.get('hide_after_first_scroll'),
-            } if full_page_config is not None else None,
+            "ignoreRegions": [
+                asdict(region) for region in ignore_regions
+            ] if ignore_regions is not None else None,
+            "fullPageConfig": full_page_config,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
+            "diffingOptions": diffing_options,
         }
         return self.client.execute(query, variable_values=values)
 
