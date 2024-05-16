@@ -12,7 +12,7 @@ from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
     DiffingOptions
 
-PKG_VERSION = '0.0.10'
+PKG_VERSION = '0.0.11'
 
 
 class SauceLabsVisual:
