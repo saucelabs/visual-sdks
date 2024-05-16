@@ -4,7 +4,7 @@ Documentation     A resource file with reusable keywords and variables.
 ...               The system specific keywords created here form our own
 ...               domain specific language. They utilize keywords provided
 ...               by the imported SeleniumLibrary.
-Library           SeleniumLibrary    AS    slib
+Library           SeleniumLibrary
 Library           saucelabs_visual.frameworks.robot.SauceLabsVisual
 Library           Collections
 
@@ -57,26 +57,6 @@ Open Browser To Login Page
 Login Page Should Be Open
     Location Should Be    ${LOGIN URL}
     Title Should Be    Swag Labs
-
-Open Browser To Sauce Home Page
-    Go To    ${SAUCE HOME PAGE}
-    Maximize Browser Window
-    Set Selenium Speed    ${DELAY}
-    Sauce Home Page Should Be Open
-
-Sauce Home Page Should Be Open
-    Location Should Be    ${SAUCE HOME PAGE}
-    Title Should Be    Sauce Labs: Cross Browser Testing, Selenium Testing & Mobile Testing
-
-Open Browser To Sauce Docs
-    Go To    ${SAUCE DOCS PAGE}
-    Maximize Browser Window
-    Set Selenium Speed    ${DELAY}
-    Sauce Docs Should Be Open
-
-Sauce Docs Should Be Open
-    Location Should Be    ${SAUCE DOCS PAGE}
-    Title Should Be    Appium Versions | Sauce Labs Documentation
 
 Go To Login Page
     Go To    ${LOGIN URL}
