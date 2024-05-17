@@ -1,0 +1,11 @@
+mutation createBuild($input: BuildIn!) {
+  result: createBuild(input: $input) {
+    id
+    name
+    project
+    branch
+    defaultBranch
+    status
+    url
+  }
+}

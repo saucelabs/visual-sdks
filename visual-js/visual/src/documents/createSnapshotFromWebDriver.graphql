@@ -1,0 +1,26 @@
+mutation createSnapshotFromWebDriver($input: CreateSnapshotFromWebDriverIn!) {
+  result: createSnapshotFromWebDriver(input: $input) {
+    id
+    uploadId
+    diffs {
+      nodes {
+        id
+        baselineId
+        snapshotId
+        status
+        diffBounds {
+          x
+          y
+          width
+          height
+        }
+        diffClusters {
+          x
+          y
+          width
+          height
+        }
+      }
+    }
+  }
+}

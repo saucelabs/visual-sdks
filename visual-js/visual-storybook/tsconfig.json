@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build",
+    "rootDir": "./src",
+    "plugins": [
+      {
+        "name": "typescript-plugin-resolve-plugins",
+        "resolvePlugins": true
+      }
+    ],
+    "types": [
+      "jest-playwright-preset",
+  ],
+  },
+  "include": [
+    "src/**/*",
+    "../../@types",
+  ]
+}

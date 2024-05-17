@@ -1,0 +1,8 @@
+mutation FinishBuildDocument($input: FinishBuildIn!) {
+  result: finishBuild(input: $input) {
+    id
+    name
+    status
+    url
+  }
+}

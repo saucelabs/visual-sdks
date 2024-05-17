@@ -1,0 +1,40 @@
+{
+  "name": "@saucelabs/nightwatch-sauce-visual-service",
+  "description": "Nightwatch service that add visual checks capabilities using Sauce Labs Visual",
+  "version": "0.3.0",
+  "main": "index.js",
+  "types": "types/nightwatch.d.ts",
+  "license": "MIT",
+  "engines": {
+    "node": "^16.13 || >=18"
+  },
+  "typeScriptVersion": "3.8.3",
+  "keywords": [
+    "seleniumjs",
+    "nightwatch",
+    "wdio-service",
+    "saucelabs",
+    "visual"
+  ],
+  "dependencies": {
+    "@saucelabs/visual": "0.3.0",
+    "chalk": "^4.1.2",
+    "nightwatch": "^3.3.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^29.7.0",
+    "jest-junit-reporter": "^1.1.0",
+    "prettier": "^2.8.8"
+  },
+  "scripts": {
+    "lint": "eslint \"{nightwatch,utils}/**/*.js\"",
+    "test-ignored": "jest --collect-coverage"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,7 @@
+query buildStatus($input: UUID!) {
+  result: build(id: $input) {
+    url
+    status
+    unapprovedCount: diffCount(status: UNAPPROVED)
+  }
+}

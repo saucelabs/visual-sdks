@@ -1,0 +1,37 @@
+name: JS (release)
+
+on:
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: visual-js
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          git config --global user.name "sauce-visual-bot"
+          git config --global user.email "visual@saucelabs.com"
+      - name: Build
+        run: |
+          corepack enable
+          yarn install
+          npm run build --workspaces --if-present
+      - name: upgrade & publish version(s)
+        ## TODO version and publish commands need to be adjusted when we're confident with the pipeline
+        run: |
+          npx changeset version --snapshot migration
+          npx changeset publish --no-git-tag --snapshot
+      ## TODO enable the git tagging when we're confident with the pipeline
+      ##- name: Push to git
+      ##  run: |
+      ##    git push --follow-tags

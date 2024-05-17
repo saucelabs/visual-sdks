@@ -1,0 +1,20 @@
+{
+  "name": "visual-clients-workspace",
+  "private": true,
+  "workspaces": [
+    "visual",
+    "visual-storybook",
+    "visual-wdio",
+    "visual-cypress",
+    "visual-nightwatch"
+  ],
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "yarn lint"
+    ]
+  },
+  "packageManager": "yarn@3.5.1",
+  "dependencies": {
+    "@changesets/cli": "^2.27.1"
+  }
+}
