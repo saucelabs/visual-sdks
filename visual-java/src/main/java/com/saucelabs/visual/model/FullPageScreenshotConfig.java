@@ -5,37 +5,31 @@ import java.util.List;
 
 public class FullPageScreenshotConfig {
 
-  private int addressBarShadowPadding;
   private int delayAfterScrollMs;
   private Boolean disableCSSAnimation;
   private List<String> hideAfterFirstScroll;
   private Boolean hideScrollBars;
-  private int toolBarShadowPadding;
   private int scrollLimit;
 
-  public FullPageScreenshotConfig(int addressBarShadowPadding, int delayAfterScrollMs, Boolean disableCSSAnimation, List<String> hideAfterFirstScroll, Boolean hideScrollBars, int toolBarShadowPadding, int scrollLimit) {
-    this.addressBarShadowPadding = addressBarShadowPadding;
+  public FullPageScreenshotConfig(
+      int delayAfterScrollMs,
+      Boolean disableCSSAnimation,
+      List<String> hideAfterFirstScroll,
+      Boolean hideScrollBars,
+      int scrollLimit) {
     this.delayAfterScrollMs = delayAfterScrollMs;
     this.disableCSSAnimation = disableCSSAnimation;
     this.hideAfterFirstScroll = hideAfterFirstScroll;
     this.hideScrollBars = hideScrollBars;
-    this.toolBarShadowPadding = toolBarShadowPadding;
     this.scrollLimit = scrollLimit;
   }
 
   public static class Builder {
-    private int addressBarShadowPadding;
     private int delayAfterScrollMs;
     private Boolean disableCSSAnimation;
     private List<String> hideAfterFirstScroll;
     private Boolean hideScrollBars;
-    private int toolBarShadowPadding;
     private int scrollLimit;
-
-    public Builder withAddressBarShadowPadding(int addressBarShadowPadding) {
-      this.addressBarShadowPadding = addressBarShadowPadding;
-      return this;
-    }
 
     public Builder withDelayAfterScrollMs(int delayAfterScrollMs) {
       this.delayAfterScrollMs = delayAfterScrollMs;
@@ -57,11 +51,6 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
-    public Builder withToolBarShadowPadding(int toolBarShadowPadding) {
-      this.toolBarShadowPadding = toolBarShadowPadding;
-      return this;
-    }
-
     public Builder withScrollLimit(int scrollLimit) {
       if (scrollLimit > 0 && scrollLimit <= 10) {
         this.scrollLimit = scrollLimit;
@@ -73,16 +62,15 @@ public class FullPageScreenshotConfig {
     }
 
     public FullPageScreenshotConfig build() {
-      return new FullPageScreenshotConfig(addressBarShadowPadding, delayAfterScrollMs, disableCSSAnimation, hideAfterFirstScroll, hideScrollBars, toolBarShadowPadding, scrollLimit);
+      return new FullPageScreenshotConfig(
+          delayAfterScrollMs,
+          disableCSSAnimation,
+          hideAfterFirstScroll,
+          hideScrollBars,
+          scrollLimit);
     }
   }
 
-  public int getAddressBarShadowPadding() {
-    return addressBarShadowPadding;
-  }
-  public void setAddressBarShadowPadding(int addressBarShadowPadding) {
-    this.addressBarShadowPadding = addressBarShadowPadding;
-  }
   public int getDelayAfterScrollMs() {
     return delayAfterScrollMs;
   }
@@ -113,14 +101,6 @@ public class FullPageScreenshotConfig {
 
   public void setHideScrollBars(Boolean hideScrollBars) {
     this.hideScrollBars = hideScrollBars;
-  }
-
-  public int getToolBarShadowPadding() {
-    return toolBarShadowPadding;
-  }
-
-  public void setToolBarShadowPadding(int toolBarShadowPadding) {
-    this.toolBarShadowPadding = toolBarShadowPadding;
   }
 
   public int getScrollLimit() {
