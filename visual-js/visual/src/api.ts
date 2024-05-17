@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import fetch from 'node-fetch';
 import crypto from 'crypto';
 import { ProxyAgent } from 'proxy-agent';
@@ -158,9 +158,7 @@ const uploadToUrl = async ({
   file: DataContent | DataPath;
   compress?: boolean;
 }) => {
-  const uploadBody = isDataPath(file)
-    ? await fs.readFile(file.path)
-    : file.data;
+  const uploadBody = isDataPath(file) ? fs.readFileSync(file.path) : file.data;
 
   const hash = crypto.createHash('md5').update(uploadBody).digest('base64');
 
