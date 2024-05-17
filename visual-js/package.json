@@ -8,12 +8,7 @@
     "visual-cypress",
     "visual-nightwatch"
   ],
-  "devDependencies": {
-    "husky": "8.0.0"
-  },
-  "scripts": {
-    "prepare": "cd ../.. && husky install clients/js/.husky"
-  },
+  "scripts": {},
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
       "yarn lint"
