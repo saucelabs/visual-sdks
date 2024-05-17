@@ -8,7 +8,6 @@
     "visual-cypress",
     "visual-nightwatch"
   ],
-  "scripts": {},
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
       "yarn lint"
