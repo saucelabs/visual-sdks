@@ -25,7 +25,7 @@ jobs:
         run: |
           corepack enable
           yarn install
-          npx lerna run build
+          npm run build --workspaces --if-present
       - name: upgrade & publish version(s)
         ## TODO version and publish commands need to be adjusted when we're confident with the pipeline
         run: |

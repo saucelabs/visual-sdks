@@ -27,9 +27,9 @@ jobs:
         run: |
           corepack enable
           yarn install
-          npx lerna run lint
-          npx lerna run build
-          npx lerna run test
+          npm run lint --workspaces --if-present
+          npm run build --workspaces --if-present
+          npm run test --workspaces --if-present
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}

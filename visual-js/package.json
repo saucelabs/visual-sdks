@@ -9,8 +9,7 @@
     "visual-nightwatch"
   ],
   "devDependencies": {
-    "husky": "8.0.0",
-    "lerna": "^8.1.2"
+    "husky": "8.0.0"
   },
   "scripts": {
     "prepare": "cd ../.. && husky install clients/js/.husky"
