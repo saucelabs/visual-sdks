@@ -1,6 +1,7 @@
 from ast import literal_eval
+from dataclasses import dataclass
 from os import environ
-from typing import List, Union
+from typing import List, Union, Literal
 
 from SeleniumLibrary import SeleniumLibrary
 from robot.api import logger
@@ -9,9 +10,17 @@ from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod
+from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
+    IgnoreBase
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
+
+
+@dataclass
+class IgnoreElementRegion(IgnoreBase):
+    element: Union[WebElement, List[WebElement]]
+    diffingOptions: Union[DiffingOptions, None] = None
+    name: Union[str, None] = None
 
 
 @library(scope='GLOBAL')
@@ -68,13 +77,16 @@ class SauceLabsVisual:
             parsed_value = {} if literal is True else None
 
         return FullPageConfig(
-            delay_after_scroll_ms=parsed_value.get('delay_after_scroll_ms'),
-            hide_after_first_scroll=parsed_value.get('hide_after_first_scroll'),
+            delayAfterScrollMs=parsed_value.get('delay_after_scroll_ms'),
+            hideAfterFirstScroll=parsed_value.get('hide_after_first_scroll'),
+            disableCSSAnimation=parsed_value.get('disable_css_animation'),
+            hideScrollBars=parsed_value.get('hide_scroll_bars'),
+            scrollLimit=parsed_value.get('scroll_limit'),
         ) if parsed_value is not None else None
 
     def _parse_ignore_regions(
             self,
-            ignore_regions: List[Union[IgnoreRegion, str, WebElement]],
+            ignore_regions: List[Union[IgnoreRegion, str, WebElement, IgnoreElementRegion, dict]],
     ) -> List[IgnoreRegion]:
         """
         Parse ignore regions passed through Robot to allow selectors, web elements, and dicts --
@@ -84,23 +96,48 @@ class SauceLabsVisual:
         """
         selenium_library = self._get_selenium_library()
         parsed_ignore_regions: List[Union[IgnoreRegion, None]] = []
-        elements_to_query: List[WebElement] = []
+        element_regions: List[IgnoreElementRegion] = []
 
-        for ignore_region in ignore_regions:
-            literal_type = type(ignore_region)
-            if literal_type is dict:
+        def parse_element(
+                element_to_parse: Union[
+                    IgnoreRegion, str, WebElement, List[WebElement], IgnoreElementRegion, dict
+                ]
+        ):
+            literal_type = type(element_to_parse)
+            if isinstance(element_to_parse, List):
+                for element in element_to_parse:
+                    parse_element(element)
+            elif literal_type is IgnoreRegion:
+                parsed_ignore_regions.append(element_to_parse)
+            elif literal_type is IgnoreElementRegion:
+                element_regions.append(element_to_parse)
+            elif literal_type is dict:
                 parsed_ignore_regions.append(
-                    ignore_region_from_dict(ignore_region)
+                    ignore_region_from_dict(element_to_parse)
                 )
             elif literal_type is str:
-                elements_to_query.extend(
-                    selenium_library.get_webelements(ignore_region)
+                element_regions.extend(
+                    IgnoreElementRegion(
+                        element=element,
+                    ) for element in selenium_library.get_webelements(element_to_parse)
                 )
             elif literal_type is WebElement:
-                elements_to_query.append(ignore_region)
+                element_regions.append(IgnoreElementRegion(
+                    element=element_to_parse,
+                ))
 
-        for element in elements_to_query:
-            parsed_ignore_regions.append(ignore_region_from_dict(element.rect))
+        parse_element(ignore_regions)
+
+        for region in element_regions:
+            elements: List[WebElement] = region.element if isinstance(region.element, List) else [
+                region.element]
+            parsed_ignore_regions.extend(
+                ignore_region_from_dict(
+                    element.rect,
+                    name=region.name,
+                    diffing_options=region.diffingOptions,
+                ) for element in elements
+            )
 
         return [
             region for region in parsed_ignore_regions if self._is_valid_ignore_region(region)
@@ -126,7 +163,6 @@ class SauceLabsVisual:
             default_branch: Union[str, None] = environ.get('SAUCE_VISUAL_DEFAULT_BRANCH'),
             custom_id: Union[str, None] = environ.get('SAUCE_VISUAL_CUSTOM_ID'),
             keep_alive_timeout: int = None,
-            **kwargs,
     ):
         self.client.create_build(
             name=name,
@@ -143,6 +179,54 @@ class SauceLabsVisual:
         logger.info(self.client.get_build_finished_link(), also_console=True)
         self.client.finish_build()
 
+    @keyword(name="Visual Ignore Element")
+    def visual_ignore_element(
+            self,
+            element: Union[WebElement, List[WebElement]],
+            name: Union[str, None] = None,
+            diffing_options: Union[DiffingOptions, None] = None,
+            enable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+            disable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+    ):
+        return IgnoreElementRegion(
+            element=element,
+            name=name,
+            diffingOptions=diffing_options,
+            enable_only=enable_only,
+            disable_only=disable_only,
+        )
+
+    @keyword(name="Visual Ignore Region")
+    def visual_ignore_region(
+            self,
+            x: int,
+            y: int,
+            width: int,
+            height: int,
+            name: Union[str, None] = None,
+            diffing_options: Union[DiffingOptions, None] = None,
+            enable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+            disable_only: Union[List[
+                Literal['content', 'dimensions', 'position', 'structure', 'style', 'visual']
+            ], None] = None,
+    ):
+        return IgnoreRegion(
+            x,
+            y,
+            width,
+            height,
+            name=name,
+            diffingOptions=diffing_options,
+            enable_only=enable_only,
+            disable_only=disable_only,
+        )
+
     @keyword(name="Visual Snapshot")
     def visual_snapshot(
             # Params 'duplicated' here, so we get type casting and named parameters provided by
@@ -151,9 +235,12 @@ class SauceLabsVisual:
             name: str,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
-            ignore_regions: List[Union[IgnoreRegion, str, WebElement]] = None,
+            ignore_regions: List[Union[
+                List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
+            ]] = None,
             full_page_config: Union[str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_options: Union[DiffingOptions, None] = None,
     ):
         session_id = self._get_selenium_id()
 
@@ -177,6 +264,7 @@ class SauceLabsVisual:
             ignore_regions=parsed_ignore_regions,
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
+            diffing_options=diffing_options,
         )
 
     @keyword(name="Visual Build Status")
