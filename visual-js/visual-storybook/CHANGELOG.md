@@ -1,4 +1,4 @@
-# @saucelabs/visual
+# @saucelabs/visual-storybook
 
 ## 0.4.0
 
@@ -9,9 +9,6 @@
 ### Patch Changes
 
 - ed72709: migrate source to github
-
-## 0.4.0
-
-### Minor Changes
-
-- move to github
+- Updated dependencies [ed72709]
+- Updated dependencies [0384c59]
+  - @saucelabs/visual@0.4.0
