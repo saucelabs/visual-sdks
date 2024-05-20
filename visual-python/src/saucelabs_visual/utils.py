@@ -1,5 +1,6 @@
-from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus, DiffingOptions
 from tabulate import tabulate
+
+from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus, DiffingOptions
 
 
 def ignore_region_from_dict(

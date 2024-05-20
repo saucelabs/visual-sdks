@@ -1,7 +1,8 @@
-from dataclasses import dataclass, InitVar
+from dataclasses import dataclass, InitVar, asdict
 from enum import Enum
 from typing import List, Union, Literal
 
+from selenium.webdriver.remote.webelement import WebElement
 from typing_extensions import TypedDict, NotRequired
 
 
@@ -61,6 +62,25 @@ class IgnoreRegion(IgnoreBase):
     diffingOptions: Union[DiffingOptions, None] = None
     name: Union[str, None] = None
 
+    def asdict(self):
+        return asdict(self)
+
+@dataclass
+class IgnoreElementRegion(IgnoreBase):
+    element: Union[WebElement, List[WebElement]]
+    diffingOptions: Union[DiffingOptions, None] = None
+    name: Union[str, None] = None
+
+    def asdictarray(self):
+        element_array = self.element if isinstance(self.element, List) else [self.element]
+        return [
+            {
+                "id": element.id,
+                "diffingOptions": self.diffingOptions,
+                "name": self.name,
+            } for element in element_array
+        ]
+
 
 class FullPageConfig(TypedDict):
     delayAfterScrollMs: NotRequired[int]
@@ -70,7 +90,11 @@ class FullPageConfig(TypedDict):
     """
     hideAfterFirstScroll: NotRequired[List[str]]
     """
-    Adjust address bar padding on iOS and Android for viewport cutout.
+    A list of CSS selectors for elements to hide after the first scroll.
+    """
+    hideElementsAfterFirstScroll: NotRequired[List[str]]
+    """
+    A list of WebElements to hide after the first scroll.
     """
     disableCSSAnimation: NotRequired[bool]
     """

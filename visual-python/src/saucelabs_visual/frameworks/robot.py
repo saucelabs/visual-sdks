@@ -1,7 +1,6 @@
 from ast import literal_eval
-from dataclasses import dataclass
 from os import environ
-from typing import List, Union, Literal
+from typing import List, Union, Literal, Tuple
 
 from SeleniumLibrary import SeleniumLibrary
 from robot.api import logger
@@ -11,16 +10,9 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
-    IgnoreBase
+    IgnoreElementRegion
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
-
-
-@dataclass
-class IgnoreElementRegion(IgnoreBase):
-    element: Union[WebElement, List[WebElement]]
-    diffingOptions: Union[DiffingOptions, None] = None
-    name: Union[str, None] = None
 
 
 @library(scope='GLOBAL')
@@ -59,7 +51,9 @@ class SauceLabsVisual:
     def _get_selenium_id(self) -> str:
         return self._get_selenium_library().get_session_id()
 
-    def _parse_full_page_config(self, value: str) -> Union[FullPageConfig, None]:
+    def _parse_full_page_config(self, value: Union[bool, FullPageConfig, str]) -> Union[
+        FullPageConfig, None
+    ]:
         """
         Parses the value from the 'Visual Snapshot' keyword to allow optional values and defaults
         that make sense. Otherwise, they would have to supply all properties to full_page_config
@@ -67,7 +61,7 @@ class SauceLabsVisual:
         :param value:
         :return:
         """
-        literal = literal_eval(value)
+        literal = literal_eval(value) if type(value) is str else value
         literal_type = type(literal)
         parsed_value = None
 
@@ -76,9 +70,14 @@ class SauceLabsVisual:
         elif literal_type is bool:
             parsed_value = {} if literal is True else None
 
+        hide_elements_after_first_scroll = [
+            element.id for element in (parsed_value.get('hide_elements_after_first_scroll') or [])
+        ]
+
         return FullPageConfig(
             delayAfterScrollMs=parsed_value.get('delay_after_scroll_ms'),
             hideAfterFirstScroll=parsed_value.get('hide_after_first_scroll'),
+            hideElementsAfterFirstScroll=hide_elements_after_first_scroll,
             disableCSSAnimation=parsed_value.get('disable_css_animation'),
             hideScrollBars=parsed_value.get('hide_scroll_bars'),
             scrollLimit=parsed_value.get('scroll_limit'),
@@ -87,7 +86,7 @@ class SauceLabsVisual:
     def _parse_ignore_regions(
             self,
             ignore_regions: List[Union[IgnoreRegion, str, WebElement, IgnoreElementRegion, dict]],
-    ) -> List[IgnoreRegion]:
+    ) -> Tuple[List[IgnoreRegion], List[IgnoreElementRegion]]:
         """
         Parse ignore regions passed through Robot to allow selectors, web elements, and dicts --
         validating those regions.
@@ -116,10 +115,10 @@ class SauceLabsVisual:
                     ignore_region_from_dict(element_to_parse)
                 )
             elif literal_type is str:
-                element_regions.extend(
+                element_regions.append(
                     IgnoreElementRegion(
-                        element=element,
-                    ) for element in selenium_library.get_webelements(element_to_parse)
+                        element=selenium_library.get_webelements(element_to_parse),
+                    )
                 )
             elif literal_type is WebElement:
                 element_regions.append(IgnoreElementRegion(
@@ -128,20 +127,12 @@ class SauceLabsVisual:
 
         parse_element(ignore_regions)
 
-        for region in element_regions:
-            elements: List[WebElement] = region.element if isinstance(region.element, List) else [
-                region.element]
-            parsed_ignore_regions.extend(
-                ignore_region_from_dict(
-                    element.rect,
-                    name=region.name,
-                    diffing_options=region.diffingOptions,
-                ) for element in elements
-            )
-
-        return [
-            region for region in parsed_ignore_regions if self._is_valid_ignore_region(region)
-        ]
+        return (
+            [
+                region for region in parsed_ignore_regions if self._is_valid_ignore_region(region)
+            ],
+            element_regions,
+        )
 
     def _is_valid_ignore_region(self, region: IgnoreRegion):
         if is_valid_ignore_region(region):
@@ -235,10 +226,11 @@ class SauceLabsVisual:
             name: str,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
+            clip_element: Union[WebElement, None] = None,
             ignore_regions: List[Union[
                 List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
             ]] = None,
-            full_page_config: Union[str, None] = None,
+            full_page_config: Union[FullPageConfig, bool, str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
     ):
@@ -248,10 +240,10 @@ class SauceLabsVisual:
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
         # to set proper default / optional values.
         parsed_fpc = self._parse_full_page_config(full_page_config) if (
-                type(full_page_config) is str) else None
+                full_page_config is not None) else None
 
         # Convert selectors into WebElements & ignore regions
-        parsed_ignore_regions = self._parse_ignore_regions(
+        parsed_ignore_regions, parsed_ignore_elements = self._parse_ignore_regions(
             ignore_regions) if ignore_regions is not None else None
 
         self.client.create_snapshot_from_webdriver(
@@ -261,7 +253,9 @@ class SauceLabsVisual:
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
             clip_selector=clip_selector,
+            clip_element=clip_element,
             ignore_regions=parsed_ignore_regions,
+            ignore_elements=parsed_ignore_elements,
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
             diffing_options=diffing_options,
