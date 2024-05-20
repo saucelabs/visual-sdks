@@ -13,7 +13,7 @@ namespace SauceLabs.Visual.GraphQL
         public IEnumerable<string>? HideAfterFirstScroll { get; set; }
         [JsonProperty("hideScrollBars")]
         public bool? HideScrollBars { get; set; }
-        [JsonProperty("ScrollLimit")]
+        [JsonProperty("scrollLimit")]
         public int? ScrollLimit { get; set; }
     }
 }
