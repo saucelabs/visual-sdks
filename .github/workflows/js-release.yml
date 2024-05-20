@@ -30,5 +30,7 @@ jobs:
         run: |
           npx changeset version
           npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       - name: Push to git
         run: git push --follow-tags
