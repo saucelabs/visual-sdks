@@ -52,12 +52,7 @@ public class FullPageScreenshotConfig {
     }
 
     public Builder withScrollLimit(int scrollLimit) {
-      if (scrollLimit > 0 && scrollLimit <= 10) {
-        this.scrollLimit = scrollLimit;
-      } else {
-        this.scrollLimit = 10;
-      }
-
+      this.scrollLimit = scrollLimit;
       return this;
     }
 
