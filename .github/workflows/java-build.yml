@@ -2,6 +2,8 @@ name: Java (build)
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'visual-java/**'
       - .github/workflows/java-build.yml

@@ -2,6 +2,8 @@ name: Python (build)
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'visual-python/**'
   pull_request:
