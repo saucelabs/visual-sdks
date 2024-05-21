@@ -6,6 +6,7 @@ import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.model.VisualRegion;
 import com.saucelabs.visual.utils.ConsoleColors;
@@ -34,6 +35,7 @@ public class VisualApi {
     private String defaultBranchName;
     private String buildName;
     private Boolean captureDom;
+    private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, DataCenter.US_WEST_1.endpoint);
@@ -75,6 +77,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withFullPageScreenshot(FullPageScreenshotConfig fullPageScreenshotConfig) {
+      this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+      return this;
+    }
+
     public VisualApi build() {
       VisualApi api =
           new VisualApi(
@@ -87,6 +94,9 @@ public class VisualApi {
       if (this.captureDom != null) {
         api.setCaptureDom(this.captureDom);
       }
+      if (this.fullPageScreenshotConfig != null) {
+        api.enableFullPageScreenshots(this.fullPageScreenshotConfig);
+      }
       return api;
     }
   }
@@ -98,6 +108,7 @@ public class VisualApi {
   private final String sessionId;
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
+  private FullPageScreenshotConfig fullPageScreenshotConfig;
   private String sessionMetadataBlob;
 
   /**
@@ -186,6 +197,20 @@ public class VisualApi {
    */
   public void setCaptureDom(Boolean captureDom) {
     this.captureDom = captureDom;
+  }
+
+  /** Enables full page screenshots */
+  public void enableFullPageScreenshots() {
+    this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+
+  /**
+   * Enables full page screenshots
+   *
+   * @param fullPageScreenshotConfig config for full page screenshots
+   */
+  public void enableFullPageScreenshots(FullPageScreenshotConfig fullPageScreenshotConfig) {
+    this.fullPageScreenshotConfig = fullPageScreenshotConfig;
   }
 
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
@@ -358,7 +383,12 @@ public class VisualApi {
       input.setClipSelector(clipSelector);
     }
 
-    input.setFullPageConfig(options.getFullPageScreenshotConfig());
+    FullPageScreenshotConfig fullPageScreenshotConfig =
+        Optional.ofNullable(options.getFullPageScreenshotConfig())
+            .orElse(this.fullPageScreenshotConfig);
+    if (fullPageScreenshotConfig != null) {
+      input.setFullPageConfig(fullPageScreenshotConfig);
+    }
 
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =

@@ -70,6 +70,8 @@ class SmokeTest extends SauceBaseTest {
     CheckOptions options = new CheckOptions();
     FullPageScreenshotConfig config =
         new FullPageScreenshotConfig.Builder()
+            .withHideScrollBars(false)
+            .withScrollLimit(2)
             .withDelayAfterScrollMs(200)
             .withHideAfterFirstScroll("#searchform")
             .build();
