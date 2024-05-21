@@ -1,7 +1,9 @@
 name: JS (release)
 
 on:
-  workflow_dispatch: {}
+  push:
+    branches:
+      - main
 
 defaults:
   run:
@@ -27,11 +29,12 @@ jobs:
           corepack enable
           yarn install
           npm run build --workspaces --if-present
-      - name: upgrade & publish version(s)
-        run: |
-          npx changeset version
-          npx changeset publish
+      - name: Create Release Pull Request
+        uses: changesets/action@v1
+        with:
+          cwd: visual-js
+          setupGitUser: false
+          version: npx changeset version
+          publish: npx changeset publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-      - name: Push to git
-        run: git push --follow-tags
+          NPM_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
