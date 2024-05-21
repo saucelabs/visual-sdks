@@ -1,4 +1,4 @@
-import { BuildMode, BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
+import { BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
 import {
   RE_VISUAL_BUILD_ID,
   RE_VISUAL_BUILD_LINK,
