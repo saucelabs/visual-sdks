@@ -70,14 +70,9 @@ class SauceLabsVisual:
         elif literal_type is bool:
             parsed_value = {} if literal is True else None
 
-        hide_elements_after_first_scroll = [
-            element.id for element in (parsed_value.get('hide_elements_after_first_scroll') or [])
-        ]
-
         return FullPageConfig(
             delayAfterScrollMs=parsed_value.get('delay_after_scroll_ms'),
             hideAfterFirstScroll=parsed_value.get('hide_after_first_scroll'),
-            hideElementsAfterFirstScroll=hide_elements_after_first_scroll,
             disableCSSAnimation=parsed_value.get('disable_css_animation'),
             hideScrollBars=parsed_value.get('hide_scroll_bars'),
             scrollLimit=parsed_value.get('scroll_limit'),

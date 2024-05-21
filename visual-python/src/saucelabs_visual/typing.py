@@ -93,10 +93,6 @@ class FullPageConfig(TypedDict):
     """
     A list of CSS selectors for elements to hide after the first scroll.
     """
-    hideElementsAfterFirstScroll: NotRequired[List[str]]
-    """
-    A list of WebElements to hide after the first scroll.
-    """
     disableCSSAnimation: NotRequired[bool]
     """
     Disable CSS animations and the input caret for the site under test.
