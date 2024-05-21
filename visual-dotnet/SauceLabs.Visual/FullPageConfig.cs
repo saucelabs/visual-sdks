@@ -10,22 +10,7 @@ namespace SauceLabs.Visual
         public bool? DisableCSSAnimation { get; set; }
         public IEnumerable<string>? HideAfterFirstScroll { get; set; }
         public bool? HideScrollBars { get; set; }
-        private int? _scrollLimit;
-        public int? ScrollLimit
-        {
-            get { return _scrollLimit; }
-            set
-            {
-                if (value > 0 && value <= 10)
-                {
-                    _scrollLimit = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(ScrollLimit), "Value must be between 1 and 10.");
-                }
-            }
-        }
+        public int? ScrollLimit { get; set; }
 
         internal FullPageConfigIn ToFullPageConfigIn()
         {
