@@ -226,7 +226,6 @@ class SauceLabsVisual:
             name: str,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
-            clip_element: Union[WebElement, None] = None,
             ignore_regions: List[Union[
                 List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
             ]] = None,
@@ -253,7 +252,6 @@ class SauceLabsVisual:
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
             clip_selector=clip_selector,
-            clip_element=clip_element,
             ignore_regions=parsed_ignore_regions,
             ignore_elements=parsed_ignore_elements,
             full_page_config=parsed_fpc,
