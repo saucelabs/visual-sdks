@@ -7,7 +7,13 @@ namespace SauceLabs.Visual.GraphQL
     {
         [JsonProperty("delayAfterScrollMs")]
         public int? DelayAfterScrollMs { get; set; }
+        [JsonProperty("disableCSSAnimation")]
+        public bool? DisableCSSAnimation { get; set; }
         [JsonProperty("hideAfterFirstScroll")]
         public IEnumerable<string>? HideAfterFirstScroll { get; set; }
+        [JsonProperty("hideScrollBars")]
+        public bool? HideScrollBars { get; set; }
+        [JsonProperty("scrollLimit")]
+        public int? ScrollLimit { get; set; }
     }
 }

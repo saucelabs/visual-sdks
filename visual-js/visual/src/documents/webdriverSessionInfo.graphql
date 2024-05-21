@@ -1,0 +1,10 @@
+query webdriverSessionInfo($input: WebdriverSessionInfoIn!) {
+  result: webdriverSessionInfo(input: $input) {
+    blob
+    operatingSystem
+    operatingSystemVersion
+    browser
+    browserVersion
+    deviceName
+  }
+}

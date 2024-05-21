@@ -1,0 +1,1634 @@
+type ApplicationSummary {
+  name: String!
+}
+
+input ApproveBuildIn {
+  """@deprecated Use `uuid`. This field will be removed in a future update."""
+  id: ID
+  onlyNew: Boolean
+  uuid: UUID
+}
+
+"""
+A `Baseline` is what a `Snapshot` is compared to.
+
+For details see https://docs.saucelabs.com/visual-testing/sauce-visual/index.html#baseline-matching
+"""
+type Baseline implements Node {
+  branch: String
+  browser: Browser
+  browserVersion: String
+  createdAt: Datetime!
+  createdByOrgId: UUID!
+  createdByUser: User!
+  createdByUserId: UUID!
+  device: String
+
+  """Reads and enables pagination through a set of `Diff`."""
+  diffs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: DiffCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: DiffFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Diff`."""
+    orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): DiffsConnection!
+  id: UUID!
+  imageUrl: String!
+  isLatest: Boolean!
+  name: String!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  operatingSystem: OperatingSystem
+  operatingSystemVersion: String
+  project: String
+
+  """Reads a single `Snapshot` that is related to this `Baseline`."""
+  snapshot: Snapshot
+  snapshotId: UUID
+  suiteName: String
+  testName: String
+  uploadId: String!
+  viewportHeight: Int
+  viewportWidth: Int
+}
+
+"""
+A condition to be used against `Baseline` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input BaselineCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+
+  """Checks for equality with the object’s `createdByOrgId` field."""
+  createdByOrgId: UUID
+
+  """Checks for equality with the object’s `createdByUserId` field."""
+  createdByUserId: UUID
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `snapshotId` field."""
+  snapshotId: UUID
+}
+
+"""
+A filter to be used against `Baseline` object types. All fields are combined with a logical ‘and.’
+"""
+input BaselineFilter {
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `createdByOrgId` field."""
+  createdByOrgId: UUIDFilter
+
+  """Filter by the object’s `createdByUserId` field."""
+  createdByUserId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `snapshotId` field."""
+  snapshotId: UUIDFilter
+}
+
+"""A connection to a list of `Baseline` values."""
+type BaselinesConnection {
+  """
+  A list of edges which contains the `Baseline` and cursor to aid in pagination.
+  """
+  edges: [BaselinesEdge!]!
+
+  """A list of `Baseline` objects."""
+  nodes: [Baseline!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Baseline` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Baseline` edge in the connection."""
+type BaselinesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Baseline` at the end of the edge."""
+  node: Baseline!
+}
+
+"""Methods to use when ordering `Baseline`."""
+enum BaselinesOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  CREATED_BY_ORG_ID_ASC
+  CREATED_BY_ORG_ID_DESC
+  CREATED_BY_USER_ID_ASC
+  CREATED_BY_USER_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  SNAPSHOT_ID_ASC
+  SNAPSHOT_ID_DESC
+}
+
+enum Browser {
+  CHROME
+  EDGE
+  FIREFOX
+  PLAYWRIGHT_WEBKIT
+  SAFARI
+}
+
+"""The result of diffing a `Baseline` with a `Snapshot`."""
+type Build implements Node {
+  branch: String
+  createdAt: Datetime!
+  createdByOrgId: UUID!
+  createdByUser: User!
+  createdByUserId: UUID!
+
+  """
+  User provided id for a build.
+  
+  Use `buildByCustomId` to look up a build by its `customId`.
+  
+  Properties:
+  - up to 64 bytes (try to stick to ASCII characters)
+  - in case of colissions, the latest build is returned
+  - collissions may hurt query performance
+  
+  Recommendations:
+  - generate the id from the CI pipeline link by applying a hashing function
+  - prefix/postfix the id with a team id to avoid collisions with other teams, e.g. `sha512(teamId + ':' + url)`
+  """
+  customId: String
+  defaultBranch: String
+  diffCount(status: DiffStatus!): Int! @deprecated(reason: "Use diffCountExtended. This will be removed by 2024-02-11.")
+
+  """
+  Returns the number of diffs in a build that have a specific status.
+  
+  E.g. to get the number of "new" snapshots use `{ status: UNAPPROVED, withBaseline: false}`
+  """
+  diffCountExtended(input: DiffCountIn!): Int!
+
+  """Reads and enables pagination through a set of `Diff`."""
+  diffs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: DiffCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: DiffFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Diff`."""
+    orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): DiffsConnection!
+
+  """
+  If not null, it indicates that the build encountered an error.
+  
+  By convention, the following errors exist:
+  - `{"code": "TIMEOUT"}`: The build timed out, because `finishBuild` was not called.
+  - `{"code": "DIFF_TIMEOUT"}`: At least one diff could not be computed within the time limit.
+  
+  Other error types may exist and the frontend should display a generic error message
+  together with the JSON contents of `error`.
+  """
+  error: JSON
+
+  """Full-text search ranking when filtered by `fullText`."""
+  fullTextRank: Float
+  id: UUID!
+  keepAliveTimeout: Int
+  mode: BuildMode!
+  name: String!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  owningTeamId: UUID!
+  project: String
+
+  """Reads and enables pagination through a set of `Snapshot`."""
+  snapshots(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: SnapshotCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: SnapshotFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Snapshot`."""
+    orderBy: [SnapshotsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SnapshotsConnection!
+  status: BuildStatus!
+  url: String!
+}
+
+"""
+A condition to be used against `Build` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input BuildCondition {
+  """Checks for equality with the object’s `branch` field."""
+  branch: String
+
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+
+  """Checks for equality with the object’s `createdByOrgId` field."""
+  createdByOrgId: UUID
+
+  """Checks for equality with the object’s `createdByUserId` field."""
+  createdByUserId: UUID
+
+  """Checks for equality with the object’s `fullText` field."""
+  fullText: FullText
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `owningTeamId` field."""
+  owningTeamId: UUID
+
+  """Checks for equality with the object’s `project` field."""
+  project: String
+
+  """Checks for equality with the object’s `status` field."""
+  status: BuildStatus
+}
+
+"""
+A filter to be used against `Build` object types. All fields are combined with a logical ‘and.’
+"""
+input BuildFilter {
+  """Filter by the object’s `branch` field."""
+  branch: StringFilter
+
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `createdByOrgId` field."""
+  createdByOrgId: UUIDFilter
+
+  """Filter by the object’s `createdByUserId` field."""
+  createdByUserId: UUIDFilter
+
+  """Filter by the object’s `fullText` field."""
+  fullText: FullTextFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `owningTeamId` field."""
+  owningTeamId: UUIDFilter
+
+  """Filter by the object’s `project` field."""
+  project: StringFilter
+
+  """Filter by the object’s `status` field."""
+  status: BuildStatusFilter
+}
+
+input BuildIn {
+  branch: String
+  customId: String
+  defaultBranch: String
+
+  """
+  A positive integer that is the time in seconds that the Build is allowed to be in the RUNNING state after the last snapshot was created or updated.
+  The number clipped to the interval [1;86400].
+  """
+  keepAliveTimeout: Int
+  name: String
+  project: String
+}
+
+enum BuildMode {
+  COMPLETED
+  RUNNING
+}
+
+"""
+Lifecycle status of a `Build`.
+
+1. A new `Build` is always in `RUNNING` state.
+2. When the `finishBuild` mutation was called, its state is as follows:
+   - `ERRORED` if build.error is not null or else
+   - `EMPTY` if there are no Diffs in the Build or else
+   - `RUNNING` if any Diff in the Build is QUEUED or else
+   - `ERRORED` if any Diff in the Build is ERRORED or else
+   - `UNAPPROVED` if any Diff in the Build is UNAPPROVED or else
+   - `REJECTED` if any Diff in the Build is REJECTED or else
+   - `APPROVED` if any Diff in the Build is APPROVED and
+   - `EQUAL` in any other case
+
+When `finishBuild` is not called, the build will time out and end up in the `ERRORED` state.
+"""
+enum BuildStatus {
+  APPROVED
+  EMPTY
+  EQUAL
+  ERRORED
+  QUEUED
+  REJECTED
+  RUNNING
+  UNAPPROVED
+}
+
+"""
+A filter to be used against BuildStatus fields. All fields are combined with a logical ‘and.’
+"""
+input BuildStatusFilter {
+  """Greater than the specified value."""
+  greaterThan: BuildStatus
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: BuildStatus
+
+  """Included in the specified list."""
+  in: [BuildStatus!]
+
+  """Less than the specified value."""
+  lessThan: BuildStatus
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: BuildStatus
+}
+
+"""A connection to a list of `Build` values."""
+type BuildsConnection {
+  """
+  A list of edges which contains the `Build` and cursor to aid in pagination.
+  """
+  edges: [BuildsEdge!]!
+
+  """A list of `Build` objects."""
+  nodes: [Build!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Build` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Build` edge in the connection."""
+type BuildsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Build` at the end of the edge."""
+  node: Build!
+}
+
+"""Methods to use when ordering `Build`."""
+enum BuildsOrderBy {
+  BRANCH_ASC
+  BRANCH_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  CREATED_BY_ORG_ID_ASC
+  CREATED_BY_ORG_ID_ASC__CUSTOM_ID_ASC
+  CREATED_BY_ORG_ID_DESC
+  CREATED_BY_ORG_ID_DESC__CUSTOM_ID_DESC
+  CREATED_BY_USER_ID_ASC
+  CREATED_BY_USER_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  OWNING_TEAM_ID_ASC
+  OWNING_TEAM_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  PROJECT_ASC
+  PROJECT_DESC
+  STATUS_ASC
+  STATUS_DESC
+}
+
+input CreateSnapshotFromWebDriverIn {
+  """
+  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  """
+  buildId: ID
+  buildUuid: UUID
+  captureDom: Boolean
+
+  """
+  A querySelector compatible selector of an element that we should crop the screenshot to.
+  """
+  clipSelector: String
+  diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
+
+  """
+  Enable full page screenshot using scroll-and-stitch strategy.
+  Limitation: Currently, this feature is supported only on desktop browsers.
+  """
+  fullPageConfig: FullPageConfigIn
+  ignoreRegions: [RegionIn!]
+
+  """This will be mandatory in the future."""
+  jobId: String
+  name: String!
+  sessionId: ID!
+
+  """Pass the `blob` field from the `webdriverSessionInfo` query here."""
+  sessionMetadata: WebdriverSessionBlob!
+  suiteName: String
+  testName: String
+}
+
+input CreateSnapshotUploadFromWebDriverIn {
+  """
+  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  """
+  buildId: ID
+  buildUuid: UUID
+  sessionId: ID!
+}
+
+"""A location in a connection that can be used for resuming pagination."""
+scalar Cursor
+
+"""
+A point in time as described by the [ISO
+8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
+"""
+scalar Datetime
+
+"""
+A filter to be used against Datetime fields. All fields are combined with a logical ‘and.’
+"""
+input DatetimeFilter {
+  """Greater than the specified value."""
+  greaterThan: Datetime
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: Datetime
+
+  """Included in the specified list."""
+  in: [Datetime!]
+
+  """Less than the specified value."""
+  lessThan: Datetime
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: Datetime
+}
+
+"""
+The result of diffing a `Baseline` with a `Snapshot`.
+
+See the documentation for `Baseline` for details how a `Snapshot` is matched to `Baseline`.
+"""
+type Diff implements Node {
+  """Reads a single `Baseline` that is related to this `Diff`."""
+  baseline: Baseline
+  baselineId: UUID
+
+  """Reads a single `Build` that is related to this `Diff`."""
+  build: Build
+  buildId: UUID!
+  createdAt: Datetime!
+  diffBounds: Rect
+  diffClusters: [Rect]!
+  diffingMethod: DiffingMethod!
+  id: UUID!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  options: DiffingOption
+
+  """Reads a single `Snapshot` that is related to this `Diff`."""
+  snapshot: Snapshot
+  snapshotId: UUID!
+  status: DiffStatus!
+  statusIsEqual: Boolean
+
+  """
+  Last time the diff was updated.
+  
+  By default `updatedAt = createdAt`.
+  """
+  updatedAt: Datetime!
+
+  """
+  User id of user that last updated the diff. If no user updated the status yet, it is set to `created_by`.
+  """
+  updatedBy: UUID!
+  updatedByUser: User!
+}
+
+"""
+A condition to be used against `Diff` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input DiffCondition {
+  """Checks for equality with the object’s `baselineId` field."""
+  baselineId: UUID
+
+  """Checks for equality with the object’s `buildId` field."""
+  buildId: UUID
+
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `snapshotId` field."""
+  snapshotId: UUID
+
+  """Checks for equality with the object’s `status` field."""
+  status: DiffStatus
+}
+
+input DiffCountIn {
+  status: DiffStatus!
+
+  """Set to true to only count diffs that have a baseline."""
+  withBaseline: Boolean
+}
+
+"""
+A filter to be used against `Diff` object types. All fields are combined with a logical ‘and.’
+"""
+input DiffFilter {
+  """Filter by the object’s `baselineId` field."""
+  baselineId: UUIDFilter
+
+  """Filter by the object’s `buildId` field."""
+  buildId: UUIDFilter
+
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `snapshotId` field."""
+  snapshotId: UUIDFilter
+
+  """Filter by the object’s `status` field."""
+  status: DiffStatusFilter
+}
+
+"""
+Lifecycle status of a `Diff`.
+
+1. When a `Diff` is created from a `Snapshot` it will be `QUEUED`.
+2. After the difference between snapshot and baseline was computed, the state is either
+    `EQUAL` (`Baseline` and snapshot are equal) or
+    `UNAPPROVED` (differences between `Baseline` and `Snapshot` were detected or no `Baseline` exists).
+3. A user can update the status of an existing `Diff` to either
+    `APPROVED` (a new `Baseline` is then created from the `Snapshot`)
+    `REJECTED` (no new `Baseline` is created)
+    `UNAPPROVED` (if it was approved before, the previous `Baseline` is restored)
+"""
+enum DiffStatus {
+  APPROVED
+  EQUAL
+  ERRORED
+  QUEUED
+  REJECTED
+  UNAPPROVED
+}
+
+"""
+A filter to be used against DiffStatus fields. All fields are combined with a logical ‘and.’
+"""
+input DiffStatusFilter {
+  """Greater than the specified value."""
+  greaterThan: DiffStatus
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: DiffStatus
+
+  """Included in the specified list."""
+  in: [DiffStatus!]
+
+  """Less than the specified value."""
+  lessThan: DiffStatus
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: DiffStatus
+}
+
+"""
+Method to use for diffing.
+
+SIMPLE is the default.
+"""
+enum DiffingMethod {
+  BALANCED
+  EXPERIMENTAL
+  SIMPLE
+}
+
+type DiffingOption {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
+}
+
+input DiffingOptionsIn {
+  content: Boolean
+  dimensions: Boolean
+  position: Boolean
+  structure: Boolean
+  style: Boolean
+  visual: Boolean
+}
+
+"""A connection to a list of `Diff` values."""
+type DiffsConnection {
+  """
+  A list of edges which contains the `Diff` and cursor to aid in pagination.
+  """
+  edges: [DiffsEdge!]!
+
+  """A list of `Diff` objects."""
+  nodes: [Diff!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Diff` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Diff` edge in the connection."""
+type DiffsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Diff` at the end of the edge."""
+  node: Diff!
+}
+
+"""Methods to use when ordering `Diff`."""
+enum DiffsOrderBy {
+  BASELINE_ID_ASC
+  BASELINE_ID_DESC
+  BUILD_ID_ASC
+  BUILD_ID_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  SNAPSHOT_ID_ASC
+  SNAPSHOT_ID_DESC
+  STATUS_ASC
+  STATUS_DESC
+  STATUS_IS_EQUAL_ASC
+  STATUS_IS_EQUAL_DESC
+}
+
+input FinishBuildIn {
+  """@deprecated Use `uuid`. This field will be removed in a future update."""
+  id: ID
+  uuid: UUID
+}
+
+input FullPageConfigIn {
+  """Adjust address bar padding on iOS and Android for viewport cutout."""
+  addressBarShadowPadding: Float
+
+  """
+  Delay in ms after scrolling and before taking screenshots.
+  A slight delay can be helpful if the page is using lazy loading when scrolling
+  """
+  delayAfterScrollMs: Int
+
+  """Disable CSS animations and the input caret in the app."""
+  disableCSSAnimation: Boolean
+
+  """Hide elements on the page after first scroll by css selectors."""
+  hideAfterFirstScroll: [String]
+
+  """Hide all scrollbars in the app."""
+  hideScrollBars: Boolean
+
+  """
+  Limit the number of screenshots taken for scrolling and stitching.
+  Default and max value is 10
+  """
+  scrollLimit: Int
+
+  """Adjust toolbar padding on iOS and Android for viewport cutout."""
+  toolBarShadowPadding: Int
+}
+
+scalar FullText
+
+"""
+A filter to be used against FullText fields. All fields are combined with a logical ‘and.’
+"""
+input FullTextFilter {
+  """Performs a full text search on the field."""
+  matches: String
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+"""
+The root mutation type which contains root level fields which mutate data.
+"""
+type Mutation {
+  approveBuild(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: ApproveBuildIn!
+  ): Build!
+  createBuild(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: BuildIn!
+  ): Build!
+  createSnapshot(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SnapshotIn!
+  ): Snapshot!
+  createSnapshotFromWebDriver(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateSnapshotFromWebDriverIn!
+  ): Snapshot!
+  createSnapshotUpload(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SnapshotUploadIn!
+  ): SnapshotUpload!
+  createSnapshotUploadFromWebDriver(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateSnapshotUploadFromWebDriverIn!
+  ): SnapshotUpload! @deprecated(reason: "Use createSnapshotFromWebDriver. This will be removed by 2024-02-11.")
+  finishBuild(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: FinishBuildIn!
+  ): Build!
+  updateDiff(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateDiffIn!
+  ): Diff!
+}
+
+"""An object with a globally unique `ID`."""
+interface Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+}
+
+enum OperatingSystem {
+  ANDROID
+  IOS
+  LINUX
+  MACOS
+  WINDOWS
+}
+
+type Org {
+  id: UUID
+
+  """Reads and enables pagination through a set of `OrgStat`."""
+  orgStats(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: OrgStatCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: OrgStatFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `OrgStat`."""
+    orderBy: [OrgStatsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): OrgStatsConnection!
+  statsGroupedByDay(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): OrgStatsGroupedByDayConnection!
+}
+
+type OrgStat implements Node {
+  hour: Datetime!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """Reads a single `Org` that is related to this `OrgStat`."""
+  org: Org
+  orgId: UUID!
+  snapshotsUsed: Int!
+}
+
+"""
+A condition to be used against `OrgStat` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input OrgStatCondition {
+  """Checks for equality with the object’s `orgId` field."""
+  orgId: UUID
+}
+
+"""
+A filter to be used against `OrgStat` object types. All fields are combined with a logical ‘and.’
+"""
+input OrgStatFilter {
+  """Filter by the object’s `orgId` field."""
+  orgId: UUIDFilter
+}
+
+"""A connection to a list of `OrgStat` values."""
+type OrgStatsConnection {
+  """
+  A list of edges which contains the `OrgStat` and cursor to aid in pagination.
+  """
+  edges: [OrgStatsEdge!]!
+
+  """A list of `OrgStat` objects."""
+  nodes: [OrgStat!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `OrgStat` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `OrgStat` edge in the connection."""
+type OrgStatsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `OrgStat` at the end of the edge."""
+  node: OrgStat!
+}
+
+"""A connection to a list of `OrgStatsGroupedByDayRecord` values."""
+type OrgStatsGroupedByDayConnection {
+  """
+  A list of edges which contains the `OrgStatsGroupedByDayRecord` and cursor to aid in pagination.
+  """
+  edges: [OrgStatsGroupedByDayEdge!]!
+
+  """A list of `OrgStatsGroupedByDayRecord` objects."""
+  nodes: [OrgStatsGroupedByDayRecord!]!
+
+  """
+  The count of *all* `OrgStatsGroupedByDayRecord` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `OrgStatsGroupedByDayRecord` edge in the connection."""
+type OrgStatsGroupedByDayEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `OrgStatsGroupedByDayRecord` at the end of the edge."""
+  node: OrgStatsGroupedByDayRecord!
+}
+
+"""The return type of our `statsGroupedByDay` query."""
+type OrgStatsGroupedByDayRecord {
+  day: Datetime
+  snapshotsUsed: Int
+}
+
+"""Methods to use when ordering `OrgStat`."""
+enum OrgStatsOrderBy {
+  NATURAL
+  ORG_ID_ASC
+  ORG_ID_ASC__HOUR_ASC
+  ORG_ID_DESC
+  ORG_ID_DESC__HOUR_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, the cursor to continue."""
+  endCursor: Cursor
+
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: Cursor
+}
+
+"""The root query type which gives access points into the data universe."""
+type Query implements Node {
+  baseline(id: UUID!): Baseline
+
+  """Reads a single `Baseline` using its globally unique `ID`."""
+  baselineByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Baseline`."""
+    nodeId: ID!
+  ): Baseline
+
+  """Reads and enables pagination through a set of `Baseline`."""
+  baselines(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BaselineCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: BaselineFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Baseline`."""
+    orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BaselinesConnection
+
+  """
+  List all the build branches that are visible to the current user and that include `filtername`.
+  
+  Results are limited to 100 entries.
+  """
+  branches(filtername: String): [String!]!
+  build(id: UUID!): Build
+  buildByCustomId(customId: String!): Build
+
+  """Reads a single `Build` using its globally unique `ID`."""
+  buildByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Build`."""
+    nodeId: ID!
+  ): Build
+
+  """Reads and enables pagination through a set of `Build`."""
+  builds(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BuildCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: BuildFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Build`."""
+    orderBy: [BuildsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BuildsConnection
+  diff(id: UUID!): Diff
+
+  """Reads a single `Diff` using its globally unique `ID`."""
+  diffByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Diff`."""
+    nodeId: ID!
+  ): Diff
+
+  """Reads and enables pagination through a set of `Diff`."""
+  diffs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: DiffCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: DiffFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Diff`."""
+    orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): DiffsConnection
+  jwtOrgId: UUID
+  jwtTeamId: UUID
+  jwtUserId: UUID
+
+  """Fetches an object given its globally unique `ID`."""
+  node(
+    """The globally unique `ID`."""
+    nodeId: ID!
+  ): Node
+
+  """
+  The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`.
+  """
+  nodeId: ID!
+  org: Org
+  orgStat(hour: Datetime!, orgId: UUID!): OrgStat
+
+  """Reads a single `OrgStat` using its globally unique `ID`."""
+  orgStatByNodeId(
+    """The globally unique `ID` to be used in selecting a single `OrgStat`."""
+    nodeId: ID!
+  ): OrgStat
+
+  """
+  List all the build projects that are visible to the current user and that include `filtername`.
+  
+  Results are limited to 100 entries.
+  """
+  projects(filtername: String): [String!]!
+
+  """
+  Exposes the root query type nested one level down. This is helpful for Relay 1
+  which can only query top level fields if they are in a particular form.
+  """
+  query: Query!
+  snapshot(id: UUID!): Snapshot
+
+  """Reads a single `Snapshot` using its globally unique `ID`."""
+  snapshotByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Snapshot`."""
+    nodeId: ID!
+  ): Snapshot
+
+  """Reads and enables pagination through a set of `Snapshot`."""
+  snapshots(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: SnapshotCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: SnapshotFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Snapshot`."""
+    orderBy: [SnapshotsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): SnapshotsConnection
+  webdriverSession(sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
+  webdriverSessionFromArchive(jobId: ID!, sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
+  webdriverSessionInfo(input: WebdriverSessionInfoIn!): WebdriverSession
+}
+
+type Rect {
+  height: Int!
+  width: Int!
+  x: Int!
+  y: Int!
+}
+
+type Region {
+  diffingOptions: DiffingOption
+  height: Int!
+  name: String
+  width: Int!
+  x: Int!
+  y: Int!
+}
+
+input RegionIn {
+  diffingOptions: DiffingOptionsIn
+  height: Int!
+  name: String
+  width: Int!
+  x: Int!
+  y: Int!
+}
+
+type Snapshot implements Node {
+  """Reads and enables pagination through a set of `Baseline`."""
+  baselines(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BaselineCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: BaselineFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Baseline`."""
+    orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BaselinesConnection!
+  branch: String
+  browser: Browser
+  browserVersion: String
+
+  """Reads a single `Build` that is related to this `Snapshot`."""
+  build: Build
+  buildId: UUID!
+  createdAt: Datetime!
+  defaultBranch: String
+  device: String
+  devicePixelRatio: Float!
+
+  """Reads and enables pagination through a set of `Diff`."""
+  diffs(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: DiffCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: DiffFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Diff`."""
+    orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): DiffsConnection!
+  domDiffUrl: String
+
+  """
+  If not null, it indicates that the snapshot is invalid.
+  
+  By convention, the following errors exist:
+  - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
+  
+  Other error types may exist and the frontend should display a generic error message
+  together with the JSON contents of `error`.
+  """
+  error: JSON
+
+  """
+  `height` is determined asynchronously and may be null right after snapshot creation.
+  """
+  height: Int
+  id: UUID!
+  ignoreRegions: [Region]!
+  imageUrl: String!
+
+  """
+  URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session.
+  """
+  jobUrl: String
+  name: String!
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  operatingSystem: OperatingSystem
+  operatingSystemVersion: String
+  suiteName: String
+  testName: String
+  thumbnailUrl: String!
+  uploadId: String!
+  url: String!
+  viewportHeight: Int
+  viewportWidth: Int
+
+  """
+  `width` is determined asynchronously and may be null right after snapshot creation.
+  """
+  width: Int
+}
+
+"""
+A condition to be used against `Snapshot` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input SnapshotCondition {
+  """Checks for equality with the object’s `buildId` field."""
+  buildId: UUID
+
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+"""
+A filter to be used against `Snapshot` object types. All fields are combined with a logical ‘and.’
+"""
+input SnapshotFilter {
+  """Filter by the object’s `buildId` field."""
+  buildId: UUIDFilter
+
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+}
+
+input SnapshotIn {
+  browser: Browser
+  browserVersion: String
+
+  """
+  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  """
+  buildId: ID
+  buildUuid: UUID
+  device: String
+  devicePixelRatio: Float
+  diffingMethod: DiffingMethod
+  diffingOptions: DiffingOptionsIn
+  ignoreRegions: [RegionIn!]
+  jobUrl: String
+  name: String!
+  operatingSystem: OperatingSystem
+  operatingSystemVersion: String
+  suiteName: String
+  testName: String
+
+  """
+  @deprecated Use `uploadUuid`. This field will be removed in a future update.
+  """
+  uploadId: ID
+  uploadUuid: UUID
+
+  """@deprecated For forward compatibility, do not send this field."""
+  viewportHeight: Int
+
+  """@deprecated For forward compatibility, do not send this field."""
+  viewportWidth: Int
+}
+
+type SnapshotUpload {
+  buildId: UUID!
+  domUploadUrl: String
+  id: UUID!
+  imageUploadUrl: String
+
+  """
+  @deprecated "Use imageUploadUrl."
+  """
+  uploadUrl: String!
+}
+
+input SnapshotUploadIn {
+  """
+  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  """
+  buildId: ID
+  buildUuid: UUID
+}
+
+"""A connection to a list of `Snapshot` values."""
+type SnapshotsConnection {
+  """
+  A list of edges which contains the `Snapshot` and cursor to aid in pagination.
+  """
+  edges: [SnapshotsEdge!]!
+
+  """A list of `Snapshot` objects."""
+  nodes: [Snapshot!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Snapshot` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Snapshot` edge in the connection."""
+type SnapshotsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Snapshot` at the end of the edge."""
+  node: Snapshot!
+}
+
+"""Methods to use when ordering `Snapshot`."""
+enum SnapshotsOrderBy {
+  BUILD_ID_ASC
+  BUILD_ID_DESC
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+A filter to be used against String fields. All fields are combined with a logical ‘and.’
+"""
+input StringFilter {
+  """Greater than the specified value."""
+  greaterThan: String
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: String
+
+  """Included in the specified list."""
+  in: [String!]
+
+  """Less than the specified value."""
+  lessThan: String
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: String
+}
+
+"""
+A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122).
+"""
+scalar UUID
+
+"""
+A filter to be used against UUID fields. All fields are combined with a logical ‘and.’
+"""
+input UUIDFilter {
+  """Greater than the specified value."""
+  greaterThan: UUID
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: UUID
+
+  """Included in the specified list."""
+  in: [UUID!]
+
+  """Less than the specified value."""
+  lessThan: UUID
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: UUID
+}
+
+input UpdateDiffIn {
+  """@deprecated Use `uuid`. This field will be removed in a future update."""
+  id: ID
+  status: UpdateDiffStatus!
+  uuid: UUID
+}
+
+"""See DiffStatus for details."""
+enum UpdateDiffStatus {
+  APPROVED
+  REJECTED
+  UNAPPROVED
+}
+
+type User {
+  id: UUID!
+  username: String
+}
+
+type WebdriverSession {
+  applicationSummary: ApplicationSummary
+
+  """
+  Encodes all metadata in an opaque scalar that can be passed to `CreateSnapshotFromWebDriver`.
+  """
+  blob: WebdriverSessionBlob!
+  browser: Browser
+  browserVersion: String
+  deviceName: String
+  operatingSystem: OperatingSystem
+  operatingSystemVersion: String
+  viewportHeight: Int @deprecated(reason: "This will be removed by 2023-11-11.")
+  viewportWidth: Int @deprecated(reason: "This will be removed by 2023-11-11.")
+}
+
+scalar WebdriverSessionBlob
+
+input WebdriverSessionInfoIn {
+  jobId: ID!
+  sessionId: ID!
+}

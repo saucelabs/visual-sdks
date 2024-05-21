@@ -1,14 +1,14 @@
 package com.saucelabs.visual;
 
 import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
+import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
-import com.saucelabs.visual.graphql.type.Diff;
-import com.saucelabs.visual.graphql.type.DiffStatus;
-import com.saucelabs.visual.graphql.type.DiffingMethod;
-import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
+import com.saucelabs.visual.model.VisualRegion;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
 import dev.failsafe.Failsafe;
@@ -16,7 +16,6 @@ import dev.failsafe.RetryPolicy;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ public class VisualApi {
     private String defaultBranchName;
     private String buildName;
     private Boolean captureDom;
+    private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, DataCenter.US_WEST_1.endpoint);
@@ -77,6 +77,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withFullPageScreenshot(FullPageScreenshotConfig fullPageScreenshotConfig) {
+      this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+      return this;
+    }
+
     public VisualApi build() {
       VisualApi api =
           new VisualApi(
@@ -89,6 +94,9 @@ public class VisualApi {
       if (this.captureDom != null) {
         api.setCaptureDom(this.captureDom);
       }
+      if (this.fullPageScreenshotConfig != null) {
+        api.enableFullPageScreenshots(this.fullPageScreenshotConfig);
+      }
       return api;
     }
   }
@@ -100,6 +108,7 @@ public class VisualApi {
   private final String sessionId;
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
+  private FullPageScreenshotConfig fullPageScreenshotConfig;
   private String sessionMetadataBlob;
 
   /**
@@ -190,6 +199,20 @@ public class VisualApi {
     this.captureDom = captureDom;
   }
 
+  /** Enables full page screenshots */
+  public void enableFullPageScreenshots() {
+    this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+
+  /**
+   * Enables full page screenshots
+   *
+   * @param fullPageScreenshotConfig config for full page screenshots
+   */
+  public void enableFullPageScreenshots(FullPageScreenshotConfig fullPageScreenshotConfig) {
+    this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+  }
+
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
@@ -230,33 +253,22 @@ public class VisualApi {
       if (isNotBlank(EnvironmentVariables.BUILD_NAME_DEPRECATED)) {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
-        return EnvironmentVariables.BUILD_NAME_DEPRECATED;
       }
-      if (isNotBlank(EnvironmentVariables.BUILD_NAME)) {
-        return EnvironmentVariables.BUILD_NAME;
-      }
-      return name;
+      return valueOrDefault(
+          valueOrDefault(name, EnvironmentVariables.BUILD_NAME),
+          EnvironmentVariables.BUILD_NAME_DEPRECATED);
     }
 
     public String getProject() {
-      if (isNotBlank(EnvironmentVariables.PROJECT_NAME)) {
-        return EnvironmentVariables.PROJECT_NAME;
-      }
-      return project;
+      return valueOrDefault(project, EnvironmentVariables.PROJECT_NAME);
     }
 
     public String getBranch() {
-      if (isNotBlank(EnvironmentVariables.BRANCH_NAME)) {
-        return EnvironmentVariables.BRANCH_NAME;
-      }
-      return branch;
+      return valueOrDefault(branch, EnvironmentVariables.BRANCH_NAME);
     }
 
     public String getDefaultBranch() {
-      if (isNotBlank(EnvironmentVariables.DEFAULT_BRANCH_NAME)) {
-        return EnvironmentVariables.DEFAULT_BRANCH_NAME;
-      }
-      return defaultBranch;
+      return valueOrDefault(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME);
     }
   }
 
@@ -342,6 +354,7 @@ public class VisualApi {
         new CreateSnapshotFromWebDriverMutation.CreateSnapshotFromWebDriverIn(
             this.build.getId(),
             diffingMethod,
+            Optional.ofNullable(options.getDiffingOptions()),
             extractIgnoreList(options),
             this.jobId,
             snapshotName,
@@ -370,7 +383,12 @@ public class VisualApi {
       input.setClipSelector(clipSelector);
     }
 
-    input.setFullPageConfig(options.getFullPageScreenshotConfig());
+    FullPageScreenshotConfig fullPageScreenshotConfig =
+        Optional.ofNullable(options.getFullPageScreenshotConfig())
+            .orElse(this.fullPageScreenshotConfig);
+    if (fullPageScreenshotConfig != null) {
+      input.setFullPageConfig(fullPageScreenshotConfig);
+    }
 
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
@@ -387,6 +405,8 @@ public class VisualApi {
     }
 
     switch (options.getDiffingMethod()) {
+      case BALANCED:
+        return DiffingMethod.BALANCED;
       case EXPERIMENTAL:
         return DiffingMethod.EXPERIMENTAL;
       default:
@@ -458,41 +478,46 @@ public class VisualApi {
     if (options == null) {
       return Collections.emptyList();
     }
+
+    List<WebElement> ignoredElements =
+        options.getIgnoreElements() == null ? Arrays.asList() : options.getIgnoreElements();
+
+    List<IgnoreRegion> ignoredRegions =
+        options.getIgnoreRegions() == null ? Arrays.asList() : options.getIgnoreRegions();
+
+    List<VisualRegion> visualRegions =
+        options.getIgnoreRegions() == null ? Arrays.asList() : options.getRegions();
+
     List<RegionIn> result = new ArrayList<>();
-    for (int i = 0; i < options.getIgnoreElements().size(); i++) {
-      WebElement element = options.getIgnoreElements().get(i);
+    for (int i = 0; i < ignoredElements.size(); i++) {
+      WebElement element = ignoredElements.get(i);
       if (validate(element) == null) {
         throw new VisualApiException("options.ignoreElement[" + i + "] does not exist (yet)");
       }
-      result.add(toIgnoreIn(element));
+      result.add(VisualRegion.ignoreChangesFor(element).toRegionIn());
     }
-    for (int i = 0; i < options.getIgnoreRegions().size(); i++) {
-      IgnoreRegion ignoreRegion = options.getIgnoreRegions().get(i);
+    for (int i = 0; i < ignoredRegions.size(); i++) {
+      IgnoreRegion ignoreRegion = ignoredRegions.get(i);
       if (validate(ignoreRegion) == null) {
         throw new VisualApiException("options.ignoreRegion[" + i + "] is an invalid ignore region");
       }
-      result.add(toIgnoreIn(ignoreRegion));
+      result.add(
+          VisualRegion.ignoreChangesFor(
+                  ignoreRegion.getName(),
+                  ignoreRegion.getX(),
+                  ignoreRegion.getHeight(),
+                  ignoreRegion.getWidth(),
+                  ignoreRegion.getHeight())
+              .toRegionIn());
+    }
+    for (int i = 0; i < visualRegions.size(); i++) {
+      VisualRegion region = visualRegions.get(i);
+      if (validate(region) == null) {
+        throw new VisualApiException("options.region[" + i + "] is an invalid visual region");
+      }
+      result.add(region.toRegionIn());
     }
     return result;
-  }
-
-  private RegionIn toIgnoreIn(WebElement element) {
-    Rectangle r = element.getRect();
-    return RegionIn.builder()
-        .withX(r.getX())
-        .withY(r.getY())
-        .withWidth(r.getWidth())
-        .withHeight(r.getHeight())
-        .build();
-  }
-
-  private RegionIn toIgnoreIn(IgnoreRegion r) {
-    return RegionIn.builder()
-        .withX(r.getX())
-        .withY(r.getY())
-        .withWidth(r.getWidth())
-        .withHeight(r.getHeight())
-        .build();
   }
 
   private WebElement validate(WebElement element) {
@@ -510,6 +535,20 @@ public class VisualApi {
       return null;
     }
     return region;
+  }
+
+  private VisualRegion validate(VisualRegion region) {
+    if (region == null) {
+      return null;
+    }
+    if (0 < region.getHeight() * region.getWidth()) {
+      return region;
+    }
+    WebElement ele = region.getElement();
+    if (ele != null && ele.isDisplayed() && ele.getRect() != null) {
+      return region;
+    }
+    return null;
   }
 
   public VisualBuild getBuild() {

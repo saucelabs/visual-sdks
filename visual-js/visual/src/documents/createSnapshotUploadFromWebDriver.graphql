@@ -1,0 +1,8 @@
+mutation createSnapshotUploadFromWebDriver(
+  $input: CreateSnapshotUploadFromWebDriverIn!
+) {
+  result: createSnapshotUploadFromWebDriver(input: $input) {
+    id
+    buildId
+  }
+}

@@ -1,0 +1,8 @@
+mutation UpdateDiff($input: UpdateDiffIn!) {
+  result: updateDiff(input: $input) {
+    id
+    status
+    baselineId
+    snapshotId
+  }
+}
