@@ -12,6 +12,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
     DiffingOptions, IgnoreElementRegion
+from saucelabs_visual.utils import ignore_region_from_dict
 
 PKG_VERSION = '0.0.11'
 
@@ -164,6 +165,47 @@ class SauceLabsVisual:
 
         return meta
 
+    def _merge_ignore_regions(
+            self,
+            ignore_regions: Union[List[IgnoreRegion], None],
+            ignore_elements: Union[List[IgnoreElementRegion], None],
+    ):
+        def as_region_array(region: IgnoreElementRegion):
+            """
+            Returns the ignore element region as a series of IgnoreRegions instead of element based
+            regions until full backend element support is available.
+            :return:
+            """
+            element_array = region.element if isinstance(region.element, List) else [region.element]
+
+            return [
+                ignore_region_from_dict(
+                    element.rect,
+                    name=region.name,
+                    diffing_options=region.diffingOptions
+                )
+                for element in element_array
+            ]
+
+        ignore_regions = ignore_regions if ignore_regions is not None else ignore_regions
+        ignore_elements = ignore_elements if ignore_elements is not None else ignore_elements
+
+        # Parse element-based ignore regions and merge them into the coordinate based ones until
+        # backend element support is available.
+        ignore_regions_merged: List[IgnoreRegion] = []
+        ignore_regions_merged.extend(
+            [
+                region.as_dict() for region in ignore_regions
+            ] if ignore_regions is not None else []
+        )
+        ignore_regions_merged.extend(
+            element.as_dict()
+            for group in ignore_elements
+            for element in as_region_array(group)
+        )
+
+        return ignore_regions_merged
+
     def create_snapshot_from_webdriver(
             self,
             name: str,
@@ -231,6 +273,7 @@ class SauceLabsVisual:
             """
         )
         meta = self._get_meta(session_id)
+        ignore_regions_merged = self._merge_ignore_regions(ignore_regions, ignore_elements)
         values = {
             "name": name,
             "sessionId": session_id,
@@ -240,9 +283,7 @@ class SauceLabsVisual:
             "suiteName": suite_name,
             "captureDom": capture_dom,
             "clipSelector": clip_selector,
-            "ignoreRegions": [
-                region.asdict() for region in ignore_regions
-            ] if ignore_regions is not None else None,
+            "ignoreRegions": ignore_regions_merged,
             "fullPageConfig": full_page_config,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
             "diffingOptions": diffing_options,

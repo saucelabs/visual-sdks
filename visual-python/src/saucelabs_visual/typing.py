@@ -62,8 +62,9 @@ class IgnoreRegion(IgnoreBase):
     diffingOptions: Union[DiffingOptions, None] = None
     name: Union[str, None] = None
 
-    def asdict(self):
+    def as_dict(self):
         return asdict(self)
+
 
 @dataclass
 class IgnoreElementRegion(IgnoreBase):
@@ -71,7 +72,7 @@ class IgnoreElementRegion(IgnoreBase):
     diffingOptions: Union[DiffingOptions, None] = None
     name: Union[str, None] = None
 
-    def asdictarray(self):
+    def as_dict_array(self):
         element_array = self.element if isinstance(self.element, List) else [self.element]
         return [
             {
