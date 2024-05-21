@@ -57,9 +57,11 @@ type Baseline implements Node {
     """The method to use when ordering `Diff`."""
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
+  hasDom: Boolean!
   id: UUID!
   imageUrl: String!
   isLatest: Boolean!
+  metadata: JSON
   name: String!
 
   """
@@ -182,14 +184,14 @@ type Build implements Node {
 
   """
   User provided id for a build.
-  
+
   Use `buildByCustomId` to look up a build by its `customId`.
-  
+
   Properties:
   - up to 64 bytes (try to stick to ASCII characters)
   - in case of colissions, the latest build is returned
   - collissions may hurt query performance
-  
+
   Recommendations:
   - generate the id from the CI pipeline link by applying a hashing function
   - prefix/postfix the id with a team id to avoid collisions with other teams, e.g. `sha512(teamId + ':' + url)`
@@ -200,7 +202,7 @@ type Build implements Node {
 
   """
   Returns the number of diffs in a build that have a specific status.
-  
+
   E.g. to get the number of "new" snapshots use `{ status: UNAPPROVED, withBaseline: false}`
   """
   diffCountExtended(input: DiffCountIn!): Int!
@@ -241,11 +243,11 @@ type Build implements Node {
 
   """
   If not null, it indicates that the build encountered an error.
-  
+
   By convention, the following errors exist:
   - `{"code": "TIMEOUT"}`: The build timed out, because `finishBuild` was not called.
   - `{"code": "DIFF_TIMEOUT"}`: At least one diff could not be computed within the time limit.
-  
+
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.
   """
@@ -571,6 +573,10 @@ type Diff implements Node {
   diffBounds: Rect
   diffClusters: [Rect]!
   diffingMethod: DiffingMethod!
+
+  """snapshot { uploadId } should be requested at the same moment"""
+  domDiffUrl: String
+  hasDom: Boolean!
   id: UUID!
 
   """
@@ -587,7 +593,7 @@ type Diff implements Node {
 
   """
   Last time the diff was updated.
-  
+
   By default `updatedAt = createdAt`.
   """
   updatedAt: Datetime!
@@ -776,7 +782,7 @@ input FinishBuildIn {
 }
 
 input FullPageConfigIn {
-  """Adjust address bar padding on iOS and Android for viewport cutout."""
+  """@deprecated this field will be removed soon."""
   addressBarShadowPadding: Float
 
   """
@@ -800,7 +806,7 @@ input FullPageConfigIn {
   """
   scrollLimit: Int
 
-  """Adjust toolbar padding on iOS and Android for viewport cutout."""
+  """@deprecated this field will be removed soon."""
   toolBarShadowPadding: Int
 }
 
@@ -1105,7 +1111,7 @@ type Query implements Node {
 
   """
   List all the build branches that are visible to the current user and that include `filtername`.
-  
+
   Results are limited to 100 entries.
   """
   branches(filtername: String): [String!]!
@@ -1217,7 +1223,7 @@ type Query implements Node {
 
   """
   List all the build projects that are visible to the current user and that include `filtername`.
-  
+
   Results are limited to 100 entries.
   """
   projects(filtername: String): [String!]!
@@ -1274,6 +1280,7 @@ type Query implements Node {
 }
 
 type Rect {
+  flags: DiffingOption
   height: Int!
   width: Int!
   x: Int!
@@ -1381,14 +1388,18 @@ type Snapshot implements Node {
 
   """
   If not null, it indicates that the snapshot is invalid.
-  
+
   By convention, the following errors exist:
   - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
-  
+  - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
+  - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+  - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
+
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.
   """
   error: JSON
+  hasDom: Boolean!
 
   """
   `height` is determined asynchronously and may be null right after snapshot creation.
@@ -1402,6 +1413,7 @@ type Snapshot implements Node {
   URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session.
   """
   jobUrl: String
+  metadata: JSON
   name: String!
 
   """
@@ -1468,6 +1480,7 @@ input SnapshotIn {
   diffingOptions: DiffingOptionsIn
   ignoreRegions: [RegionIn!]
   jobUrl: String
+  metadata: JSON
   name: String!
   operatingSystem: OperatingSystem
   operatingSystemVersion: String

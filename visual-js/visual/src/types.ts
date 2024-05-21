@@ -2,7 +2,7 @@ export type FullPageScreenshotOptions =
   | boolean
   | {
       /**
-       * Adjust address bar padding on iOS and Android for viewport cutout.
+       * @deprecated this field will be removed soon
        */
       addressBarShadowPadding?: number;
       /**
@@ -23,7 +23,7 @@ export type FullPageScreenshotOptions =
        */
       hideScrollBars?: boolean;
       /**
-       * Adjust toolbar padding on iOS and Android for viewport cutout.
+       * @deprecated this field will be removed soon
        */
       toolBarShadowPadding?: number;
       /**
