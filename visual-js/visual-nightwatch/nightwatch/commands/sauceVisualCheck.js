@@ -1,5 +1,9 @@
 const EventEmitter = require('events').EventEmitter;
-const { ensureError, getFullPageConfig } = require('@saucelabs/visual');
+const {
+  ensureError,
+  getFullPageConfig,
+  selectiveRegionsToRegionIn,
+} = require('@saucelabs/visual');
 const { parseIgnoreOptions, toIgnoreRegionIn } = require('../../utils/regions');
 const { getMetaInfo, getVisualApi } = require('../../utils/api');
 const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
@@ -48,6 +52,13 @@ module.exports = class SauceVisualCheck extends EventEmitter {
       ignoreOptions.length > 0
         ? await toIgnoreRegionIn(resolvedIgnoreOptions)
         : [];
+    //
+    // Regions
+    const regions = await selectiveRegionsToRegionIn(
+      options.regions ?? [],
+      toIgnoreRegionIn,
+    );
+    ignoreRegions.push(...regions);
     //
     // Get more info about the session
     const {
