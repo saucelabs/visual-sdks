@@ -62,9 +62,6 @@ class IgnoreRegion(IgnoreBase):
     diffingOptions: Union[DiffingOptions, None] = None
     name: Union[str, None] = None
 
-    def as_dict(self):
-        return asdict(self)
-
 
 @dataclass
 class IgnoreElementRegion(IgnoreBase):
@@ -83,25 +80,26 @@ class IgnoreElementRegion(IgnoreBase):
         ]
 
 
-class FullPageConfig(TypedDict):
-    delayAfterScrollMs: NotRequired[int]
+@dataclass
+class FullPageConfig:
+    delayAfterScrollMs: Union[int, None] = None
     """
     Delay in ms after scrolling and before taking screenshots. A slight delay can be helpful for
     websites leveraging lazy loading.
     """
-    hideAfterFirstScroll: NotRequired[List[str]]
+    hideAfterFirstScroll: Union[List[str], None] = None
     """
     A list of CSS selectors for elements to hide after the first scroll.
     """
-    disableCSSAnimation: NotRequired[bool]
+    disableCSSAnimation: Union[bool, None] = None
     """
     Disable CSS animations and the input caret for the site under test.
     """
-    hideScrollBars: NotRequired[bool]
+    hideScrollBars: Union[bool, None] = None
     """
     Hide all scrollbars for the site under test.
     """
-    scrollLimit: NotRequired[int]
+    scrollLimit: Union[int, None] = None
     """
     Limit the number of screenshots taken for scrolling and stitching. Default and max value is 10.
     """

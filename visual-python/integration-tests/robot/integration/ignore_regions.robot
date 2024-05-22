@@ -4,33 +4,16 @@ Documentation     A test suite with a single test for valid login.
 ...               This test has a workflow that is created using keywords in
 ...               the imported resource file.
 Resource          resource.robot
-Suite Setup    Setup Suite
 Test Timeout    5 minutes
 
-
-*** Keywords ***
-Cropping FPS Suite
-    Run Test
+*** Test Cases ***
+Cropping
     Visual Snapshot    Standard    ignore_regions=["class:inventory_item_img", "class:btn_inventory"]    capture_dom=True
     Visual Snapshot    Clipped    ignore_regions=["class:inventory_item_img", "class:btn_inventory"]    clip_selector=.inventory_list    capture_dom=True
     Visual Snapshot    FPS    ignore_regions=["class:inventory_item_img", "class:btn_inventory"]    full_page_config=True    capture_dom=True
     Visual Snapshot    Clipped (FPS)    ignore_regions=["class:inventory_item_img", "class:btn_inventory"]    clip_selector=.inventory_list     full_page_config=True    capture_dom=True
 
-*** Test Cases ***
-Desktop Cropping
-    Open Desktop Browser
-    Cropping FPS Suite
-    Close Browser
-
-Mobile Cropping
-    Open Mobile Browser
-    Cropping FPS Suite
-    Close Browser
-
 Ignore Region Parsing
-    Open Desktop Browser
-    Run Test
-    
     # An array of web elements in ignore region
     ${elements}    Get Webelements    class:inventory_item_img
     ${inventory_images} =     Visual Ignore Element    ${elements}    diffing_options={"style": True}
@@ -50,5 +33,4 @@ Ignore Region Parsing
     
     Visual Snapshot    Ignore Regions List    capture_dom=True    ignore_regions=${ignore_regions}    full_page_config=True    diffing_method=BALANCED
     Visual Snapshot    Inline Dict    capture_dom=True    ignore_regions=[{"x": 200, "y": 200, "width": 200, "height": 200}]    full_page_config=True    diffing_method=BALANCED
-    
-    Close Browser
+

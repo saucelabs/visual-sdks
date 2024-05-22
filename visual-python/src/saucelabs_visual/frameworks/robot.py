@@ -51,7 +51,7 @@ class SauceLabsVisual:
     def _get_selenium_id(self) -> str:
         return self._get_selenium_library().get_session_id()
 
-    def _parse_full_page_config(self, value: Union[bool, FullPageConfig, str]) -> Union[
+    def _parse_full_page_config(self, value: Union[bool, FullPageConfig, dict, str]) -> Union[
         FullPageConfig, None
     ]:
         """
@@ -61,6 +61,11 @@ class SauceLabsVisual:
         :param value:
         :return:
         """
+
+        # short-circuit early if we've been passed a full page object
+        if type(value) is FullPageConfig:
+            return value
+
         literal = literal_eval(value) if type(value) is str else value
         literal_type = type(literal)
         parsed_value = None
@@ -213,6 +218,23 @@ class SauceLabsVisual:
             disable_only=disable_only,
         )
 
+    @keyword(name="Visual FullPageConfig")
+    def visual_full_page_config(
+            self,
+            delay_after_scroll_ms: Union[int, None] = None,
+            hide_after_first_scroll: Union[List[str], None] = None,
+            disable_css_animation: Union[bool, None] = None,
+            hide_scroll_bars: Union[bool, None] = None,
+            scroll_limit: Union[int, None] = None,
+    ):
+        return FullPageConfig(
+            delayAfterScrollMs=delay_after_scroll_ms,
+            hideAfterFirstScroll=hide_after_first_scroll,
+            disableCSSAnimation=disable_css_animation,
+            hideScrollBars=hide_scroll_bars,
+            scrollLimit=scroll_limit,
+        )
+
     @keyword(name="Visual Snapshot")
     def visual_snapshot(
             # Params 'duplicated' here, so we get type casting and named parameters provided by
@@ -221,10 +243,11 @@ class SauceLabsVisual:
             name: str,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
+            clip_element: Union[WebElement, None] = None,
             ignore_regions: List[Union[
                 List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
             ]] = None,
-            full_page_config: Union[FullPageConfig, bool, str, None] = None,
+            full_page_config: Union[FullPageConfig, dict, bool, str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
     ):
@@ -238,7 +261,7 @@ class SauceLabsVisual:
 
         # Convert selectors into WebElements & ignore regions
         parsed_ignore_regions, parsed_ignore_elements = self._parse_ignore_regions(
-            ignore_regions) if ignore_regions is not None else None
+            ignore_regions) if ignore_regions is not None else [None, None]
 
         self.client.create_snapshot_from_webdriver(
             name=name,
@@ -247,6 +270,7 @@ class SauceLabsVisual:
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
             clip_selector=clip_selector,
+            clip_element=clip_element,
             ignore_regions=parsed_ignore_regions,
             ignore_elements=parsed_ignore_elements,
             full_page_config=parsed_fpc,
