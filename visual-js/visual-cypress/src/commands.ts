@@ -75,11 +75,7 @@ export async function resolveChainables(
     const $el: HTMLElement[] = await new Promise((resolve) =>
       item.then(resolve),
     );
-    const regions: PlainRegion[] = [];
-    for (const elem of $el) {
-      regions.push(getElementDimensions(elem));
-    }
-    return regions;
+    return $el.map(getElementDimensions);
   } else if (isRegion(item)) {
     return [item];
   } else {
