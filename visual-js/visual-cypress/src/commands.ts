@@ -68,24 +68,23 @@ export function getElementDimensions(elem: HTMLElement): Cypress.Dimensions {
   };
 }
 
-export function resolveChainables(
+export async function resolveChainables(
   item: PlainRegion | Cypress.Chainable<HTMLElement[]>,
 ): Promise<PlainRegion[] | null> {
-  return new Promise((resolve) => {
-    if (isChainable(item)) {
-      item.then(($el: HTMLElement[]) => {
-        const regions: PlainRegion[] = [];
-        for (const elem of $el) {
-          regions.push(getElementDimensions(elem));
-        }
-        resolve(regions);
-      });
-    } else if (isRegion(item)) {
-      resolve([item]);
-    } else {
-      resolve(null);
+  if (isChainable(item)) {
+    const $el: HTMLElement[] = await new Promise((resolve) =>
+      item.then(resolve),
+    );
+    const regions: PlainRegion[] = [];
+    for (const elem of $el) {
+      regions.push(getElementDimensions(elem));
     }
-  });
+    return regions;
+  } else if (isRegion(item)) {
+    return [item];
+  } else {
+    return null;
+  }
 }
 
 const sauceVisualCheckCommand = (
