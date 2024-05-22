@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.5.0
+
+### Minor Changes
+
+- 787387a: deprecate some full page options
+
+### Patch Changes
+
+- Updated dependencies [787387a]
+  - @saucelabs/visual@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.5.0
+
+### Minor Changes
+
+- 787387a: deprecate some full page options
+
 ## 0.4.0
 
 ### Minor Changes
