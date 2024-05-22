@@ -17,12 +17,16 @@ import {
   DiffingMethod,
   VisualApiRegion,
   BuildMode,
+  DiffingOptionsIn,
+  selectiveRegionOptionsToDiffingOptions,
+  RegionIn,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
   ScreenshotMetadata,
   SauceVisualOptions,
   SauceVisualViewport,
+  ResolvedVisualRegion,
 } from './types';
 import { Logger } from './logger';
 import { buildUrl, screenshotSectionStart } from './messages';
@@ -99,6 +103,7 @@ class CypressSauceVisual {
   // A build can be managed externally (e.g by CLI) or by the Sauce Visual Cypress plugin
   private isBuildExternal = false;
   private diffingMethod: DiffingMethod | undefined;
+  private diffingOptions: DiffingOptionsIn | undefined;
   private screenshotsMetadata: { [key: string]: ScreenshotMetadata } = {};
 
   private api: VisualApi;
@@ -126,6 +131,7 @@ class CypressSauceVisual {
       },
     );
     this.diffingMethod = config.saucelabs?.diffingMethod;
+    this.diffingOptions = config.saucelabs?.diffingOptions;
     this.domCaptureScript = this.api.domCaptureScript();
   }
 
@@ -351,10 +357,10 @@ Sauce Labs Visual: Unable to create new build.
         return;
       }
 
-      metadata.ignoredRegions ??= [];
+      metadata.regions ??= [];
 
       // Check if there is a need to compute a ratio. Otherwise just use 1.
-      const needRatioComputation = metadata.ignoredRegions
+      const needRatioComputation = metadata.regions
         .map((region) => region.applyScalingRatio)
         .reduce((prev, next) => prev || next, false);
 
@@ -365,20 +371,22 @@ Sauce Labs Visual: Unable to create new build.
           })
         : 1;
 
-      const ignoreRegions = metadata.ignoredRegions.map((region) => {
-        const ratio = region.applyScalingRatio ? scalingRatio : 1;
-        return {
-          x: Math.floor(region.x * ratio),
-          y: Math.floor(region.y * ratio),
-          height: Math.ceil(
-            (region.y + region.height) * ratio - Math.floor(region.y * ratio),
-          ),
-          width: Math.ceil(
-            (region.x + region.width) * ratio - Math.floor(region.x * ratio),
-          ),
-          name: '',
-        };
-      });
+      const ignoreRegions = metadata.regions.map(
+        (resolvedRegion: ResolvedVisualRegion): RegionIn => {
+          const { x, y, height, width } = resolvedRegion.element;
+
+          const ratio = resolvedRegion.applyScalingRatio ? scalingRatio : 1;
+          return {
+            x: Math.floor(x * ratio),
+            y: Math.floor(y * ratio),
+            height: Math.ceil((y + height) * ratio - Math.floor(y * ratio)),
+            width: Math.ceil((x + width) * ratio - Math.floor(x * ratio)),
+            name: '',
+            diffingOptions:
+              selectiveRegionOptionsToDiffingOptions(resolvedRegion),
+          };
+        },
+      );
 
       // Publish image
       try {
