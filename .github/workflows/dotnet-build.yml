@@ -2,11 +2,15 @@ name: .NET (build)
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'visual-dotnet/**'
+      - .github/workflows/dotnet-build.yml
   pull_request:
     paths:
       - 'visual-dotnet/**'
+      - .github/workflows/dotnet-build.yml
 
 defaults:
   run:

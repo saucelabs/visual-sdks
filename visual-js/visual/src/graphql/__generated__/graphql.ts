@@ -56,9 +56,11 @@ export type Baseline = Node & {
   device: Maybe<Scalars['String']>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  hasDom: Scalars['Boolean'];
   id: Scalars['UUID'];
   imageUrl: Scalars['String'];
   isLatest: Scalars['Boolean'];
+  metadata: Maybe<Scalars['JSON']>;
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
@@ -482,6 +484,9 @@ export type Diff = Node & {
   diffBounds: Maybe<Rect>;
   diffClusters: Array<Maybe<Rect>>;
   diffingMethod: DiffingMethod;
+  /** snapshot { uploadId } should be requested at the same moment */
+  domDiffUrl: Maybe<Scalars['String']>;
+  hasDom: Scalars['Boolean'];
   id: Scalars['UUID'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
@@ -655,7 +660,7 @@ export type FinishBuildIn = {
 };
 
 export type FullPageConfigIn = {
-  /** Adjust address bar padding on iOS and Android for viewport cutout. */
+  /** @deprecated this field will be removed soon. */
   addressBarShadowPadding?: InputMaybe<Scalars['Float']>;
   /**
    * Delay in ms after scrolling and before taking screenshots.
@@ -673,7 +678,7 @@ export type FullPageConfigIn = {
    * Default and max value is 10
    */
   scrollLimit?: InputMaybe<Scalars['Int']>;
-  /** Adjust toolbar padding on iOS and Android for viewport cutout. */
+  /** @deprecated this field will be removed soon. */
   toolBarShadowPadding?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1101,6 +1106,7 @@ export type QueryWebdriverSessionInfoArgs = {
 
 export type Rect = {
   __typename?: 'Rect';
+  flags: Maybe<DiffingOption>;
   height: Scalars['Int'];
   width: Scalars['Int'];
   x: Scalars['Int'];
@@ -1148,11 +1154,15 @@ export type Snapshot = Node & {
    *
    * By convention, the following errors exist:
    * - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
+   * - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
+   * - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+   * - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
    *
    * Other error types may exist and the frontend should display a generic error message
    * together with the JSON contents of `error`.
    */
   error: Maybe<Scalars['JSON']>;
+  hasDom: Scalars['Boolean'];
   /** `height` is determined asynchronously and may be null right after snapshot creation. */
   height: Maybe<Scalars['Int']>;
   id: Scalars['UUID'];
@@ -1160,6 +1170,7 @@ export type Snapshot = Node & {
   imageUrl: Scalars['String'];
   /** URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session. */
   jobUrl: Maybe<Scalars['String']>;
+  metadata: Maybe<Scalars['JSON']>;
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
@@ -1235,6 +1246,7 @@ export type SnapshotIn = {
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   jobUrl?: InputMaybe<Scalars['String']>;
+  metadata?: InputMaybe<Scalars['JSON']>;
   name: Scalars['String'];
   operatingSystem?: InputMaybe<OperatingSystem>;
   operatingSystemVersion?: InputMaybe<Scalars['String']>;

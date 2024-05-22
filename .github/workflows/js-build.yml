@@ -2,6 +2,8 @@ name: JS (build)
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'visual-js/**'
       - .github/workflows/js-build.yml

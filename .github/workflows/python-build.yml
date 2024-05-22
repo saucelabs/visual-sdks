@@ -2,11 +2,15 @@ name: Python (build)
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'visual-python/**'
+      - .github/workflows/python-build.yml
   pull_request:
     paths:
       - 'visual-python/**'
+      - .github/workflows/python-build.yml
 
 defaults:
   run:
