@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.0
+
+### Minor Changes
+
+- f7c7163: Add support for Selective Region in Cypress
+
 ## 0.4.1
 
 ### Patch Changes
