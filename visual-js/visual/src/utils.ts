@@ -1,4 +1,5 @@
-import { FullPageConfigIn } from './graphql/__generated__/graphql';
+import { type, Type } from 'arktype';
+import { FullPageConfigIn, RegionIn } from './graphql/__generated__/graphql';
 
 export const getFullPageConfig: (
   main?: FullPageConfigIn | boolean,
@@ -20,3 +21,25 @@ export const isSkipMode = (): boolean => {
   const VISUAL_SKIP_ENV_VAR = 'SAUCE_VISUAL_SKIP';
   return Boolean(process.env[VISUAL_SKIP_ENV_VAR]);
 };
+
+export const makeValidate =
+  <T extends Type<any>>(t: T) =>
+  (x: unknown): T['infer'] => {
+    const { data, problems } = t(x);
+    if (problems) {
+      throw new Error(problems.toLocaleString());
+    }
+    return data;
+  };
+
+const ignoreRegionType: Type<RegionIn> = type({
+  width: 'integer',
+  height: 'integer',
+  x: 'integer',
+  y: 'integer',
+  'name?': 'string | null | undefined',
+});
+
+export const isIgnoreRegion = ignoreRegionType.allows;
+
+export const validateIgnoreRegion = makeValidate(ignoreRegionType);

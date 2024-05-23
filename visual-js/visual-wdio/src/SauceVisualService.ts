@@ -5,33 +5,27 @@ import {
   RemoteCapability,
 } from '@wdio/types/build/Capabilities';
 import {
-  RegionIn,
-  VisualApi,
-  getApi,
-  WebdriverSession,
+  BuildMode,
+  DiffingMethod,
+  DiffingOptionsIn,
   DiffStatus,
   ensureError,
-  DiffingMethod,
-  SauceRegion,
-  getFullPageConfig,
-  BuildMode,
-  DiffingOptionsIn,
-  SelectiveRegionOptions,
-  selectiveRegionToRegionIn,
-  selectiveRegionOptionsToDiffingOptions,
   FullPageScreenshotOptions,
+  getApi,
+  getFullPageConfig,
+  RegionIn,
+  SauceRegion,
+  SelectiveRegionOptions,
+  selectiveRegionOptionsToDiffingOptions,
+  ElementIn,
+  VisualApi,
+  WebdriverSession,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
 import { SevereServiceError } from 'webdriverio';
 import chalk from 'chalk';
-import {
-  Ignorable,
-  IgnoreRegion,
-  WdioElement,
-  isWdioElement,
-  validateIgnoreRegion,
-} from './guarded-types.js';
+import { Ignorable, isWdioElement } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
 import { Test } from '@wdio/types/build/Frameworks.js';
 
@@ -108,7 +102,14 @@ type CucumberWorld = {
   };
 };
 
-type WdioSelectiveRegion = { element: Ignorable } & SelectiveRegionOptions;
+interface IgnorableRegion<T extends Ignorable = Ignorable> {
+  element: T;
+}
+
+type WdioSelectiveRegion<T extends Ignorable = Ignorable> = IgnorableRegion<T> &
+  SelectiveRegionOptions;
+
+type RegionType = IgnorableRegion | WdioSelectiveRegion;
 
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
@@ -130,23 +131,6 @@ export type CheckOptions = {
 export let uploadedDiffIds: string[] = [];
 let isBuildExternal = false;
 
-// Computes the bounding box of an element relative
-// to the top left corner of a screenshot.
-function clientSideIgnoreRegionsFromElements(
-  elements: HTMLElement[],
-): IgnoreRegion[] {
-  const elementToBoundingRect = (e: HTMLElement): IgnoreRegion => {
-    const clientRect = e.getBoundingClientRect();
-    return {
-      height: clientRect.height,
-      width: clientRect.width,
-      x: clientRect.x,
-      y: clientRect.y,
-    };
-  };
-  return elements.map(elementToBoundingRect);
-}
-
 function buildUrlMessage(
   url: string,
   options: { reviewReady: boolean } = { reviewReady: false },
@@ -163,86 +147,65 @@ ${url.padStart(100, ' ')}
 `;
 }
 
-function splitIgnorables(
-  a: Array<IgnoreRegion | WdioElement | WdioElement[]>,
-): { elements: WdioElement[]; regions: IgnoreRegion[] } {
-  const elements: WdioElement[] = [];
-  const regions: IgnoreRegion[] = [];
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i];
+const getDiffingOptions = (
+  region: RegionType,
+): DiffingOptionsIn | undefined => {
+  const { element: __, ...rest } = region;
+  if ('enableOnly' in rest || 'disableOnly' in rest) {
+    return selectiveRegionOptionsToDiffingOptions(rest);
+  }
+  return undefined;
+};
 
-    if (Array.isArray(x)) {
-      elements.concat(...x);
-    } else if (isWdioElement(x)) {
-      elements.push(x);
-    } else {
-      try {
-        const region = validateIgnoreRegion(x);
-        regions.push(region);
-      } catch (e) {
-        throw new Error(
-          `Ignored element options.ignore[${i}] is not valid: ${e}`,
-        );
+const parseRegionsForAPI = async (
+  regions: WdioSelectiveRegion[],
+  ignore: Ignorable[],
+): Promise<{
+  ignoreRegions: RegionIn[];
+  ignoreElements: ElementIn[];
+}> => {
+  const allRegions: RegionType[] = [
+    ...(regions ?? []),
+    ...(ignore ?? []).map((element) => ({ element })),
+  ];
+
+  const ignoreElements: ElementIn[] = [];
+  const ignoreRegions: RegionIn[] = [];
+
+  const pushElement = async (region: RegionType) => {
+    const { element: maybePromiseElement, ...other } = region;
+    const element = await maybePromiseElement;
+
+    if (Array.isArray(element)) {
+      for await (const subElement of element) {
+        await pushElement({
+          element: subElement,
+          ...other,
+        });
       }
+    } else if (isWdioElement(element)) {
+      ignoreElements.push({
+        id: element.elementId,
+        name: element.selector.toString(),
+        diffingOptions: getDiffingOptions(region),
+      });
+    } else {
+      ignoreRegions.push({
+        ...element,
+        diffingOptions: getDiffingOptions(region),
+      });
     }
-  }
-  return { elements, regions };
-}
+  };
 
-async function wdio2IgnoreRegions(
-  elements: WdioElement[],
-): Promise<IgnoreRegion[]> {
-  // This translation is done for client side scripts by wdio
-  const asHtmlElements = elements as unknown as HTMLElement[];
-
-  const ignoreRegions = await browser.execute(
-    clientSideIgnoreRegionsFromElements,
-    asHtmlElements,
-  );
-
-  if (ignoreRegions.length !== elements.length) {
-    throw new Error(
-      'Internal error while getting the bounding rect for elements',
-    );
+  for await (const region of allRegions) {
+    await pushElement(region);
   }
 
-  // assign the selector as name for the ignore regions
-  for (let i = 0; i < ignoreRegions.length; i++) {
-    const r = ignoreRegions[i];
-    const e = elements[i];
-    r.name = e.selector.toString();
-  }
-
-  return ignoreRegions;
-}
-
-async function toIgnoreRegionIn(ignorables: Ignorable[]): Promise<RegionIn[]> {
-  const awaitedIgnorables = await Promise.all(ignorables);
-  const { elements, regions } = splitIgnorables(awaitedIgnorables);
-
-  const regionsFromElements = await wdio2IgnoreRegions(elements);
-
-  return [...regions, ...regionsFromElements]
-    .map((r) => ({
-      name: r.name ?? null,
-      x: Math.round(r.x),
-      y: Math.round(r.y),
-      width: Math.round(r.width),
-      height: Math.round(r.height),
-    }))
-    .filter((r) => 0 < r.width * r.height);
-}
-
-async function wdioSelectiveRegionToRegionIn(
-  list: WdioSelectiveRegion[],
-): Promise<RegionIn[]> {
-  const intermediate = [];
-  for (const wdioRegion of list) {
-    const [plainRegion] = await toIgnoreRegionIn([wdioRegion.element]);
-    intermediate.push({ ...wdioRegion, ...plainRegion });
-  }
-  return selectiveRegionToRegionIn(intermediate);
-}
+  return {
+    ignoreRegions,
+    ignoreElements,
+  };
+};
 
 /**
  * This services are actually 2 instances at runtime. OnPrepare and onComplete are executed by one instance and the before hook by another.
@@ -475,10 +438,11 @@ export default class SauceVisualService implements Services.ServiceInstance {
     ) =>
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
-      const ignoreRegions = [
-        ...(await toIgnoreRegionIn(options.ignore ?? [])),
-        ...(await wdioSelectiveRegionToRegionIn(options.regions ?? [])),
-      ];
+
+      const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
+        options.regions ?? [],
+        options.ignore ?? [],
+      );
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
@@ -490,6 +454,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        ignoreElements,
         diffingOptions: selectiveRegionOptionsToDiffingOptions({
           disableOnly: options.disable ?? [],
         }),
