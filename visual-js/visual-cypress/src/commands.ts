@@ -160,28 +160,25 @@ const sauceVisualCheckCommand = (
     resolved.then((regions) => {
       let hasError = false;
       const result: ResolvedVisualRegion[] = [];
-      try {
-        for (const idx in regions) {
-          if (regions[idx].length === 0) {
-            visualLog(
-              `sauce-visual: ignoreRegion[${idx}] does not exists or is empty`,
-            );
-            hasError = true;
-          }
-
-          const applyScalingRatio = !isRegion(visualRegions[idx].element);
-
-          for (const plainRegion of regions[idx]) {
-            result.push({
-              ...visualRegions[idx],
-              element: plainRegion,
-              applyScalingRatio,
-            } satisfies ResolvedVisualRegion);
-          }
+      for (const idx in regions) {
+        if (regions[idx].length === 0) {
+          visualLog(
+            `sauce-visual: ignoreRegion[${idx}] does not exists or is empty`,
+          );
+          hasError = true;
         }
-      } catch (e: unknown) {
-        visualLog(`sauce-visual: ${e}`);
+
+        const applyScalingRatio = !isRegion(visualRegions[idx].element);
+
+        for (const plainRegion of regions[idx]) {
+          result.push({
+            ...visualRegions[idx],
+            element: plainRegion,
+            applyScalingRatio,
+          } satisfies ResolvedVisualRegion);
+        }
       }
+
       if (hasError)
         throw new Error(
           'Some region are invalid. Please check the log for details.',
