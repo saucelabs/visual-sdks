@@ -59,10 +59,7 @@ export function intoElement<R extends Omit<object, 'unknown>'>>(
 }
 
 export function getElementDimensions(elem: HTMLElement): PlainRegion {
-  const rect =
-    elem && 'getBoundingClientRect' in elem
-      ? elem.getBoundingClientRect()
-      : { left: 0, top: 0, width: 0, height: 0 };
+  const rect = elem.getBoundingClientRect();
   return {
     x: Math.floor(rect.left),
     y: Math.floor(rect.top),
