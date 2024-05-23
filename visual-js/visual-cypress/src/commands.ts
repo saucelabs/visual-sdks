@@ -58,7 +58,7 @@ export function intoElement<R extends Omit<object, 'unknown>'>>(
   return 'element' in region ? region.element : region;
 }
 
-export function getElementDimensions(elem: HTMLElement): Cypress.Dimensions {
+export function getElementDimensions(elem: HTMLElement): PlainRegion {
   const rect = elem.getBoundingClientRect();
   return {
     x: Math.floor(rect.left),
@@ -68,19 +68,29 @@ export function getElementDimensions(elem: HTMLElement): Cypress.Dimensions {
   };
 }
 
-export async function resolveChainables(
+// TODO: rename to: toChainableRegion
+export function resolveChainables(
   item: PlainRegion | Cypress.Chainable<HTMLElement[]>,
-): Promise<PlainRegion[] | null> {
+): Cypress.Chainable<PlainRegion[]> {
   if (isChainable(item)) {
-    const $el: HTMLElement[] = await new Promise((resolve) =>
-      item.then(resolve),
-    );
-    return $el.map(getElementDimensions);
+    return item.then(($el: HTMLElement[]): PlainRegion[] => {
+      return $el.map(getElementDimensions);
+    });
   } else if (isRegion(item)) {
-    return [item];
+    return cy.wrap([item]);
   } else {
-    return null;
+    return cy.wrap<PlainRegion[]>([]);
   }
+}
+
+function chainableWaitForAll<S>(
+  list: Cypress.Chainable<S>[],
+): Cypress.Chainable<S[]> {
+  return list.reduce((prev, cur) => {
+    return prev.then((array) =>
+      cur.then((resolvedCur) => [...array, resolvedCur]),
+    );
+  }, cy.wrap<S[]>([]));
 }
 
 const sauceVisualCheckCommand = (
@@ -128,32 +138,37 @@ const sauceVisualCheckCommand = (
     ...(options?.regions ?? []),
   ];
 
-  const regionsPromise: Promise<ResolvedVisualRegion[]> = (async () => {
-    const result = [];
-    for (const idx in visualRegions) {
-      const visualRegion = visualRegions[idx];
+  const resolved = chainableWaitForAll(
+    visualRegions.map(intoElement).map(resolveChainables),
+  );
 
-      const resolvedElements: PlainRegion[] | null = await resolveChainables(
-        intoElement(visualRegion),
-      );
-      if (resolvedElements === null)
-        throw new Error(`ignoreRegion[${idx}] has an unknown type`);
+  const regionsPromise: Cypress.Chainable<ResolvedVisualRegion[]> =
+    resolved.then((regions) => {
+      let hasError = false;
+      const result: ResolvedVisualRegion[] = [];
+      try {
+        for (const idx in regions) {
+          if (regions[idx].length === 0) {
+            visualLog(`sauce-visual: ignoreRegion[${idx}] does not exists or is empty`);
+            hasError = true;
+          }
 
-      const applyScalingRatio = !isRegion(visualRegion.element);
+          const applyScalingRatio = !isRegion(visualRegions[idx].element);
 
-      for (const region of resolvedElements) {
-        result.push({
-          ...visualRegion,
-          element: region,
-          applyScalingRatio,
-        } satisfies ResolvedVisualRegion);
+          for (const plainRegion of regions[idx]) {
+            result.push({
+              ...visualRegions[idx],
+              element: plainRegion,
+              applyScalingRatio,
+            } satisfies ResolvedVisualRegion);
+          }
+        }
+      } catch (e: unknown) {
+        visualLog(`sauce-visual: ${e}`);
       }
-    }
-    return result;
-  })().catch((e) => {
-    visualLog(`sauce-visual: ${e}`);
-    return [];
-  });
+      if (hasError) throw new Error('Some region are invalid. Please check the log for details.')
+      return result;
+    });
 
   const id = randomId();
   cy.get<Cypress.Dimensions | undefined>('@clipToBounds').then(
