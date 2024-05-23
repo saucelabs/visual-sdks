@@ -7,6 +7,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-namespace */
+import util from 'util';
 import {
   PlainRegion,
   ResolvedVisualRegion,
@@ -59,7 +60,9 @@ export function intoElement<R extends Omit<object, 'unknown>'>>(
 }
 
 export function getElementDimensions(elem: HTMLElement): PlainRegion {
-  const rect = elem.getBoundingClientRect();
+  const rect = elem && 'getBoundingClientRect' in elem
+    ? elem.getBoundingClientRect()
+    : {left: 0, top: 0, width: 0, height: 0};
   return {
     x: Math.floor(rect.left),
     y: Math.floor(rect.top),
@@ -73,8 +76,10 @@ export function resolveChainables(
   item: PlainRegion | Cypress.Chainable<HTMLElement[]>,
 ): Cypress.Chainable<PlainRegion[]> {
   if (isChainable(item)) {
-    return item.then(($el: HTMLElement[]): PlainRegion[] => {
-      return $el.map(getElementDimensions);
+    return item.then(($el: ArrayLike<HTMLElement>): PlainRegion[] => {
+      const result: PlainRegion[] = [];
+      for (let i = 0; i < $el.length; i++) result.push(getElementDimensions($el[i]));
+      return result;
     });
   } else if (isRegion(item)) {
     return cy.wrap([item]);
@@ -86,11 +91,21 @@ export function resolveChainables(
 function chainableWaitForAll<S>(
   list: Cypress.Chainable<S>[],
 ): Cypress.Chainable<S[]> {
-  return list.reduce((prev, cur) => {
-    return prev.then((array) =>
-      cur.then((resolvedCur) => [...array, resolvedCur]),
-    );
-  }, cy.wrap<S[]>([]));
+  const result: S[] = [];
+
+  if (list.length < 1) return cy.wrap<S[]>([]);
+  
+  let curChainable = list[0];
+  for (let idx = 1; idx < list.length; idx++) {
+    curChainable = curChainable.then(resolved => {
+      result.push(resolved);
+      return list[idx];
+    })
+  }
+  return curChainable.then(item => {
+    result.push(item);
+    return result;
+  })
 }
 
 const sauceVisualCheckCommand = (
@@ -203,7 +218,7 @@ const sauceVisualCheckCommand = (
         }
       };
 
-      regionsPromise.then((regions) => {
+      return regionsPromise.then((regions) => {
         cy.task('visual-register-screenshot', {
           id: `sauce-visual-${id}`,
           name: screenshotName,
