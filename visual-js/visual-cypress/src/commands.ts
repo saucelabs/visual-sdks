@@ -52,9 +52,7 @@ export function isChainable(elem: any): elem is Cypress.Chainable {
   return 'chainerId' in elem;
 }
 
-export function intoElement<R extends Omit<object, 'unknown>'>>(
-  region: VisualRegion<R>,
-): R {
+export function intoElement<R extends object>(region: VisualRegion<R>): R {
   return 'element' in region ? region.element : region;
 }
 

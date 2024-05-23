@@ -502,7 +502,6 @@ Sauce Labs Visual: Unable to create new build.
         return pluginInstance?.domCaptureScript;
       },
       'visual-register-screenshot': function (metadata: ScreenshotMetadata) {
-        logger.warn(JSON.stringify(metadata.regions));
         return plugin.addScreenshotMetadata(metadata);
       },
       'visual-log-capture': function ({
