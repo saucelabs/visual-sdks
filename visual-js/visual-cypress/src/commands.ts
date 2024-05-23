@@ -8,11 +8,12 @@
 
 /* eslint-disable @typescript-eslint/no-namespace */
 import {
+  PlainRegion,
+  ResolvedVisualRegion,
   SauceVisualViewport,
   ScreenshotMetadata,
   VisualCheckOptions,
   VisualRegion,
-  VisualRegionWithRatio,
 } from './types';
 
 declare global {
@@ -39,7 +40,7 @@ declare global {
 const visualLog = (msg: string, level: 'info' | 'warn' | 'error' = 'error') =>
   cy.task('visual-log', { level, msg });
 
-export function isRegion(elem: any): elem is VisualRegion {
+export function isRegion<T extends object>(elem: T): elem is PlainRegion & T {
   if ('x' in elem && 'y' in elem && 'width' in elem && 'height' in elem) {
     return true;
   }
@@ -51,14 +52,61 @@ export function isChainable(elem: any): elem is Cypress.Chainable {
   return 'chainerId' in elem;
 }
 
-/**
- * Note: Even if looks like promises, it is not. Cypress makes it run in a consistent and deterministic way.
- * As a result, item.then() will be resolved before the cy.screenshot() and cy.task() is executed.
- * That makes us be sure that ignoredRegion is populated correctly before the metadata being sent back to
- * Cypress main process.
- *
- * https://docs.cypress.io/guides/core-concepts/introduction-to-cypress#You-cannot-race-or-run-multiple-commands-at-the-same-time
- */
+export function intoElement<R extends object>(region: VisualRegion<R>): R {
+  return 'element' in region ? region.element : region;
+}
+
+export function getElementDimensions(elem: HTMLElement): PlainRegion {
+  const rect = elem.getBoundingClientRect();
+  return {
+    x: Math.floor(rect.left),
+    y: Math.floor(rect.top),
+    width: Math.floor(rect.width),
+    height: Math.floor(rect.height),
+  };
+}
+
+export function toChainableRegion(
+  item: PlainRegion | Cypress.Chainable<HTMLElement[]>,
+): Cypress.Chainable<PlainRegion[]> {
+  if (isChainable(item)) {
+    return item.then(($el: ArrayLike<HTMLElement>): PlainRegion[] => {
+      // $el is not a real array an `.map(..)` doesn't work on it properly
+      const result: PlainRegion[] = [];
+      for (let i = 0; i < $el.length; i++)
+        result.push(getElementDimensions($el[i]));
+      return result;
+    });
+  } else if (isRegion(item)) {
+    return cy.wrap([item]);
+  } else {
+    return cy.wrap<PlainRegion[]>([]);
+  }
+}
+
+// Emulates `Promise.all` with Cypress.Chainables
+// Note: It is not allowed to nest `.then` calls.
+// There needs to be a linear line of `.then` calls.
+function chainableWaitForAll<S>(
+  list: Cypress.Chainable<S>[],
+): Cypress.Chainable<S[]> {
+  const result: S[] = [];
+
+  if (list.length < 1) return cy.wrap<S[]>([]);
+
+  let curChainable = list[0];
+  for (let idx = 1; idx < list.length; idx++) {
+    curChainable = curChainable.then((resolved) => {
+      result.push(resolved);
+      return list[idx];
+    });
+  }
+  return curChainable.then((item) => {
+    result.push(item);
+    return result;
+  });
+}
+
 const sauceVisualCheckCommand = (
   screenshotName: string,
   options?: VisualCheckOptions,
@@ -83,16 +131,6 @@ const sauceVisualCheckCommand = (
     viewport.height = win.innerHeight;
   });
 
-  const getElementDimensions = (elem: HTMLElement) => {
-    const rect = elem.getBoundingClientRect();
-    return {
-      x: Math.floor(rect.left),
-      y: Math.floor(rect.top),
-      width: Math.floor(rect.width),
-      height: Math.floor(rect.height),
-    } satisfies Cypress.Dimensions;
-  };
-
   if (clipSelector) {
     cy.get(clipSelector).then((elem) => {
       const firstMatch = elem.get().find((item) => item);
@@ -106,33 +144,47 @@ const sauceVisualCheckCommand = (
   }
 
   /* Remap ignore area */
-  const providedIgnoredRegions = options?.ignoredRegions ?? [];
-  const ignoredRegions: VisualRegionWithRatio[] = [];
-  for (const idx in providedIgnoredRegions) {
-    const item = providedIgnoredRegions[idx];
-    if (isRegion(item)) {
-      ignoredRegions.push({
-        applyScalingRatio: false,
-        ...item,
-      });
-      continue;
-    }
+  const visualRegions: VisualRegion[] = [
+    ...(options?.ignoredRegions ?? []).map((r) => ({
+      enableOnly: [],
+      element: r,
+    })),
+    ...(options?.regions ?? []),
+  ];
 
-    if (isChainable(item)) {
-      item.then(($el: HTMLElement[]) => {
-        for (const elem of $el) {
-          const rect = getElementDimensions(elem);
-          ignoredRegions.push({
-            applyScalingRatio: true,
-            ...rect,
-          });
+  const resolved = chainableWaitForAll(
+    visualRegions.map(intoElement).map(toChainableRegion),
+  );
+
+  const regionsPromise: Cypress.Chainable<ResolvedVisualRegion[]> =
+    resolved.then((regions) => {
+      let hasError = false;
+      const result: ResolvedVisualRegion[] = [];
+      for (const idx in regions) {
+        if (regions[idx].length === 0) {
+          visualLog(
+            `sauce-visual: ignoreRegion[${idx}] does not exists or is empty`,
+          );
+          hasError = true;
         }
-      });
-      continue;
-    }
 
-    throw new Error(`ignoreRegion[${idx}] has an unknown type`);
-  }
+        const applyScalingRatio = !isRegion(visualRegions[idx].element);
+
+        for (const plainRegion of regions[idx]) {
+          result.push({
+            ...visualRegions[idx],
+            element: plainRegion,
+            applyScalingRatio,
+          } satisfies ResolvedVisualRegion);
+        }
+      }
+
+      if (hasError)
+        throw new Error(
+          'Some region are invalid. Please check the log for details.',
+        );
+      return result;
+    });
 
   const id = randomId();
   cy.get<Cypress.Dimensions | undefined>('@clipToBounds').then(
@@ -167,17 +219,20 @@ const sauceVisualCheckCommand = (
         }
       };
 
-      cy.task('visual-register-screenshot', {
-        id: `sauce-visual-${id}`,
-        name: screenshotName,
-        suiteName: Cypress.currentTest.titlePath.slice(0, -1).join(' '),
-        testName: Cypress.currentTest.title,
-        ignoredRegions,
-        diffingMethod: options?.diffingMethod,
-        devicePixelRatio: win.devicePixelRatio,
-        viewport: realViewport,
-        dom: getDom() ?? undefined,
-      } satisfies ScreenshotMetadata);
+      return regionsPromise.then((regions) => {
+        cy.task('visual-register-screenshot', {
+          id: `sauce-visual-${id}`,
+          name: screenshotName,
+          suiteName: Cypress.currentTest.titlePath.slice(0, -1).join(' '),
+          testName: Cypress.currentTest.title,
+          regions,
+          diffingMethod: options?.diffingMethod,
+          diffingOptions: options?.diffingOptions,
+          devicePixelRatio: win.devicePixelRatio,
+          viewport: realViewport,
+          dom: getDom() ?? undefined,
+        } satisfies ScreenshotMetadata);
+      });
     });
   });
 };
