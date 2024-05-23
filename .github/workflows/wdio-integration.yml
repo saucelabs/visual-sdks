@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'visual-js/visual-wdio'
+      - 'visual-js/visual-wdio/**'
       - .github/workflows/js-build.yml
   pull_request:
     paths:
-      - 'visual-js/visual-wdio'
+      - 'visual-js/visual-wdio/**'
       - .github/workflows/js-build.yml
 
 defaults:
