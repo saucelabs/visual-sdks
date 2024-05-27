@@ -168,13 +168,10 @@ const sauceVisualCheckCommand = (
           hasError = true;
         }
 
-        const applyScalingRatio = !isRegion(visualRegions[idx].element);
-
         for (const plainRegion of regions[idx]) {
           result.push({
             ...visualRegions[idx],
             element: plainRegion,
-            applyScalingRatio,
           } satisfies ResolvedVisualRegion);
         }
       }
