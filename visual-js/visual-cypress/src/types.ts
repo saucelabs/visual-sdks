@@ -45,7 +45,7 @@ export type ScreenshotMetadata = {
   name: string;
   testName: string;
   suiteName: string;
-  regions?: ResolvedVisualRegion[];
+  regions: ResolvedVisualRegion[];
   diffingMethod?: DiffingMethod;
   diffingOptions?: DiffingOptionsIn;
   viewport: SauceVisualViewport | undefined;
