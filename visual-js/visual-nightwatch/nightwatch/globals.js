@@ -5,7 +5,7 @@ const {
   BuildMode,
 } = require('@saucelabs/visual');
 const { buildUrlMessage, validateSauce } = require('../utils/api');
-const { VISUAL_BUILD_ID_KEY } = require('../utils/constants');
+const { VISUAL_BUILD_ID_KEY, skipMode } = require('../utils/constants');
 const SauceVisualCheck = require('./commands/sauceVisualCheck');
 
 let sharedSettings = null;
@@ -25,6 +25,12 @@ const globals = {
    */
   async before(settings) {
     console.log('Sauce Visual service started');
+    if (skipMode()) {
+      console.log(
+        '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured\n',
+      );
+      return;
+    }
     let buildName,
       project,
       branch,
@@ -82,12 +88,17 @@ const globals = {
   // This works for both the Default JS/TS and Mocha TestRunners.
   async beforeEach() {
     global.uploadedDiffIds = [];
+    global.skipped = 0;
   },
 
   /**
    * Is being called after all tests are run
    */
   async after() {
+    if (skipMode()) {
+      console.log(`Sauce Visual Checks were disabled for that run`);
+      return;
+    }
     const visualBuildId = process.env[VISUAL_BUILD_ID_KEY] || '';
     if (!visualBuildId) {
       browser.assert.fail('No buildId found');
@@ -163,6 +174,7 @@ const globals = {
     // For JS/TS Default to (re)set the `global.uploadedDiffIds` array for each test.
     eventBroadcaster.on('TestRunStarted', (args) => {
       global.uploadedDiffIds = [];
+      global.skipped = 0;
     });
 
     //
@@ -171,6 +183,7 @@ const globals = {
       // The beforeEach and TestSuiteStarted are not triggered in CucumberJs
       // that's why we need to (re)set the `global.uploadedDiffIds` array here
       global.uploadedDiffIds = [];
+      global.skipped = 0;
       //
       // Logic to get the feature and scenario name
       const reportData = args.report;

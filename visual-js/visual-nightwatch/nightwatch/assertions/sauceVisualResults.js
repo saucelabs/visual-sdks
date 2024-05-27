@@ -1,6 +1,6 @@
 const { DiffStatus } = require('@saucelabs/visual');
 const { getVisualApi, getVisualResults } = require('../../utils/api');
-const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
+const { VISUAL_BUILD_ID_KEY, skipMode } = require('../../utils/constants');
 
 // See https://nightwatchjs.org/guide/extending-nightwatch/adding-custom-assertions.html#define-a-custom-assertion
 exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
@@ -58,6 +58,17 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
    * @param {function} callback
    */
   this.command = async function (callback) {
+    // Return only SKIPPED if in skip mode
+    if (skipMode()) {
+      const statusSummary = Object.fromEntries(
+        Object.values(DiffStatus).map((status) => [status, 0]),
+      );
+      statusSummary['SKIPPED'] = global.skipped;
+      return callback({
+        value: statusSummary[diffStatus],
+      });
+    }
+
     const visualBuildId = process.env[VISUAL_BUILD_ID_KEY] || '';
     if (!visualBuildId) {
       // We can't throw an error here otherwise the test will stop and the Visual Build will never be finished
