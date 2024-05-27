@@ -36,9 +36,7 @@ export type VisualRegion<
   R extends Omit<object, 'element'> = PlainRegion | Cypress.Chainable,
 > = { element: R } & SelectiveRegionOptions;
 
-export type ResolvedVisualRegion = {
-  applyScalingRatio?: boolean;
-} & VisualRegion<PlainRegion>;
+export type ResolvedVisualRegion = VisualRegion<PlainRegion>;
 
 export type ScreenshotMetadata = {
   id: string;
