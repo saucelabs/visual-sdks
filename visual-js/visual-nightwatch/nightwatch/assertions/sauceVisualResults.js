@@ -1,6 +1,6 @@
-const { DiffStatus } = require('@saucelabs/visual');
+const { DiffStatus, isSkipMode } = require('@saucelabs/visual');
 const { getVisualApi, getVisualResults } = require('../../utils/api');
-const { VISUAL_BUILD_ID_KEY, skipMode } = require('../../utils/constants');
+const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
 
 // See https://nightwatchjs.org/guide/extending-nightwatch/adding-custom-assertions.html#define-a-custom-assertion
 exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
@@ -59,7 +59,7 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
    */
   this.command = async function (callback) {
     // Return only SKIPPED if in skip mode
-    if (skipMode()) {
+    if (isSkipMode()) {
       const statusSummary = Object.fromEntries(
         Object.values(DiffStatus).map((status) => [status, 0]),
       );

@@ -3,9 +3,10 @@ const {
   getApi,
   ensureError,
   BuildMode,
+  isSkipMode,
 } = require('@saucelabs/visual');
 const { buildUrlMessage, validateSauce } = require('../utils/api');
-const { VISUAL_BUILD_ID_KEY, skipMode } = require('../utils/constants');
+const { VISUAL_BUILD_ID_KEY } = require('../utils/constants');
 const SauceVisualCheck = require('./commands/sauceVisualCheck');
 
 let sharedSettings = null;
@@ -25,7 +26,7 @@ const globals = {
    */
   async before(settings) {
     console.log('Sauce Visual service started');
-    if (skipMode()) {
+    if (isSkipMode()) {
       console.log(
         '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured\n',
       );
@@ -95,7 +96,7 @@ const globals = {
    * Is being called after all tests are run
    */
   async after() {
-    if (skipMode()) {
+    if (isSkipMode()) {
       console.log(`⚠︎ Sauce Visual Checks were disabled for that run`);
       return;
     }

@@ -1,8 +1,12 @@
 const EventEmitter = require('events').EventEmitter;
-const { ensureError, getFullPageConfig } = require('@saucelabs/visual');
+const {
+  ensureError,
+  getFullPageConfig,
+  isSkipMode,
+} = require('@saucelabs/visual');
 const { parseIgnoreOptions, toIgnoreRegionIn } = require('../../utils/regions');
 const { getMetaInfo, getVisualApi } = require('../../utils/api');
-const { VISUAL_BUILD_ID_KEY, skipMode } = require('../../utils/constants');
+const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
 
 module.exports = class SauceVisualCheck extends EventEmitter {
   // These are used for Cucumber
@@ -13,7 +17,7 @@ module.exports = class SauceVisualCheck extends EventEmitter {
   //  - not for all runners,
   //  - not always as the third argument
   async command(name, optionsArg = {}, mochaContextArg = {}) {
-    if (skipMode()) {
+    if (isSkipMode()) {
       console.log(`Checking ${name}: SKIPPED`);
       global.skipped = (global.skipped ?? 0) + 1;
       this.emit('complete', null);
