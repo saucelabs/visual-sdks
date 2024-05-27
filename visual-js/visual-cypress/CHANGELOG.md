@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.1
+
+### Patch Changes
+
+- bc6d89d: Let backend handle device pixel ratio in cypress
+
 ## 0.5.0
 
 ### Minor Changes

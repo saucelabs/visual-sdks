@@ -19,14 +19,12 @@ import {
   BuildMode,
   DiffingOptionsIn,
   selectiveRegionOptionsToDiffingOptions,
-  RegionIn,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
   ScreenshotMetadata,
   SauceVisualOptions,
   SauceVisualViewport,
-  ResolvedVisualRegion,
 } from './types';
 import { Logger } from './logger';
 import { buildUrl, screenshotSectionStart } from './messages';
@@ -357,37 +355,6 @@ Sauce Labs Visual: Unable to create new build.
         return;
       }
 
-      metadata.regions ??= [];
-
-      // Check if there is a need to compute a ratio. Otherwise just use 1.
-      const needRatioComputation = metadata.regions
-        .map((region) => region.applyScalingRatio)
-        .reduce((prev, next) => prev || next, false);
-
-      const scalingRatio = needRatioComputation
-        ? this.computeScalingRatio(metadata.viewport, {
-            height: screenshot.height,
-            width: screenshot.width,
-          })
-        : 1;
-
-      const ignoreRegions = metadata.regions.map(
-        (resolvedRegion: ResolvedVisualRegion): RegionIn => {
-          const { x, y, height, width } = resolvedRegion.element;
-
-          const ratio = resolvedRegion.applyScalingRatio ? scalingRatio : 1;
-          return {
-            x: Math.floor(x * ratio),
-            y: Math.floor(y * ratio),
-            height: Math.ceil((y + height) * ratio - Math.floor(y * ratio)),
-            width: Math.ceil((x + width) * ratio - Math.floor(x * ratio)),
-            name: '',
-            diffingOptions:
-              selectiveRegionOptionsToDiffingOptions(resolvedRegion),
-          };
-        },
-      );
-
       // Publish image
       try {
         const screenshotId = await this.api.uploadSnapshot({
@@ -406,7 +373,10 @@ Sauce Labs Visual: Unable to create new build.
           operatingSystemVersion: osInfo.version,
           suiteName: metadata.suiteName,
           testName: metadata.testName,
-          ignoreRegions,
+          ignoreRegions: metadata.regions.map((r) => ({
+            ...r.element,
+            diffingOptions: selectiveRegionOptionsToDiffingOptions(r),
+          })),
           device: metadata.viewport
             ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
             : 'Desktop',
