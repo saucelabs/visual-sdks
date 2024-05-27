@@ -96,7 +96,7 @@ const globals = {
    */
   async after() {
     if (skipMode()) {
-      console.log(`Sauce Visual Checks were disabled for that run`);
+      console.log(`⚠︎ Sauce Visual Checks were disabled for that run`);
       return;
     }
     const visualBuildId = process.env[VISUAL_BUILD_ID_KEY] || '';
