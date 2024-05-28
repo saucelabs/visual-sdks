@@ -3,7 +3,11 @@
 - the schema `./visual/schema.grapqhls` is copied from `backend/src/generated/schema.sql` and appended with the
   following:
 
+```sh
+cp ../../iris/backend/src/generated/schema.graphql src/main/graphql/visual/schema.graphqls
 ```
+
+```graphql
 schema {
   mutation: Mutation
   query: Query

@@ -66,6 +66,7 @@ type Baseline implements Node {
   id: UUID!
   imageUrl: String!
   isLatest: Boolean!
+  metadata: JSON
   name: String!
 
   """
@@ -497,6 +498,9 @@ input CreateSnapshotFromWebDriverIn {
   buildUuid: UUID
   captureDom: Boolean
 
+  """The selenium ID of an element we should clip the screen to."""
+  clipElement: WebdriverElementID
+
   """
   A querySelector compatible selector of an element that we should crop the screenshot to.
   """
@@ -509,6 +513,7 @@ input CreateSnapshotFromWebDriverIn {
   Limitation: Currently, this feature is supported only on desktop browsers.
   """
   fullPageConfig: FullPageConfigIn
+  ignoreElements: [ElementIn!]
   ignoreRegions: [RegionIn!]
 
   """This will be mandatory in the future."""
@@ -779,6 +784,14 @@ enum DiffsOrderBy {
   STATUS_IS_EQUAL_DESC
 }
 
+input ElementIn {
+  diffingOptions: DiffingOptionsIn
+
+  """The server-assigned ID of an element from webdriver."""
+  id: WebdriverElementID!
+  name: String
+}
+
 input FinishBuildIn {
   """@deprecated Use `uuid`. This field will be removed in a future update."""
   id: ID
@@ -786,7 +799,7 @@ input FinishBuildIn {
 }
 
 input FullPageConfigIn {
-  """Adjust address bar padding on iOS and Android for viewport cutout."""
+  """@deprecated this field will be removed soon."""
   addressBarShadowPadding: Float
 
   """
@@ -801,6 +814,11 @@ input FullPageConfigIn {
   """Hide elements on the page after first scroll by css selectors."""
   hideAfterFirstScroll: [String]
 
+  """
+  Hide elements on the page after first scroll using their server-assigned ID from webdriver.
+  """
+  hideElementsAfterFirstScroll: [WebdriverElementID!]
+
   """Hide all scrollbars in the app."""
   hideScrollBars: Boolean
 
@@ -810,7 +828,7 @@ input FullPageConfigIn {
   """
   scrollLimit: Int
 
-  """Adjust toolbar padding on iOS and Android for viewport cutout."""
+  """@deprecated this field will be removed soon."""
   toolBarShadowPadding: Int
 }
 
@@ -1278,8 +1296,6 @@ type Query implements Node {
     """The method to use when ordering `Snapshot`."""
     orderBy: [SnapshotsOrderBy!] = [PRIMARY_KEY_ASC]
   ): SnapshotsConnection
-  webdriverSession(sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
-  webdriverSessionFromArchive(jobId: ID!, sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
   webdriverSessionInfo(input: WebdriverSessionInfoIn!): WebdriverSession
 }
 
@@ -1395,6 +1411,9 @@ type Snapshot implements Node {
   
   By convention, the following errors exist:
   - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
+  - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
+  - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+  - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
   
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.
@@ -1414,6 +1433,7 @@ type Snapshot implements Node {
   URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session.
   """
   jobUrl: String
+  metadata: JSON
   name: String!
 
   """
@@ -1480,6 +1500,7 @@ input SnapshotIn {
   diffingOptions: DiffingOptionsIn
   ignoreRegions: [RegionIn!]
   jobUrl: String
+  metadata: JSON
   name: String!
   operatingSystem: OperatingSystem
   operatingSystemVersion: String
@@ -1621,6 +1642,8 @@ type User {
   id: UUID!
   username: String
 }
+
+scalar WebdriverElementID
 
 type WebdriverSession {
   applicationSummary: ApplicationSummary
