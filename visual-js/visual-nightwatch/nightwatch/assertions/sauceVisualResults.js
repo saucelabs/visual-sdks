@@ -64,9 +64,10 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
         Object.values(DiffStatus).map((status) => [status, 0]),
       );
       statusSummary['SKIPPED'] = global.skipped;
-      return callback({
+      callback({
         value: statusSummary[diffStatus],
       });
+      return this;
     }
 
     const visualBuildId = process.env[VISUAL_BUILD_ID_KEY] || '';
