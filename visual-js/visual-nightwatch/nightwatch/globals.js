@@ -28,7 +28,7 @@ const globals = {
     console.log('Sauce Visual service started');
     if (isSkipMode()) {
       console.log(
-        '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured\n',
+        '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured. No Visual assertions will be evaluated.\n',
       );
       return;
     }

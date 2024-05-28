@@ -60,12 +60,11 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
   this.command = async function (callback) {
     // Return only SKIPPED if in skip mode
     if (isSkipMode()) {
-      const statusSummary = Object.fromEntries(
-        Object.values(DiffStatus).map((status) => [status, 0]),
-      );
-      statusSummary['SKIPPED'] = global.skipped;
       callback({
-        value: statusSummary[diffStatus],
+        // In skip mode no visual actions are taken, so we cannot assert that any number of statuses
+        // have actually been met. Instead, we'll just pass the expected value here to allow the
+        // assertions to 'pass' the test when the only status is SKIPPED.
+        value: expected,
       });
       return this;
     }

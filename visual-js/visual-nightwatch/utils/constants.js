@@ -5,5 +5,4 @@ const PKG_VER = 'PKG_VERSION';
 module.exports = {
   PKG_VER,
   VISUAL_BUILD_ID_KEY,
-  VISUAL_SKIP,
 };
