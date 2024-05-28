@@ -18,5 +18,5 @@ export const getFullPageConfig: (
 
 export const isSkipMode = (): boolean => {
   const VISUAL_SKIP_ENV_VAR = 'SAUCE_VISUAL_SKIP';
-  return !!process.env[VISUAL_SKIP_ENV_VAR];
+  return Boolean(process.env[VISUAL_SKIP_ENV_VAR]);
 };
