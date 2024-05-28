@@ -7,10 +7,11 @@ from typing import List, Union
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
+from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
-    DiffingOptions
+    DiffingOptions, IgnoreElementRegion
 
 PKG_VERSION = '0.0.11'
 
@@ -171,7 +172,9 @@ class SauceLabsVisual:
             suite_name: Union[str, None] = None,
             capture_dom: bool = False,
             clip_selector: Union[str, None] = None,
+            clip_element: Union[WebElement, None] = None,
             ignore_regions: Union[List[IgnoreRegion], None] = None,
+            ignore_elements: Union[List[IgnoreElementRegion], None] = None,
             full_page_config: Union[FullPageConfig, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
@@ -184,7 +187,9 @@ class SauceLabsVisual:
         :param suite_name: The name of the current test to group / identify in the UI.
         :param capture_dom: Whether we should capture the DOM while taking a screenshot.
         :param clip_selector: A CSS selector that we should clip the screenshot to.
+        :param clip_element: A WebElement instance we should clip the screenshot to.
         :param ignore_regions: One or more regions on the page that we should ignore changes in.
+        :param ignore_elements: One or more `IgnoreElementRegion`s we should ignore.
         :param full_page_config: Enable or adjust the behavior of Visual full page screenshots.
         :param diffing_method: The diffing method we should use for comparison.
         :param diffing_options: Options to customize the DOM <-> Visual behavior for the BALANCED
@@ -203,7 +208,9 @@ class SauceLabsVisual:
                 $suiteName: String,
                 $captureDom: Boolean,
                 $clipSelector: String,
+                $clipElement: WebdriverElementID,
                 $ignoreRegions: [RegionIn!],
+                $ignoreElements: [ElementIn!],
                 $fullPageConfig: FullPageConfigIn,
                 $diffingMethod: DiffingMethod,
                 $diffingOptions: DiffingOptionsIn,
@@ -217,7 +224,9 @@ class SauceLabsVisual:
                     suiteName: $suiteName,
                     captureDom: $captureDom,
                     clipSelector: $clipSelector,
+                    clipElement: $clipElement,
                     ignoreRegions: $ignoreRegions,
+                    ignoreElements: $ignoreElements,
                     fullPageConfig: $fullPageConfig,
                     diffingMethod: $diffingMethod,
                     diffingOptions: $diffingOptions,
@@ -237,10 +246,16 @@ class SauceLabsVisual:
             "suiteName": suite_name,
             "captureDom": capture_dom,
             "clipSelector": clip_selector,
+            "clipElement": clip_element.id if clip_element is not None else None,
             "ignoreRegions": [
                 asdict(region) for region in ignore_regions
             ] if ignore_regions is not None else None,
-            "fullPageConfig": full_page_config,
+            "ignoreElements": [
+                element
+                for group in ignore_elements
+                for element in group.as_dict_array()
+            ] if ignore_elements is not None else None,
+            "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
             "diffingOptions": diffing_options,
         }
