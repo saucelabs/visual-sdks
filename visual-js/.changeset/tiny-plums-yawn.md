@@ -6,4 +6,4 @@
 "@saucelabs/wdio-sauce-visual-service": patch
 ---
 
-Remove deprecated API calls
+Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
