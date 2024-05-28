@@ -587,8 +587,6 @@ type Query implements Node {
     "The method to use when ordering `Snapshot`."
     orderBy: [SnapshotsOrderBy!] = [PRIMARY_KEY_ASC]
   ): SnapshotsConnection
-  webdriverSession(sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
-  webdriverSessionFromArchive(jobId: ID!, sessionId: ID!): WebdriverSession @deprecated(reason: "Use webdriverSessionInfo. This will be removed by 2024-02-11.")
   webdriverSessionInfo(input: WebdriverSessionInfoIn!): WebdriverSession
 }
 
@@ -673,6 +671,8 @@ type Snapshot implements Node {
 
   By convention, the following errors exist:
   - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
+  - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
+  - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
   - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
   - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
   - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
