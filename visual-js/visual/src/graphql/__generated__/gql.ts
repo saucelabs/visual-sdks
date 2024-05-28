@@ -26,7 +26,6 @@ const documents = {
     "query diffsForTestResult($input: UUID!) {\n  result: diffs(condition: {buildId: $input}) {\n    nodes {\n      id\n      status\n    }\n  }\n}": types.DiffsForTestResultDocument,
     "mutation FinishBuildDocument($input: FinishBuildIn!) {\n  result: finishBuild(input: $input) {\n    id\n    name\n    status\n    url\n  }\n}": types.FinishBuildDocumentDocument,
     "mutation UpdateDiff($input: UpdateDiffIn!) {\n  result: updateDiff(input: $input) {\n    id\n    status\n    baselineId\n    snapshotId\n  }\n}": types.UpdateDiffDocument,
-    "query webdriverSession($input: ID!) {\n  result: webdriverSession(sessionId: $input) {\n    blob\n    operatingSystem\n    operatingSystemVersion\n    browser\n    browserVersion\n  }\n}": types.WebdriverSessionDocument,
     "query webdriverSessionInfo($input: WebdriverSessionInfoIn!) {\n  result: webdriverSessionInfo(input: $input) {\n    blob\n    operatingSystem\n    operatingSystemVersion\n    browser\n    browserVersion\n    deviceName\n  }\n}": types.WebdriverSessionInfoDocument,
 };
 
@@ -96,10 +95,6 @@ export function graphql(source: "mutation FinishBuildDocument($input: FinishBuil
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation UpdateDiff($input: UpdateDiffIn!) {\n  result: updateDiff(input: $input) {\n    id\n    status\n    baselineId\n    snapshotId\n  }\n}"): (typeof documents)["mutation UpdateDiff($input: UpdateDiffIn!) {\n  result: updateDiff(input: $input) {\n    id\n    status\n    baselineId\n    snapshotId\n  }\n}"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "query webdriverSession($input: ID!) {\n  result: webdriverSession(sessionId: $input) {\n    blob\n    operatingSystem\n    operatingSystemVersion\n    browser\n    browserVersion\n  }\n}"): (typeof documents)["query webdriverSession($input: ID!) {\n  result: webdriverSession(sessionId: $input) {\n    blob\n    operatingSystem\n    operatingSystemVersion\n    browser\n    browserVersion\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
