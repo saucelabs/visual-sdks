@@ -1,5 +1,13 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.2
+
+### Patch Changes
+
+- c94072c: Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
+- Updated dependencies [c94072c]
+  - @saucelabs/visual@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes
