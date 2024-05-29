@@ -27,7 +27,11 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
     const nightwatchBrowserObject: APIType = this.api as unknown as APIType;
     //
     // Check if the first argument is a Mocha context
-    const isMochaContext = (arg) => arg.title && arg.ctx?._runnable?.title;
+    const isMochaContext = (arg: Runnable | Record<any, any>) =>
+      arg.title &&
+      // TODO: Replace with a non-private member / usage.
+      // @ts-ignore
+      arg.ctx?._runnable?.title;
     const [options, mochaContext] = (
       isMochaContext(optionsArg)
         ? [{}, optionsArg]

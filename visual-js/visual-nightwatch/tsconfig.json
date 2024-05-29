@@ -4,8 +4,6 @@
     "baseUrl": ".",
     "outDir": "./build",
     "rootDir": "./src",
-    "allowJs": true,
-    "noImplicitAny": false,
     "plugins": [
       {
         "name": "typescript-plugin-resolve-plugins",

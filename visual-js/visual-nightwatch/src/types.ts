@@ -6,6 +6,10 @@ import {
 } from '@saucelabs/visual';
 import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-options';
 
+declare global {
+  var uploadedDiffIds: string[];
+}
+
 export type Ignorable = string | RegionIn;
 
 export type SauceVisualAPI = ReturnType<typeof getApi>

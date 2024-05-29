@@ -35,13 +35,13 @@ function clientSideIgnoreRegionsFromElements(
     elementSelectors = [elementSelectors];
   }
 
-  const elementToBoundingRect = (e) => {
-    const clientRect = document.querySelector(e).getBoundingClientRect();
+  const elementToBoundingRect = (e: string) => {
+    const clientRect = document.querySelector(e)?.getBoundingClientRect();
     return {
-      height: clientRect.height,
-      width: clientRect.width,
-      x: clientRect.x,
-      y: clientRect.y,
+      height: Math.round(clientRect?.height ?? 0),
+      width: Math.round(clientRect?.width ?? 0),
+      x: Math.round(clientRect?.x ?? 0),
+      y: Math.round(clientRect?.y ?? 0),
     };
   };
   return elementSelectors.map(elementToBoundingRect);
@@ -55,7 +55,7 @@ function clientSideIgnoreRegionsFromElements(
  * @returns {object} The original object if it is valid.
  * @throws {Error} If the object does not conform to the expected structure for a region.
  */
-function validateIgnoreRegion(obj: object): RegionIn {
+function validateIgnoreRegion(obj: Record<any, unknown>): RegionIn {
   const validKeys = ['width', 'height', 'x', 'y', 'name'];
   const integerKeys = ['width', 'height', 'x', 'y'];
 
@@ -81,7 +81,7 @@ function validateIgnoreRegion(obj: object): RegionIn {
  *                                                            and 'regions'.
  * @throws {Error} If an element in the array is not a valid selector or a valid region object.
  */
-function splitIgnorables(a: Array<string | object>): {
+function splitIgnorables(a: Array<string | RegionIn>): {
   elementSelectors: string[];
   regions: RegionIn[];
 } {

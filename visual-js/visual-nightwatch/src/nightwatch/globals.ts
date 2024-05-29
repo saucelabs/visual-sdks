@@ -1,5 +1,5 @@
 import {
-  BuildMode,
+  BuildMode, DiffStatus,
   displayStatusTable,
   ensureError,
   getApi,
@@ -113,7 +113,7 @@ const globals: NightwatchInternalGlobals & {
       return;
     }
     const { sauceVisualService, webdriver: { host } = {} } = sharedSettings!;
-    let visualBuildResults, visualBuildUrl: string | undefined;
+    let visualBuildResults: Record<`${DiffStatus}`, number>, visualBuildUrl: string | undefined;
     const { failOnFailures } = sauceVisualService;
 
     //
@@ -154,7 +154,7 @@ const globals: NightwatchInternalGlobals & {
         .reduce((r, s) => {
           r[s] = (r[s] ?? 0) + 1;
           return r;
-        }, {});
+        }, {} as Record<DiffStatus, number>);
     } catch (e) {
       const errorMessage = ensureError(e).message ?? 'Unknown error';
       browser.assert.fail(errorMessage);
@@ -165,8 +165,8 @@ const globals: NightwatchInternalGlobals & {
 
     if (failOnFailures) {
       browser.assert.ok(
-        visualBuildResults.FAILED === undefined ||
-          visualBuildResults.FAILED === 0,
+        visualBuildResults.ERRORED === undefined ||
+          visualBuildResults.ERRORED === 0,
         "The Sauce Visual Service didn't fail.\n",
       );
     }
@@ -194,16 +194,21 @@ const globals: NightwatchInternalGlobals & {
       //
       // Logic to get the feature and scenario name
       const reportData = args.report;
+      // Appears to generate data off `NightwatchFormatter` class. Since this class has no type
+      // information there's not much we can do without diving deep in the code. Keeping it as
+      // 'any's for now.
+      // TODO: Refactor into TS when source code can be looked through deeply. See below:
+      //  node_modules/nightwatch/lib/runner/test-runners/cucumber/nightwatch-format.js
       const testCaseId =
         reportData.testCaseStarted[args.envelope.id].testCaseId;
       const pickleId = reportData.testCases.find(
-        (testCase) => testCase.id === testCaseId,
+        (testCase: any) => testCase.id === testCaseId,
       ).pickleId;
       const pickleData = reportData.pickle.find(
-        (pickle) => pickle.id === pickleId,
+        (pickle: any) => pickle.id === pickleId,
       );
       const gherkinDocument = reportData?.gherkinDocument.find(
-        (document) => document.uri === pickleData.uri,
+        (document: any) => document.uri === pickleData.uri,
       );
       const featureData = gherkinDocument.feature;
       const { name: featureName } = featureData;

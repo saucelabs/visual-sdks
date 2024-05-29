@@ -124,7 +124,7 @@ async function retryGetVisualResults(
     return initialStatusSummary;
   }
 
-  const filterDiffsById = (diff) => global.uploadedDiffIds.includes(diff.id);
+  const filterDiffsById = (diff: typeof diffsForTestResult.nodes[number]) => global.uploadedDiffIds.includes(diff.id);
   const statusSummary = diffsForTestResult.nodes
     .filter(filterDiffsById)
     .reduce((statusSummary, diff) => {
