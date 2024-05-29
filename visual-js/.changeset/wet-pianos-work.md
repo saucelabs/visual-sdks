@@ -1,6 +1,6 @@
 ---
-"@saucelabs/visual": minor
-"@saucelabs/nightwatch-sauce-visual-service": minor
+"@saucelabs/visual": patch
+"@saucelabs/nightwatch-sauce-visual-service": patch
 ---
 
 Add Skip support for SAUCE_VISUAL_SKIP
