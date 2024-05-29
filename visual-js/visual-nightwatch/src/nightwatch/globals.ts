@@ -1,16 +1,26 @@
-const {
+import {
+  BuildMode,
   displayStatusTable,
+  ensureError,
   getApi,
+  VisualConfig,
+  isSkipMode,
   ensureError,
   BuildMode,
-  isSkipMode,
-} = require('@saucelabs/visual');
-const { buildUrlMessage, validateSauce } = require('../utils/api');
-const { VISUAL_BUILD_ID_KEY } = require('../utils/constants');
-const SauceVisualCheck = require('./commands/sauceVisualCheck').default;
+} from '@saucelabs/visual';
+import { buildUrlMessage, validateSauce } from '../utils/api';
+import { VISUAL_BUILD_ID_KEY } from '../utils/constants';
+import SauceVisualCheck from './commands/sauceVisualCheck';
+import { NightwatchInternalGlobals } from 'nightwatch/types/globals';
+import type { EventEmitter } from 'events';
+import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-options';
+import { SauceVisualAPI, SauceVisualServiceOptions } from '../types';
 
-let sharedSettings = null;
-let sauceConfig = null;
+type RunnerSettings = NightwatchTestSettingGeneric & {
+  sauceVisualService: SauceVisualServiceOptions;
+};
+let sharedSettings: RunnerSettings | null = null;
+let sauceConfig: VisualConfig | null = null;
 let externalBuildId = false;
 const {
   SAUCE_VISUAL_PROJECT,
@@ -20,30 +30,31 @@ const {
   SAUCE_VISUAL_CUSTOM_ID,
 } = process.env;
 
-const globals = {
+const globals: NightwatchInternalGlobals & {
+  registerEventHandlers(eventHub: EventEmitter): void;
+} = {
   /**
    * Is being called before all tests are run
    */
-  async before(settings) {
+  // @ts-ignore
+  async before(settings: RunnerSettings) {
     console.log('Sauce Visual service started');
     if (isSkipMode()) {
-      console.log(
-        '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured. No Visual assertions will be evaluated.\n',
-      );
-      return;
+        console.log(
+            '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured. No Visual assertions will be evaluated.\n',
+        );
+        return;
     }
-    let buildName,
-      project,
-      branch,
-      defaultBranch,
-      visualBuildId,
-      visualBuildUrl;
+    let buildName: string | undefined,
+      project: string | undefined,
+      branch: string | undefined,
+      defaultBranch: string | undefined,
+      visualBuildId: string | undefined,
+      visualBuildUrl: string | undefined;
     sharedSettings = settings;
 
-    const {
-      sauceVisualService,
-      webdriver: { host, port },
-    } = sharedSettings;
+    const { sauceVisualService, webdriver: { host, port } = {} } =
+      sharedSettings;
 
     //
     // Some error handling
@@ -81,7 +92,7 @@ const globals = {
         throw new Error(errorMessage);
       }
     }
-    console.log(buildUrlMessage(visualBuildUrl));
+    console.log(buildUrlMessage(visualBuildUrl ?? ''));
   },
 
   //
@@ -105,27 +116,26 @@ const globals = {
       browser.assert.fail('No buildId found');
       return;
     }
-    const {
-      sauceVisualService,
-      webdriver: { host },
-    } = sharedSettings;
-    let visualBuildResults, visualBuildUrl;
+    const { sauceVisualService, webdriver: { host } = {} } = sharedSettings!;
+    let visualBuildResults, visualBuildUrl: string | undefined;
     const { failOnFailures } = sauceVisualService;
 
     //
     // Some error handling
     validateSauce(host, sauceVisualService);
 
-    const api = getApi(sauceConfig);
+    const api = getApi(sauceConfig!);
 
     try {
+      let build: Awaited<ReturnType<typeof api.build | typeof api.finishBuild>>;
       if (externalBuildId) {
-        ({ url: visualBuildUrl } = await api.build(visualBuildId));
+        build = await api.build(visualBuildId);
       } else {
-        ({ url: visualBuildUrl } = await api.finishBuild({
+        build = await api.finishBuild({
           uuid: visualBuildId,
-        }));
+        });
       }
+      visualBuildUrl = build?.url;
     } catch (e) {
       const errorMessage = ensureError(e).message ?? 'Unknown error';
       browser.assert.fail(errorMessage);
@@ -208,39 +218,43 @@ const globals = {
   },
 };
 
-const getExternalBuild = async (config) => {
+const getExternalBuild = async (
+  config: VisualConfig,
+): Promise<
+  | Awaited<ReturnType<SauceVisualAPI['build']>>
+  | Awaited<ReturnType<SauceVisualAPI['buildByCustomId']>>
+  | void
+> => {
   const buildCompletedMsg = `Sauce Labs Visual: cannot add more screenshots since the build is already completed`;
 
   if (process.env[VISUAL_BUILD_ID_KEY]) {
-    let build;
     try {
-      build = await getApi(config).build(process.env[VISUAL_BUILD_ID_KEY]);
+      const build = await getApi(config).build(process.env[VISUAL_BUILD_ID_KEY]);
+      if (build?.mode == BuildMode.Completed) {
+        console.error(buildCompletedMsg);
+        throw new Error(buildCompletedMsg);
+      }
+      return build;
     } catch (e) {
       const msg = `Sauce Labs Visual: unable to fetch build for buildId ${process.env[VISUAL_BUILD_ID_KEY]}: ${e}`;
       console.error(msg);
       throw new Error(msg);
     }
-    if (build?.mode == BuildMode.Completed) {
-      console.error(buildCompletedMsg);
-      throw new Error(buildCompletedMsg);
-    }
-    return build;
   }
 
   if (SAUCE_VISUAL_CUSTOM_ID) {
-    let build;
     try {
-      build = await getApi(config).buildByCustomId(SAUCE_VISUAL_CUSTOM_ID);
+      const build = await getApi(config).buildByCustomId(SAUCE_VISUAL_CUSTOM_ID);
+      if (build?.mode == BuildMode.Completed) {
+        console.error(buildCompletedMsg);
+        throw new Error(buildCompletedMsg);
+      }
+      return build;
     } catch (e) {
       const msg = `Sauce Labs Visual: unable to fetch build for customId ${SAUCE_VISUAL_CUSTOM_ID}: ${e}`;
       console.error(msg);
       throw new Error(msg);
     }
-    if (build?.mode == BuildMode.Completed) {
-      console.error(buildCompletedMsg);
-      throw new Error(buildCompletedMsg);
-    }
-    return build;
   }
 };
 

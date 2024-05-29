@@ -1,8 +1,7 @@
 import { DiffStatus, getApi, VisualConfig } from '@saucelabs/visual';
 import chalk from 'chalk';
 import { PKG_VER } from './constants';
-
-type SauceVisualAPI = ReturnType<typeof getApi>
+import { SauceVisualAPI } from '../types';
 
 /**
  * Asynchronously retrieves metadata information for a specific WebDriver session from an API.
@@ -61,11 +60,11 @@ ${url.padStart(100, ' ')}
  *                 service are not properly configured.
  */
 function validateSauce(
-  host: string,
+  host: string | undefined,
   sauceVisualService: object | null | undefined,
 ) {
   if (
-    host.match(/^ondemand\.(?:([a-z0-9-]+)\.)?saucelabs\.(?:com|net)$/) === null
+    (host ?? '').match(/^ondemand\.(?:([a-z0-9-]+)\.)?saucelabs\.(?:com|net)$/) === null
   ) {
     throw new Error('This service only works when using Sauce Labs');
   }

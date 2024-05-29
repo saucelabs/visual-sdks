@@ -1,7 +1,9 @@
-import type { DiffingMethod, FullPageScreenshotOptions, RegionIn } from '@saucelabs/visual';
+import { DiffingMethod, FullPageScreenshotOptions, getApi, RegionIn } from '@saucelabs/visual';
 import type { Elements, EnhancedElementInstance, ScopedElement } from 'nightwatch';
 
 export type Ignorable = string | string[] | RegionIn | ScopedElement | EnhancedElementInstance<any> | Elements;
+
+export type SauceVisualAPI = ReturnType<typeof getApi>
 
 export interface CheckOptions {
     ignore?: Array<Ignorable>;
@@ -15,4 +17,12 @@ export interface CheckOptions {
      * A querySelector compatible selector of an element that we should crop the screenshot to.
      */
     clipSelector?: string;
+}
+
+export interface SauceVisualServiceOptions {
+    buildName?: string;
+    project?: string;
+    branch?: string;
+    defaultBranch?: string;
+    failOnFailures?: boolean;
 }
