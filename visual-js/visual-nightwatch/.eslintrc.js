@@ -2,7 +2,7 @@ module.exports = {
   extends: ['plugin:prettier/recommended'],
   root: true,
   parserOptions: {
-    ecmaVersion: 'latesct',
+    ecmaVersion: 'latest',
     sourceType: 'module',
   },
   parser: '@typescript-eslint/parser',

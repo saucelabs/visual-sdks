@@ -11,17 +11,17 @@ console.log(
 export { DiffStatus, CheckOptions, Ignorable, DiffingMethod };
 
 declare module 'nightwatch' {
-    interface NightwatchAssertions<ReturnType> {
-        sauceVisualResults: (
-            diffStatus: DiffStatus,
-            expected: number,
-        ) => ReturnType;
-    }
+  interface NightwatchAssertions<ReturnType> {
+    sauceVisualResults: (
+      diffStatus: DiffStatus,
+      expected: number,
+    ) => ReturnType;
+  }
 
-    interface NightwatchCustomCommands {
-        sauceVisualCheck(
-            name: string,
-            options?: CheckOptions,
-        ): Awaitable<this, void>;
-    }
+  interface NightwatchCustomCommands {
+    sauceVisualCheck(
+      name: string,
+      options?: CheckOptions,
+    ): Awaitable<this, void>;
+  }
 }

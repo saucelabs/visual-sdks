@@ -37,7 +37,7 @@
     "tsup": "^8.0.2"
   },
   "scripts": {
-    "lint": "eslint \"src/{nightwatch,utils}/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
     "build": "tsc --noEmit && tsup src",
     "test-ignored": "jest --collect-coverage"
   },
