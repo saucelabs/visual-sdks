@@ -25,6 +25,7 @@
     "nightwatch": "^3.3.2"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.6",
     "concurrently": "^8.2.2",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",

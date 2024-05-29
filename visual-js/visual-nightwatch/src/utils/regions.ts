@@ -167,7 +167,7 @@ async function nightwatchIgnoreRegions(
  *                                                     objects, or other arrays.
  * @returns {Array} An array of processed ignore options, with page object references resolved to selectors.
  */
-function parseIgnoreOptions<T = string | RegionIn>(
+function parseIgnoreOptions<T extends string | RegionIn>(
   ignoreOptions: Array<T | Array<T>>,
 ): Array<T> {
   const notNull = (processedRef: T | null): processedRef is T => processedRef !== null;
@@ -192,7 +192,7 @@ function parseIgnoreOptions<T = string | RegionIn>(
  */
 async function toIgnoreRegionIn(
   ignorables: Array<string | RegionIn>,
-): Promise<object[]> {
+): Promise<RegionIn[]> {
   const awaitedIgnorables = await Promise.all(ignorables);
   const { elementSelectors, regions } = splitIgnorables(awaitedIgnorables);
   const regionsFromElements = await nightwatchIgnoreRegions(elementSelectors);

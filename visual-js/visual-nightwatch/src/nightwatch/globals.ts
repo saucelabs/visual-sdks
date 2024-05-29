@@ -13,12 +13,8 @@ import { VISUAL_BUILD_ID_KEY } from '../utils/constants';
 import SauceVisualCheck from './commands/sauceVisualCheck';
 import { NightwatchInternalGlobals } from 'nightwatch/types/globals';
 import type { EventEmitter } from 'events';
-import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-options';
-import { SauceVisualAPI, SauceVisualServiceOptions } from '../types';
+import { RunnerSettings, SauceVisualAPI } from '../types';
 
-type RunnerSettings = NightwatchTestSettingGeneric & {
-  sauceVisualService: SauceVisualServiceOptions;
-};
 let sharedSettings: RunnerSettings | null = null;
 let sauceConfig: VisualConfig | null = null;
 let externalBuildId = false;

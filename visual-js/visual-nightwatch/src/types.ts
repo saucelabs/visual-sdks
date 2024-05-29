@@ -1,7 +1,12 @@
-import { DiffingMethod, FullPageScreenshotOptions, getApi, RegionIn } from '@saucelabs/visual';
-import type { Elements, EnhancedElementInstance, ScopedElement } from 'nightwatch';
+import {
+  DiffingMethod,
+  FullPageScreenshotOptions,
+  getApi,
+  RegionIn,
+} from '@saucelabs/visual';
+import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-options';
 
-export type Ignorable = string | string[] | RegionIn | ScopedElement | EnhancedElementInstance<any> | Elements;
+export type Ignorable = string | RegionIn;
 
 export type SauceVisualAPI = ReturnType<typeof getApi>
 
@@ -19,10 +24,14 @@ export interface CheckOptions {
     clipSelector?: string;
 }
 
-export interface SauceVisualServiceOptions {
+export interface SauceVisualServiceOptions extends Pick<CheckOptions, 'fullPage' | 'captureDom' | 'clipSelector'>{
     buildName?: string;
     project?: string;
     branch?: string;
     defaultBranch?: string;
     failOnFailures?: boolean;
 }
+
+export type RunnerSettings = NightwatchTestSettingGeneric & {
+    sauceVisualService: SauceVisualServiceOptions;
+};

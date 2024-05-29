@@ -1,12 +1,18 @@
-// @ts-nocheck
-import { EventEmitter } from 'events';
-
 import { ensureError, getFullPageConfig } from '@saucelabs/visual';
 import { parseIgnoreOptions, toIgnoreRegionIn } from '../../utils/regions';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
+import { NightwatchAPI } from 'nightwatch';
+import { NightwatchCustomCommandsModel } from 'nightwatch/types/custom-command';
+import { CheckOptions, RunnerSettings } from '../../types';
+import { Runnable } from 'mocha';
 
-export default class SauceVisualCheck extends EventEmitter {
+type APIType = NightwatchAPI & {
+  capabilities: Record<string, any>;
+  options: RunnerSettings;
+};
+
+export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
   // These are used for Cucumber
   static featureName = '';
   static scenarioName = '';
@@ -14,15 +20,19 @@ export default class SauceVisualCheck extends EventEmitter {
   // Mocha context can be passed, but
   //  - not for all runners,
   //  - not always as the third argument
-  async command(name, optionsArg = {}, mochaContextArg = {}) {
+  async command(name: string, optionsArg = {}, mochaContextArg = {}) {
     console.log(`Checking ${name}`);
-    const nightwatchBrowserObject = this.api;
+
+    // @ts-expect-error API doesn't allow us to type the options / extra values from webdriver.
+    const nightwatchBrowserObject: APIType = this.api as unknown as APIType;
     //
     // Check if the first argument is a Mocha context
     const isMochaContext = (arg) => arg.title && arg.ctx?._runnable?.title;
-    const [options, mochaContext] = isMochaContext(optionsArg)
-      ? [{}, optionsArg]
-      : [optionsArg, mochaContextArg];
+    const [options, mochaContext] = (
+      isMochaContext(optionsArg)
+        ? [{}, optionsArg]
+        : [optionsArg, mochaContextArg]
+    ) as [CheckOptions, Runnable];
     //
     // Getting the suite and testname from the current test
     let module = '';
@@ -38,6 +48,8 @@ export default class SauceVisualCheck extends EventEmitter {
     const suiteName =
       mochaContext?.title || SauceVisualCheck.featureName || module || '';
     const testName =
+      // TODO: Replace with a non-private member / usage.
+      // @ts-ignore
       mochaContext?.ctx?._runnable?.title ||
       SauceVisualCheck.scenarioName ||
       defaultTestName ||
@@ -56,7 +68,7 @@ export default class SauceVisualCheck extends EventEmitter {
       capabilities,
       sessionId,
       options: {
-        webdriver: { host, port },
+        webdriver: { host, port } = {},
         sauceVisualService: {
           captureDom: globalCaptureDom = false,
           fullPage,
@@ -74,14 +86,15 @@ export default class SauceVisualCheck extends EventEmitter {
 
     if (!buildId) {
       nightwatchBrowserObject.assert.fail('No buildId found');
-      this.emit('complete', null);
-      return;
+      return null;
     }
 
     const api = getVisualApi(sauceConfig);
     const metaInfo = await getMetaInfo(api, sessionId, jobId);
 
-    let result = null;
+    let result: Awaited<
+      ReturnType<typeof api.createSnapshotFromWebDriver>
+    > | null = null;
 
     try {
       result = await api.createSnapshotFromWebDriver({
@@ -106,6 +119,6 @@ export default class SauceVisualCheck extends EventEmitter {
       nightwatchBrowserObject.assert.fail(errorMessage);
     }
 
-    this.emit('complete', result);
+    return result;
   }
 };
