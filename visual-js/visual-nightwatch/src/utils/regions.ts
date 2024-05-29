@@ -1,12 +1,15 @@
+import { WebElement } from "selenium-webdriver";
+import { RegionIn } from '@saucelabs/visual';
+
+
 /**
  * Processes a given reference to either resolve it to a CSS selector using a page object in Nightwatch
  * or returns the reference as is if it's a direct selector.
  *
- * @param {string} ref - The reference to be processed, which can be a page object reference or a CSS selector.
- * @returns {string} The CSS selector or the original reference if it's already a selector.
+ * @param ref - The reference to be processed, which can be a page object reference or a CSS selector.
+ * @returns The CSS selector or the original reference if it's already a selector.
  */
-
-function processReference(ref) {
+function processReference<T = string | WebElement>(ref: T): T | null {
   if (typeof ref === 'string' && ref.startsWith('@')) {
     console.log(
       `Ignoring page object reference: '${ref}'. Please use the 'pageObjectName.elements.${ref.slice(
@@ -25,7 +28,9 @@ function processReference(ref) {
  * @param {string[]} elementSelectors - An array of CSS selectors.
  * @returns {object[]} An array of objects representing the bounding rectangles of the elements.
  */
-function clientSideIgnoreRegionsFromElements(elementSelectors) {
+function clientSideIgnoreRegionsFromElements(
+  elementSelectors: string[] | string,
+): RegionIn[] {
   if (!Array.isArray(elementSelectors)) {
     elementSelectors = [elementSelectors];
   }
@@ -50,8 +55,7 @@ function clientSideIgnoreRegionsFromElements(elementSelectors) {
  * @returns {object} The original object if it is valid.
  * @throws {Error} If the object does not conform to the expected structure for a region.
  */
-
-function validateIgnoreRegion(obj) {
+function validateIgnoreRegion(obj: object): RegionIn {
   const validKeys = ['width', 'height', 'x', 'y', 'name'];
   const integerKeys = ['width', 'height', 'x', 'y'];
 
@@ -65,7 +69,7 @@ function validateIgnoreRegion(obj) {
     throw new Error(`Invalid type for name, expected string`);
   }
 
-  return obj;
+  return obj as RegionIn;
 }
 
 /**
@@ -77,10 +81,12 @@ function validateIgnoreRegion(obj) {
  *                                                            and 'regions'.
  * @throws {Error} If an element in the array is not a valid selector or a valid region object.
  */
-
-function splitIgnorables(a) {
-  let elementSelectors = [];
-  const regions = [];
+function splitIgnorables(a: Array<string | object>): {
+  elementSelectors: string[];
+  regions: RegionIn[];
+} {
+  let elementSelectors: string[] = [];
+  const regions: RegionIn[] = [];
 
   for (const item of a) {
     if (Array.isArray(item)) {
@@ -97,11 +103,13 @@ function splitIgnorables(a) {
         const region = validateIgnoreRegion(item);
         regions.push(region);
       } catch (e) {
-        throw new Error(
-          `Invalid region object: ${JSON.stringify(item)} - Error: ${
-            e.message
-          }`,
-        );
+        if (e instanceof Error) {
+          throw new Error(
+            `Invalid region object: ${JSON.stringify(item)} - Error: ${
+              e.message
+            }`,
+          );
+        }
       }
     }
   }
@@ -116,7 +124,9 @@ function splitIgnorables(a) {
  *                              of the elements.
  * @throws {Error} If the number of returned regions does not match the number of selectors.
  */
-async function nightwatchIgnoreRegions(elementSelectors) {
+async function nightwatchIgnoreRegions(
+  elementSelectors: string[],
+): Promise<RegionIn[]> {
   // @TODO:
   // For some reason, the following line is not working when you pass
   // an array of selectors. It works fine when you pass a single selector.
@@ -128,7 +138,7 @@ async function nightwatchIgnoreRegions(elementSelectors) {
   //
   // Workaround
   const scriptPromises = elementSelectors.map((selector) =>
-    browser.executeScript(clientSideIgnoreRegionsFromElements, selector),
+    browser.executeScript(clientSideIgnoreRegionsFromElements, [selector]),
   );
   const ignoreRegions = (await Promise.all(scriptPromises)).flatMap(
     (innerArray) => innerArray,
@@ -157,12 +167,13 @@ async function nightwatchIgnoreRegions(elementSelectors) {
  *                                                     objects, or other arrays.
  * @returns {Array} An array of processed ignore options, with page object references resolved to selectors.
  */
-function parseIgnoreOptions(ignoreOptions) {
+function parseIgnoreOptions<T = string | RegionIn>(
+  ignoreOptions: Array<T | Array<T>>,
+): Array<T> {
+  const notNull = (processedRef: T | null): processedRef is T => processedRef !== null;
   return ignoreOptions.flatMap((ref) => {
     if (Array.isArray(ref)) {
-      return ref
-        .map((element) => processReference(element))
-        .filter((processedRef) => processedRef !== null);
+      return ref.map((element) => processReference(element)).filter(notNull);
     }
     const processedRef = processReference(ref);
 
@@ -179,7 +190,9 @@ function parseIgnoreOptions(ignoreOptions) {
  * @returns {Promise<object[]>} A promise that resolves to an array of region objects in a standardized format
  *                              for ignoring in visual tests.
  */
-async function toIgnoreRegionIn(ignorables) {
+async function toIgnoreRegionIn(
+  ignorables: Array<string | RegionIn>,
+): Promise<object[]> {
   const awaitedIgnorables = await Promise.all(ignorables);
   const { elementSelectors, regions } = splitIgnorables(awaitedIgnorables);
   const regionsFromElements = await nightwatchIgnoreRegions(elementSelectors);
@@ -195,7 +208,7 @@ async function toIgnoreRegionIn(ignorables) {
     .filter((r) => 0 < r.width * r.height);
 }
 
-module.exports = {
+export {
   parseIgnoreOptions,
   toIgnoreRegionIn,
 };

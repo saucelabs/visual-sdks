@@ -6,7 +6,6 @@
     "rootDir": "./src",
     "allowJs": true,
     "noImplicitAny": false,
-    "declaration": false,
     "plugins": [
       {
         "name": "typescript-plugin-resolve-plugins",
