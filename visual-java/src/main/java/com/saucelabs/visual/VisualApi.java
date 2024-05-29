@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -356,6 +357,7 @@ public class VisualApi {
             diffingMethod,
             Optional.ofNullable(options.getDiffingOptions()),
             extractIgnoreList(options),
+            extractIgnoreElements(options),
             this.jobId,
             snapshotName,
             this.sessionId,
@@ -479,9 +481,6 @@ public class VisualApi {
       return Collections.emptyList();
     }
 
-    List<WebElement> ignoredElements =
-        options.getIgnoreElements() == null ? Arrays.asList() : options.getIgnoreElements();
-
     List<IgnoreRegion> ignoredRegions =
         options.getIgnoreRegions() == null ? Arrays.asList() : options.getIgnoreRegions();
 
@@ -489,13 +488,6 @@ public class VisualApi {
         options.getIgnoreRegions() == null ? Arrays.asList() : options.getRegions();
 
     List<RegionIn> result = new ArrayList<>();
-    for (int i = 0; i < ignoredElements.size(); i++) {
-      WebElement element = ignoredElements.get(i);
-      if (validate(element) == null) {
-        throw new VisualApiException("options.ignoreElement[" + i + "] does not exist (yet)");
-      }
-      result.add(VisualRegion.ignoreChangesFor(element).toRegionIn());
-    }
     for (int i = 0; i < ignoredRegions.size(); i++) {
       IgnoreRegion ignoreRegion = ignoredRegions.get(i);
       if (validate(ignoreRegion) == null) {
@@ -520,11 +512,34 @@ public class VisualApi {
     return result;
   }
 
+  private List<ElementIn> extractIgnoreElements(CheckOptions options) {
+    List<WebElement> ignoredElements = options != null && options.getIgnoreElements() != null
+            ? options.getIgnoreElements()
+            : Arrays.asList();
+
+    List<ElementIn> result = new ArrayList<>();
+    for (int i = 0; i < ignoredElements.size(); i++) {
+      WebElement element = ignoredElements.get(i);
+      if (validateRemoteElement(element) == null) {
+        throw new VisualApiException("options.ignoreElement[" + i + "] does not exist (yet)");
+      }
+      result.add(VisualRegion.ignoreChangesFor(element).toElementIn());
+    }
+    return result;
+  }
+
   private WebElement validate(WebElement element) {
     if (element == null || !element.isDisplayed() || element.getRect() == null) {
       return null;
     }
     return element;
+  }
+
+  private WebElement validateRemoteElement(WebElement element) {
+    if (element != null && element instanceof RemoteWebElement && element.isDisplayed()) {
+      return element;
+    }
+    return null;
   }
 
   private IgnoreRegion validate(IgnoreRegion region) {
