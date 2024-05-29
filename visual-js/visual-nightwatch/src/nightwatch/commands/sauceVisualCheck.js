@@ -1,14 +1,14 @@
-const EventEmitter = require('events').EventEmitter;
-const {
-  ensureError,
-  getFullPageConfig,
-  isSkipMode,
-} = require('@saucelabs/visual');
-const { parseIgnoreOptions, toIgnoreRegionIn } = require('../../utils/regions');
-const { getMetaInfo, getVisualApi } = require('../../utils/api');
-const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
+// @ts-ignore
+import { EventEmitter } from 'events';
+import { ensureError, getFullPageConfig } from '@saucelabs/visual';
+import { parseIgnoreOptions, toIgnoreRegionIn } from '../../utils/regions';
+import { getMetaInfo, getVisualApi } from '../../utils/api';
+import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
 
-module.exports = class SauceVisualCheck extends EventEmitter {
+/**
+ * @var {import('events').EventEmitterOptions} EventEmitter
+ */
+export default class SauceVisualCheck extends EventEmitter {
   // These are used for Cucumber
   static featureName = '';
   static scenarioName = '';
@@ -17,12 +17,6 @@ module.exports = class SauceVisualCheck extends EventEmitter {
   //  - not for all runners,
   //  - not always as the third argument
   async command(name, optionsArg = {}, mochaContextArg = {}) {
-    if (isSkipMode()) {
-      console.log(`Checking ${name}: SKIPPED`);
-      global.skipped = (global.skipped ?? 0) + 1;
-      this.emit('complete', null);
-      return;
-    }
     console.log(`Checking ${name}`);
     const nightwatchBrowserObject = this.api;
     //

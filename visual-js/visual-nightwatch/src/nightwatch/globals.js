@@ -7,7 +7,7 @@ const {
 } = require('@saucelabs/visual');
 const { buildUrlMessage, validateSauce } = require('../utils/api');
 const { VISUAL_BUILD_ID_KEY } = require('../utils/constants');
-const SauceVisualCheck = require('./commands/sauceVisualCheck');
+const SauceVisualCheck = require('./commands/sauceVisualCheck').default;
 
 let sharedSettings = null;
 let sauceConfig = null;
