@@ -513,12 +513,9 @@ public class VisualApi {
   }
 
   private List<ElementIn> extractIgnoreElements(CheckOptions options) {
-    if (options == null) {
-      return Collections.emptyList();
-    }
-
-    List<WebElement> ignoredElements =
-            options.getIgnoreElements() == null ? Arrays.asList() : options.getIgnoreElements();
+    List<WebElement> ignoredElements = options != null && options.getIgnoreElements() != null
+            ? options.getIgnoreElements()
+            : Arrays.asList();
 
     List<ElementIn> result = new ArrayList<>();
     for (int i = 0; i < ignoredElements.size(); i++) {
@@ -539,10 +536,10 @@ public class VisualApi {
   }
 
   private WebElement validateRemoteElement(WebElement element) {
-    if (element == null || !element.isDisplayed() || !(element instanceof RemoteWebElement)) {
-      return null;
+    if (element != null && element instanceof RemoteWebElement && element.isDisplayed()) {
+      return element;
     }
-    return element;
+    return null;
   }
 
   private IgnoreRegion validate(IgnoreRegion region) {
