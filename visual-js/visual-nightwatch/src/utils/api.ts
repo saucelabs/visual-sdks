@@ -64,7 +64,9 @@ function validateSauce(
   sauceVisualService: object | null | undefined,
 ) {
   if (
-    (host ?? '').match(/^ondemand\.(?:([a-z0-9-]+)\.)?saucelabs\.(?:com|net)$/) === null
+    (host ?? '').match(
+      /^ondemand\.(?:([a-z0-9-]+)\.)?saucelabs\.(?:com|net)$/,
+    ) === null
   ) {
     throw new Error('This service only works when using Sauce Labs');
   }
@@ -124,7 +126,8 @@ async function retryGetVisualResults(
     return initialStatusSummary;
   }
 
-  const filterDiffsById = (diff: typeof diffsForTestResult.nodes[number]) => global.uploadedDiffIds.includes(diff.id);
+  const filterDiffsById = (diff: (typeof diffsForTestResult.nodes)[number]) =>
+    global.uploadedDiffIds.includes(diff.id);
   const statusSummary = diffsForTestResult.nodes
     .filter(filterDiffsById)
     .reduce((statusSummary, diff) => {

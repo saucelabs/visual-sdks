@@ -1,5 +1,6 @@
 import {
-  BuildMode, DiffStatus,
+  BuildMode,
+  DiffStatus,
   displayStatusTable,
   ensureError,
   getApi,
@@ -113,7 +114,8 @@ const globals: NightwatchInternalGlobals & {
       return;
     }
     const { sauceVisualService, webdriver: { host } = {} } = sharedSettings!;
-    let visualBuildResults: Record<`${DiffStatus}`, number>, visualBuildUrl: string | undefined;
+    let visualBuildResults: Record<`${DiffStatus}`, number>,
+      visualBuildUrl: string | undefined;
     const { failOnFailures } = sauceVisualService;
 
     //
@@ -230,7 +232,9 @@ const getExternalBuild = async (
 
   if (process.env[VISUAL_BUILD_ID_KEY]) {
     try {
-      const build = await getApi(config).build(process.env[VISUAL_BUILD_ID_KEY]);
+      const build = await getApi(config).build(
+        process.env[VISUAL_BUILD_ID_KEY],
+      );
       if (build?.mode == BuildMode.Completed) {
         console.error(buildCompletedMsg);
         throw new Error(buildCompletedMsg);
@@ -245,7 +249,9 @@ const getExternalBuild = async (
 
   if (SAUCE_VISUAL_CUSTOM_ID) {
     try {
-      const build = await getApi(config).buildByCustomId(SAUCE_VISUAL_CUSTOM_ID);
+      const build = await getApi(config).buildByCustomId(
+        SAUCE_VISUAL_CUSTOM_ID,
+      );
       if (build?.mode == BuildMode.Completed) {
         console.error(buildCompletedMsg);
         throw new Error(buildCompletedMsg);

@@ -3,7 +3,6 @@ import { getVisualApi, getVisualResults } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
 import { NightwatchAssertion } from 'nightwatch';
 
-
 // See https://nightwatchjs.org/guide/extending-nightwatch/adding-custom-assertions.html#define-a-custom-assertion
 export function assertion(
   this: NightwatchAssertion<number | string | undefined>,
@@ -93,9 +92,7 @@ export function assertion(
     }
 
     const {
-      options: {
-        webdriver: { host, port } = {},
-      },
+      options: { webdriver: { host, port } = {} },
     } = this.api;
     const sauceConfig: VisualConfig = {
       hostname: host,

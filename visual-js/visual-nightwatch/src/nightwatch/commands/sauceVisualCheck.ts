@@ -125,4 +125,4 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
 
     return result;
   }
-};
+}

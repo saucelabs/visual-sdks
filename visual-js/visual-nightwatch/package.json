@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
+    "@typescript-eslint/parser": "^7.11.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
@@ -36,7 +37,7 @@
     "tsup": "^8.0.2"
   },
   "scripts": {
-    "lint": "eslint \"{nightwatch,utils}/**/*.js\"",
+    "lint": "eslint \"src/{nightwatch,utils}/**/*.ts\"",
     "build": "tsc --noEmit && tsup src",
     "test-ignored": "jest --collect-coverage"
   },

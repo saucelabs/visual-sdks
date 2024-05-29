@@ -1,6 +1,5 @@
-import { WebElement } from "selenium-webdriver";
+import { WebElement } from 'selenium-webdriver';
 import { RegionIn } from '@saucelabs/visual';
-
 
 /**
  * Processes a given reference to either resolve it to a CSS selector using a page object in Nightwatch
@@ -170,7 +169,8 @@ async function nightwatchIgnoreRegions(
 function parseIgnoreOptions<T extends string | RegionIn>(
   ignoreOptions: Array<T | Array<T>>,
 ): Array<T> {
-  const notNull = (processedRef: T | null): processedRef is T => processedRef !== null;
+  const notNull = (processedRef: T | null): processedRef is T =>
+    processedRef !== null;
   return ignoreOptions.flatMap((ref) => {
     if (Array.isArray(ref)) {
       return ref.map((element) => processReference(element)).filter(notNull);
@@ -208,7 +208,4 @@ async function toIgnoreRegionIn(
     .filter((r) => 0 < r.width * r.height);
 }
 
-export {
-  parseIgnoreOptions,
-  toIgnoreRegionIn,
-};
+export { parseIgnoreOptions, toIgnoreRegionIn };
