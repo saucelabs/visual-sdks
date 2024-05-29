@@ -2,12 +2,15 @@
   "name": "@saucelabs/nightwatch-sauce-visual-service",
   "description": "Nightwatch service that add visual checks capabilities using Sauce Labs Visual",
   "version": "0.5.2",
-  "main": "index.js",
-  "types": "types/nightwatch.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "license": "MIT",
   "engines": {
     "node": "^16.13 || >=18"
   },
+  "files": [
+    "build"
+  ],
   "typeScriptVersion": "3.8.3",
   "keywords": [
     "seleniumjs",
@@ -37,11 +40,10 @@
     "test-ignored": "jest --collect-coverage"
   },
   "tsup": {
-    "dts": true,
-    "outDir": ".",
+    "dts": "src/index.ts",
+    "outDir": "./build",
     "format": [
-      "cjs",
-      "esm"
+      "cjs"
     ],
     "noExternal": [
       "@apollo/client"

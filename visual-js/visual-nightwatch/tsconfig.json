@@ -2,9 +2,11 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": ".",
+    "outDir": "./build",
     "rootDir": "./src",
     "allowJs": true,
+    "noImplicitAny": false,
+    "declaration": false,
     "plugins": [
       {
         "name": "typescript-plugin-resolve-plugins",

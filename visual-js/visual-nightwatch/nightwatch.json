@@ -1,0 +1,5 @@
+{
+  "custom_commands_path": "build/nightwatch/commands",
+  "custom_assertions_path": "build/nightwatch/assertions",
+  "globals_path": "build/nightwatch/globals.js"
+}

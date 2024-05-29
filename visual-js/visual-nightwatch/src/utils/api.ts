@@ -1,6 +1,8 @@
-const chalk = require('chalk');
-const { DiffStatus, getApi } = require('@saucelabs/visual');
-const { PKG_VER } = require('./constants');
+import { DiffStatus, getApi, VisualConfig } from '@saucelabs/visual';
+import chalk from 'chalk';
+import { PKG_VER } from './constants';
+
+type SauceVisualAPI = ReturnType<typeof getApi>
 
 /**
  * Asynchronously retrieves metadata information for a specific WebDriver session from an API.
@@ -12,7 +14,11 @@ const { PKG_VER } = require('./constants');
  * @returns {Promise<any>} A promise that resolves to the 'blob' part of the metadata retrieved for the session.
  * @throws {Error} If the retrieved metadata does not contain a 'blob' property or if the 'sessionId' is invalid.
  */
-async function getMetaInfo(api, sessionId, jobId) {
+async function getMetaInfo(
+  api: SauceVisualAPI,
+  sessionId: string,
+  jobId: string,
+): Promise<any> {
   const meta = await api.webdriverSessionInfo({ sessionId, jobId });
   if (!meta?.blob) {
     throw new Error('Invalid sessionId');
@@ -25,12 +31,14 @@ async function getMetaInfo(api, sessionId, jobId) {
  * Constructs a formatted message string containing a URL. Optionally includes an additional message
  * indicating the readiness for review based on the options provided.
  *
- * @param {string} url - The URL to be included in the message.
- * @param {object} [options={ reviewReady: false }] - Optional settings, including 'reviewReady' which adds an
- *                                                    additional message if true.
+ * @param url - The URL to be included in the message.
+ * @param options - Optional settings, including 'reviewReady' which adds a message if true.
  * @returns {string} The formatted message string containing the URL and, if specified, an additional review readiness message.
  */
-function buildUrlMessage(url, options = { reviewReady: false }) {
+function buildUrlMessage(
+  url: string,
+  options: { reviewReady: boolean } = { reviewReady: false },
+): string {
   const extraMsg = options.reviewReady
     ? chalk.grey(chalk.italic('You can now review your changes\n'))
     : '';
@@ -47,12 +55,15 @@ ${url.padStart(100, ' ')}
  * Validates the usage of Sauce Labs services by checking the host URL, environment variables for Sauce Labs
  * credentials, and the configuration of the Sauce Visual service.
  *
- * @param {string} host - The host URL to be validated against Sauce Labs usage.
- * @param {object} sauceVisualService - The Sauce Visual service object to check for configuration.
- * @throws {Error} If the host is not part of Sauce Labs, or if the Sauce Labs credentials or the Sauce Visual
+ * @param host - The host URL to be validated against Sauce Labs usage.
+ * @param sauceVisualService - The Sauce Visual service object to check for configuration.
+ * @throws If the host is not part of Sauce Labs, or if the Sauce Labs credentials or the Sauce Visual
  *                 service are not properly configured.
  */
-function validateSauce(host, sauceVisualService) {
+function validateSauce(
+  host: string,
+  sauceVisualService: object | null | undefined,
+) {
   if (
     host.match(/^ondemand\.(?:([a-z0-9-]+)\.)?saucelabs\.(?:com|net)$/) === null
   ) {
@@ -70,18 +81,9 @@ function validateSauce(host, sauceVisualService) {
 
 /**
  * Retrieves the visual API client configured with the given sauce configuration and user agent.
- *
- * @param {{
- *   region?: SauceRegion;
- *   protocol?: string;
- *   hostname?: string;
- *   port?: number;
- *   user?: string;
- *   key?: string;
- * }} sauceConfig - The configuration object for the Sauce Labs API.
- * @returns {Object} Returns the API client object configured for visual testing with Nightwatch.
+ * @returns Returns the API client object configured for visual testing with Nightwatch.
  */
-function getVisualApi(sauceConfig) {
+function getVisualApi(sauceConfig: VisualConfig): SauceVisualAPI {
   return getApi(sauceConfig, {
     userAgent: `visual-nightwatch/${PKG_VER}`,
   });
@@ -90,10 +92,10 @@ function getVisualApi(sauceConfig) {
 /**
  * Creates a promise that resolves after a specified duration.
  *
- * @param {number} ms - The amount of time to delay in milliseconds.
- * @returns {Promise<void>} A promise that resolves after the specified delay.
+ * @param ms - The amount of time to delay in milliseconds.
+ * @returns A promise that resolves after the specified delay.
  */
-function delay(ms) {
+function delay(ms: number): Promise<void> {
   return new Promise(function (resolve) {
     setTimeout(resolve, ms);
   });
@@ -105,11 +107,14 @@ function delay(ms) {
  * aggregates the diffs based on their status, counting each status type.
  *
  * @async
- * @param {object} api - The API object used to fetch diffs for the test result.
- * @param {string} buildId - The identifier of the build for which to retrieve the diffs.
- * @returns {Promise<{ [key: string]: number }>} Resolves to the visual results object once the condition is met or the time limit is reached.
+ * @param api - The API object used to fetch diffs for the test result.
+ * @param buildId - The identifier of the build for which to retrieve the diffs.
+ * @returns Resolves to the visual results object once the condition is met or the time limit is reached.
  */
-async function retryGetVisualResults(api, buildId) {
+async function retryGetVisualResults(
+  api: SauceVisualAPI,
+  buildId: string,
+): Promise<{ [key: string]: number }> {
   const initialStatusSummary = Object.fromEntries(
     Object.values(DiffStatus).map((status) => [status, 0]),
   );
@@ -136,12 +141,16 @@ async function retryGetVisualResults(api, buildId) {
  * 'QUEUED' in the results becomes 0 or the elapsed time exceeds 'maxDuration'.
  *
  * @async
- * @param {object} api - The API object.
- * @param {string} visualBuildId - The visual build identifier for fetching results.
- * @param {number} maxDuration - The maximum duration to keep retrying in milliseconds.
- * @returns {Promise<{ [key: string]: number }>} Resolves to the visual results object once the condition is met or the time limit is reached.
+ * @param api - The API object.
+ * @param visualBuildId - The visual build identifier for fetching results.
+ * @param maxDuration - The maximum duration to keep retrying in milliseconds.
+ * @returns Resolves to the visual results object once the condition is met or the time limit is reached.
  */
-async function getVisualResults(api, visualBuildId, maxDuration) {
+async function getVisualResults(
+  api: SauceVisualAPI,
+  visualBuildId: string,
+  maxDuration: number,
+): Promise<{ [key: string]: number }> {
   let startTime = Date.now();
 
   while (true) {
@@ -154,7 +163,7 @@ async function getVisualResults(api, visualBuildId, maxDuration) {
   }
 }
 
-module.exports = {
+export {
   buildUrlMessage,
   getMetaInfo,
   getVisualApi,

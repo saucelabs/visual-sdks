@@ -1,13 +1,11 @@
-// @ts-ignore
+// @ts-nocheck
 import { EventEmitter } from 'events';
+
 import { ensureError, getFullPageConfig } from '@saucelabs/visual';
 import { parseIgnoreOptions, toIgnoreRegionIn } from '../../utils/regions';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
 
-/**
- * @var {import('events').EventEmitterOptions} EventEmitter
- */
 export default class SauceVisualCheck extends EventEmitter {
   // These are used for Cucumber
   static featureName = '';
