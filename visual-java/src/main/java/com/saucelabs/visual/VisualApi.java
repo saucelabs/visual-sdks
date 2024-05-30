@@ -513,7 +513,8 @@ public class VisualApi {
   }
 
   private List<ElementIn> extractIgnoreElements(CheckOptions options) {
-    List<WebElement> ignoredElements = options != null && options.getIgnoreElements() != null
+    List<WebElement> ignoredElements =
+        options != null && options.getIgnoreElements() != null
             ? options.getIgnoreElements()
             : Arrays.asList();
 
