@@ -1,4 +1,4 @@
-const { DiffStatus } = require('@saucelabs/visual');
+const { DiffStatus, isSkipMode } = require('@saucelabs/visual');
 const { getVisualApi, getVisualResults } = require('../../utils/api');
 const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
 
@@ -58,6 +58,17 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
    * @param {function} callback
    */
   this.command = async function (callback) {
+    // Return only SKIPPED if in skip mode
+    if (isSkipMode()) {
+      callback({
+        // In skip mode no visual actions are taken, so we cannot assert that any number of statuses
+        // have actually been met. Instead, we'll just pass the expected value here to allow the
+        // assertions to 'pass' the test when the only status is SKIPPED.
+        value: expected,
+      });
+      return this;
+    }
+
     const visualBuildId = process.env[VISUAL_BUILD_ID_KEY] || '';
     if (!visualBuildId) {
       // We can't throw an error here otherwise the test will stop and the Visual Build will never be finished
