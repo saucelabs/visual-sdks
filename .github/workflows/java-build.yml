@@ -27,5 +27,7 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
           cache: 'maven'
+      - name: Format / Lint Check
+        run: mvn fmt:check --file pom.xml
       - name: Build with Maven
         run: mvn -B package --file pom.xml
