@@ -521,7 +521,7 @@ public class VisualApi {
     List<ElementIn> result = new ArrayList<>();
     for (int i = 0; i < ignoredElements.size(); i++) {
       WebElement element = ignoredElements.get(i);
-      if (validateRemoteElement(element) == null) {
+      if (validate(element) == null) {
         throw new VisualApiException("options.ignoreElement[" + i + "] does not exist (yet)");
       }
       result.add(VisualRegion.ignoreChangesFor(element).toElementIn());
@@ -530,14 +530,7 @@ public class VisualApi {
   }
 
   private WebElement validate(WebElement element) {
-    if (element == null || !element.isDisplayed() || element.getRect() == null) {
-      return null;
-    }
-    return element;
-  }
-
-  private WebElement validateRemoteElement(WebElement element) {
-    if (element != null && element instanceof RemoteWebElement && element.isDisplayed()) {
+    if (element instanceof RemoteWebElement && element.isDisplayed()) {
       return element;
     }
     return null;
