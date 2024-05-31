@@ -1,5 +1,13 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.5.2
+
+### Patch Changes
+
+- 926996f: Add Skip support for SAUCE_VISUAL_SKIP
+- Updated dependencies [926996f]
+  - @saucelabs/visual@0.6.1
+
 ## 0.5.1
 
 ### Patch Changes

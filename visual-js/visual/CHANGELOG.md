@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.6.1
+
+### Patch Changes
+
+- 926996f: Add Skip support for SAUCE_VISUAL_SKIP
+
 ## 0.6.0
 
 ### Minor Changes
