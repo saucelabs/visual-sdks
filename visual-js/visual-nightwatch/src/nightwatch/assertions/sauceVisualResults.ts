@@ -1,13 +1,19 @@
-const { DiffStatus, isSkipMode } = require('@saucelabs/visual');
-const { getVisualApi, getVisualResults } = require('../../utils/api');
-const { VISUAL_BUILD_ID_KEY } = require('../../utils/constants');
+import { DiffStatus, VisualConfig, isSkipMode } from '@saucelabs/visual';
+import { getVisualApi, getVisualResults } from '../../utils/api';
+import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
+import { NightwatchAssertion } from 'nightwatch';
 
 // See https://nightwatchjs.org/guide/extending-nightwatch/adding-custom-assertions.html#define-a-custom-assertion
-exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
+export function assertion(
+  this: NightwatchAssertion<number | string | undefined>,
+  diffStatus: DiffStatus,
+  expected: number,
+  msg: string,
+) {
   /**
    * Returns the expected value of the assertion which is displayed in the case of a failure
    *
-   * @return {string}
+   * @return
    */
   this.expected = function () {
     return this.negate ? `not equal '${expected}'` : `equals '${expected}'`;
@@ -19,7 +25,7 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
    *
    * The message format also takes into account whether the .not negate has been used
    *
-   * @return {{args: [], message: string}}
+   * @return
    */
   this.formatMessage = function () {
     const message =
@@ -36,8 +42,8 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
 
   /**
    * Given the value, the condition used to evaluate if the assertion is passed
-   * @param {*} value
-   * @return {Boolean}
+   * @param value
+   * @return
    */
   this.evaluate = function (value) {
     return value === expected;
@@ -46,8 +52,8 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
   /**
    * Called with the result object of the command to retrieve the value which is to be evaluated
    *
-   * @param {Object} result
-   * @return {*}
+   * @param  result
+   * @return
    */
   this.value = function (result = {}) {
     return result.value;
@@ -55,7 +61,7 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
 
   /**
    * The command which is to be executed by the assertion runner; Nightwatch api is available as this.api
-   * @param {function} callback
+   * @param callback
    */
   this.command = async function (callback) {
     // Return only SKIPPED if in skip mode
@@ -86,11 +92,9 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
     }
 
     const {
-      options: {
-        webdriver: { host, port },
-      },
+      options: { webdriver: { host, port } = {} },
     } = this.api;
-    const sauceConfig = {
+    const sauceConfig: VisualConfig = {
       hostname: host,
       port: port,
       user: process.env.SAUCE_USERNAME,
@@ -119,4 +123,4 @@ exports.assertion = function sauceVisualResults(diffStatus, expected, msg) {
 
     return this;
   };
-};
+}
