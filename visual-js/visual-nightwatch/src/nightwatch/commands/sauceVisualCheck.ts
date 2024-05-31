@@ -1,4 +1,4 @@
-import { ensureError, getFullPageConfig } from '@saucelabs/visual';
+import { ensureError, getFullPageConfig, isSkipMode } from '@saucelabs/visual';
 import { parseIgnoreOptions, toIgnoreRegionIn } from '../../utils/regions';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
@@ -22,6 +22,11 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
   //  - not always as the third argument
   async command(name: string, optionsArg = {}, mochaContextArg = {}) {
     console.log(`Checking ${name}`);
+    if (isSkipMode()) {
+      console.log(`Checking ${name}: SKIPPED`);
+      global.skipped = (global.skipped ?? 0) + 1;
+      return null;
+    }
 
     // @ts-expect-error API doesn't allow us to type the options / extra values from webdriver.
     const nightwatchBrowserObject: APIType = this.api as unknown as APIType;
