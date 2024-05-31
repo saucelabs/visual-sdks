@@ -1,5 +1,11 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.6.0
+
+### Minor Changes
+
+- 721d546: Refactor to TypeScript
+
 ## 0.5.2
 
 ### Patch Changes
