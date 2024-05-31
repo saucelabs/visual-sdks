@@ -4,10 +4,8 @@ import {
   displayStatusTable,
   ensureError,
   getApi,
-  VisualConfig,
   isSkipMode,
-  ensureError,
-  BuildMode,
+  VisualConfig,
 } from '@saucelabs/visual';
 import { buildUrlMessage, validateSauce } from '../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../utils/constants';
@@ -37,10 +35,10 @@ const globals: NightwatchInternalGlobals & {
   async before(settings: RunnerSettings) {
     console.log('Sauce Visual service started');
     if (isSkipMode()) {
-        console.log(
-            '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured. No Visual assertions will be evaluated.\n',
-        );
-        return;
+      console.log(
+        '⚠︎ SAUCE_VISUAL_SKIP is set. No build will be created. No screenshot will be captured. No Visual assertions will be evaluated.\n',
+      );
+      return;
     }
     let buildName: string | undefined,
       project: string | undefined,

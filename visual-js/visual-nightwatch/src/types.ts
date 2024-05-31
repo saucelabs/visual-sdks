@@ -8,6 +8,7 @@ import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-option
 
 declare global {
   var uploadedDiffIds: string[];
+  var skipped: number;
 }
 
 export type Ignorable = string | RegionIn;
