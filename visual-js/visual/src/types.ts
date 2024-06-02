@@ -1,3 +1,6 @@
+import { RegionIn } from './graphql/__generated__/graphql';
+import { SelectiveRegionOptions } from './selective-region';
+
 export type FullPageScreenshotOptions =
   | boolean
   | {
@@ -31,3 +34,14 @@ export type FullPageScreenshotOptions =
        */
       scrollLimit?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     };
+
+export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;
+
+export interface IgnorableRegion<T, I extends Ignorable<T> = Ignorable<T>> {
+  element: I;
+}
+
+export type IgnorableSelectiveRegion<T> = IgnorableRegion<T> &
+  SelectiveRegionOptions;
+
+export type RegionType<T> = IgnorableRegion<T> | IgnorableSelectiveRegion<T>;

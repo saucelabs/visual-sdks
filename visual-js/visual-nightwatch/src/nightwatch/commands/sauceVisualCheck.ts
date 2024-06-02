@@ -1,18 +1,28 @@
-import { ensureError, getFullPageConfig, isSkipMode } from '@saucelabs/visual';
-import { parseIgnoreOptions, toIgnoreRegionIn } from '../../utils/regions';
+import {
+  ensureError,
+  getFullPageConfig,
+  isSkipMode,
+  parseRegionsForAPI,
+  RegionIn,
+} from '@saucelabs/visual';
+import { parseIgnoreOptions } from '../../utils/regions';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
-import { NightwatchAPI } from 'nightwatch';
-import { NightwatchCustomCommandsModel } from 'nightwatch/types/custom-command';
+import type { NightwatchAPI, NightwatchCustomCommandsModel } from 'nightwatch';
 import { CheckOptions, RunnerSettings } from '../../types';
-import { Runnable } from 'mocha';
+import type { Runnable } from 'mocha';
+import { WebElement } from 'selenium-webdriver';
 
 type APIType = NightwatchAPI & {
   capabilities: Record<string, any>;
   options: RunnerSettings;
 };
 
-export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
+interface SauceVisualCheck {
+  api: APIType;
+}
+
+class SauceVisualCheck implements NightwatchCustomCommandsModel {
   // These are used for Cucumber
   static featureName = '';
   static scenarioName = '';
@@ -28,8 +38,7 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
       return null;
     }
 
-    // @ts-expect-error API doesn't allow us to type the options / extra values from webdriver.
-    const nightwatchBrowserObject: APIType = this.api as unknown as APIType;
+    const nightwatchBrowserObject = this.api;
     //
     // Check if the first argument is a Mocha context
     const isMochaContext = (arg: Runnable | Record<any, any>) =>
@@ -65,12 +74,48 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
       '';
 
     // Ignore magic
-    const ignoreOptions = options.ignore ?? [];
-    const resolvedIgnoreOptions = parseIgnoreOptions(ignoreOptions);
-    const ignoreRegions =
-      ignoreOptions.length > 0
-        ? await toIgnoreRegionIn(resolvedIgnoreOptions)
-        : [];
+    const isElement = (element: unknown): element is WebElement =>
+      element instanceof WebElement;
+    const getElementMeta = async (element: WebElement) => ({
+      id: await element.getId(),
+    });
+
+    type ParsedElementType = WebElement | WebElement[] | RegionIn;
+
+    const ignorables = (
+      await Promise.all(
+        parseIgnoreOptions(options.ignore ?? []).map(async (maybeElement) => {
+          const awaited = await maybeElement;
+          const element: ParsedElementType =
+            typeof awaited === 'string'
+              ? await this.api.element.findAll(awaited)
+              : awaited;
+          return {
+            element,
+          };
+        }),
+      )
+    ).filter(Boolean);
+    const regions = await Promise.all(
+      (options.regions ?? []).map(async (region) => {
+        const { element, ...other } = region;
+        const awaited = await element;
+        return {
+          ...other,
+          element: Array.isArray(awaited)
+            ? await Promise.all(awaited)
+            : awaited,
+        };
+      }),
+    );
+
+    const { ignoreRegions, ignoreElements } =
+      await parseRegionsForAPI<ParsedElementType>(
+        [...ignorables, ...regions],
+        isElement,
+        getElementMeta,
+      );
+
     //
     // Get more info about the session
     const {
@@ -112,6 +157,7 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        ignoreElements,
         sessionMetadata: metaInfo,
         suiteName,
         testName,
@@ -131,3 +177,5 @@ export default class SauceVisualCheck implements NightwatchCustomCommandsModel {
     return result;
   }
 }
+
+export default SauceVisualCheck;

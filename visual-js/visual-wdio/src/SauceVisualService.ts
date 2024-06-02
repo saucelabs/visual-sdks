@@ -1,4 +1,5 @@
 import type { Services } from '@wdio/types';
+import { Element, SevereServiceError } from 'webdriverio';
 import { Testrunner } from '@wdio/types/build/Options';
 import {
   RemoteCapabilities,
@@ -13,19 +14,17 @@ import {
   FullPageScreenshotOptions,
   getApi,
   getFullPageConfig,
-  RegionIn,
+  parseRegionsForAPI,
+  RegionType,
   SauceRegion,
-  SelectiveRegionOptions,
   selectiveRegionOptionsToDiffingOptions,
-  ElementIn,
   VisualApi,
   WebdriverSession,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
-import { SevereServiceError } from 'webdriverio';
 import chalk from 'chalk';
-import { Ignorable, isWdioElement } from './guarded-types.js';
+import { Ignorable } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
 import { Test } from '@wdio/types/build/Frameworks.js';
 
@@ -102,19 +101,10 @@ type CucumberWorld = {
   };
 };
 
-interface IgnorableRegion<T extends Ignorable = Ignorable> {
-  element: T;
-}
-
-type WdioSelectiveRegion<T extends Ignorable = Ignorable> = IgnorableRegion<T> &
-  SelectiveRegionOptions;
-
-type RegionType = IgnorableRegion | WdioSelectiveRegion;
-
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
 
-  regions?: Array<WdioSelectiveRegion>;
+  regions?: Array<RegionType<Element>>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
@@ -146,66 +136,6 @@ function buildUrlMessage(
 ${url.padStart(100, ' ')}
 `;
 }
-
-const getDiffingOptions = (
-  region: RegionType,
-): DiffingOptionsIn | undefined => {
-  const { element: __, ...rest } = region;
-  if ('enableOnly' in rest || 'disableOnly' in rest) {
-    return selectiveRegionOptionsToDiffingOptions(rest);
-  }
-  return undefined;
-};
-
-const parseRegionsForAPI = async (
-  regions: WdioSelectiveRegion[],
-  ignore: Ignorable[],
-): Promise<{
-  ignoreRegions: RegionIn[];
-  ignoreElements: ElementIn[];
-}> => {
-  const allRegions: RegionType[] = [
-    ...(regions ?? []),
-    ...(ignore ?? []).map((element) => ({ element })),
-  ];
-
-  const ignoreElements: ElementIn[] = [];
-  const ignoreRegions: RegionIn[] = [];
-
-  const pushElement = async (region: RegionType) => {
-    const { element: maybePromiseElement, ...other } = region;
-    const element = await maybePromiseElement;
-
-    if (Array.isArray(element)) {
-      for await (const subElement of element) {
-        await pushElement({
-          element: subElement,
-          ...other,
-        });
-      }
-    } else if (isWdioElement(element)) {
-      ignoreElements.push({
-        id: element.elementId,
-        name: element.selector.toString(),
-        diffingOptions: getDiffingOptions(region),
-      });
-    } else {
-      ignoreRegions.push({
-        ...element,
-        diffingOptions: getDiffingOptions(region),
-      });
-    }
-  };
-
-  for await (const region of allRegions) {
-    await pushElement(region);
-  }
-
-  return {
-    ignoreRegions,
-    ignoreElements,
-  };
-};
 
 /**
  * This services are actually 2 instances at runtime. OnPrepare and onComplete are executed by one instance and the before hook by another.
@@ -439,10 +369,22 @@ export default class SauceVisualService implements Services.ServiceInstance {
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
 
-      const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
-        options.regions ?? [],
-        options.ignore ?? [],
-      );
+      const isElement = (element: unknown): element is Element =>
+        element instanceof Element;
+      const getElementMeta = (element: Element) => ({
+        id: element.elementId,
+        name: element.selector.toString(),
+      });
+
+      const { ignoreRegions, ignoreElements } =
+        await parseRegionsForAPI<Element>(
+          [
+            ...(options.regions ?? []),
+            ...(options.ignore?.map((element) => ({ element })) ?? []),
+          ],
+          isElement,
+          getElementMeta,
+        );
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
