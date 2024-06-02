@@ -4,12 +4,12 @@ import {
   isSkipMode,
   parseRegionsForAPI,
   RegionIn,
+  RegionType,
 } from '@saucelabs/visual';
-import { parseIgnoreOptions } from '../../utils/regions';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
 import type { NightwatchAPI, NightwatchCustomCommandsModel } from 'nightwatch';
-import { CheckOptions, RunnerSettings } from '../../types';
+import { CheckOptions, ElementType, RunnerSettings } from '../../types';
 import type { Runnable } from 'mocha';
 import { WebElement } from 'selenium-webdriver';
 
@@ -82,36 +82,37 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
 
     type ParsedElementType = WebElement | WebElement[] | RegionIn;
 
-    const ignorables = (
-      await Promise.all(
-        parseIgnoreOptions(options.ignore ?? []).map(async (maybeElement) => {
-          const awaited = await maybeElement;
-          const element: ParsedElementType =
-            typeof awaited === 'string'
-              ? await this.api.element.findAll(awaited)
-              : awaited;
+    const ignorables: RegionType<ParsedElementType>[] = await Promise.all(
+      (options.ignore ?? [])
+        .map<RegionType<ElementType>>((ignore) => {
+          // Resolve strings into ignorables to merge types into a single awaitable type, and give
+          // it a region shape
+          const element =
+            typeof ignore === 'string'
+              ? this.api.element.findAll(ignore)
+              : ignore;
           return {
             element,
           };
+        })
+        // Add our ignore regions of the same shape
+        .concat(options.regions ?? [])
+        .map(async (region) => {
+          const { element, ...other } = region;
+          const awaited = await element;
+          return {
+            ...other,
+            // If the items are an array, await all of them to get the resolved WebElement promises instead.
+            element: Array.isArray(awaited)
+              ? await Promise.all(awaited)
+              : awaited,
+          } satisfies RegionType<ParsedElementType>;
         }),
-      )
-    ).filter(Boolean);
-    const regions = await Promise.all(
-      (options.regions ?? []).map(async (region) => {
-        const { element, ...other } = region;
-        const awaited = await element;
-        return {
-          ...other,
-          element: Array.isArray(awaited)
-            ? await Promise.all(awaited)
-            : awaited,
-        };
-      }),
     );
 
     const { ignoreRegions, ignoreElements } =
       await parseRegionsForAPI<ParsedElementType>(
-        [...ignorables, ...regions],
+        ignorables,
         isElement,
         getElementMeta,
       );
