@@ -3,7 +3,6 @@ import {
   getFullPageConfig,
   isSkipMode,
   parseRegionsForAPI,
-  RegionIn,
   RegionType,
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
@@ -74,8 +73,6 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
       '';
 
     // Ignore magic
-    const isElement = (element: unknown): element is WebElement =>
-      element instanceof WebElement;
     const getElementMeta = async (element: ElementType) => {
       const awaited = await element;
       return awaited instanceof WebElement
@@ -84,8 +81,6 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
           }
         : null;
     };
-
-    type ParsedElementType = WebElement | WebElement[] | RegionIn;
 
     const ignorables: RegionType<ElementType>[] = (options.ignore ?? [])
       .map<RegionType<ElementType>>((ignore) => {
