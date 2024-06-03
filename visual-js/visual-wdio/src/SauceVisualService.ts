@@ -10,11 +10,14 @@ import {
   DiffingMethod,
   DiffingOptionsIn,
   DiffStatus,
+  ElementIn,
   ensureError,
   FullPageScreenshotOptions,
   getApi,
   getFullPageConfig,
+  isIgnoreRegion,
   parseRegionsForAPI,
+  RegionIn,
   RegionType,
   SauceRegion,
   selectiveRegionOptionsToDiffingOptions,
@@ -369,23 +372,26 @@ export default class SauceVisualService implements Services.ServiceInstance {
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
 
-      const getElementMeta = async (element: unknown) => {
-        return isWdioElement(element)
-          ? {
-              id: element.elementId,
-              name: element.selector.toString(),
-            }
-          : null;
+      const resolveIgnorable = async (
+        element: Ignorable | Promise<RegionIn>,
+      ): Promise<Array<RegionIn | ElementIn>> => {
+        if (isIgnoreRegion(element)) return [element];
+
+        const awaited = await element;
+        if (isIgnoreRegion(awaited)) return [awaited];
+
+        const wdioElements = isWdioElement(awaited) ? [awaited] : awaited;
+
+        return wdioElements.map((e) => ({
+          id: e.elementId,
+          name: e.selector.toString(),
+        }));
       };
 
-      const { ignoreRegions, ignoreElements } =
-        await parseRegionsForAPI<WdioElement>(
-          [
-            ...(options.regions ?? []),
-            ...(options.ignore?.map((element) => ({ element })) ?? []),
-          ],
-          getElementMeta,
-        );
+      const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
+        [...(options.regions ?? []), ...(options.ignore ?? [])],
+        resolveIgnorable,
+      );
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;

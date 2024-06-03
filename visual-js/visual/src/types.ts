@@ -37,13 +37,6 @@ export type FullPageScreenshotOptions =
 
 export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;
 
-export interface IgnorableRegion<T, I extends Ignorable<T> = Ignorable<T>> {
-  element: I;
-}
-
-export type IgnorableSelectiveRegion<T> = IgnorableRegion<T> &
-  SelectiveRegionOptions;
-
-export type RegionType<T> = IgnorableRegion<T> | IgnorableSelectiveRegion<T>;
+export type RegionType<T> = { element: T } & SelectiveRegionOptions;
 
 export type ElementMeta = { id: string; name?: string };

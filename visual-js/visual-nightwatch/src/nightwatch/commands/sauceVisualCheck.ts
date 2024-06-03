@@ -1,14 +1,27 @@
 import {
+  ElementIn,
   ensureError,
   getFullPageConfig,
+  isIgnoreRegion,
   isSkipMode,
   parseRegionsForAPI,
+  RegionIn,
   RegionType,
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
-import { NightwatchAPI, NightwatchCustomCommandsModel } from 'nightwatch';
-import { CheckOptions, ElementType, RunnerSettings } from '../../types';
+import {
+  Elements,
+  NightwatchAPI,
+  NightwatchCustomCommandsModel,
+  ScopedElement,
+} from 'nightwatch';
+import {
+  CheckOptions,
+  ElementType,
+  NightwatchIgnorable,
+  RunnerSettings,
+} from '../../types';
 import type { Runnable } from 'mocha';
 import { WebElement } from 'selenium-webdriver';
 
@@ -73,32 +86,28 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
       '';
 
     // Ignore magic
-    const getElementMeta = async (element: ElementType) => {
-      const awaited = await element;
-      return awaited instanceof WebElement
-        ? {
-            id: await awaited.getId(),
-          }
-        : null;
+    const resolveElement = async (
+      promisedItem: string | ScopedElement | Elements | Promise<RegionIn>,
+    ): Promise<Array<RegionIn | ElementIn>> => {
+      const item = await promisedItem;
+      if (isIgnoreRegion(item)) return [item];
+
+      if (typeof item === 'string') {
+        const elements = await this.api.element.findAll(item);
+        return Promise.all(
+          elements.map(async (element) => ({ id: await element.getId() })),
+        );
+      }
+
+      const elements = Array.isArray(item) ? item : [item];
+
+      return Promise.all(elements.map(async (e) => ({ id: await e.getId() })));
     };
 
-    const ignorables: RegionType<ElementType>[] = (options.ignore ?? [])
-      .map<RegionType<ElementType>>((ignore) => {
-        // Resolve strings into ignorables to merge types into a single awaitable type, and give
-        // it a region shape
-        const element =
-          typeof ignore === 'string'
-            ? this.api.element.findAll(ignore)
-            : ignore;
-        return {
-          element,
-        };
-      })
-      // Add our ignore regions of the same shape
-      .concat(options.regions ?? []);
-
-    const { ignoreRegions, ignoreElements } =
-      await parseRegionsForAPI<ElementType>(ignorables, getElementMeta);
+    const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
+      [...(options.ignore ?? []), ...(options.regions ?? [])],
+      resolveElement,
+    );
 
     //
     // Get more info about the session
