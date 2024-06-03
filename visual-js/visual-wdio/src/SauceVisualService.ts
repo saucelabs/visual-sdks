@@ -1,5 +1,5 @@
 import type { Services } from '@wdio/types';
-import { Element, SevereServiceError } from 'webdriverio';
+import { SevereServiceError } from 'webdriverio';
 import { Testrunner } from '@wdio/types/build/Options';
 import {
   RemoteCapabilities,
@@ -24,7 +24,7 @@ import {
 
 import logger from '@wdio/logger';
 import chalk from 'chalk';
-import { Ignorable } from './guarded-types.js';
+import { Ignorable, isWdioElement, WdioElement } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
 import { Test } from '@wdio/types/build/Frameworks.js';
 
@@ -104,7 +104,7 @@ type CucumberWorld = {
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
 
-  regions?: Array<RegionType<Element>>;
+  regions?: Array<RegionType<WdioElement>>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
@@ -369,20 +369,21 @@ export default class SauceVisualService implements Services.ServiceInstance {
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
 
-      const isElement = (element: unknown): element is Element =>
-        element instanceof Element;
-      const getElementMeta = (element: Element) => ({
-        id: element.elementId,
-        name: element.selector.toString(),
-      });
+      const getElementMeta = async (element: unknown) => {
+        return isWdioElement(element)
+          ? {
+              id: element.elementId,
+              name: element.selector.toString(),
+            }
+          : null;
+      };
 
       const { ignoreRegions, ignoreElements } =
-        await parseRegionsForAPI<Element>(
+        await parseRegionsForAPI<WdioElement>(
           [
             ...(options.regions ?? []),
             ...(options.ignore?.map((element) => ({ element })) ?? []),
           ],
-          isElement,
           getElementMeta,
         );
 

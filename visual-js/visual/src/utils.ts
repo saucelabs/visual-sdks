@@ -3,9 +3,10 @@ import {
   DiffingOptionsIn,
   ElementIn,
   FullPageConfigIn,
+  InputMaybe,
   RegionIn,
 } from './graphql/__generated__/graphql';
-import { RegionType } from './types';
+import { ElementMeta, RegionType } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './selective-region';
 
 export const getFullPageConfig: (
@@ -53,7 +54,7 @@ export const validateIgnoreRegion = makeValidate(ignoreRegionType);
 
 export const getDiffingOptions = <T>(
   region: RegionType<T>,
-): DiffingOptionsIn | undefined => {
+): InputMaybe<DiffingOptionsIn> | undefined => {
   const { element: __, ...rest } = region;
   if ('enableOnly' in rest || 'disableOnly' in rest) {
     return selectiveRegionOptionsToDiffingOptions(rest);
@@ -64,53 +65,48 @@ export const getDiffingOptions = <T>(
 /**
  * Parse ignore elements, regions, and selective regions and format them for use with the API
  * @param ignore
- * @param isElement A callback to check whether an item is a web element, depending on framework implementation.
  * @param getElementMeta A callback to gather the required metadata from an element for use with the API.
  */
 export const parseRegionsForAPI = async <T>(
   ignore: RegionType<T>[],
-  isElement: (element: unknown) => element is T,
-  getElementMeta: (
-    element: T,
-  ) => { id: string; name?: string } | Promise<{ id: string; name?: string }>,
+  getElementMeta: (element: unknown | T) => Promise<ElementMeta | null>,
 ): Promise<{
   ignoreRegions: RegionIn[];
   ignoreElements: ElementIn[];
 }> => {
-  const ignoreElements: ElementIn[] = [];
-  const ignoreRegions: RegionIn[] = [];
+  const ignorables: Array<RegionIn | ElementIn> = (
+    await Promise.all(
+      ignore.map(async (region) => {
+        const { element: awaitable } = region;
+        const element = await awaitable;
+        const subElements = await Promise.all(
+          Array.isArray(element) ? element : [element],
+        );
+        return await Promise.all(
+          subElements.map(async (sub) => {
+            const elementMeta = await getElementMeta(sub);
+            return elementMeta
+              ? {
+                  ...elementMeta,
+                  diffingOptions: getDiffingOptions(region),
+                }
+              : undefined;
+          }),
+        );
+      }),
+    )
+  )
+    .flat()
+    .filter((region): region is Exclude<typeof region, undefined> =>
+      Boolean(region),
+    );
 
-  const pushElement = async (region: RegionType<T>) => {
-    const { element: maybePromiseElement, ...other } = region;
-    const element = await maybePromiseElement;
-
-    if (Array.isArray(element)) {
-      for await (const subElement of element) {
-        await pushElement({
-          element: subElement,
-          ...other,
-        });
-      }
-    } else if (isElement(element)) {
-      // check if this is an element, by letting each framework define what an element is, then
-      // extract the required metadata from an element to pass to the backend.
-      const { id, name } = await getElementMeta(element);
-      ignoreElements.push({
-        id,
-        name,
-        diffingOptions: getDiffingOptions(region),
-      });
-    } else if (isIgnoreRegion(element)) {
-      ignoreRegions.push({
-        ...element,
-        diffingOptions: getDiffingOptions(region),
-      });
-    }
-  };
-
-  for await (const region of ignore) {
-    await pushElement(region);
-  }
+  const ignoreElements = ignorables.filter(
+    (region): region is ElementIn => 'id' in region,
+  );
+  const ignoreRegions = ignorables.filter((region): region is RegionIn =>
+    isIgnoreRegion(region),
+  );
 
   return {
     ignoreRegions,

@@ -45,3 +45,5 @@ export type IgnorableSelectiveRegion<T> = IgnorableRegion<T> &
   SelectiveRegionOptions;
 
 export type RegionType<T> = IgnorableRegion<T> | IgnorableSelectiveRegion<T>;
+
+export type ElementMeta = { id: string; name?: string };
