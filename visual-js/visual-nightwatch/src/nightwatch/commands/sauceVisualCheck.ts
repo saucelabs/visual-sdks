@@ -6,7 +6,6 @@ import {
   isSkipMode,
   parseRegionsForAPI,
   RegionIn,
-  RegionType,
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
@@ -16,14 +15,8 @@ import {
   NightwatchCustomCommandsModel,
   ScopedElement,
 } from 'nightwatch';
-import {
-  CheckOptions,
-  ElementType,
-  NightwatchIgnorable,
-  RunnerSettings,
-} from '../../types';
+import { CheckOptions, RunnerSettings } from '../../types';
 import type { Runnable } from 'mocha';
-import { WebElement } from 'selenium-webdriver';
 
 type APIType = NightwatchAPI & {
   capabilities: Record<string, any>;
