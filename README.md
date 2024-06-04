@@ -6,4 +6,5 @@ This repository contains the SDKs for Sauce Labs Visual.
 
 - [C#](./visual-dotnet)
 - [Java](./visual-java)
+- [JavaScript/TypeScript](./visual-js)
 - [Python](./visual-python)
