@@ -500,7 +500,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
       });
       if (!result) {
-        log.error(`Sauce Labs Visual: unable to create snapshot`)
+        log.error(`Sauce Labs Visual: unable to create snapshot`);
         return;
       }
 
