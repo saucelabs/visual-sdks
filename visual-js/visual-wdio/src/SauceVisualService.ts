@@ -499,6 +499,11 @@ export default class SauceVisualService implements Services.ServiceInstance {
         testName: this.test?.title,
         fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
       });
+      if (!result) {
+        log.error(`Sauce Labs Visual: unable to create snapshot`)
+        return;
+      }
+
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));
       log.info('Check result', result);
     };
