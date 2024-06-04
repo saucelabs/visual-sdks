@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build",
+    "rootDir": "./src",
+    "plugins": [
+      {
+        "name": "typescript-plugin-resolve-plugins",
+        "resolvePlugins": true
+      }
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "../../@types"
+  ]
+}

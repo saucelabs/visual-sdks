@@ -6,7 +6,7 @@
 
   <groupId>com.saucelabs.visual</groupId>
   <artifactId>java-client</artifactId>
-  <version>0.6.0</version>
+  <version>0.8.0</version>
   <name>visual-java-client</name>
   <description>Java library to interact with Sauce Visual</description>
 
@@ -191,6 +191,11 @@
                 </customScalar>
                 <customScalar>
                   <graphQLTypeName>WebdriverSessionBlob</graphQLTypeName>
+                  <javaType>java.lang.String</javaType>
+                  <graphQLScalarTypeStaticField>graphql.scalars.ExtendedScalars.Object</graphQLScalarTypeStaticField>
+                </customScalar>
+                <customScalar>
+                  <graphQLTypeName>WebdriverElementID</graphQLTypeName>
                   <javaType>java.lang.String</javaType>
                   <graphQLScalarTypeStaticField>graphql.scalars.ExtendedScalars.Object</graphQLScalarTypeStaticField>
                 </customScalar>

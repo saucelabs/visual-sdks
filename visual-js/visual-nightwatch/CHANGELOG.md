@@ -1,5 +1,27 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.6.0
+
+### Minor Changes
+
+- 721d546: Refactor to TypeScript
+
+## 0.5.2
+
+### Patch Changes
+
+- 926996f: Add Skip support for SAUCE_VISUAL_SKIP
+- Updated dependencies [926996f]
+  - @saucelabs/visual@0.6.1
+
+## 0.5.1
+
+### Patch Changes
+
+- c94072c: Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
+- Updated dependencies [c94072c]
+  - @saucelabs/visual@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

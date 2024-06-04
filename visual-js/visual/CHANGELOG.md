@@ -1,5 +1,17 @@
 # @saucelabs/visual
 
+## 0.6.1
+
+### Patch Changes
+
+- 926996f: Add Skip support for SAUCE_VISUAL_SKIP
+
+## 0.6.0
+
+### Minor Changes
+
+- c94072c: Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
+
 ## 0.5.0
 
 ### Minor Changes
