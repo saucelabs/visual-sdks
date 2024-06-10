@@ -18,7 +18,12 @@ declare global {
 
 export type ElementType = ScopedElement | Elements;
 
-export type NightwatchIgnorable = ScopedElement | Elements | string | RegionIn;
+export type NightwatchIgnorable =
+  | ScopedElement
+  | Elements
+  | string
+  | string[]
+  | RegionIn;
 
 export type SauceVisualAPI = ReturnType<typeof getApi>;
 

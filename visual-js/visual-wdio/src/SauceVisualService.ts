@@ -1,7 +1,7 @@
 import type { Services } from '@wdio/types';
 import { SevereServiceError } from 'webdriverio';
-import { Testrunner } from '@wdio/types/build/Options';
-import {
+import type { Testrunner } from '@wdio/types/build/Options';
+import type {
   RemoteCapabilities,
   RemoteCapability,
 } from '@wdio/types/build/Capabilities';
@@ -27,9 +27,9 @@ import {
 
 import logger from '@wdio/logger';
 import chalk from 'chalk';
-import { Ignorable, isWdioElement, WdioElement } from './guarded-types.js';
+import { Ignorable, isWdioElement } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
-import { Test } from '@wdio/types/build/Frameworks.js';
+import type { Test } from '@wdio/types/build/Frameworks';
 
 const clientVersion = 'PKG_VERSION';
 
@@ -107,7 +107,7 @@ type CucumberWorld = {
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
 
-  regions?: Array<RegionType<WdioElement>>;
+  regions?: Array<RegionType<Ignorable>>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */

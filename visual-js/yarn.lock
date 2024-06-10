@@ -90,22 +90,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@arktype/schema@npm:0.1.11":
-  version: 0.1.11
-  resolution: "@arktype/schema@npm:0.1.11"
-  dependencies:
-    "@arktype/util": 0.0.47
-  checksum: a10ee094aa8a3cfe930d70a82b39ecb02c63d57594bc7584db9bb6f98a8a81f207161b76e00ae4cf884f169604a9f1e6e8814bffeec6e542737f808a71b7a31e
-  languageName: node
-  linkType: hard
-
-"@arktype/util@npm:0.0.47":
-  version: 0.0.47
-  resolution: "@arktype/util@npm:0.0.47"
-  checksum: 83cdb45682d40dc59f65f6fa03bb9e3822d9884dc68db618301d7a3df195996b52457b7197b195dc6caa704a839c1631873db11e2ecc76b60c6c06e46693d2e8
-  languageName: node
-  linkType: hard
-
 "@asamuzakjp/dom-selector@npm:^2.0.1":
   version: 2.0.2
   resolution: "@asamuzakjp/dom-selector@npm:2.0.2"
@@ -2952,7 +2936,7 @@ __metadata:
     "@types/selenium-webdriver": ^4.1.15
     "@typescript-eslint/eslint-plugin": ^5.59.1
     "@typescript-eslint/parser": ^5.59.1
-    arktype: ^2.0.0-dev.19
+    arktype: ^1.0.29-alpha
     axios: ^1.7.0
     chalk: ^4.0.0
     cli-table3: ^0.6.3
@@ -2991,7 +2975,7 @@ __metadata:
     "@wdio/logger": 8.6.6
     "@wdio/types": 8.10.4
     "@wdio/utils": 8.10.4
-    arktype: ^2.0.0-dev.19
+    arktype: ^1.0.29-alpha
     chalk: ^5.3.0
     eslint: ^8.0.1
     eslint-config-prettier: ^8.3.0
@@ -4652,13 +4636,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arktype@npm:^2.0.0-dev.19":
-  version: 2.0.0-dev.19
-  resolution: "arktype@npm:2.0.0-dev.19"
-  dependencies:
-    "@arktype/schema": 0.1.11
-    "@arktype/util": 0.0.47
-  checksum: e6d188d2f4fd4163573a2c2664b5dfe14d58b044d39e9b34f916e08cf2e495825b0fb8f258cb330b0ebc9d64e3dc51cc5bf058fe67d2de5a87c99e0847446fc6
+"arktype@npm:^1.0.29-alpha":
+  version: 1.0.29-alpha
+  resolution: "arktype@npm:1.0.29-alpha"
+  checksum: d02c446889a73451566f42b59ffa25f8a02f4b1bb4df7c32e9a9cef23cefc04a304da32e0c31e200105555347e3508d6b4a555c67b448b6dc75ab6d69a8cfd68
   languageName: node
   linkType: hard
 

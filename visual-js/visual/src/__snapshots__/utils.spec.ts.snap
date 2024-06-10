@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utils parseRegionsForAPI parsing region type values by the resolver 1`] = `
+{
+  "diffingOptions": {
+    "content": true,
+    "dimensions": false,
+    "position": false,
+    "structure": false,
+    "style": false,
+    "visual": false,
+  },
+  "id": "1",
+}
+`;
+
+exports[`utils parseRegionsForAPI parsing region type values by the resolver 2`] = `
+{
+  "diffingOptions": {
+    "content": false,
+    "dimensions": true,
+    "position": true,
+    "structure": true,
+    "style": true,
+    "visual": true,
+  },
+  "id": "2",
+}
+`;
+
+exports[`utils parseRegionsForAPI parsing region type values by the resolver 3`] = `
+{
+  "diffingOptions": {
+    "content": false,
+    "dimensions": true,
+    "position": true,
+    "structure": true,
+    "style": true,
+    "visual": true,
+  },
+  "height": 100,
+  "width": 100,
+  "x": 1,
+  "y": 1,
+}
+`;

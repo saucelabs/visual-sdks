@@ -31,7 +31,7 @@
     "@wdio/logger": "8.6.6",
     "@wdio/types": "8.10.4",
     "@wdio/utils": "8.10.4",
-    "arktype": "^2.0.0-dev.19",
+    "arktype": "^1.0.29-alpha",
     "chalk": "^5.3.0",
     "exponential-backoff": "^3.1.1",
     "webdriverio": "8.10.5"

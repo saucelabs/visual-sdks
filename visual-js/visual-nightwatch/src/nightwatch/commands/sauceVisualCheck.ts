@@ -9,13 +9,8 @@ import {
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
-import {
-  Elements,
-  NightwatchAPI,
-  NightwatchCustomCommandsModel,
-  ScopedElement,
-} from 'nightwatch';
-import { CheckOptions, RunnerSettings } from '../../types';
+import { NightwatchAPI, NightwatchCustomCommandsModel } from 'nightwatch';
+import { CheckOptions, NightwatchIgnorable, RunnerSettings } from '../../types';
 import type { Runnable } from 'mocha';
 
 type APIType = NightwatchAPI & {
@@ -80,10 +75,9 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
 
     // Ignore magic
     const resolveElement = async (
-      promisedItem: string | ScopedElement | Elements | Promise<RegionIn>,
+      promisedItem: FlatArray<NightwatchIgnorable, 1>,
     ): Promise<Array<RegionIn | ElementIn>> => {
       const item = await promisedItem;
-      if (isIgnoreRegion(item)) return [item];
 
       if (typeof item === 'string') {
         const elements = await this.api.element.findAll(item);
@@ -92,13 +86,15 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         );
       }
 
+      if (isIgnoreRegion(item)) return [item];
+
       const elements = Array.isArray(item) ? item : [item];
 
       return Promise.all(elements.map(async (e) => ({ id: await e.getId() })));
     };
 
     const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
-      [...(options.ignore ?? []), ...(options.regions ?? [])],
+      [...(options.ignore ?? []), ...(options.regions ?? [])].flat(),
       resolveElement,
     );
 

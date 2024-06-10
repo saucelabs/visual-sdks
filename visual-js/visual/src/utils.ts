@@ -7,7 +7,6 @@ import {
   RegionIn,
 } from './graphql/__generated__/graphql';
 import { RegionType } from './types';
-export { RegionType } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './selective-region';
 
 export const getFullPageConfig: (
@@ -60,13 +59,17 @@ const elementIn: Type<ElementIn> = type({
 export const isElementIn = elementIn.allows;
 export const validateElementIn = makeValidate(elementIn);
 
-const regionType: Type<RegionType<unknown>> = type({
-  element: 'unknown',
-  enableOnly: 'any',
-}).or({
-  element: 'unknown',
-  enableOnly: 'any',
-});
+const regionType: Type<RegionType<unknown>> = type([
+  {
+    element: 'unknown',
+    enableOnly: 'any',
+  },
+  '|',
+  {
+    element: 'unknown',
+    disableOnly: 'any',
+  },
+]);
 export const isRegionType = regionType.allows;
 export const validateRegionType = makeValidate(elementIn);
 
@@ -83,7 +86,7 @@ export const getDiffingOptions = <T>(
 /**
  * Parse ignore elements, regions, and selective regions and format them for use with the API
  * @param ignore
- * @param getElementMeta A callback to gather the required metadata from an element for use with the API.
+ * @param resolveItem A callback to resolve an element and gather the required data for the API.
  */
 export const parseRegionsForAPI = async <T>(
   ignore: (T | RegionIn | RegionType<T> | Promise<RegionIn>)[],
@@ -96,12 +99,15 @@ export const parseRegionsForAPI = async <T>(
 }> => {
   const promisedIgnorables: Promise<(RegionIn | ElementIn)[]>[] = ignore.map(
     async (itemOrRegion): Promise<Array<RegionIn | ElementIn>> => {
-      const { item, diffingOptions } = isRegionType(itemOrRegion)
-        ? {
-            item: itemOrRegion.element,
-            diffingOptions: getDiffingOptions(itemOrRegion),
-          }
-        : { item: itemOrRegion, diffingOptions: undefined };
+      const { item, diffingOptions } =
+        // Can only use `in` operators (arktype validation) on objects. Strings passed here
+        // would error.
+        typeof itemOrRegion === 'object' && isRegionType(itemOrRegion)
+          ? {
+              item: itemOrRegion.element,
+              diffingOptions: getDiffingOptions(itemOrRegion),
+            }
+          : { item: itemOrRegion, diffingOptions: undefined };
 
       const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
       return elements.map((element) => ({
