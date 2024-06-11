@@ -70,7 +70,8 @@ const regionType: Type<RegionType<unknown>> = type([
     disableOnly: 'any',
   },
 ]);
-export const isRegionType = regionType.allows;
+export const isRegionType = (item: unknown): item is RegionType<unknown> =>
+  typeof item === 'object' && regionType.allows(item);
 export const validateRegionType = makeValidate(elementIn);
 
 export const getDiffingOptions = <T>(
@@ -99,15 +100,12 @@ export const parseRegionsForAPI = async <T>(
 }> => {
   const promisedIgnorables: Promise<(RegionIn | ElementIn)[]>[] = ignore.map(
     async (itemOrRegion): Promise<Array<RegionIn | ElementIn>> => {
-      const { item, diffingOptions } =
-        // Can only use `in` operators (arktype validation) on objects. Strings passed here
-        // would error.
-        typeof itemOrRegion === 'object' && isRegionType(itemOrRegion)
-          ? {
-              item: itemOrRegion.element,
-              diffingOptions: getDiffingOptions(itemOrRegion),
-            }
-          : { item: itemOrRegion, diffingOptions: undefined };
+      const { item, diffingOptions } = isRegionType(itemOrRegion)
+        ? {
+            item: itemOrRegion.element,
+            diffingOptions: getDiffingOptions(itemOrRegion),
+          }
+        : { item: itemOrRegion, diffingOptions: undefined };
 
       const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
       return elements.map((element) => ({
