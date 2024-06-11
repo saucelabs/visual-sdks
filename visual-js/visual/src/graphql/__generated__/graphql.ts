@@ -2,9 +2,15 @@
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]?: Maybe<T[SubKey]>;
+};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]: Maybe<T[SubKey]>;
+};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -76,7 +82,6 @@ export type Baseline = Node & {
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
 };
-
 
 /**
  * A `Baseline` is what a `Snapshot` is compared to.
@@ -161,7 +166,7 @@ export enum BaselinesOrderBy {
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
   SnapshotIdAsc = 'SNAPSHOT_ID_ASC',
-  SnapshotIdDesc = 'SNAPSHOT_ID_DESC'
+  SnapshotIdDesc = 'SNAPSHOT_ID_DESC',
 }
 
 export enum Browser {
@@ -169,7 +174,7 @@ export enum Browser {
   Edge = 'EDGE',
   Firefox = 'FIREFOX',
   PlaywrightWebkit = 'PLAYWRIGHT_WEBKIT',
-  Safari = 'SAFARI'
+  Safari = 'SAFARI',
 }
 
 /** The result of diffing a `Baseline` with a `Snapshot`. */
@@ -233,18 +238,15 @@ export type Build = Node & {
   url: Scalars['String'];
 };
 
-
 /** The result of diffing a `Baseline` with a `Snapshot`. */
 export type BuildDiffCountArgs = {
   status: DiffStatus;
 };
 
-
 /** The result of diffing a `Baseline` with a `Snapshot`. */
 export type BuildDiffCountExtendedArgs = {
   input: DiffCountIn;
 };
-
 
 /** The result of diffing a `Baseline` with a `Snapshot`. */
 export type BuildDiffsArgs = {
@@ -257,7 +259,6 @@ export type BuildDiffsArgs = {
   offset: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Array<DiffsOrderBy>>;
 };
-
 
 /** The result of diffing a `Baseline` with a `Snapshot`. */
 export type BuildSnapshotsArgs = {
@@ -330,7 +331,7 @@ export type BuildIn = {
 
 export enum BuildMode {
   Completed = 'COMPLETED',
-  Running = 'RUNNING'
+  Running = 'RUNNING',
 }
 
 /**
@@ -357,7 +358,7 @@ export enum BuildStatus {
   Queued = 'QUEUED',
   Rejected = 'REJECTED',
   Running = 'RUNNING',
-  Unapproved = 'UNAPPROVED'
+  Unapproved = 'UNAPPROVED',
 }
 
 /** A filter to be used against BuildStatus fields. All fields are combined with a logical ‘and.’ */
@@ -418,7 +419,7 @@ export enum BuildsOrderBy {
   ProjectAsc = 'PROJECT_ASC',
   ProjectDesc = 'PROJECT_DESC',
   StatusAsc = 'STATUS_ASC',
-  StatusDesc = 'STATUS_DESC'
+  StatusDesc = 'STATUS_DESC',
 }
 
 export type CreateSnapshotFromWebDriverIn = {
@@ -563,7 +564,7 @@ export enum DiffStatus {
   Errored = 'ERRORED',
   Queued = 'QUEUED',
   Rejected = 'REJECTED',
-  Unapproved = 'UNAPPROVED'
+  Unapproved = 'UNAPPROVED',
 }
 
 /** A filter to be used against DiffStatus fields. All fields are combined with a logical ‘and.’ */
@@ -588,7 +589,7 @@ export type DiffStatusFilter = {
 export enum DiffingMethod {
   Balanced = 'BALANCED',
   Experimental = 'EXPERIMENTAL',
-  Simple = 'SIMPLE'
+  Simple = 'SIMPLE',
 }
 
 export type DiffingOption = {
@@ -650,7 +651,7 @@ export enum DiffsOrderBy {
   StatusAsc = 'STATUS_ASC',
   StatusDesc = 'STATUS_DESC',
   StatusIsEqualAsc = 'STATUS_IS_EQUAL_ASC',
-  StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
+  StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC',
 }
 
 export type FinishBuildIn = {
@@ -702,48 +703,40 @@ export type Mutation = {
   updateDiff: Diff;
 };
 
-
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationApproveBuildArgs = {
   input: ApproveBuildIn;
 };
-
 
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateBuildArgs = {
   input: BuildIn;
 };
 
-
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateSnapshotArgs = {
   input: SnapshotIn;
 };
-
 
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateSnapshotFromWebDriverArgs = {
   input: CreateSnapshotFromWebDriverIn;
 };
 
-
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateSnapshotUploadArgs = {
   input: SnapshotUploadIn;
 };
-
 
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateSnapshotUploadFromWebDriverArgs = {
   input: CreateSnapshotUploadFromWebDriverIn;
 };
 
-
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
 };
-
 
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateDiffArgs = {
@@ -761,7 +754,7 @@ export enum OperatingSystem {
   Ios = 'IOS',
   Linux = 'LINUX',
   Macos = 'MACOS',
-  Windows = 'WINDOWS'
+  Windows = 'WINDOWS',
 }
 
 export type Org = {
@@ -771,7 +764,6 @@ export type Org = {
   orgStats: OrgStatsConnection;
   statsGroupedByDay: OrgStatsGroupedByDayConnection;
 };
-
 
 export type OrgOrgStatsArgs = {
   after: InputMaybe<Scalars['Cursor']>;
@@ -783,7 +775,6 @@ export type OrgOrgStatsArgs = {
   offset: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Array<OrgStatsOrderBy>>;
 };
-
 
 export type OrgStatsGroupedByDayArgs = {
   after: InputMaybe<Scalars['Cursor']>;
@@ -873,7 +864,7 @@ export enum OrgStatsOrderBy {
   OrgIdDesc = 'ORG_ID_DESC',
   OrgIdDescHourDesc = 'ORG_ID_DESC__HOUR_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
 }
 
 /** Information about pagination in a connection. */
@@ -948,18 +939,15 @@ export type Query = Node & {
   webdriverSessionInfo: Maybe<WebdriverSession>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryBaselineArgs = {
   id: Scalars['UUID'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryBaselineByNodeIdArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryBaselinesArgs = {
@@ -973,30 +961,25 @@ export type QueryBaselinesArgs = {
   orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryBranchesArgs = {
   filtername: InputMaybe<Scalars['String']>;
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryBuildArgs = {
   id: Scalars['UUID'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryBuildByCustomIdArgs = {
   customId: Scalars['String'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryBuildByNodeIdArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryBuildsArgs = {
@@ -1010,18 +993,15 @@ export type QueryBuildsArgs = {
   orderBy?: InputMaybe<Array<BuildsOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryDiffArgs = {
   id: Scalars['UUID'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryDiffByNodeIdArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryDiffsArgs = {
@@ -1035,12 +1015,10 @@ export type QueryDiffsArgs = {
   orderBy?: InputMaybe<Array<DiffsOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryNodeArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryOrgStatArgs = {
@@ -1048,30 +1026,25 @@ export type QueryOrgStatArgs = {
   orgId: Scalars['UUID'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryOrgStatByNodeIdArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryProjectsArgs = {
   filtername: InputMaybe<Scalars['String']>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QuerySnapshotArgs = {
   id: Scalars['UUID'];
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QuerySnapshotByNodeIdArgs = {
   nodeId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QuerySnapshotsArgs = {
@@ -1085,19 +1058,16 @@ export type QuerySnapshotsArgs = {
   orderBy?: InputMaybe<Array<SnapshotsOrderBy>>;
 };
 
-
 /** The root query type which gives access points into the data universe. */
 export type QueryWebdriverSessionArgs = {
   sessionId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryWebdriverSessionFromArchiveArgs = {
   jobId: Scalars['ID'];
   sessionId: Scalars['ID'];
 };
-
 
 /** The root query type which gives access points into the data universe. */
 export type QueryWebdriverSessionInfoArgs = {
@@ -1187,7 +1157,6 @@ export type Snapshot = Node & {
   width: Maybe<Scalars['Int']>;
 };
 
-
 export type SnapshotBaselinesArgs = {
   after: InputMaybe<Scalars['Cursor']>;
   before: InputMaybe<Scalars['Cursor']>;
@@ -1198,7 +1167,6 @@ export type SnapshotBaselinesArgs = {
   offset: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
-
 
 export type SnapshotDiffsArgs = {
   after: InputMaybe<Scalars['Cursor']>;
@@ -1309,7 +1277,7 @@ export enum SnapshotsOrderBy {
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
 }
 
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
@@ -1351,7 +1319,7 @@ export type UpdateDiffIn = {
 export enum UpdateDiffStatus {
   Approved = 'APPROVED',
   Rejected = 'REJECTED',
-  Unapproved = 'UNAPPROVED'
+  Unapproved = 'UNAPPROVED',
 }
 
 export type User = {
@@ -1385,120 +1353,1501 @@ export type BuildQueryVariables = Exact<{
   input: Scalars['UUID'];
 }>;
 
-
-export type BuildQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, defaultBranch: string | null, mode: BuildMode } | null };
+export type BuildQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    url: string;
+    status: BuildStatus;
+    project: string | null;
+    branch: string | null;
+    defaultBranch: string | null;
+    mode: BuildMode;
+  } | null;
+};
 
 export type BuildByCustomIdQueryVariables = Exact<{
   input: Scalars['String'];
 }>;
 
-
-export type BuildByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, mode: BuildMode } | null };
+export type BuildByCustomIdQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    url: string;
+    status: BuildStatus;
+    project: string | null;
+    branch: string | null;
+    mode: BuildMode;
+  } | null;
+};
 
 export type BuildStatusQueryVariables = Exact<{
   input: Scalars['UUID'];
 }>;
 
-
-export type BuildStatusQuery = { __typename?: 'Query', result: { __typename?: 'Build', url: string, status: BuildStatus, unapprovedCount: number } | null };
+export type BuildStatusQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'Build';
+    url: string;
+    status: BuildStatus;
+    unapprovedCount: number;
+  } | null;
+};
 
 export type BuildWithDiffsQueryVariables = Exact<{
   input: Scalars['UUID'];
 }>;
 
-
-export type BuildWithDiffsQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } | null };
+export type BuildWithDiffsQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    url: string;
+    status: BuildStatus;
+    project: string | null;
+    branch: string | null;
+    diffs: {
+      __typename?: 'DiffsConnection';
+      nodes: Array<{
+        __typename?: 'Diff';
+        id: any;
+        baselineId: any | null;
+        status: DiffStatus;
+        baseline: {
+          __typename?: 'Baseline';
+          snapshot: { __typename?: 'Snapshot'; buildId: any } | null;
+        } | null;
+        diffBounds: { __typename?: 'Rect'; x: number; y: number } | null;
+        diffClusters: Array<{
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        } | null>;
+      }>;
+    };
+  } | null;
+};
 
 export type BuildWithDiffsByCustomIdQueryVariables = Exact<{
   input: Scalars['String'];
 }>;
 
-
-export type BuildWithDiffsByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number } | null> }> } } | null };
+export type BuildWithDiffsByCustomIdQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    url: string;
+    status: BuildStatus;
+    project: string | null;
+    branch: string | null;
+    diffs: {
+      __typename?: 'DiffsConnection';
+      nodes: Array<{
+        __typename?: 'Diff';
+        id: any;
+        baselineId: any | null;
+        status: DiffStatus;
+        baseline: {
+          __typename?: 'Baseline';
+          snapshot: { __typename?: 'Snapshot'; buildId: any } | null;
+        } | null;
+        diffBounds: { __typename?: 'Rect'; x: number; y: number } | null;
+        diffClusters: Array<{
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+        } | null>;
+      }>;
+    };
+  } | null;
+};
 
 export type CreateBuildMutationVariables = Exact<{
   input: BuildIn;
 }>;
 
-
-export type CreateBuildMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: any, name: string, project: string | null, branch: string | null, defaultBranch: string | null, status: BuildStatus, url: string } };
+export type CreateBuildMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    project: string | null;
+    branch: string | null;
+    defaultBranch: string | null;
+    status: BuildStatus;
+    url: string;
+  };
+};
 
 export type CreateSnapshotMutationVariables = Exact<{
   input: SnapshotIn;
 }>;
 
-
-export type CreateSnapshotMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: any, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, snapshotId: any, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
+export type CreateSnapshotMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'Snapshot';
+    id: any;
+    uploadId: string;
+    diffs: {
+      __typename?: 'DiffsConnection';
+      nodes: Array<{
+        __typename?: 'Diff';
+        id: any;
+        baselineId: any | null;
+        snapshotId: any;
+        status: DiffStatus;
+        diffBounds: {
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        } | null;
+        diffClusters: Array<{
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        } | null>;
+      }>;
+    };
+  };
+};
 
 export type CreateSnapshotFromWebDriverMutationVariables = Exact<{
   input: CreateSnapshotFromWebDriverIn;
 }>;
 
-
-export type CreateSnapshotFromWebDriverMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: any, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, snapshotId: any, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
+export type CreateSnapshotFromWebDriverMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'Snapshot';
+    id: any;
+    uploadId: string;
+    diffs: {
+      __typename?: 'DiffsConnection';
+      nodes: Array<{
+        __typename?: 'Diff';
+        id: any;
+        baselineId: any | null;
+        snapshotId: any;
+        status: DiffStatus;
+        diffBounds: {
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        } | null;
+        diffClusters: Array<{
+          __typename?: 'Rect';
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        } | null>;
+      }>;
+    };
+  };
+};
 
 export type CreateSnapshotUploadMutationVariables = Exact<{
   input: SnapshotUploadIn;
 }>;
 
-
-export type CreateSnapshotUploadMutation = { __typename?: 'Mutation', result: { __typename?: 'SnapshotUpload', id: any, buildId: any, imageUploadUrl: string | null, domUploadUrl: string | null } };
+export type CreateSnapshotUploadMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'SnapshotUpload';
+    id: any;
+    buildId: any;
+    imageUploadUrl: string | null;
+    domUploadUrl: string | null;
+  };
+};
 
 export type CreateSnapshotUploadFromWebDriverMutationVariables = Exact<{
   input: CreateSnapshotUploadFromWebDriverIn;
 }>;
 
-
-export type CreateSnapshotUploadFromWebDriverMutation = { __typename?: 'Mutation', result: { __typename?: 'SnapshotUpload', id: any, buildId: any } };
+export type CreateSnapshotUploadFromWebDriverMutation = {
+  __typename?: 'Mutation';
+  result: { __typename?: 'SnapshotUpload'; id: any; buildId: any };
+};
 
 export type DiffsForTestResultQueryVariables = Exact<{
   input: Scalars['UUID'];
 }>;
 
-
-export type DiffsForTestResultQuery = { __typename?: 'Query', result: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, status: DiffStatus }> } | null };
+export type DiffsForTestResultQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'DiffsConnection';
+    nodes: Array<{ __typename?: 'Diff'; id: any; status: DiffStatus }>;
+  } | null;
+};
 
 export type FinishBuildDocumentMutationVariables = Exact<{
   input: FinishBuildIn;
 }>;
 
-
-export type FinishBuildDocumentMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: any, name: string, status: BuildStatus, url: string } };
+export type FinishBuildDocumentMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'Build';
+    id: any;
+    name: string;
+    status: BuildStatus;
+    url: string;
+  };
+};
 
 export type UpdateDiffMutationVariables = Exact<{
   input: UpdateDiffIn;
 }>;
 
-
-export type UpdateDiffMutation = { __typename?: 'Mutation', result: { __typename?: 'Diff', id: any, status: DiffStatus, baselineId: any | null, snapshotId: any } };
-
-export type WebdriverSessionQueryVariables = Exact<{
-  input: Scalars['ID'];
-}>;
-
-
-export type WebdriverSessionQuery = { __typename?: 'Query', result: { __typename?: 'WebdriverSession', blob: string, operatingSystem: OperatingSystem | null, operatingSystemVersion: string | null, browser: Browser | null, browserVersion: string | null } | null };
+export type UpdateDiffMutation = {
+  __typename?: 'Mutation';
+  result: {
+    __typename?: 'Diff';
+    id: any;
+    status: DiffStatus;
+    baselineId: any | null;
+    snapshotId: any;
+  };
+};
 
 export type WebdriverSessionInfoQueryVariables = Exact<{
   input: WebdriverSessionInfoIn;
 }>;
 
+export type WebdriverSessionInfoQuery = {
+  __typename?: 'Query';
+  result: {
+    __typename?: 'WebdriverSession';
+    blob: string;
+    operatingSystem: OperatingSystem | null;
+    operatingSystemVersion: string | null;
+    browser: Browser | null;
+    browserVersion: string | null;
+    deviceName: string | null;
+  } | null;
+};
 
-export type WebdriverSessionInfoQuery = { __typename?: 'Query', result: { __typename?: 'WebdriverSession', blob: string, operatingSystem: OperatingSystem | null, operatingSystemVersion: string | null, browser: Browser | null, browserVersion: string | null, deviceName: string | null } | null };
-
-
-export const BuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"build"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildQuery, BuildQueryVariables>;
-export const BuildByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildByCustomIdQuery, BuildByCustomIdQueryVariables>;
-export const BuildStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","alias":{"kind":"Name","value":"unapprovedCount"},"name":{"kind":"Name","value":"diffCount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"UNAPPROVED"}}]}]}}]}}]} as unknown as DocumentNode<BuildStatusQuery, BuildStatusQueryVariables>;
-export const BuildWithDiffsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsQuery, BuildWithDiffsQueryVariables>;
-export const BuildWithDiffsByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffsByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsByCustomIdQuery, BuildWithDiffsByCustomIdQueryVariables>;
-export const CreateBuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createBuild"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BuildIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<CreateBuildMutation, CreateBuildMutationVariables>;
-export const CreateSnapshotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SnapshotIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"uploadId"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotMutation, CreateSnapshotMutationVariables>;
-export const CreateSnapshotFromWebDriverDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshotFromWebDriver"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSnapshotFromWebDriverIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshotFromWebDriver"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"uploadId"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotFromWebDriverMutation, CreateSnapshotFromWebDriverMutationVariables>;
-export const CreateSnapshotUploadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshotUpload"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SnapshotUploadIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshotUpload"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"buildId"}},{"kind":"Field","name":{"kind":"Name","value":"imageUploadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"domUploadUrl"}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotUploadMutation, CreateSnapshotUploadMutationVariables>;
-export const CreateSnapshotUploadFromWebDriverDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshotUploadFromWebDriver"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSnapshotUploadFromWebDriverIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshotUploadFromWebDriver"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotUploadFromWebDriverMutation, CreateSnapshotUploadFromWebDriverMutationVariables>;
-export const DiffsForTestResultDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"diffsForTestResult"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"diffs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"buildId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]}}]} as unknown as DocumentNode<DiffsForTestResultQuery, DiffsForTestResultQueryVariables>;
-export const FinishBuildDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"FinishBuildDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FinishBuildIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"finishBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<FinishBuildDocumentMutation, FinishBuildDocumentMutationVariables>;
-export const UpdateDiffDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDiff"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateDiffIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"updateDiff"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotId"}}]}}]}}]} as unknown as DocumentNode<UpdateDiffMutation, UpdateDiffMutationVariables>;
-export const WebdriverSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"webdriverSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"webdriverSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"blob"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystem"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystemVersion"}},{"kind":"Field","name":{"kind":"Name","value":"browser"}},{"kind":"Field","name":{"kind":"Name","value":"browserVersion"}}]}}]}}]} as unknown as DocumentNode<WebdriverSessionQuery, WebdriverSessionQueryVariables>;
-export const WebdriverSessionInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"webdriverSessionInfo"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WebdriverSessionInfoIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"webdriverSessionInfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"blob"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystem"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystemVersion"}},{"kind":"Field","name":{"kind":"Name","value":"browser"}},{"kind":"Field","name":{"kind":"Name","value":"browserVersion"}},{"kind":"Field","name":{"kind":"Name","value":"deviceName"}}]}}]}}]} as unknown as DocumentNode<WebdriverSessionInfoQuery, WebdriverSessionInfoQueryVariables>;
+export const BuildDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'build' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UUID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'build' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'project' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'branch' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'defaultBranch' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<BuildQuery, BuildQueryVariables>;
+export const BuildByCustomIdDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'buildByCustomId' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'String' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'buildByCustomId' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'customId' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'project' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'branch' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  BuildByCustomIdQuery,
+  BuildByCustomIdQueryVariables
+>;
+export const BuildStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'buildStatus' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UUID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'build' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                {
+                  kind: 'Field',
+                  alias: { kind: 'Name', value: 'unapprovedCount' },
+                  name: { kind: 'Name', value: 'diffCount' },
+                  arguments: [
+                    {
+                      kind: 'Argument',
+                      name: { kind: 'Name', value: 'status' },
+                      value: { kind: 'EnumValue', value: 'UNAPPROVED' },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<BuildStatusQuery, BuildStatusQueryVariables>;
+export const BuildWithDiffsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'buildWithDiffs' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UUID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'build' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'project' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'branch' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'diffs' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'nodes' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'id' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baselineId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'status' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baseline' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'snapshot' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: {
+                                            kind: 'Name',
+                                            value: 'buildId',
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffBounds' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffClusters' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'width' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'height' },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<BuildWithDiffsQuery, BuildWithDiffsQueryVariables>;
+export const BuildWithDiffsByCustomIdDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'buildWithDiffsByCustomId' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'String' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'buildByCustomId' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'customId' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'project' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'branch' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'diffs' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'nodes' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'id' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baselineId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'status' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baseline' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'snapshot' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: {
+                                            kind: 'Name',
+                                            value: 'buildId',
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffBounds' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffClusters' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  BuildWithDiffsByCustomIdQuery,
+  BuildWithDiffsByCustomIdQueryVariables
+>;
+export const CreateBuildDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'createBuild' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'BuildIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'createBuild' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'project' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'branch' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'defaultBranch' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<CreateBuildMutation, CreateBuildMutationVariables>;
+export const CreateSnapshotDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'createSnapshot' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'SnapshotIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'createSnapshot' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'uploadId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'diffs' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'nodes' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'id' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baselineId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'snapshotId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'status' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffBounds' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'width' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'height' },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffClusters' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'width' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'height' },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateSnapshotMutation,
+  CreateSnapshotMutationVariables
+>;
+export const CreateSnapshotFromWebDriverDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'createSnapshotFromWebDriver' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'CreateSnapshotFromWebDriverIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'createSnapshotFromWebDriver' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'uploadId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'diffs' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'nodes' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'id' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'baselineId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'snapshotId' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'status' },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffBounds' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'width' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'height' },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'diffClusters' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'x' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'y' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'width' },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'height' },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateSnapshotFromWebDriverMutation,
+  CreateSnapshotFromWebDriverMutationVariables
+>;
+export const CreateSnapshotUploadDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'createSnapshotUpload' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'SnapshotUploadIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'createSnapshotUpload' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'buildId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'imageUploadUrl' },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'domUploadUrl' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateSnapshotUploadMutation,
+  CreateSnapshotUploadMutationVariables
+>;
+export const CreateSnapshotUploadFromWebDriverDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'createSnapshotUploadFromWebDriver' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'CreateSnapshotUploadFromWebDriverIn',
+              },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'createSnapshotUploadFromWebDriver' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'buildId' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  CreateSnapshotUploadFromWebDriverMutation,
+  CreateSnapshotUploadFromWebDriverMutationVariables
+>;
+export const DiffsForTestResultDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'diffsForTestResult' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UUID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'diffs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'condition' },
+                value: {
+                  kind: 'ObjectValue',
+                  fields: [
+                    {
+                      kind: 'ObjectField',
+                      name: { kind: 'Name', value: 'buildId' },
+                      value: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'nodes' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'status' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  DiffsForTestResultQuery,
+  DiffsForTestResultQueryVariables
+>;
+export const FinishBuildDocumentDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'FinishBuildDocument' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'FinishBuildIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'finishBuild' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  FinishBuildDocumentMutation,
+  FinishBuildDocumentMutationVariables
+>;
+export const UpdateDiffDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdateDiff' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'UpdateDiffIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'updateDiff' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'baselineId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'snapshotId' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<UpdateDiffMutation, UpdateDiffMutationVariables>;
+export const WebdriverSessionInfoDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'webdriverSessionInfo' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: {
+            kind: 'Variable',
+            name: { kind: 'Name', value: 'input' },
+          },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'WebdriverSessionInfoIn' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            alias: { kind: 'Name', value: 'result' },
+            name: { kind: 'Name', value: 'webdriverSessionInfo' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'Variable',
+                  name: { kind: 'Name', value: 'input' },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'blob' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'operatingSystem' },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'operatingSystemVersion' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'browser' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'browserVersion' },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'deviceName' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  WebdriverSessionInfoQuery,
+  WebdriverSessionInfoQueryVariables
+>;

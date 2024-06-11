@@ -1,5 +1,13 @@
 # @saucelabs/visual-storybook
 
+## 0.4.2
+
+### Patch Changes
+
+- c94072c: Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
+- Updated dependencies [c94072c]
+  - @saucelabs/visual@0.6.0
+
 ## 0.4.1
 
 ### Patch Changes

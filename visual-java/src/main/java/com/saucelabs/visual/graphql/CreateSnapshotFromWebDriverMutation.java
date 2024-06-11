@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
+import com.saucelabs.visual.graphql.type.ElementIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import java.util.Collections;
@@ -23,6 +24,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     public final DiffingMethod diffingMethod;
 
     public final List<RegionIn> ignoreRegions;
+
+    public final List<ElementIn> ignoreElements;
 
     public final String jobId;
 
@@ -49,6 +52,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
         DiffingMethod diffingMethod,
         Optional<DiffingOptionsIn> diffingOptions,
         List<RegionIn> ignoreRegions,
+        List<ElementIn> ignoreElements,
         String jobId,
         String name,
         String sessionId,
@@ -57,6 +61,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
       this.diffingMethod = diffingMethod;
       this.diffingOptions = diffingOptions;
       this.ignoreRegions = ignoreRegions;
+      this.ignoreElements = ignoreElements;
       this.jobId = jobId;
       this.name = name;
       this.sessionId = sessionId;

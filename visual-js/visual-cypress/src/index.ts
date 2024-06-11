@@ -17,6 +17,8 @@ import {
   DiffingMethod,
   VisualApiRegion,
   BuildMode,
+  DiffingOptionsIn,
+  selectiveRegionOptionsToDiffingOptions,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -99,6 +101,7 @@ class CypressSauceVisual {
   // A build can be managed externally (e.g by CLI) or by the Sauce Visual Cypress plugin
   private isBuildExternal = false;
   private diffingMethod: DiffingMethod | undefined;
+  private diffingOptions: DiffingOptionsIn | undefined;
   private screenshotsMetadata: { [key: string]: ScreenshotMetadata } = {};
 
   private api: VisualApi;
@@ -126,6 +129,7 @@ class CypressSauceVisual {
       },
     );
     this.diffingMethod = config.saucelabs?.diffingMethod;
+    this.diffingOptions = config.saucelabs?.diffingOptions;
     this.domCaptureScript = this.api.domCaptureScript();
   }
 
@@ -351,35 +355,6 @@ Sauce Labs Visual: Unable to create new build.
         return;
       }
 
-      metadata.ignoredRegions ??= [];
-
-      // Check if there is a need to compute a ratio. Otherwise just use 1.
-      const needRatioComputation = metadata.ignoredRegions
-        .map((region) => region.applyScalingRatio)
-        .reduce((prev, next) => prev || next, false);
-
-      const scalingRatio = needRatioComputation
-        ? this.computeScalingRatio(metadata.viewport, {
-            height: screenshot.height,
-            width: screenshot.width,
-          })
-        : 1;
-
-      const ignoreRegions = metadata.ignoredRegions.map((region) => {
-        const ratio = region.applyScalingRatio ? scalingRatio : 1;
-        return {
-          x: Math.floor(region.x * ratio),
-          y: Math.floor(region.y * ratio),
-          height: Math.ceil(
-            (region.y + region.height) * ratio - Math.floor(region.y * ratio),
-          ),
-          width: Math.ceil(
-            (region.x + region.width) * ratio - Math.floor(region.x * ratio),
-          ),
-          name: '',
-        };
-      });
-
       // Publish image
       try {
         const screenshotId = await this.api.uploadSnapshot({
@@ -398,7 +373,10 @@ Sauce Labs Visual: Unable to create new build.
           operatingSystemVersion: osInfo.version,
           suiteName: metadata.suiteName,
           testName: metadata.testName,
-          ignoreRegions,
+          ignoreRegions: metadata.regions.map((r) => ({
+            ...r.element,
+            diffingOptions: selectiveRegionOptionsToDiffingOptions(r),
+          })),
           device: metadata.viewport
             ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
             : 'Desktop',

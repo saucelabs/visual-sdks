@@ -1,10 +1,12 @@
 package com.saucelabs.visual.model;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
+import com.saucelabs.visual.graphql.type.ElementIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import java.util.EnumSet;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 public class VisualRegion {
   private DiffingOptionsIn options;
@@ -164,5 +166,15 @@ public class VisualRegion {
     }
 
     return r;
+  }
+
+  public ElementIn toElementIn() {
+    ElementIn e = new ElementIn();
+
+    e.setName(this.name);
+    e.setDiffingOptions(this.options);
+    e.setId(((RemoteWebElement) this.element).getId());
+
+    return e;
   }
 }

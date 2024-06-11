@@ -1,4 +1,9 @@
-import { DiffingMethod, SauceRegion } from '@saucelabs/visual';
+import {
+  DiffingMethod,
+  DiffingOptionsIn,
+  SauceRegion,
+  SelectiveRegionOptions,
+} from '@saucelabs/visual';
 
 export interface SauceConfig {
   buildName: string;
@@ -9,6 +14,7 @@ export interface SauceConfig {
   user?: string;
   key?: string;
   diffingMethod?: DiffingMethod;
+  diffingOptions?: DiffingOptionsIn;
 }
 
 export interface HasSauceConfig {
@@ -19,24 +25,27 @@ export type SauceVisualOptions = {
   region: SauceRegion;
 };
 
-export type VisualRegion = {
+export type PlainRegion = {
   x: number;
   y: number;
   width: number;
   height: number;
 };
 
-export type VisualRegionWithRatio = {
-  applyScalingRatio?: boolean;
-} & VisualRegion;
+export type VisualRegion<
+  R extends Omit<object, 'element'> = PlainRegion | Cypress.Chainable,
+> = { element: R } & SelectiveRegionOptions;
+
+export type ResolvedVisualRegion = VisualRegion<PlainRegion>;
 
 export type ScreenshotMetadata = {
   id: string;
   name: string;
   testName: string;
   suiteName: string;
-  ignoredRegions?: VisualRegionWithRatio[];
+  regions: ResolvedVisualRegion[];
   diffingMethod?: DiffingMethod;
+  diffingOptions?: DiffingOptionsIn;
   viewport: SauceVisualViewport | undefined;
   devicePixelRatio: number;
   dom?: string;
@@ -51,11 +60,19 @@ export type VisualCheckOptions = {
   /**
    * An array of ignore regions or Cypress elements to ignore.
    */
-  ignoredRegions?: (VisualRegion | Cypress.Chainable)[];
+  ignoredRegions?: (PlainRegion | Cypress.Chainable)[];
   /**
    * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Simple.
    */
   diffingMethod?: DiffingMethod;
+  /**
+   * The diffing options that should be applied by default.
+   */
+  diffingOptions?: DiffingOptionsIn;
+  /**
+   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Simple.
+   */
+  regions?: VisualRegion[];
   /**
    * Enable DOM capture for DOM Inspection and insights.
    */

@@ -1,5 +1,25 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.2
+
+### Patch Changes
+
+- c94072c: Remove deprecated API calls webwebdriverSession and webdriverSessionFromArchive
+- Updated dependencies [c94072c]
+  - @saucelabs/visual@0.6.0
+
+## 0.5.1
+
+### Patch Changes
+
+- bc6d89d: Let backend handle device pixel ratio in cypress
+
+## 0.5.0
+
+### Minor Changes
+
+- f7c7163: Add support for Selective Region in Cypress
+
 ## 0.4.1
 
 ### Patch Changes
