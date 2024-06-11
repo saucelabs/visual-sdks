@@ -20,7 +20,6 @@
     "login-test": "wdio run ./configs/wdio.saucelabs.desktop.conf.ts --spec ./specs/login.spec.ts"
   },
   "dependencies": {
-    "@saucelabs/wdio-sauce-visual-service": "^0.3.455",
     "readline-sync": "^1.4.10",
     "update-dotenv": "^1.1.1"
   }
