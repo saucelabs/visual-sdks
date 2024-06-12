@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import 'nightwatch';
-import { DiffingMethod, DiffStatus } from '@saucelabs/visual';
+import { DiffingMethod, DiffStatus, Ignorable } from '@saucelabs/visual';
 import { Awaitable } from 'nightwatch';
-import { CheckOptions, Ignorable } from './types';
+import { CheckOptions } from './types';
 
 console.log(
   `\n${chalk.yellow('Loaded @saucelabs/nightwatch-sauce-visual-service')}\n`,

@@ -1,7 +1,10 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
 
+const username = process.env.SAUCE_USERNAME;
+const accessKey = process.env.SAUCE_ACCESS_KEY;
+
 const codegenConfig: CodegenConfig = {
-  schema: 'schema/__generated__/schema.graphql',
+  schema: process.env.VISUAL_API_FOR_CODEGEN || `https://${username}:${accessKey}@api.us-west-1.saucelabs.com/v1/visual/graphql`,
   documents: [
     'src/**/*.ts',
     'src/**/*.graphql',
@@ -20,7 +23,8 @@ const codegenConfig: CodegenConfig = {
       defaultValue: true,
     },
     scalars: {
-      WebdriverSessionBlob: "string"
+      WebdriverSessionBlob: "string",
+      WebdriverElementID: "string",
     }
   },
   generates: {

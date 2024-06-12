@@ -3,20 +3,33 @@ import {
   FullPageScreenshotOptions,
   getApi,
   RegionIn,
+  RegionType,
 } from '@saucelabs/visual';
-import { NightwatchTestSettingGeneric } from 'nightwatch/types/nightwatch-options';
+import type {
+  Elements,
+  NightwatchTestSettingGeneric,
+  ScopedElement,
+} from 'nightwatch';
 
 declare global {
   var uploadedDiffIds: string[];
   var skipped: number;
 }
 
-export type Ignorable = string | RegionIn;
+export type ElementType = ScopedElement | Elements;
+
+export type NightwatchIgnorable =
+  | ScopedElement
+  | Elements
+  | string
+  | string[]
+  | RegionIn;
 
 export type SauceVisualAPI = ReturnType<typeof getApi>;
 
 export interface CheckOptions {
-  ignore?: Array<Ignorable>;
+  ignore?: NightwatchIgnorable[];
+  regions?: RegionType<ElementType>[];
   diffingMethod?: DiffingMethod;
   fullPage?: FullPageScreenshotOptions;
   /**

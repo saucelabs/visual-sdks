@@ -24,6 +24,7 @@ export type Scalars = {
   JSON: any;
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
   UUID: any;
+  WebdriverElementID: string;
   WebdriverSessionBlob: string;
 };
 
@@ -426,6 +427,8 @@ export type CreateSnapshotFromWebDriverIn = {
   buildId?: InputMaybe<Scalars['ID']>;
   buildUuid?: InputMaybe<Scalars['UUID']>;
   captureDom?: InputMaybe<Scalars['Boolean']>;
+  /** The selenium ID of an element we should clip the screen to. */
+  clipElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /** A querySelector compatible selector of an element that we should crop the screenshot to. */
   clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
@@ -435,6 +438,7 @@ export type CreateSnapshotFromWebDriverIn = {
    * Limitation: Currently, this feature is supported only on desktop browsers.
    */
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
+  ignoreElements?: InputMaybe<Array<ElementIn>>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   /** This will be mandatory in the future. */
   jobId?: InputMaybe<Scalars['String']>;
@@ -653,6 +657,13 @@ export enum DiffsOrderBy {
   StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
 }
 
+export type ElementIn = {
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
+  /** The server-assigned ID of an element from webdriver. */
+  id: Scalars['WebdriverElementID'];
+  name?: InputMaybe<Scalars['String']>;
+};
+
 export type FinishBuildIn = {
   /** @deprecated Use `uuid`. This field will be removed in a future update. */
   id?: InputMaybe<Scalars['ID']>;
@@ -671,6 +682,8 @@ export type FullPageConfigIn = {
   disableCSSAnimation?: InputMaybe<Scalars['Boolean']>;
   /** Hide elements on the page after first scroll by css selectors. */
   hideAfterFirstScroll?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  /** Hide elements on the page after first scroll using their server-assigned ID from webdriver. */
+  hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
   /** Hide all scrollbars in the app. */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
   /**
@@ -941,10 +954,6 @@ export type Query = Node & {
   snapshotByNodeId: Maybe<Snapshot>;
   /** Reads and enables pagination through a set of `Snapshot`. */
   snapshots: Maybe<SnapshotsConnection>;
-  /** @deprecated Use webdriverSessionInfo. This will be removed by 2024-02-11. */
-  webdriverSession: Maybe<WebdriverSession>;
-  /** @deprecated Use webdriverSessionInfo. This will be removed by 2024-02-11. */
-  webdriverSessionFromArchive: Maybe<WebdriverSession>;
   webdriverSessionInfo: Maybe<WebdriverSession>;
 };
 
@@ -1087,19 +1096,6 @@ export type QuerySnapshotsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
-export type QueryWebdriverSessionArgs = {
-  sessionId: Scalars['ID'];
-};
-
-
-/** The root query type which gives access points into the data universe. */
-export type QueryWebdriverSessionFromArchiveArgs = {
-  jobId: Scalars['ID'];
-  sessionId: Scalars['ID'];
-};
-
-
-/** The root query type which gives access points into the data universe. */
 export type QueryWebdriverSessionInfoArgs = {
   input: WebdriverSessionInfoIn;
 };
@@ -1154,6 +1150,8 @@ export type Snapshot = Node & {
    *
    * By convention, the following errors exist:
    * - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
+   * - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
+   * - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
    * - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
    * - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
    * - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.

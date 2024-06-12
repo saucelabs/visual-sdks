@@ -1,39 +1,35 @@
 import type { Services } from '@wdio/types';
-import { Testrunner } from '@wdio/types/build/Options';
-import {
+import { SevereServiceError } from 'webdriverio';
+import type { Testrunner } from '@wdio/types/build/Options';
+import type {
   RemoteCapabilities,
   RemoteCapability,
 } from '@wdio/types/build/Capabilities';
 import {
-  RegionIn,
-  VisualApi,
-  getApi,
-  WebdriverSession,
-  DiffStatus,
-  ensureError,
-  DiffingMethod,
-  SauceRegion,
-  getFullPageConfig,
   BuildMode,
+  DiffingMethod,
   DiffingOptionsIn,
-  SelectiveRegionOptions,
-  selectiveRegionToRegionIn,
-  selectiveRegionOptionsToDiffingOptions,
+  DiffStatus,
+  ElementIn,
+  ensureError,
   FullPageScreenshotOptions,
+  getApi,
+  getFullPageConfig,
+  isIgnoreRegion,
+  parseRegionsForAPI,
+  RegionIn,
+  RegionType,
+  SauceRegion,
+  selectiveRegionOptionsToDiffingOptions,
+  VisualApi,
+  WebdriverSession,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
-import { SevereServiceError } from 'webdriverio';
 import chalk from 'chalk';
-import {
-  Ignorable,
-  IgnoreRegion,
-  WdioElement,
-  isWdioElement,
-  validateIgnoreRegion,
-} from './guarded-types.js';
+import { Ignorable, isWdioElement } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
-import { Test } from '@wdio/types/build/Frameworks.js';
+import type { Test } from '@wdio/types/build/Frameworks';
 
 const clientVersion = 'PKG_VERSION';
 
@@ -108,12 +104,10 @@ type CucumberWorld = {
   };
 };
 
-type WdioSelectiveRegion = { element: Ignorable } & SelectiveRegionOptions;
-
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
 
-  regions?: Array<WdioSelectiveRegion>;
+  regions?: Array<RegionType<Ignorable>>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
@@ -130,23 +124,6 @@ export type CheckOptions = {
 export let uploadedDiffIds: string[] = [];
 let isBuildExternal = false;
 
-// Computes the bounding box of an element relative
-// to the top left corner of a screenshot.
-function clientSideIgnoreRegionsFromElements(
-  elements: HTMLElement[],
-): IgnoreRegion[] {
-  const elementToBoundingRect = (e: HTMLElement): IgnoreRegion => {
-    const clientRect = e.getBoundingClientRect();
-    return {
-      height: clientRect.height,
-      width: clientRect.width,
-      x: clientRect.x,
-      y: clientRect.y,
-    };
-  };
-  return elements.map(elementToBoundingRect);
-}
-
 function buildUrlMessage(
   url: string,
   options: { reviewReady: boolean } = { reviewReady: false },
@@ -161,87 +138,6 @@ function buildUrlMessage(
   ${extraMsg}
 ${url.padStart(100, ' ')}
 `;
-}
-
-function splitIgnorables(
-  a: Array<IgnoreRegion | WdioElement | WdioElement[]>,
-): { elements: WdioElement[]; regions: IgnoreRegion[] } {
-  const elements: WdioElement[] = [];
-  const regions: IgnoreRegion[] = [];
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i];
-
-    if (Array.isArray(x)) {
-      elements.concat(...x);
-    } else if (isWdioElement(x)) {
-      elements.push(x);
-    } else {
-      try {
-        const region = validateIgnoreRegion(x);
-        regions.push(region);
-      } catch (e) {
-        throw new Error(
-          `Ignored element options.ignore[${i}] is not valid: ${e}`,
-        );
-      }
-    }
-  }
-  return { elements, regions };
-}
-
-async function wdio2IgnoreRegions(
-  elements: WdioElement[],
-): Promise<IgnoreRegion[]> {
-  // This translation is done for client side scripts by wdio
-  const asHtmlElements = elements as unknown as HTMLElement[];
-
-  const ignoreRegions = await browser.execute(
-    clientSideIgnoreRegionsFromElements,
-    asHtmlElements,
-  );
-
-  if (ignoreRegions.length !== elements.length) {
-    throw new Error(
-      'Internal error while getting the bounding rect for elements',
-    );
-  }
-
-  // assign the selector as name for the ignore regions
-  for (let i = 0; i < ignoreRegions.length; i++) {
-    const r = ignoreRegions[i];
-    const e = elements[i];
-    r.name = e.selector.toString();
-  }
-
-  return ignoreRegions;
-}
-
-async function toIgnoreRegionIn(ignorables: Ignorable[]): Promise<RegionIn[]> {
-  const awaitedIgnorables = await Promise.all(ignorables);
-  const { elements, regions } = splitIgnorables(awaitedIgnorables);
-
-  const regionsFromElements = await wdio2IgnoreRegions(elements);
-
-  return [...regions, ...regionsFromElements]
-    .map((r) => ({
-      name: r.name ?? null,
-      x: Math.round(r.x),
-      y: Math.round(r.y),
-      width: Math.round(r.width),
-      height: Math.round(r.height),
-    }))
-    .filter((r) => 0 < r.width * r.height);
-}
-
-async function wdioSelectiveRegionToRegionIn(
-  list: WdioSelectiveRegion[],
-): Promise<RegionIn[]> {
-  const intermediate = [];
-  for (const wdioRegion of list) {
-    const [plainRegion] = await toIgnoreRegionIn([wdioRegion.element]);
-    intermediate.push({ ...wdioRegion, ...plainRegion });
-  }
-  return selectiveRegionToRegionIn(intermediate);
 }
 
 /**
@@ -475,10 +371,27 @@ export default class SauceVisualService implements Services.ServiceInstance {
     ) =>
     async (name: string, options: CheckOptions = {}) => {
       log.info(`Checking ${name}`);
-      const ignoreRegions = [
-        ...(await toIgnoreRegionIn(options.ignore ?? [])),
-        ...(await wdioSelectiveRegionToRegionIn(options.regions ?? [])),
-      ];
+
+      const resolveIgnorable = async (
+        element: Ignorable | Promise<RegionIn>,
+      ): Promise<Array<RegionIn | ElementIn>> => {
+        if (isIgnoreRegion(element)) return [element];
+
+        const awaited = await element;
+        if (isIgnoreRegion(awaited)) return [awaited];
+
+        const wdioElements = isWdioElement(awaited) ? [awaited] : awaited;
+
+        return wdioElements.map((e) => ({
+          id: e.elementId,
+          name: e.selector.toString(),
+        }));
+      };
+
+      const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
+        [...(options.regions ?? []), ...(options.ignore ?? [])],
+        resolveIgnorable,
+      );
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
@@ -490,6 +403,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        ignoreElements,
         diffingOptions: selectiveRegionOptionsToDiffingOptions({
           disableOnly: options.disable ?? [],
         }),

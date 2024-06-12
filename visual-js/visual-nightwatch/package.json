@@ -38,7 +38,7 @@
   },
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
-    "build": "tsc --noEmit && tsup src",
+    "build": "tsc --noEmit && tsup-node src",
     "test-ignored": "jest --collect-coverage"
   },
   "tsup": {
