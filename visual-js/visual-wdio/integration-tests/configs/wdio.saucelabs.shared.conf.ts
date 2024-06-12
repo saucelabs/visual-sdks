@@ -40,12 +40,7 @@ export const config: Options.Testrunner = {
     [
       '@saucelabs/wdio-sauce-visual-service',
       // The options for the Sauce Visual service
-      {
-        buildName: 'Sauce Demo Test',
-        branch: 'main',
-        project: 'WDIO examples',
-        captureDom: true,
-      },
+      {},
     ],
   ]),
 };
