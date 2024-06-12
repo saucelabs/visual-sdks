@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual",
   "description": "JS client bindings for Sauce Labs Visual",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",

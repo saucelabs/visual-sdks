@@ -1,5 +1,13 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.5.2
+
+### Patch Changes
+
+- 312a7d7: Add WebElement support for GraphQL API, update shared types
+- Updated dependencies [312a7d7]
+  - @saucelabs/visual@0.6.2
+
 ## 0.5.1
 
 ### Patch Changes
