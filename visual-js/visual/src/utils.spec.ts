@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
-import { getFullPageConfig } from './utils';
-import { FullPageConfigIn } from './graphql/__generated__/graphql';
+import { getFullPageConfig, parseRegionsForAPI } from './utils';
+import { FullPageConfigIn, RegionIn } from './graphql/__generated__/graphql';
 
 const configDelay: FullPageConfigIn = {
   delayAfterScrollMs: 1500,
@@ -8,6 +8,16 @@ const configDelay: FullPageConfigIn = {
 
 const configDelayBig: FullPageConfigIn = {
   delayAfterScrollMs: 5000,
+};
+
+/**
+ * Simple resolver to test basic string & region parsing.
+ * @param itemPromise
+ */
+const resolveForTest = async (itemPromise: string | Promise<RegionIn>) => {
+  const item = await itemPromise;
+  if (typeof item === 'object') return [item];
+  return [{ id: item }];
 };
 
 describe('utils', () => {
@@ -74,6 +84,41 @@ describe('utils', () => {
         const local = { disableCSSAnimation: false };
         expect(getFullPageConfig(main, local)).toEqual({ ...main, ...local });
       });
+    });
+  });
+  describe('parseRegionsForAPI', () => {
+    test('parsing string values by the resolver', async () => {
+      const result = await parseRegionsForAPI(['test'], resolveForTest);
+      expect(result.ignoreRegions).toHaveLength(0);
+      expect(result.ignoreElements).toEqual([
+        {
+          id: 'test',
+        },
+      ]);
+    });
+
+    test('parsing region type values by the resolver', async () => {
+      const result = await parseRegionsForAPI<string | RegionIn>(
+        [
+          {
+            element: '1',
+            enableOnly: ['content'],
+          },
+          {
+            element: '2',
+            disableOnly: ['content'],
+          },
+          {
+            element: { x: 1, y: 1, height: 100, width: 100 },
+            disableOnly: ['content'],
+          },
+        ],
+        resolveForTest,
+      );
+      // Expect our results to be consistent when parsing values
+      expect(result.ignoreElements[0]).toMatchSnapshot();
+      expect(result.ignoreElements[1]).toMatchSnapshot();
+      expect(result.ignoreRegions[0]).toMatchSnapshot();
     });
   });
 });

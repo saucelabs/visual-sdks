@@ -1,5 +1,5 @@
-import { WebElement } from 'selenium-webdriver';
 import { RegionIn } from '@saucelabs/visual';
+import { ElementType, NightwatchIgnorable } from '../types';
 
 /**
  * Processes a given reference to either resolve it to a CSS selector using a page object in Nightwatch
@@ -8,7 +8,7 @@ import { RegionIn } from '@saucelabs/visual';
  * @param ref - The reference to be processed, which can be a page object reference or a CSS selector.
  * @returns The CSS selector or the original reference if it's already a selector.
  */
-function processReference<T = string | WebElement>(ref: T): T | null {
+function processReference<T = string | ElementType>(ref: T): T | null {
   if (typeof ref === 'string' && ref.startsWith('@')) {
     console.log(
       `Ignoring page object reference: '${ref}'. Please use the 'pageObjectName.elements.${ref.slice(
@@ -166,7 +166,7 @@ async function nightwatchIgnoreRegions(
  *                                                     objects, or other arrays.
  * @returns {Array} An array of processed ignore options, with page object references resolved to selectors.
  */
-function parseIgnoreOptions<T extends string | RegionIn>(
+function parseIgnoreOptions<T = NightwatchIgnorable>(
   ignoreOptions: Array<T | Array<T>>,
 ): Array<T> {
   const notNull = (processedRef: T | null): processedRef is T =>

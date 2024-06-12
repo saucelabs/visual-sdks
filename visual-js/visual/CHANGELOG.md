@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.6.2
+
+### Patch Changes
+
+- 312a7d7: Add WebElement support for GraphQL API, update shared types
+
 ## 0.6.1
 
 ### Patch Changes

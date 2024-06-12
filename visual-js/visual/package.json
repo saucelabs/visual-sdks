@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual",
   "description": "JS client bindings for Sauce Labs Visual",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",
@@ -32,7 +32,6 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "copy-schema": "cp ../../../iris/backend/src/generated/schema.graphql schema/__generated__/schema.graphql",
     "build": "tsup",
     "watch": "tsc-watch --declaration -p .",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
@@ -45,6 +44,7 @@
     "@apollo/client": "^3.7.14",
     "@graphql-typed-document-node/core": "3.2.0",
     "@jest/globals": "^29.5.0",
+    "arktype": "^1.0.29-alpha",
     "axios": "^1.7.0",
     "chalk": "^4.0.0",
     "cli-table3": "^0.6.3",

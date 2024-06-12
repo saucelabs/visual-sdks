@@ -1,5 +1,13 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.6.1
+
+### Patch Changes
+
+- 312a7d7: Fix exported types
+- Updated dependencies [312a7d7]
+  - @saucelabs/visual@0.6.2
+
 ## 0.6.0
 
 ### Minor Changes
