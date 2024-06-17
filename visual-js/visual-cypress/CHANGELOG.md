@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.3
+
+### Patch Changes
+
+- b9e5b02: Fix external build handling
+
 ## 0.5.2
 
 ### Patch Changes

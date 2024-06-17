@@ -154,7 +154,7 @@ class CypressSauceVisual {
   async getEffectiveBuild(): Promise<string | undefined> {
     const buildCompletedMsg = `Sauce Labs Visual: cannot add more screenshots since the build is already completed`;
     if (SAUCE_VISUAL_BUILD_ID) {
-      const build = await this.api.build({ id: SAUCE_VISUAL_BUILD_ID });
+      const build = await this.api.build(SAUCE_VISUAL_BUILD_ID);
       if (build?.mode == BuildMode.Completed) {
         logger.error(buildCompletedMsg);
         throw new Error(buildCompletedMsg);
