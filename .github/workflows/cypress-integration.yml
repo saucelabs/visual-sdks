@@ -7,10 +7,12 @@ on:
     paths:
       - 'visual-js/visual-cypress/**'
       - .github/workflows/js-build.yml
+      - .github/workflows/cypress-integration.yml
   pull_request:
     paths:
       - 'visual-js/visual-cypress/**'
       - .github/workflows/js-build.yml
+      - .github/workflows/cypress-integration.yml
 
 defaults:
   run:
