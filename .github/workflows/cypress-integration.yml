@@ -1,0 +1,43 @@
+name: cypress (integration test)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-js/visual-cypress/**'
+      - .github/workflows/js-build.yml
+      - .github/workflows/cypress-integration.yml
+  pull_request:
+    paths:
+      - 'visual-js/visual-cypress/**'
+      - .github/workflows/js-build.yml
+      - .github/workflows/cypress-integration.yml
+
+defaults:
+  run:
+    working-directory: visual-js/visual-cypress
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push to local registry
+        uses: docker/build-push-action@v5
+        with:
+          context: '{{defaultContext}}:visual-js'
+          tags: saucelabs/visual-cypress
+          file: visual-cypress/Dockerfile
+          load: true
+      - name: Run the integration tests
+        run: |
+          npm ci
+          npm run test
+        working-directory: tests
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          CONTAINER_IMAGE_NAME: saucelabs/visual-cypress

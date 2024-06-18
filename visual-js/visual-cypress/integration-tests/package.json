@@ -1,0 +1,19 @@
+{
+  "name": "cypress-integration-tests",
+  "engines": {
+    "node": "^16.13 || >=18"
+  },
+  "scripts": {
+    "login-test": "cypress run"
+  },
+  "dependencies": {
+    "@tsconfig/node18": "^18.2.4",
+    "cypress": "^13.7.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "chalk": "^5.3.0"
+  }
+}
