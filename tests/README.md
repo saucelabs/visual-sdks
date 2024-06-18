@@ -6,6 +6,14 @@ Go to the folder of the SDK and build the container image using Docker.
 docker build -t __SDK_IMAGE_NAME__ .
 ```
 
+**NOTE**: For JavaScript/TypeScript SDKs, you need to build the image from the containing folder (i.e. _visual-js_)
+
+Example:
+
+```sh
+visual-js$ docker build -f visual-wdio/Dockerfile -t saucelabs/visual-wdio .
+```
+
 Go to tests folder and install the dependencies
 
 ```sh
