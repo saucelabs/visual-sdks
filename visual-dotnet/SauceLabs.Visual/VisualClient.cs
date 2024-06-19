@@ -41,6 +41,7 @@ namespace SauceLabs.Visual
         /// Creates a new instance of <c>VisualClient</c>
         /// </summary>
         /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="buildOptions">the options of the build creation</param>
         public static async Task<VisualClient> Create(WebDriver wd, CreateBuildOptions buildOptions)
         {
             return await Create(wd, Region.FromEnvironment(), EnvVars.Username, EnvVars.AccessKey, buildOptions);

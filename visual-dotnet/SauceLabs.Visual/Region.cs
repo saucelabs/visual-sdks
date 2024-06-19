@@ -29,6 +29,11 @@ namespace SauceLabs.Visual
             return Value.ToString();
         }
 
+        /// <summary>
+        /// <c>FromEnvironment</c> returns the <c>Region</c> instance based on the environment SAUCE_REGION.
+        /// </summary>
+        /// <returns>the matching <c>Region</c> instance</returns>
+        /// <exception cref="VisualClientException"></exception>
         public static Region FromEnvironment()
         {
             return FromName(EnvVars.Region);
