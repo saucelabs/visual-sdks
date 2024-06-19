@@ -1,3 +1,4 @@
+using SauceLabs.Visual.Utils;
 using System;
 
 namespace SauceLabs.Visual
@@ -26,6 +27,11 @@ namespace SauceLabs.Visual
         public override string ToString()
         {
             return Value.ToString();
+        }
+
+        public static Region FromEnvironment()
+        {
+            return FromName(EnvVars.Region);
         }
 
         /// <summary>

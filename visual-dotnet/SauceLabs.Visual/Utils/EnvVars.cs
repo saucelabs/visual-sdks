@@ -15,5 +15,6 @@ namespace SauceLabs.Visual.Utils
         internal static string BuildId => Environment.GetEnvironmentVariable("SAUCE_VISUAL_BUILD_ID") ?? "";
         internal static string Username => Environment.GetEnvironmentVariable("SAUCE_USERNAME") ?? "";
         internal static string AccessKey => Environment.GetEnvironmentVariable("SAUCE_ACCESS_KEY") ?? "";
+        internal static string Region => Environment.GetEnvironmentVariable("SAUCE_REGION") ?? "";
     }
 }
