@@ -30,7 +30,7 @@ namespace SauceLabs.Visual.GraphQL
 
         [JsonProperty("clipSelector")]
         public string? ClipSelector { get; set; }
-        [JsonProperty("ClipElement")]
+        [JsonProperty("clipElement")]
         public string? ClipElement { get; set; }
         [JsonProperty("fullPageConfig")]
         public FullPageConfigIn? FullPageConfig { get; set; }

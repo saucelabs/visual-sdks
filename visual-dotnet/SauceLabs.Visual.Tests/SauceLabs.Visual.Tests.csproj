@@ -13,7 +13,7 @@
         <PackageReference Include="NUnit" Version="3.13.2"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0"/>
         <PackageReference Include="coverlet.collector" Version="3.1.0"/>
-        <PackageReference Include="Selenium.WebDriver" Version="4.18.1" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.21.0" />
         <PackageReference Include="RichardSzalay.MockHttp" Version="7.0.0" />
     </ItemGroup>
 

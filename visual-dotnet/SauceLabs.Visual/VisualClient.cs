@@ -162,7 +162,7 @@ namespace SauceLabs.Visual
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options.CaptureDom ?? CaptureDom,
                 clipSelector: options.ClipSelector,
-                clipElement: options.ClipElement,
+                clipElement: options.ClipElement?.GetElementId(),
                 suiteName: options.SuiteName,
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
