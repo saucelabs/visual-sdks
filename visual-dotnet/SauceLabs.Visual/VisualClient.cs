@@ -139,15 +139,29 @@ namespace SauceLabs.Visual
             return VisualCheckAsync(name, options);
         }
 
-        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
+        private void OrderIgnoredRegions(SelectiveRegion[]? regions, IgnoreRegion[]? ignoreRegions, IWebElement[]? ignoreElements,  out RegionIn[]? regionIns, out ElementIn[]? elementIns)
         {
+            var emptyRegions = regions?.Any(r => r.Region == null && r.Element == null);
+            if (emptyRegions != null && emptyRegions != false)
+            {
+                throw new VisualClientException("Some ignore regions have Element nor Region");;
+            }
+
             var ignoredRegions = new List<RegionIn>();
-            ignoredRegions.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignoredRegions.AddRange(options.Regions?.Where(r => r.Region != null).Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
+            ignoredRegions.AddRange(ignoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignoredRegions.AddRange(regions?.Where(r => r.Region != null).Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
 
             var ignoredElements = new List<ElementIn>();
-            ignoredElements.AddRange(options.IgnoreElements?.Select(elem => new ElementIn(elem)) ?? new List<ElementIn>());
-            ignoredElements.AddRange(options.Regions?.Where(r => r.Element != null).Select(r => r.ToElementIn()) ?? new List<ElementIn>());
+            ignoredElements.AddRange(ignoreElements?.Select(elem => new ElementIn(elem)) ?? new List<ElementIn>());
+            ignoredElements.AddRange(regions?.Where(r => r.Element != null).Select(r => r.ToElementIn()) ?? new List<ElementIn>());
+
+            regionIns = ignoredRegions.Any() ? ignoredRegions.ToArray() : null;
+            elementIns = ignoredElements.Any() ? ignoredElements.ToArray() : null;
+        }
+
+        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
+        {
+            OrderIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements, out var ignoredRegions, out var ignoredElements);
 
             FullPageConfigIn? fullPageConfigIn = null;
             if (options.FullPage == true)

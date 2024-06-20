@@ -84,7 +84,7 @@ namespace SauceLabs.Visual.Models
                 return new RegionIn(Element, diffingOptions);
             }
 
-            throw new VisualClientException("No Element nor Region has been passed");
+            throw new VisualClientException("No Region has been passed");
         }
 
 
@@ -97,7 +97,7 @@ namespace SauceLabs.Visual.Models
                 return new ElementIn(Element, null, diffingOptions);
             }
 
-            throw new VisualClientException("No Element nor Region has been passed");
+            throw new VisualClientException("No Element has been passed");
         }
     }
 }
