@@ -1,0 +1,73 @@
+{
+  "name": "visual-storybook",
+  "version": "0.1.0",
+  "engines": {
+    "node": "^16.13 || >=18"
+  },
+  "dependencies": {
+    "@storybook/test": "8.0.5",
+    "@testing-library/jest-dom": "5.17.0",
+    "@testing-library/react": "13.4.0",
+    "@testing-library/user-event": "14.5.2",
+    "@types/jest": "27.5.2",
+    "@types/node": "20.12.3",
+    "@types/react": "18.2.74",
+    "@types/react-dom": "18.2.13",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "typescript": "4.9.5",
+    "web-vitals": "3.5.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "echo": "HELLO=$SAUCE_USERNAME; echo $HELLO",
+    "test-storybook": "SAUCE_PROJECT_NAME=\"Storybook Example for $SAUCE_USERNAME\" test-storybook -i",
+    "storybook-static": "npx http-server storybook-static --port 6006 --silent",
+    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook && npm run storybook-static\" \"npx wait-on tcp:6006 && npm run test-storybook\"",
+    "test-storybook-modified:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook && npm run storybook-static\" \"npx wait-on tcp:6006 && npm run test-storybook\""
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:storybook/recommended"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.0.5",
+    "@storybook/addon-interactions": "^8.0.5",
+    "@storybook/addon-links": "^8.0.5",
+    "@storybook/addon-onboarding": "^8.0.5",
+    "@storybook/blocks": "^8.0.2",
+    "@storybook/preset-create-react-app": "^8.0.2",
+    "@storybook/react": "^8.0.2",
+    "@storybook/react-webpack5": "^8.0.5",
+    "@storybook/test-runner": "^0.17.0",
+    "babel-plugin-named-exports-order": "0.0.2",
+    "concurrently": "8.2.2",
+    "eslint-plugin-storybook": "^0.8.0",
+    "http-server": "14.1.1",
+    "prop-types": "15.8.1",
+    "storybook": "^8.0.5",
+    "wait-on": "7.2.0",
+    "webpack": "5.89.0"
+  }
+}
