@@ -30,6 +30,8 @@ namespace SauceLabs.Visual.GraphQL
 
         [JsonProperty("clipSelector")]
         public string? ClipSelector { get; set; }
+        [JsonProperty("ClipElement")]
+        public string? ClipElement { get; set; }
         [JsonProperty("fullPageConfig")]
         public FullPageConfigIn? FullPageConfig { get; set; }
 
@@ -43,6 +45,7 @@ namespace SauceLabs.Visual.GraphQL
             RegionIn[] regions,
             bool captureDom,
             string? clipSelector,
+            string? clipElement,
             string? suiteName,
             string? testName,
             FullPageConfigIn? fullPageConfig,
@@ -58,6 +61,7 @@ namespace SauceLabs.Visual.GraphQL
             SessionId = sessionId;
             CaptureDom = captureDom;
             ClipSelector = clipSelector;
+            ClipElement = clipElement;
             SuiteName = suiteName;
             TestName = testName;
             FullPageConfig = fullPageConfig;

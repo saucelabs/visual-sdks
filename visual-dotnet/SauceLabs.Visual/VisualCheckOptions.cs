@@ -18,6 +18,7 @@ namespace SauceLabs.Visual
         public bool? FullPage { get; set; }
         public FullPageConfig? FullPageConfig { get; set; }
         public string? ClipSelector { get; set; }
+        public string? ClipElement { get; set; }
 
         /// <summary>
         /// <c>DiffingOptions</c> set which kind of changes should be considered.
