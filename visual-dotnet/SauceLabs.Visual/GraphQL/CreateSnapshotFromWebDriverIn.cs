@@ -13,6 +13,8 @@ namespace SauceLabs.Visual.GraphQL
         public DiffingOptionsIn? DiffingOptions { get; set; }
         [JsonProperty("ignoreRegions")]
         public RegionIn[] IgnoreRegions { get; }
+        [JsonProperty("ignoreElements")]
+        public ElementIn[]? IgnoreElements { get; }
         [JsonProperty("jobId")]
         public string JobId { get; }
         [JsonProperty("name")]
@@ -48,6 +50,7 @@ namespace SauceLabs.Visual.GraphQL
             string? clipElement,
             string? suiteName,
             string? testName,
+            ElementIn[]? ignoredElements,
             FullPageConfigIn? fullPageConfig,
             DiffingOptionsIn? diffingOptions
         )
@@ -55,6 +58,7 @@ namespace SauceLabs.Visual.GraphQL
             BuildUuid = buildUuid;
             DiffingMethod = diffingMethod;
             IgnoreRegions = regions;
+            IgnoreElements = ignoredElements;
             JobId = jobId;
             Name = name;
             SessionMetadata = sessionMetadata;

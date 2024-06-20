@@ -86,5 +86,18 @@ namespace SauceLabs.Visual.Models
 
             throw new VisualClientException("No Element nor Region has been passed");
         }
+
+
+        internal ElementIn ToElementIn()
+        {
+            var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, DisableOnly);
+
+            if (Element != null)
+            {
+                return new ElementIn(Element, null, diffingOptions);
+            }
+
+            throw new VisualClientException("No Element nor Region has been passed");
+        }
     }
 }

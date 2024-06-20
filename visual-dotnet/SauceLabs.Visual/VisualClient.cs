@@ -141,10 +141,13 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            var ignored = new List<RegionIn>();
-            ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options.Regions?.Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
+            var ignoredRegions = new List<RegionIn>();
+            ignoredRegions.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
+            ignoredRegions.AddRange(options.Regions?.Where(r => r.Region != null).Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
+
+            var ignoredElements = new List<ElementIn>();
+            ignoredElements.AddRange(options.IgnoreElements?.Select(elem => new ElementIn(elem)) ?? new List<ElementIn>());
+            ignoredElements.AddRange(options.Regions?.Where(r => r.Element != null).Select(r => r.ToElementIn()) ?? new List<ElementIn>());
 
             FullPageConfigIn? fullPageConfigIn = null;
             if (options.FullPage == true)
@@ -157,7 +160,8 @@ namespace SauceLabs.Visual
                 name: name,
                 jobId: _jobId,
                 diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
-                regions: ignored.ToArray(),
+                regions: ignoredRegions.ToArray(),
+                ignoredElements: ignoredElements.ToArray(),
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options.CaptureDom ?? CaptureDom,
