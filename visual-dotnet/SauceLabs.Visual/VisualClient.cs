@@ -139,12 +139,12 @@ namespace SauceLabs.Visual
             return VisualCheckAsync(name, options);
         }
 
-        private void OrderIgnoredRegions(SelectiveRegion[]? regions, IgnoreRegion[]? ignoreRegions, IWebElement[]? ignoreElements,  out RegionIn[] regionIns, out ElementIn[] elementIns)
+        private void OrderIgnoredRegions(SelectiveRegion[]? regions, IgnoreRegion[]? ignoreRegions, IWebElement[]? ignoreElements, out RegionIn[] regionIns, out ElementIn[] elementIns)
         {
             var emptyRegions = regions?.Any(r => r.Region == null && r.Element == null);
             if (emptyRegions != null && emptyRegions != false)
             {
-                throw new VisualClientException("Some ignore regions have Element nor Region");;
+                throw new VisualClientException("Some ignore regions have Element nor Region");
             }
 
             var ignoredRegions = new List<RegionIn>();
