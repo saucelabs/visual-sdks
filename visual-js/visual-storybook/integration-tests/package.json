@@ -32,13 +32,6 @@
     "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook && npm run storybook-static\" \"npx wait-on tcp:6006 && npm run test-storybook\"",
     "test-storybook-modified:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook && npm run storybook-static\" \"npx wait-on tcp:6006 && npm run test-storybook\""
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "plugin:storybook/recommended"
-    ]
-  },
   "browserslist": {
     "production": [
       ">0.2%",
