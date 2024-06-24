@@ -22,7 +22,6 @@ const documents = {
     "mutation createSnapshot($input: SnapshotIn!) {\n  result: createSnapshot(input: $input) {\n    id\n    uploadId\n    diffs {\n      nodes {\n        id\n        baselineId\n        snapshotId\n        status\n        diffBounds {\n          x\n          y\n          width\n          height\n        }\n        diffClusters {\n          x\n          y\n          width\n          height\n        }\n      }\n    }\n  }\n}": types.CreateSnapshotDocument,
     "mutation createSnapshotFromWebDriver($input: CreateSnapshotFromWebDriverIn!) {\n  result: createSnapshotFromWebDriver(input: $input) {\n    id\n    uploadId\n    diffs {\n      nodes {\n        id\n        baselineId\n        snapshotId\n        status\n        diffBounds {\n          x\n          y\n          width\n          height\n        }\n        diffClusters {\n          x\n          y\n          width\n          height\n        }\n      }\n    }\n  }\n}": types.CreateSnapshotFromWebDriverDocument,
     "mutation createSnapshotUpload($input: SnapshotUploadIn!) {\n  result: createSnapshotUpload(input: $input) {\n    id\n    buildId\n    imageUploadUrl\n    domUploadUrl\n  }\n}": types.CreateSnapshotUploadDocument,
-    "mutation createSnapshotUploadFromWebDriver($input: CreateSnapshotUploadFromWebDriverIn!) {\n  result: createSnapshotUploadFromWebDriver(input: $input) {\n    id\n    buildId\n  }\n}": types.CreateSnapshotUploadFromWebDriverDocument,
     "query diffsForTestResult($input: UUID!) {\n  result: diffs(condition: {buildId: $input}) {\n    nodes {\n      id\n      status\n    }\n  }\n}": types.DiffsForTestResultDocument,
     "mutation FinishBuildDocument($input: FinishBuildIn!) {\n  result: finishBuild(input: $input) {\n    id\n    name\n    status\n    url\n  }\n}": types.FinishBuildDocumentDocument,
     "mutation UpdateDiff($input: UpdateDiffIn!) {\n  result: updateDiff(input: $input) {\n    id\n    status\n    baselineId\n    snapshotId\n  }\n}": types.UpdateDiffDocument,
@@ -79,10 +78,6 @@ export function graphql(source: "mutation createSnapshotFromWebDriver($input: Cr
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation createSnapshotUpload($input: SnapshotUploadIn!) {\n  result: createSnapshotUpload(input: $input) {\n    id\n    buildId\n    imageUploadUrl\n    domUploadUrl\n  }\n}"): (typeof documents)["mutation createSnapshotUpload($input: SnapshotUploadIn!) {\n  result: createSnapshotUpload(input: $input) {\n    id\n    buildId\n    imageUploadUrl\n    domUploadUrl\n  }\n}"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "mutation createSnapshotUploadFromWebDriver($input: CreateSnapshotUploadFromWebDriverIn!) {\n  result: createSnapshotUploadFromWebDriver(input: $input) {\n    id\n    buildId\n  }\n}"): (typeof documents)["mutation createSnapshotUploadFromWebDriver($input: CreateSnapshotUploadFromWebDriverIn!) {\n  result: createSnapshotUploadFromWebDriver(input: $input) {\n    id\n    buildId\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

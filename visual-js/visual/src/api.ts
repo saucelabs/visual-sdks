@@ -24,7 +24,6 @@ import {
   CreateSnapshotDocument,
   CreateSnapshotFromWebDriverDocument,
   CreateSnapshotUploadDocument,
-  CreateSnapshotUploadFromWebDriverDocument,
   DiffsForTestResultDocument,
   FinishBuildDocumentDocument,
   UpdateDiffDocument,
@@ -101,10 +100,6 @@ export const getApi = (
     createBuild: makeQuery(apollo, CreateBuildDocument),
     createSnapshot: makeQuery(apollo, CreateSnapshotDocument),
     createSnapshotUpload: makeQuery(apollo, CreateSnapshotUploadDocument),
-    createSnapshotUploadFromWebDriver: makeQuery(
-      apollo,
-      CreateSnapshotUploadFromWebDriverDocument,
-    ),
     finishBuild: makeQuery(apollo, FinishBuildDocumentDocument),
     createSnapshotFromWebDriver: makeQuery(
       apollo,
