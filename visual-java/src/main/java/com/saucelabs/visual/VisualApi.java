@@ -25,6 +25,13 @@ import org.slf4j.LoggerFactory;
 public class VisualApi {
   private static final Logger log = LoggerFactory.getLogger(VisualApi.class);
 
+  public static String resolveEndpoint(String endpoint) {
+    if (isNotBlank(endpoint)) {
+      return endpoint;
+    }
+    return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
+  }
+
   /** Creates a VisualApi instance using builder style */
   public static class Builder {
     private final RemoteWebDriver driver;
@@ -39,7 +46,7 @@ public class VisualApi {
     private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
-      this(driver, username, accessKey, DataCenter.US_WEST_1.endpoint);
+      this(driver, username, accessKey, "");
     }
 
     public Builder(RemoteWebDriver driver, String username, String accessKey, DataCenter region) {
@@ -50,7 +57,7 @@ public class VisualApi {
       this.driver = driver;
       this.username = username;
       this.accessKey = accessKey;
-      this.endpoint = endpoint;
+      this.endpoint = resolveEndpoint(endpoint);
     }
 
     public Builder withBuild(String buildName) {
@@ -116,6 +123,17 @@ public class VisualApi {
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
    *
    * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
+   * @param username SauceLabs username
+   * @param accessKey SauceLabs access key
+   */
+  public VisualApi(RemoteWebDriver driver, String username, String accessKey) {
+    this(driver, "", username, accessKey);
+  }
+
+  /**
+   * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
+   *
+   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
    * @param region Visual Backend Region. For available values, see: {@link DataCenter}
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
@@ -160,7 +178,7 @@ public class VisualApi {
           "Invalid SauceLabs credentials. "
               + "Please check your SauceLabs username and access key at https://app.saucelabs.com/user-settings");
     }
-    this.client = new GraphQLClient(url, username, accessKey);
+    this.client = new GraphQLClient(resolveEndpoint(url), username, accessKey);
     this.sessionId = driver.getSessionId().toString();
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;
@@ -218,7 +236,13 @@ public class VisualApi {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
             new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
-    return this.client.execute(query, WebdriverSessionInfoQuery.Data.class).result;
+    WebdriverSessionInfoQuery.Data response =
+        this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
+    if (response.result == null) {
+      throw new VisualApiException(
+          "Sauce Visual: No WebDriver session found. Please make sure WebDriver and Sauce Visual data centers are aligned.");
+    }
+    return response.result;
   }
 
   /**
