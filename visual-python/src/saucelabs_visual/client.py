@@ -137,7 +137,12 @@ class SauceLabsVisual:
         self.build_url = build['createBuild']['url']
         return build
 
-    def finish_build(self):
+    def finish_build(self, build_id: Union[str, None] = None):
+        """
+        Finish the build associated with this client or, optionally, one supplied with 'build_id'.
+        :param build_id: An optional param to allow finishing an external build.
+        :return:
+        """
         if self.is_build_external:
             return
 
@@ -153,7 +158,7 @@ class SauceLabsVisual:
             }
             """
         )
-        values = {"id": self.build_id}
+        values = {"id": build_id or self.build_id}
         self.meta_cache.clear()
         return self.client.execute(query, variable_values=values)
 
