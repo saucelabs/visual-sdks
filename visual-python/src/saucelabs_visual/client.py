@@ -11,7 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
-    DiffingOptions, IgnoreElementRegion
+    DiffingOptions, IgnoreElementRegion, BuildMode
 
 PKG_VERSION = '0.0.12'
 
@@ -19,8 +19,23 @@ PKG_VERSION = '0.0.12'
 class SauceLabsVisual:
     _client: Client = None
     build_id: Union[str, None] = None
+    """
+    The UUID of the current build managed by this client. 
+    """
+    is_build_external: bool = False
+    """
+    Whether this build was created externally and passed here. When 'True', we should not perform
+    any mutations on the build itself assuming the lifecycle is managed externally.
+    """
     build_url: Union[str, None] = None
+    """
+    The URL for the current build in the Sauce Labs UI.
+    """
     meta_cache: dict = {}
+    """
+    A cache holding session metadata for a job so we don't have to re-query for every snapshot for
+    the same session ID.
+    """
     region: Region = None
 
     @property
@@ -74,6 +89,15 @@ class SauceLabsVisual:
             before timing out and reporting an error in the UI.
         :return:
         """
+
+        custom_build = self._get_external_build()
+
+        if custom_build is not None:
+            self.build_id = custom_build['id']
+            self.build_url = custom_build['url']
+            self.is_build_external = True
+            return custom_build
+
         query = gql(
             # language=GraphQL
             """
@@ -94,6 +118,7 @@ class SauceLabsVisual:
                     keepAliveTimeout: $keepAliveTimeout,
                 }){
                     id
+                    mode
                     url
                 }
             }
@@ -113,6 +138,9 @@ class SauceLabsVisual:
         return build
 
     def finish_build(self):
+        if self.is_build_external:
+            return
+
         query = gql(
             # language=GraphQL
             """
@@ -260,6 +288,74 @@ class SauceLabsVisual:
             "diffingOptions": diffing_options,
         }
         return self.client.execute(query, variable_values=values)
+
+    def _get_external_build(self) -> Union[dict, None]:
+        """
+        Check if we've been provided environment variables to use an external build instead of one
+        handled by the lifecycle in this client. If provided, query for the build and set the client
+        up to use it.
+        :return:
+        """
+        env_build_id = environ.get('SAUCE_VISUAL_BUILD_ID')
+        env_custom_id = environ.get('SAUCE_VISUAL_CUSTOM_ID')
+        build: Union[dict, None] = None
+
+        def get_build_meta(result: dict, error_message: str):
+            result_build = result['result']
+            if result_build is None:
+                raise RuntimeError(
+                    f"Sauce Labs Visual: unable to fetch build for {error_message}. Build not found."
+                )
+
+            if result_build['mode'] == BuildMode.COMPLETED.value:
+                raise RuntimeError(
+                    "Sauce Labs Visual: cannot add more screenshots since the build is already "
+                    "completed"
+                )
+
+            return result_build
+
+        if env_build_id:
+            query = gql(
+                # language=GraphQL
+                """
+                query buildById($buildId: UUID!) {
+                    result: build(id: $buildId) {
+                        id
+                        mode
+                        url
+                    }
+                }
+                """
+            )
+            build = get_build_meta(
+                self.client.execute(query, variable_values={
+                    "buildId": env_build_id,
+                }),
+                "SAUCE_VISUAL_BUILD_ID"
+            )
+
+        if env_custom_id:
+            query = gql(
+                # language=GraphQL
+                """
+                query buildById($customId: String!) {
+                    result: buildByCustomId(customId: $customId) {
+                        id
+                        mode
+                        url
+                    }
+                }
+                """
+            )
+            build = get_build_meta(
+                self.client.execute(query, variable_values={
+                    "customId": env_custom_id,
+                }),
+                "SAUCE_VISUAL_CUSTOM_ID"
+            )
+
+        return build
 
     def get_build_status(
             self,
