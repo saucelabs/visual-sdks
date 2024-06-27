@@ -14,6 +14,8 @@ module.exports = async function (globalConfig: Config.GlobalConfig) {
   if (!buildId && customId) {
     customBuildId = await getBuildIdForCustomId(customId);
 
+    console.info(`USING CUSTOM ID ${customId} for build ${customBuildId}`);
+
     if (customBuildId) {
       buildId = customBuildId;
       setOpts({
