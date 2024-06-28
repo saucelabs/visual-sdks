@@ -6,6 +6,7 @@ import {
   isSkipMode,
   parseRegionsForAPI,
   RegionIn,
+  VisualApiRegion,
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
@@ -116,6 +117,9 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
       port: port,
       user: process.env.SAUCE_USERNAME,
       key: process.env.SAUCE_ACCESS_KEY,
+      region:
+        options.region ||
+        VisualApiRegion.fromName(process.env.SAUCE_REGION || 'us-west'),
     };
     const jobId = capabilities['jobUuid'] || sessionId;
     const buildId = process.env[VISUAL_BUILD_ID_KEY] || '';

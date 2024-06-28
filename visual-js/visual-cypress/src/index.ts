@@ -115,7 +115,7 @@ class CypressSauceVisual {
 
   constructor(config: HasSauceConfig) {
     this.region = VisualApiRegion.fromName(
-      process.env.SAUCE_REGION || config.saucelabs?.region || 'us-west-1',
+      config.saucelabs?.region || process.env.SAUCE_REGION || 'us-west-1',
     );
     this.jobId = process.env.SAUCE_JOB_ID;
     this.api = getApi(

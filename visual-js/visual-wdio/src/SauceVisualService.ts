@@ -22,6 +22,7 @@ import {
   SauceRegion,
   selectiveRegionOptionsToDiffingOptions,
   VisualApi,
+  VisualApiRegion,
   WebdriverSession,
 } from '@saucelabs/visual';
 
@@ -165,7 +166,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
     this.apiClient = getApi(
       {
         ...this.config,
-        region: options.region || this.config.region,
+        region:
+          options.region ||
+          this.config.region ||
+          VisualApiRegion.fromName(process.env.SAUCE_REGION || 'us-west-1'),
       },
       {
         userAgent: `visual-wdio/${clientVersion}`,
