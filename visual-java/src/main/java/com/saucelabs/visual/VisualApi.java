@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class VisualApi {
   private static final Logger log = LoggerFactory.getLogger(VisualApi.class);
 
-  public static String resolveEndpoint(String endpoint) {
+  private static String resolveEndpoint(String endpoint) {
     if (isNotBlank(endpoint)) {
       return endpoint;
     }
