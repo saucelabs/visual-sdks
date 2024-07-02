@@ -305,12 +305,10 @@ class SauceLabsVisual:
         env_custom_id = environ.get('SAUCE_VISUAL_CUSTOM_ID')
         build: Union[dict, None] = None
 
-        def get_build_meta(result: dict, error_message: str):
+        def get_build_meta(result: dict):
             result_build = result['result']
             if result_build is None:
-                raise RuntimeError(
-                    f"Sauce Labs Visual: unable to fetch build for {error_message}. Build not found."
-                )
+                return None
 
             if result_build['mode'] == BuildMode.COMPLETED.value:
                 raise RuntimeError(
@@ -336,8 +334,7 @@ class SauceLabsVisual:
             build = get_build_meta(
                 self.client.execute(query, variable_values={
                     "buildId": env_build_id,
-                }),
-                "SAUCE_VISUAL_BUILD_ID"
+                })
             )
 
         if env_custom_id:
@@ -356,8 +353,7 @@ class SauceLabsVisual:
             build = get_build_meta(
                 self.client.execute(query, variable_values={
                     "customId": env_custom_id,
-                }),
-                "SAUCE_VISUAL_CUSTOM_ID"
+                })
             )
 
         return build
