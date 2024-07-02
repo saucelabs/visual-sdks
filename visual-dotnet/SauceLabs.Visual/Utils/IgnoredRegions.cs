@@ -6,10 +6,13 @@ using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual.Utils
 {
-    internal class IgnoreRegions
+    internal class IgnoredRegions
     {
+        internal RegionIn[] RegionsIn;
+        internal ElementIn[] ElementsIn;
 
-        internal static void SplitIgnoredRegions(SelectiveRegion[]? regions, IgnoreRegion[]? ignoreRegions, IWebElement[]? ignoreElements, out RegionIn[] regionIns, out ElementIn[] elementIns)
+
+        internal static IgnoredRegions SplitIgnoredRegions(SelectiveRegion[]? regions, IgnoreRegion[]? ignoreRegions, IWebElement[]? ignoreElements)
         {
             var emptyRegions = regions?.Any(r => r.Region == null && r.Element == null);
             if (emptyRegions != null && emptyRegions != false)
@@ -25,8 +28,7 @@ namespace SauceLabs.Visual.Utils
             ignoredElements.AddRange(ignoreElements?.Select(elem => new ElementIn(elem)) ?? new List<ElementIn>());
             ignoredElements.AddRange(regions?.Where(r => r.Element != null).Select(r => r.ToElementIn()) ?? new List<ElementIn>());
 
-            regionIns = ignoredRegions.ToArray();
-            elementIns = ignoredElements.ToArray();
+            return new IgnoredRegions { RegionsIn = ignoredRegions.ToArray(), ElementsIn = ignoredElements.ToArray() };
         }
     }
 }

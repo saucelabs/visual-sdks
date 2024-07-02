@@ -141,7 +141,7 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            IgnoreRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements, out var ignoredRegions, out var ignoredElements);
+            var ignoredRegions = IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
 
             FullPageConfigIn? fullPageConfigIn = null;
             if (options.FullPage == true)
@@ -154,8 +154,8 @@ namespace SauceLabs.Visual
                 name: name,
                 jobId: _jobId,
                 diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
-                regions: ignoredRegions,
-                ignoredElements: ignoredElements,
+                regions: ignoredRegions.RegionsIn,
+                ignoredElements: ignoredRegions.ElementsIn,
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options.CaptureDom ?? CaptureDom,
