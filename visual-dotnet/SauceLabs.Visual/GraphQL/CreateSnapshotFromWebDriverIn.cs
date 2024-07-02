@@ -13,6 +13,8 @@ namespace SauceLabs.Visual.GraphQL
         public DiffingOptionsIn? DiffingOptions { get; set; }
         [JsonProperty("ignoreRegions")]
         public RegionIn[] IgnoreRegions { get; }
+        [JsonProperty("ignoreElements")]
+        public ElementIn[]? IgnoreElements { get; }
         [JsonProperty("jobId")]
         public string JobId { get; }
         [JsonProperty("name")]
@@ -30,6 +32,8 @@ namespace SauceLabs.Visual.GraphQL
 
         [JsonProperty("clipSelector")]
         public string? ClipSelector { get; set; }
+        [JsonProperty("clipElement")]
+        public string? ClipElement { get; set; }
         [JsonProperty("fullPageConfig")]
         public FullPageConfigIn? FullPageConfig { get; set; }
 
@@ -43,8 +47,10 @@ namespace SauceLabs.Visual.GraphQL
             RegionIn[] regions,
             bool captureDom,
             string? clipSelector,
+            string? clipElement,
             string? suiteName,
             string? testName,
+            ElementIn[]? ignoredElements,
             FullPageConfigIn? fullPageConfig,
             DiffingOptionsIn? diffingOptions
         )
@@ -52,12 +58,14 @@ namespace SauceLabs.Visual.GraphQL
             BuildUuid = buildUuid;
             DiffingMethod = diffingMethod;
             IgnoreRegions = regions;
+            IgnoreElements = ignoredElements;
             JobId = jobId;
             Name = name;
             SessionMetadata = sessionMetadata;
             SessionId = sessionId;
             CaptureDom = captureDom;
             ClipSelector = clipSelector;
+            ClipElement = clipElement;
             SuiteName = suiteName;
             TestName = testName;
             FullPageConfig = fullPageConfig;

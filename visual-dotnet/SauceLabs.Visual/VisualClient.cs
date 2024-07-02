@@ -141,10 +141,7 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            var ignored = new List<RegionIn>();
-            ignored.AddRange(options.IgnoreRegions?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options.IgnoreElements?.Select(r => new RegionIn(r)) ?? new List<RegionIn>());
-            ignored.AddRange(options.Regions?.Select(r => r.ToRegionIn()) ?? new List<RegionIn>());
+            var ignoredRegions = IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
 
             FullPageConfigIn? fullPageConfigIn = null;
             if (options.FullPage == true)
@@ -157,11 +154,13 @@ namespace SauceLabs.Visual
                 name: name,
                 jobId: _jobId,
                 diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
-                regions: ignored.ToArray(),
+                regions: ignoredRegions.RegionsIn,
+                ignoredElements: ignoredRegions.ElementsIn,
                 sessionId: _sessionId,
                 sessionMetadata: _sessionMetadataBlob ?? "",
                 captureDom: options.CaptureDom ?? CaptureDom,
                 clipSelector: options.ClipSelector,
+                clipElement: options.ClipElement?.GetElementId(),
                 suiteName: options.SuiteName,
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
