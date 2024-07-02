@@ -90,14 +90,13 @@ namespace SauceLabs.Visual.Models
 
         internal ElementIn ToElementIn()
         {
-            var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, DisableOnly);
-
-            if (Element != null)
+            if (Element == null)
             {
-                return new ElementIn(Element, null, diffingOptions);
+                throw new VisualClientException("No Element has been passed");
             }
 
-            throw new VisualClientException("No Element has been passed");
+            var diffingOptions = DiffingOptionsInHelper.CreateFromEnableOnlyDisable(EnableOnly, DisableOnly);
+            return new ElementIn(Element, null, diffingOptions);
         }
     }
 }
