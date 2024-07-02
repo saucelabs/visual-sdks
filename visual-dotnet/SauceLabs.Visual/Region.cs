@@ -1,3 +1,4 @@
+using SauceLabs.Visual.Utils;
 using System;
 
 namespace SauceLabs.Visual
@@ -26,6 +27,17 @@ namespace SauceLabs.Visual
         public override string ToString()
         {
             return Value.ToString();
+        }
+
+        /// <summary>
+        /// <c>FromEnvironment</c> returns the <c>Region</c> instance based on the environment SAUCE_REGION.
+        /// If the env variable is unavailable, the default region will be returned - 
+        /// </summary>
+        /// <returns>the matching <c>Region</c> instance</returns>
+        /// <exception cref="VisualClientException"></exception>
+        public static Region FromEnvironment()
+        {
+            return string.IsNullOrEmpty(EnvVars.Region) ? FromName(EnvVars.Region) : UsWest1;
         }
 
         /// <summary>
