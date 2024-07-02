@@ -26,6 +26,8 @@ jobs:
         run: |
           corepack enable
           yarn install
+          npx changeset status --output=changeset.json
+          ./replace_pkg_version.sh changeset.json
           npm run build --workspaces --if-present
       - name: upgrade & publish version(s)
         run: |
