@@ -4,6 +4,8 @@ public class EnvironmentVariables {
 
   private EnvironmentVariables() {}
 
+  public static final String SAUCE_REGION = System.getenv("SAUCE_REGION");
+
   public static final String PROJECT_NAME = System.getenv("SAUCE_VISUAL_PROJECT");
   public static final String BRANCH_NAME = System.getenv("SAUCE_VISUAL_BRANCH");
   public static final String DEFAULT_BRANCH_NAME = System.getenv("SAUCE_VISUAL_DEFAULT_BRANCH");

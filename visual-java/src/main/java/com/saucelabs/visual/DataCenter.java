@@ -10,4 +10,18 @@ public enum DataCenter {
   DataCenter(String endpoint) {
     this.endpoint = endpoint;
   }
+
+  static DataCenter fromSauceRegion(String sauceRegion) {
+    if (sauceRegion == null) {
+      return US_WEST_1;
+    }
+    switch (sauceRegion) {
+      case "eu-central-1":
+        return EU_CENTRAL_1;
+      case "us-east-4":
+        return US_EAST_4;
+      default:
+        return US_WEST_1;
+    }
+  }
 }
