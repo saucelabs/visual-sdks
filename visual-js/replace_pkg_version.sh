@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "${BASH_VERSINFO[0]}" -lt 5 ];then
+  echo "Bash5 is required" > /dev/stderr
+  exit 1
+fi
+
 # Check if jq is installed
 if ! command -v jq &> /dev/null
 then
