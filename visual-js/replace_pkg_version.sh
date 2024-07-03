@@ -4,7 +4,7 @@
 if ! command -v jq &> /dev/null
 then
     echo "jq could not be found. Please install jq to run this script."
-    exit
+    exit 1
 fi
 
 # Check if a JSON file is provided as an argument
@@ -22,22 +22,15 @@ if [ ! -f "$JSON_FILE" ]; then
 fi
 
 # Define the mapping between release names and filenames
-release_names=(
-    "@saucelabs/visual" 
-    "@saucelabs/cypress-visual-plugin" 
-    "@saucelabs/nightwatch-sauce-visual-service" 
-    "@saucelabs/visual-storybook" 
-    "@saucelabs/wdio-sauce-visual-service"
-    # Add more release names as needed
-    ) 
-file_names=(
-    "visual/src/api.ts" 
-    "visual-cypress/src/index.ts" 
-    "visual-nightwatch/src/utils/constants.ts" 
-    "visual-storybook/src/api.ts" 
-    "visual-wdio/src/SauceVisualService.ts"
-    # Add corresponding filenames
-    )
+declare -A FILE_MAP
+FILE_MAP=(
+    ["@saucelabs/visual"]="visual/src/api.ts"
+    ["@saucelabs/cypress-visual-plugin"]="visual-cypress/src/index.ts"
+    ["@saucelabs/nightwatch-sauce-visual-service"]="visual-nightwatch/src/utils/constants.ts"
+    ["@saucelabs/visual-storybook"]="visual-storybook/src/api.ts"
+    ["@saucelabs/wdio-sauce-visual-service"]="visual-wdio/src/SauceVisualService.ts"
+    # Add more mappings as needed
+)
 
 # Read releases from the JSON file
 releases=$(jq -c '.releases[]' "$JSON_FILE")
@@ -48,14 +41,8 @@ for release in $releases; do
     release_name=$(echo "$release" | jq -r '.name')
     version=$(echo "$release" | jq -r '.newVersion')
 
-    # Find the corresponding filename
-    filename=""
-    for i in "${!release_names[@]}"; do
-        if [ "${release_names[$i]}" = "$release_name" ]; then
-            filename=${file_names[$i]}
-            break
-        fi
-    done
+    # Get the corresponding filename from the mapping
+    filename=${FILE_MAP[$release_name]}
 
     # Check if the filename exists
     if [ -n "$filename" ] && [ -f "$filename" ]; then
