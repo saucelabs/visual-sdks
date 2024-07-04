@@ -236,13 +236,15 @@ public class VisualApi {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
             new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
-    WebdriverSessionInfoQuery.Data response =
-        this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
-    if (response.result == null) {
-      throw new VisualApiException(
+    try {
+      WebdriverSessionInfoQuery.Data response =
+          this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
+      return response.result;
+    } catch (VisualApiException e) {
+      log.error(
           "Sauce Visual: No WebDriver session found. Please make sure WebDriver and Sauce Visual data centers are aligned.");
+      throw e;
     }
-    return response.result;
   }
 
   /**

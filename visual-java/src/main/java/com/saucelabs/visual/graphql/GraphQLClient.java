@@ -68,6 +68,16 @@ public class GraphQLClient {
 
       JsonNode rootNode = objectMapper.readTree(responseString);
       JsonNode dataField = rootNode.get("data");
+      JsonNode errors = rootNode.get("errors");
+
+      if (errors != null) {
+        JsonNode message = errors.findValue("message");
+        if (message != null) {
+          throw new VisualApiException(message.asText());
+        } else {
+          throw new VisualApiException("Unexpected error");
+        }
+      }
 
       return objectMapper.treeToValue(dataField, responseType);
     } catch (IOException e) {
