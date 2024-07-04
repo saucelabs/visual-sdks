@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 public class VisualApi {
   private static final Logger log = LoggerFactory.getLogger(VisualApi.class);
 
-  private static String resolveEndpoint(String endpoint) {
-    if (isNotBlank(endpoint)) {
-      return endpoint;
-    }
+  private static String resolveEndpoint() {
     return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
   }
 
@@ -46,7 +43,7 @@ public class VisualApi {
     private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
-      this(driver, username, accessKey, "");
+      this(driver, username, accessKey, resolveEndpoint());
     }
 
     public Builder(RemoteWebDriver driver, String username, String accessKey, DataCenter region) {
@@ -57,7 +54,7 @@ public class VisualApi {
       this.driver = driver;
       this.username = username;
       this.accessKey = accessKey;
-      this.endpoint = resolveEndpoint(endpoint);
+      this.endpoint = endpoint;
     }
 
     public Builder withBuild(String buildName) {
@@ -127,7 +124,7 @@ public class VisualApi {
    * @param accessKey SauceLabs access key
    */
   public VisualApi(RemoteWebDriver driver, String username, String accessKey) {
-    this(driver, "", username, accessKey);
+    this(driver, resolveEndpoint(), username, accessKey);
   }
 
   /**
@@ -178,7 +175,7 @@ public class VisualApi {
           "Invalid SauceLabs credentials. "
               + "Please check your SauceLabs username and access key at https://app.saucelabs.com/user-settings");
     }
-    this.client = new GraphQLClient(resolveEndpoint(url), username, accessKey);
+    this.client = new GraphQLClient(url, username, accessKey);
     this.sessionId = driver.getSessionId().toString();
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;

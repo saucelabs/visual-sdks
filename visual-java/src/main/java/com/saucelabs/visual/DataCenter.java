@@ -1,5 +1,7 @@
 package com.saucelabs.visual;
 
+import com.saucelabs.visual.exception.VisualApiException;
+
 public enum DataCenter {
   US_WEST_1("https://api.us-west-1.saucelabs.com/v1/visual/graphql"),
   US_EAST_4("https://api.us-east-4.saucelabs.com/v1/visual/graphql"),
@@ -23,7 +25,7 @@ public enum DataCenter {
       case "us-east-4":
         return US_EAST_4;
       default:
-        throw new IllegalArgumentException("Invalid Sauce region: " + sauceRegion);
+        throw new VisualApiException("Unknown region: " + sauceRegion);
     }
   }
 }
