@@ -1,7 +1,11 @@
 name: JS (release)
 
 on:
-  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-js/**'
 
 defaults:
   run:
