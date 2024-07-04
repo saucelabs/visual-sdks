@@ -16,12 +16,14 @@ public enum DataCenter {
       return US_WEST_1;
     }
     switch (sauceRegion) {
+      case "us-west-1":
+        return US_WEST_1;
       case "eu-central-1":
         return EU_CENTRAL_1;
       case "us-east-4":
         return US_EAST_4;
       default:
-        return US_WEST_1;
+        throw new IllegalArgumentException("Invalid Sauce region: " + sauceRegion);
     }
   }
 }
