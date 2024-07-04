@@ -25,6 +25,10 @@ import org.slf4j.LoggerFactory;
 public class VisualApi {
   private static final Logger log = LoggerFactory.getLogger(VisualApi.class);
 
+  private static String resolveEndpoint() {
+    return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
+  }
+
   /** Creates a VisualApi instance using builder style */
   public static class Builder {
     private final RemoteWebDriver driver;
@@ -39,7 +43,7 @@ public class VisualApi {
     private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
-      this(driver, username, accessKey, DataCenter.US_WEST_1.endpoint);
+      this(driver, username, accessKey, resolveEndpoint());
     }
 
     public Builder(RemoteWebDriver driver, String username, String accessKey, DataCenter region) {
@@ -111,6 +115,17 @@ public class VisualApi {
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
   private String sessionMetadataBlob;
+
+  /**
+   * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
+   *
+   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
+   * @param username SauceLabs username
+   * @param accessKey SauceLabs access key
+   */
+  public VisualApi(RemoteWebDriver driver, String username, String accessKey) {
+    this(driver, resolveEndpoint(), username, accessKey);
+  }
 
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
@@ -218,7 +233,15 @@ public class VisualApi {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
             new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
-    return this.client.execute(query, WebdriverSessionInfoQuery.Data.class).result;
+    try {
+      WebdriverSessionInfoQuery.Data response =
+          this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
+      return response.result;
+    } catch (VisualApiException e) {
+      log.error(
+          "Sauce Visual: No WebDriver session found. Please make sure WebDriver and Sauce Visual data centers are aligned.");
+      throw e;
+    }
   }
 
   /**
