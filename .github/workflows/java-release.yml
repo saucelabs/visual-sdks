@@ -37,7 +37,7 @@ jobs:
           git config --global user.name "sauce-visual-bot"
           git config --global user.email "visual@saucelabs.com"
 
-      - name: upgrade & push version
+      - name: Upgrade & Build new version
         id: upgrade
         run: |
           current_version=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
@@ -46,7 +46,7 @@ jobs:
 
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
-      - name: Import GPG signing key
+      - name: Sign and upload to Maven Central
         uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
