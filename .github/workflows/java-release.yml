@@ -30,28 +30,21 @@ jobs:
           server-id: ossrh
           server-username: MVN_CENTRAL_USERNAME
           server-password: MVN_CENTRAL_PASSWORD
-      
+
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
           git config --global user.name "sauce-visual-bot"
-          git config --global user.email "visual@saucelabs.com" 
+          git config --global user.email "visual@saucelabs.com"
 
       - name: upgrade & push version
         id: upgrade
         run: |
           current_version=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
           new_version=$(./scripts/bump_version.sh -c $current_version -r ${{ github.event.inputs.releaseType }})
-          mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version
-          tag_name="java-$new_version"
-          git add ./pom.xml
-          git commit -m "[release] $tag_name"
-          git tag $tag_name
-          git push
-          git push origin $tag_name
-          
+          mvn -q versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version
+
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
-          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
       - name: Import GPG signing key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -67,10 +60,22 @@ jobs:
           MVN_CENTRAL_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           MVN_CENTRAL_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
 
+      - name: Push new version to Git
+        id: push_to_git
+        run: |
+          tag_name="java-${{ steps.upgrade.outputs.version }}"
+          git add ./pom.xml
+          git commit -m "[release] $tag_name"
+          git tag $tag_name
+          git push
+          git push origin $tag_name
+
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+
       - name: Github Release
         uses: softprops/action-gh-release@v2
         with:
           fail_on_unmatched_files: true
-          tag_name: ${{ steps.upgrade.outputs.tag_name }}
+          tag_name: ${{ steps.push_to_git.outputs.tag_name }}
           files: visual-java/target/java-client-${{ steps.upgrade.outputs.version }}.jar
           generate_release_notes: true
