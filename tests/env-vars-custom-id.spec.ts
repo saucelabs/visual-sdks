@@ -1,4 +1,4 @@
-import { BuildMode, BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
+import { BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
 import {
   RE_VISUAL_BUILD_ID,
   RE_VISUAL_BUILD_LINK,
@@ -50,6 +50,7 @@ describe('Custom ID env var', () => {
     async () => {
       const result = await execute(
         `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
+        -e SAUCE_VISUAL_BUILD_NAME \\
         -e SAUCE_VISUAL_CUSTOM_ID \\
         ${process.env.CONTAINER_IMAGE_NAME}`,
         {
@@ -57,6 +58,7 @@ describe('Custom ID env var', () => {
           pipeOutput: false,
           fileOutput,
           env: {
+            SAUCE_VISUAL_BUILD_NAME: SAUCE_VISUAL_BUILD_NAME,
             SAUCE_VISUAL_CUSTOM_ID: customId,
           },
         }
@@ -88,6 +90,7 @@ describe('Custom ID env var', () => {
     async () => {
       const result = await execute(
         `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
+        -e SAUCE_VISUAL_BUILD_NAME \\
         -e SAUCE_VISUAL_CUSTOM_ID \\
         ${process.env.CONTAINER_IMAGE_NAME}`,
         {
@@ -95,6 +98,7 @@ describe('Custom ID env var', () => {
           pipeOutput: false,
           fileOutput,
           env: {
+            SAUCE_VISUAL_BUILD_NAME: SAUCE_VISUAL_BUILD_NAME,
             SAUCE_VISUAL_CUSTOM_ID: customId2,
           },
         }
