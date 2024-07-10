@@ -7,6 +7,7 @@
     "login-test": "cypress run"
   },
   "dependencies": {
+    "@saucelabs/cypress-visual-plugin": "file:../",
     "@tsconfig/node18": "^18.2.4",
     "cypress": "^13.7.2",
     "ts-node": "^10.9.2",

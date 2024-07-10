@@ -436,49 +436,82 @@ Sauce Labs Visual: Unable to create new build.
   ) {
     // Forcefully casting through unknown. We expect user to set their config in cypress.config.[t|j]s
     const pluginConfig = config as unknown as HasSauceConfig;
+    const username = pluginConfig.saucelabs?.user || process.env.SAUCE_USERNAME;
+    const accessKey =
+      pluginConfig.saucelabs?.key || process.env.SAUCE_ACCESS_KEY;
 
-    const plugin = pluginInstance ?? new CypressSauceVisual(pluginConfig);
-    pluginInstance = plugin;
-
-    on('before:run', async (details: Cypress.BeforeRunDetails) => {
-      if (details.browser) {
-        plugin.setBrowser(details.browser);
+    // if we are in interactive mode or we don't have credentials, the plugin
+    // should not do anything and the tasks should all be no-ops so that users
+    // can still run their tests locally
+    let noopMode = false;
+    let noCredentials = !(username && accessKey);
+    if (config.isInteractive || noCredentials) {
+      if (config.isInteractive) {
+        logger.info(
+          'Cypress is running in open mode. Sauce Labs visual checks will be skipped.',
+        );
+      } else if (noCredentials) {
+        logger.info(
+          'Sauce Labs credentials are not set. Sauce Labs visual checks will be skipped.',
+        );
       }
-      plugin.setOperationSystem(details.system);
-      await plugin.useExistingBuildOrCreate(pluginConfig);
-    });
+      noopMode = true;
+    }
 
-    on('before:spec', () => {
-      plugin.uploadedDiffIds = [];
-    });
+    if (!noopMode) {
+      const plugin = pluginInstance ?? new CypressSauceVisual(pluginConfig);
+      pluginInstance = plugin;
+      on('before:run', async (details: Cypress.BeforeRunDetails) => {
+        if (details.browser) {
+          plugin.setBrowser(details.browser);
+        }
+        plugin.setOperationSystem(details.system);
+        await plugin.useExistingBuildOrCreate(pluginConfig);
+      });
 
-    on(
-      'after:spec',
-      async (
-        spec: Cypress.Spec,
-        results: CypressCommandLine.RunResult,
-      ): Promise<void> => {
-        await plugin.processScreenshots(spec, results);
-        plugin.cleanScreenshot();
-      },
-    );
+      on('before:spec', () => {
+        plugin.uploadedDiffIds = [];
+      });
 
-    on('after:run', async () => {
-      await plugin.closeBuild();
-    });
+      on(
+        'after:spec',
+        async (
+          spec: Cypress.Spec,
+          results: CypressCommandLine.RunResult,
+        ): Promise<void> => {
+          await plugin.processScreenshots(spec, results);
+          plugin.cleanScreenshot();
+        },
+      );
+
+      on('after:run', async () => {
+        await plugin.closeBuild();
+      });
+    }
 
     on('task', {
       'get-script': async function () {
-        return pluginInstance?.domCaptureScript;
+        if (!pluginInstance) {
+          logger.info(`skipping get-script`);
+        }
+        return pluginInstance?.domCaptureScript || null;
       },
       'visual-register-screenshot': function (metadata: ScreenshotMetadata) {
-        return plugin.addScreenshotMetadata(metadata);
+        if (!pluginInstance) {
+          logger.info(`visual-register-screenshot`);
+        }
+        return pluginInstance?.addScreenshotMetadata(metadata) || null;
       },
       'visual-log-capture': function ({
         screenshotName,
       }: {
         screenshotName: string;
       }) {
+        if (noopMode) {
+          // log a message to the console to let the user know that the screenshot would have been taken
+          logger.info(`skipping visual log capture`);
+          return null;
+        }
         const greyMessage = `sauce-visual: ${screenshotName} `;
         logger.info(`    ${chalk.green('✔')} ${chalk.grey(greyMessage)}`);
         return null;
@@ -498,9 +531,9 @@ Sauce Labs Visual: Unable to create new build.
         return null;
       },
       'visual-test-results': async function (): Promise<
-        Record<DiffStatus, number>
+        Record<DiffStatus, number>|null
       > {
-        return await plugin.getTestResults();
+        return await pluginInstance?.getTestResults() || null;
       },
     });
   }
