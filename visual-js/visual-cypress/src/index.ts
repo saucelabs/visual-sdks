@@ -444,7 +444,7 @@ Sauce Labs Visual: Unable to create new build.
     // should not do anything and the tasks should all be no-ops so that users
     // can still run their tests locally
     let noopMode = false;
-    let noCredentials = !(username && accessKey);
+    const noCredentials = !(username && accessKey);
     if (config.isInteractive || noCredentials) {
       if (config.isInteractive) {
         logger.info(
@@ -530,10 +530,11 @@ Sauce Labs Visual: Unable to create new build.
         }
         return null;
       },
-      'visual-test-results': async function (): Promise<
-        Record<DiffStatus, number>|null
-      > {
-        return await pluginInstance?.getTestResults() || null;
+      'visual-test-results': async function (): Promise<Record<
+        DiffStatus,
+        number
+      > | null> {
+        return (await pluginInstance?.getTestResults()) || null;
       },
     });
   }
