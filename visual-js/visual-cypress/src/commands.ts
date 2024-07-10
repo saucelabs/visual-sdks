@@ -113,7 +113,10 @@ const sauceVisualCheckCommand = (
 ) => {
   
   if (Cypress.config('isInteractive')) {
-    Cypress.log(`Sauce Labs visual testing is disabled in "cypress open" mode.`);
+    Cypress.log({
+      name: 'Info',
+      message: 'Sauce Labs visual testing is disabled in "cypress open" mode.'
+    });
     return;
   }
   const { clipSelector } = options ?? {};
@@ -252,7 +255,10 @@ Cypress.Commands.add(
 Cypress.Commands.add('sauceVisualCheck', sauceVisualCheckCommand);
 Cypress.Commands.add('sauceVisualResults', () => {
   if (Cypress.config('isInteractive')) {
-    Cypress.log(`Sauce Labs visual testing is disabled in "cypress open" mode.`);
+    Cypress.log({
+      name: 'Info',
+      message: 'Sauce Labs visual testing is disabled in "cypress open" mode.'
+    });
     return;
   }
   return cy.task('visual-test-results');
