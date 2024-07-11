@@ -57,8 +57,8 @@ jobs:
           mvn -P release -Dgpg.passphrase="${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}" \
               -Drevision=${{ steps.upgrade.outputs.version }} deploy
         env:
-          MVN_CENTRAL_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
-          MVN_CENTRAL_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
 
       - name: Push new version to Git
         id: push_to_git
