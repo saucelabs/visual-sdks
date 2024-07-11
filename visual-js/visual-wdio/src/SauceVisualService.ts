@@ -117,7 +117,7 @@ export type CheckOptions = {
    */
   captureDom?: boolean;
   diffingMethod?: DiffingMethod;
-  disable?: [keyof DiffingOptionsIn];
+  disable?: (keyof DiffingOptionsIn)[];
   fullPage?: FullPageScreenshotOptions;
 };
 
