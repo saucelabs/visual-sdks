@@ -25,6 +25,8 @@ const codegenConfig: CodegenConfig = {
     scalars: {
       WebdriverSessionBlob: "string",
       WebdriverElementID: "string",
+      Datetime: "Date | string | number",
+      UUID: "string",
     }
   },
   generates: {

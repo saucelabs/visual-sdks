@@ -144,7 +144,10 @@ describe('build status', () => {
   });
 
   it('should throw if neither a build id or custom id not provided', () => {
-    makeProgram().parse('npx visual build status'.split(' '));
+    expect(
+      makeProgram().parseAsync('npx visual build status'.split(' ')),
+    ).rejects.toThrow();
+
     expect(errorSpy).toBeCalledWith(
       expect.stringMatching(/--build-id or --custom-id needs to be specified/),
     );

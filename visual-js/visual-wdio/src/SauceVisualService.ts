@@ -63,12 +63,18 @@ declare global {
         branch: string;
         defaultBranch?: string;
       }): Promise<string>;
-      sauceVisualCheck(name: string, options?: CheckOptions): Promise<void>;
+      sauceVisualCheck(
+        name: string,
+        options?: CheckOptions,
+      ): Promise<{ snapshotId: string }>;
       sauceVisualResults(): Promise<ResultStatus>;
       /**
        * @deprecated Use sauceVisualCheck(). check() will be removed in a future version.
        */
-      check(name: string, options?: CheckOptions): Promise<void>;
+      check(
+        name: string,
+        options?: CheckOptions,
+      ): Promise<{ snapshotId: string }>;
       /**
        * @deprecated Use sauceVisualResults(). checkResult() will be removed in a future version.
        */
@@ -369,7 +375,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
       buildId: string,
       metaInfo: WebdriverSession['blob'],
     ) =>
-    async (name: string, options: CheckOptions = {}) => {
+    async (
+      name: string,
+      options: CheckOptions = {},
+    ): ReturnType<WebdriverIO.Browser['sauceVisualCheck']> => {
       log.info(`Checking ${name}`);
 
       const resolveIgnorable = async (
@@ -415,6 +424,9 @@ export default class SauceVisualService implements Services.ServiceInstance {
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));
       log.info('Check result', result);
+      return {
+        snapshotId: result.id,
+      };
     };
 
   private createBuild =
