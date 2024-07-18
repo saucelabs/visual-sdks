@@ -18,12 +18,12 @@ export type Scalars = {
    * A point in time as described by the [ISO
    * 8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
    */
-  Datetime: any;
+  Datetime: Date | string | number;
   FullText: any;
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
   JSON: any;
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
-  UUID: any;
+  UUID: string;
   WebdriverElementID: string;
   WebdriverSessionBlob: string;
 };
@@ -59,8 +59,10 @@ export type Baseline = Node & {
   diffs: DiffsConnection;
   hasDom: Scalars['Boolean'];
   id: Scalars['UUID'];
+  ignoreRegions: Array<Maybe<Region>>;
   imageUrl: Scalars['String'];
   isLatest: Scalars['Boolean'];
+  latest: Baseline;
   metadata: Maybe<Scalars['JSON']>;
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
@@ -73,6 +75,7 @@ export type Baseline = Node & {
   snapshotId: Maybe<Scalars['UUID']>;
   suiteName: Maybe<Scalars['String']>;
   testName: Maybe<Scalars['String']>;
+  uiIgnoreRegions: Array<Maybe<Region>>;
   uploadId: Scalars['String'];
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
@@ -422,6 +425,11 @@ export enum BuildsOrderBy {
   StatusDesc = 'STATUS_DESC'
 }
 
+export type CreateDerivedBaselinesIn = {
+  baselineIds: Array<Scalars['UUID']>;
+  uiIgnoreRegions: Array<RegionIn>;
+};
+
 export type CreateSnapshotFromWebDriverIn = {
   /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
   buildId?: InputMaybe<Scalars['ID']>;
@@ -488,6 +496,7 @@ export type Diff = Node & {
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
   options: Maybe<DiffingOption>;
+  preview: Array<Rect>;
   /** Reads a single `Snapshot` that is related to this `Diff`. */
   snapshot: Maybe<Snapshot>;
   snapshotId: Scalars['UUID'];
@@ -502,6 +511,16 @@ export type Diff = Node & {
   /** User id of user that last updated the diff. If no user updated the status yet, it is set to `created_by`. */
   updatedBy: Scalars['UUID'];
   updatedByUser: User;
+};
+
+
+/**
+ * The result of diffing a `Baseline` with a `Snapshot`.
+ *
+ * See the documentation for `Baseline` for details how a `Snapshot` is matched to `Baseline`.
+ */
+export type DiffPreviewArgs = {
+  input: DiffPreviewIn;
 };
 
 /** A condition to be used against `Diff` object types. All fields are tested for equality and combined with a logical ‘and.’ */
@@ -540,6 +559,10 @@ export type DiffFilter = {
   snapshotId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `status` field. */
   status?: InputMaybe<DiffStatusFilter>;
+};
+
+export type DiffPreviewIn = {
+  ignoreRegions: Array<RegionIn>;
 };
 
 /**
@@ -699,6 +722,11 @@ export type Mutation = {
   __typename?: 'Mutation';
   approveBuild: Build;
   createBuild: Build;
+  /**
+   * Copy a set of baselines specified by `baselineIds` and save it as the latest baseline, but
+   * replace uiIgnoreRegions with the provided value.
+   */
+  createDerivedBaselines: Array<Baseline>;
   createSnapshot: Snapshot;
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
@@ -716,6 +744,12 @@ export type MutationApproveBuildArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationCreateBuildArgs = {
   input: BuildIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationCreateDerivedBaselinesArgs = {
+  input: CreateDerivedBaselinesIn;
 };
 
 
@@ -1153,6 +1187,7 @@ export type Snapshot = Node & {
   imageUrl: Scalars['String'];
   /** URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session. */
   jobUrl: Maybe<Scalars['String']>;
+  latestBaseline: Maybe<Baseline>;
   metadata: Maybe<Scalars['JSON']>;
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
@@ -1369,14 +1404,14 @@ export type BuildQueryVariables = Exact<{
 }>;
 
 
-export type BuildQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, defaultBranch: string | null, mode: BuildMode } | null };
+export type BuildQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: string, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, defaultBranch: string | null, mode: BuildMode } | null };
 
 export type BuildByCustomIdQueryVariables = Exact<{
   input: Scalars['String'];
 }>;
 
 
-export type BuildByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, mode: BuildMode } | null };
+export type BuildByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: string, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, mode: BuildMode } | null };
 
 export type BuildStatusQueryVariables = Exact<{
   input: Scalars['UUID'];
@@ -1390,63 +1425,63 @@ export type BuildWithDiffsQueryVariables = Exact<{
 }>;
 
 
-export type BuildWithDiffsQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } | null };
+export type BuildWithDiffsQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: string, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: string, baselineId: string | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: string } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } | null };
 
 export type BuildWithDiffsByCustomIdQueryVariables = Exact<{
   input: Scalars['String'];
 }>;
 
 
-export type BuildWithDiffsByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: any, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: any } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number } | null> }> } } | null };
+export type BuildWithDiffsByCustomIdQuery = { __typename?: 'Query', result: { __typename?: 'Build', id: string, name: string, url: string, status: BuildStatus, project: string | null, branch: string | null, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: string, baselineId: string | null, status: DiffStatus, baseline: { __typename?: 'Baseline', snapshot: { __typename?: 'Snapshot', buildId: string } | null } | null, diffBounds: { __typename?: 'Rect', x: number, y: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number } | null> }> } } | null };
 
 export type CreateBuildMutationVariables = Exact<{
   input: BuildIn;
 }>;
 
 
-export type CreateBuildMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: any, name: string, project: string | null, branch: string | null, defaultBranch: string | null, status: BuildStatus, url: string } };
+export type CreateBuildMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: string, name: string, project: string | null, branch: string | null, defaultBranch: string | null, status: BuildStatus, url: string } };
 
 export type CreateSnapshotMutationVariables = Exact<{
   input: SnapshotIn;
 }>;
 
 
-export type CreateSnapshotMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: any, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, snapshotId: any, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
+export type CreateSnapshotMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: string, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: string, baselineId: string | null, snapshotId: string, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
 
 export type CreateSnapshotFromWebDriverMutationVariables = Exact<{
   input: CreateSnapshotFromWebDriverIn;
 }>;
 
 
-export type CreateSnapshotFromWebDriverMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: any, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, baselineId: any | null, snapshotId: any, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
+export type CreateSnapshotFromWebDriverMutation = { __typename?: 'Mutation', result: { __typename?: 'Snapshot', id: string, uploadId: string, diffs: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: string, baselineId: string | null, snapshotId: string, status: DiffStatus, diffBounds: { __typename?: 'Rect', x: number, y: number, width: number, height: number } | null, diffClusters: Array<{ __typename?: 'Rect', x: number, y: number, width: number, height: number } | null> }> } } };
 
 export type CreateSnapshotUploadMutationVariables = Exact<{
   input: SnapshotUploadIn;
 }>;
 
 
-export type CreateSnapshotUploadMutation = { __typename?: 'Mutation', result: { __typename?: 'SnapshotUpload', id: any, buildId: any, imageUploadUrl: string | null, domUploadUrl: string | null } };
+export type CreateSnapshotUploadMutation = { __typename?: 'Mutation', result: { __typename?: 'SnapshotUpload', id: string, buildId: string, imageUploadUrl: string | null, domUploadUrl: string | null } };
 
 export type DiffsForTestResultQueryVariables = Exact<{
   input: Scalars['UUID'];
 }>;
 
 
-export type DiffsForTestResultQuery = { __typename?: 'Query', result: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: any, status: DiffStatus }> } | null };
+export type DiffsForTestResultQuery = { __typename?: 'Query', result: { __typename?: 'DiffsConnection', nodes: Array<{ __typename?: 'Diff', id: string, status: DiffStatus }> } | null };
 
 export type FinishBuildDocumentMutationVariables = Exact<{
   input: FinishBuildIn;
 }>;
 
 
-export type FinishBuildDocumentMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: any, name: string, status: BuildStatus, url: string } };
+export type FinishBuildDocumentMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: string, name: string, status: BuildStatus, url: string } };
 
 export type UpdateDiffMutationVariables = Exact<{
   input: UpdateDiffIn;
 }>;
 
 
-export type UpdateDiffMutation = { __typename?: 'Mutation', result: { __typename?: 'Diff', id: any, status: DiffStatus, baselineId: any | null, snapshotId: any } };
+export type UpdateDiffMutation = { __typename?: 'Mutation', result: { __typename?: 'Diff', id: string, status: DiffStatus, baselineId: string | null, snapshotId: string } };
 
 export type WebdriverSessionInfoQueryVariables = Exact<{
   input: WebdriverSessionInfoIn;

@@ -287,7 +287,7 @@ Sauce Labs Visual: Unable to create new build.
   }
 
   private async getResultSummary(): Promise<Record<DiffStatus, number>> {
-    const diffsForTestResult = await this.api.diffsForTestResult(this.buildId);
+    const diffsForTestResult = await this.api.diffsForTestResult(this.buildId!);
     if (!diffsForTestResult) {
       throw new Error('Something went wrong while fetching test results');
     }
