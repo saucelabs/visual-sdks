@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.6.3
+
+### Patch Changes
+
+- f15ec66: Type UUID codegen, add return type from sauceVisualCheck
+
 ## 0.6.2
 
 ### Patch Changes
