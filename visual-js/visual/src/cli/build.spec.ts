@@ -118,8 +118,23 @@ describe('build finish', () => {
 });
 
 describe('build status', () => {
-  const statusSpy = jest
+  const buildIdSpy = jest
     .spyOn(api.getApi({}), 'buildWithDiffs')
+    .mockResolvedValue({
+      __typename: 'Build',
+      id: '1234',
+      name: '',
+      status: BuildStatus.Equal,
+      project: '',
+      url: '',
+      branch: null,
+      diffs: {
+        nodes: [],
+      },
+    });
+
+  const customIdSpy = jest
+    .spyOn(api.getApi({}), 'buildWithDiffsByCustomId')
     .mockResolvedValue({
       __typename: 'Build',
       id: '1234',
@@ -135,12 +150,12 @@ describe('build status', () => {
 
   beforeEach(() => {
     (api.getApi as unknown as jest.Mock).mockClear();
-    statusSpy.mockClear();
+    buildIdSpy.mockClear();
   });
 
   it('should parse a valid call with required "build-id"', () => {
     makeProgram().parse('npx visual build status --build-id 1234'.split(' '));
-    expect(statusSpy).toBeCalledWith('1234');
+    expect(buildIdSpy).toBeCalledWith('1234');
   });
 
   it('should throw if neither a build id or custom id not provided', () => {
@@ -151,5 +166,14 @@ describe('build status', () => {
     expect(errorSpy).toBeCalledWith(
       expect.stringMatching(/--build-id or --custom-id needs to be specified/),
     );
+  });
+
+  it('should prioritize custom id over build id', async () => {
+    await makeProgram().parseAsync(
+      'npx visual build status --custom-id 1234 --build-id 5678'.split(' '),
+    );
+
+    expect(customIdSpy).toBeCalled();
+    expect(buildIdSpy).not.toBeCalled();
   });
 });
