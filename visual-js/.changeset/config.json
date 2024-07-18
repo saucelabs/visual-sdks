@@ -9,7 +9,7 @@
   "updateInternalDependencies": "patch",
   "ignore": [],
   "changedFilePatterns": [
-    "visual*/**",
+    "src/**/*",
     "package.json"
   ]
 }
