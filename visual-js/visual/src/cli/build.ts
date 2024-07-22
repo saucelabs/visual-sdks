@@ -56,10 +56,13 @@ const getBuildResults = async (
   api: VisualApi,
   { buildId, customId }: { buildId?: string; customId?: string },
 ): Promise<Record<string, number>> => {
-  let build;
+  const getBuild = async () => {
+    if (customId) return api.buildWithDiffsByCustomId(customId);
+    if (buildId) return api.buildWithDiffs(buildId);
+    return null;
+  };
 
-  if (customId) build = await api.buildWithDiffsByCustomId(customId);
-  if (buildId) build = await api.buildWithDiffs(buildId);
+  const build = await getBuild();
 
   if (!build) {
     throw new Error(`no build with matching criteria has been found`);
