@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.6.4
+
+### Patch Changes
+
+- c5c1ee6: Priotize custom id > build id when checking status
+
 ## 0.6.3
 
 ### Patch Changes
