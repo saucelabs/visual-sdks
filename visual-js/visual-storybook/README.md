@@ -6,8 +6,34 @@ An extension for [Storybook's test-runner](https://github.com/storybookjs/test-r
 
 View installation and usage instructions on the [Sauce Docs website](https://docs.saucelabs.com/visual-testing/integrations/storybook/).
 
-## Changelog
+## Building
 
-### 0.3.326
+Install the dependencies
 
-The default clipping behaviour changed to true. This will make sure images are clipped to the boundary of components instead of capturing the whole viewport. This change will affect all non clipped baselines created with previous sdk versions. Either recreating the baselines is needed (recommended) or changing the config to false.
+```sh
+npm install
+```
+
+Build [Sauce Labs Visual client library](../visual/) since Sauce Labs Visual Storybook Integration depends on it
+
+```sh
+npm --prefix ../visual run build
+```
+
+Finally build Sauce Labs Visual Storybook Integration
+
+```sh
+npm run build
+```
+
+## Linting
+
+```sh
+npm run lint
+```
+
+## Running the tests
+
+```sh
+npm run test
+```
