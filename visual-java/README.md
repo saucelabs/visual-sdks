@@ -8,7 +8,9 @@ View installation and usage instructions on the [Sauce Docs website](https://doc
 
 ## Building
 
-Sauce Visual Java SDK uses Maven as build tool. `.mvnw` binary, that is included in the source code, can be used as a replacement if you don't have Maven installed.
+Sauce Visual Java SDK uses [Maven](https://maven.apache.org/).
+
+`mvnw` binary, that is included in the source, can be used as a replacement if you don't have Maven.
 
 ```sh
 ./mvnw clean compile
