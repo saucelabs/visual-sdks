@@ -1,5 +1,13 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.5.4
+
+### Patch Changes
+
+- f15ec66: Type UUID codegen, add return type from sauceVisualCheck
+- Updated dependencies [f15ec66]
+  - @saucelabs/visual@0.6.3
+
 ## 0.5.3
 
 ### Patch Changes

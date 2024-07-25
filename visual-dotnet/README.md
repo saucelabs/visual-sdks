@@ -2,30 +2,32 @@
 
 Sauce Labs Visual for C# expose Sauce Labs Visual Testing for your C# project with Selenium.
 
-# Installation
+## Installation & Usage
 
-Add SauceLabs.Visual to your current project
+View installation and usage instructions on the [Sauce Docs website](https://docs.saucelabs.com/visual-testing/integrations/csharp/).
+
+## Building
+
 ```sh
-dotnet add package SauceLabs.Visual
+dotnet build ./SauceLabs.Visual/SauceLabs.Visual.csproj --no-restore
 ```
 
-# How to use
+## Linting
 
-- Instantiate `VisualClient` object
-  ```csharp
-  var dataCenter = DataCenter.UsWest1;
-  var visualClient = await VisualClient.Create(Driver, datacenter);
-  ```
+For linting, Sauce Visual C# SDK uses [dotnet-format](https://github.com/dotnet/sdk/tree/main/documentation/format/docs) tool. It can be installed with the following command:
 
-- Invoke Visual Testing
-  ```csharp
-  var checkOptions = new VisualCheckOptions() { CaptureDom = true };
-  await visualClient.VisualCheck("Home Page", checkOptions);
-  ```
+```sh
+dotnet tool install -g dotnet-format
+```
 
-- Get results of Visual Tests and run assertions on it
-  ```csharp
-  var results = await visualClient.VisualResults(visualBuild.Id);
-  // verify that no differences have been detected
-  Assert.AreEqual(0, results[DiffStatus.Approved]);
-  ```
+After the installation, it can be run the following command:
+
+```sh
+dotnet format '.' --verify-no-changes
+```
+
+## Running the tests
+
+```sh
+dotnet test --verbosity normal
+```

@@ -27,3 +27,7 @@
 - Updated dependencies [ed72709]
 - Updated dependencies [0384c59]
   - @saucelabs/visual@0.4.0
+
+## 0.3.326
+
+The default clipping behaviour changed to true. This will make sure images are clipped to the boundary of components instead of capturing the whole viewport. This change will affect all non clipped baselines created with previous sdk versions. Either recreating the baselines is needed (recommended) or changing the config to false.

@@ -1,5 +1,17 @@
 # @saucelabs/visual
 
+## 0.6.4
+
+### Patch Changes
+
+- c5c1ee6: Priotize custom id > build id when checking status
+
+## 0.6.3
+
+### Patch Changes
+
+- f15ec66: Type UUID codegen, add return type from sauceVisualCheck
+
 ## 0.6.2
 
 ### Patch Changes
