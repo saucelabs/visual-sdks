@@ -20,4 +20,3 @@ Setup without Build Name
 
 Teardown
     Finish Visual Build
-    Visual Build Status
