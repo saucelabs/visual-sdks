@@ -27,7 +27,7 @@ import {
 
 import logger from '@wdio/logger';
 import chalk from 'chalk';
-import { Ignorable, isWdioElement } from './guarded-types.js';
+import { Ignorable, isWdioElement, WdioElement } from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
 import type { Test } from '@wdio/types/build/Frameworks';
 
@@ -92,6 +92,7 @@ type SauceVisualServiceOptions = {
   diffingMethod?: DiffingMethod;
   captureDom?: boolean;
   clipSelector?: string;
+  clipElement?: WdioElement;
   region?: SauceRegion;
   fullPage?: FullPageScreenshotOptions;
 };
@@ -118,6 +119,7 @@ export type CheckOptions = {
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
   clipSelector?: string;
+  clipElement?: WdioElement;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
    */
@@ -156,6 +158,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   diffingMethod: DiffingMethod | undefined;
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
+  clipElement: WdioElement | undefined;
   fullPage?: FullPageScreenshotOptions;
   apiClient: VisualApi;
 
@@ -406,6 +409,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
       const result = await api.createSnapshotFromWebDriver({
         captureDom: options.captureDom ?? this.captureDom,
+        clipElement:
+          options.clipElement?.elementId ?? this.clipElement?.elementId,
         clipSelector: options.clipSelector ?? this.clipSelector,
         sessionId,
         jobId,
