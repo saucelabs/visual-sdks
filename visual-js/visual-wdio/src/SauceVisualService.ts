@@ -170,6 +170,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
     this.diffingMethod = options.diffingMethod;
     this.captureDom = options.captureDom;
     this.clipSelector = options.clipSelector;
+    this.clipElement = options.clipElement;
     this.fullPage = options.fullPage;
     this.apiClient = getApi(
       {
