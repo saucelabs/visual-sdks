@@ -119,6 +119,9 @@ export type CheckOptions = {
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
   clipSelector?: string;
+  /**
+   * A WdioElement that we should crop the screenshot to. Takes priority over a clipSelector
+   */
   clipElement?: WdioElement;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
@@ -409,18 +412,17 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
 
-      let clipSelector = options.clipSelector ?? this.clipSelector;
-      if (clipSelector) {
-        const element = await browser.$(clipSelector);
-        clipSelector = element.elementId;
-      }
+      const clipSelector = options.clipSelector ?? this.clipSelector;
+      const clipElement = clipSelector
+        ? await browser.$(clipSelector).elementId
+        : null;
 
       const result = await api.createSnapshotFromWebDriver({
         captureDom: options.captureDom ?? this.captureDom,
         clipElement:
           options.clipElement?.elementId ??
           this.clipElement?.elementId ??
-          clipSelector,
+          clipElement,
         sessionId,
         jobId,
         buildUuid: buildId,
