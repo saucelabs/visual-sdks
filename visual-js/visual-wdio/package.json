@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/wdio-sauce-visual-service",
   "description": "WebdriverIO service that add visual checks capabilities using Sauce Labs Visual",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",

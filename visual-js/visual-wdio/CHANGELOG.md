@@ -1,5 +1,11 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.5.4
+
+### Patch Changes
+
+- 46841c8: Clip to element support for wdio
+
 ## 0.5.3
 
 ### Patch Changes
