@@ -408,6 +408,8 @@ public class VisualApi {
       input.setClipSelector(clipSelector);
     }
 
+    Optional.ofNullable(options.getClipElement()).ifPresent(input::setClipElement);
+
     FullPageScreenshotConfig fullPageScreenshotConfig =
         Optional.ofNullable(options.getFullPageScreenshotConfig())
             .orElse(this.fullPageScreenshotConfig);
