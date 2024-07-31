@@ -9,8 +9,6 @@ describe('LoginPage', () => {
 
   it('should be able to test loading of login page', async () => {
     await expect(await LoginPage.waitForIsShown()).toBeTruthy();
-    await browser.sauceVisualCheck('Before Login', {
-      clipSelector: '.btn_action',
-    });
+    await browser.sauceVisualCheck('Before Login');
   });
 });
