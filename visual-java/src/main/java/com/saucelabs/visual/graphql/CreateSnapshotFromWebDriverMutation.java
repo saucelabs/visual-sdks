@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
   public static final String OPERATION_DOCUMENT =
@@ -88,7 +89,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     }
 
     public void setClipElement(WebElement clipElement) {
-      this.clipElement = Optional.of(clipElement.getAttribute("id"));
+      this.clipElement = Optional.of(((RemoteWebElement) clipElement).getId());
     }
 
     public void setFullPageConfig(FullPageScreenshotConfig fullPageConfig) {
