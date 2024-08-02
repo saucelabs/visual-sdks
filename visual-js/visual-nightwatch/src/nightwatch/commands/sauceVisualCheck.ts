@@ -132,7 +132,7 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
       ReturnType<typeof api.createSnapshotFromWebDriver>
     > | null = null;
 
-    const clipElement = options.clipSelector
+    const clipElementFromClipSelector = options.clipSelector
       ? (await browser.findElement(options.clipSelector)).getId()
       : null;
 
@@ -148,7 +148,8 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         suiteName,
         testName,
         fullPageConfig: getFullPageConfig(fullPage, options.fullPage),
-        clipElement: (await options.clipElement?.getId()) ?? clipElement,
+        clipElement:
+          (await options.clipElement?.getId()) ?? clipElementFromClipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,
       });
 
