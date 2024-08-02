@@ -16,6 +16,7 @@ import dev.failsafe.RetryPolicy;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -110,7 +111,7 @@ public class VisualApi {
 
   private final VisualBuild build;
   private final String jobId;
-  private final String sessionId;
+  private final RemoteWebDriver driver;
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
@@ -176,7 +177,8 @@ public class VisualApi {
               + "Please check your SauceLabs username and access key at https://app.saucelabs.com/user-settings");
     }
     this.client = new GraphQLClient(url, username, accessKey);
-    this.sessionId = driver.getSessionId().toString();
+    this.driver = driver;
+    String sessionId = driver.getSessionId().toString();
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;
     this.build = VisualBuild.getBuildOnce(this, buildAttributes);
@@ -185,7 +187,7 @@ public class VisualApi {
 
   VisualApi(
       String jobId,
-      String sessionId,
+      RemoteWebDriver driver,
       VisualBuild build,
       String sessionMetadataBlob,
       String url,
@@ -201,7 +203,7 @@ public class VisualApi {
     }
     this.build = build;
     this.jobId = jobId;
-    this.sessionId = sessionId;
+    this.driver = driver;
     this.client = new GraphQLClient(url, username, accessKey);
     this.sessionMetadataBlob = sessionMetadataBlob;
   }
@@ -232,7 +234,8 @@ public class VisualApi {
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
-            new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
+            new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(
+                this.jobId, this.driver.getSessionId().toString()));
     try {
       WebdriverSessionInfoQuery.Data response =
           this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
@@ -383,7 +386,7 @@ public class VisualApi {
             extractIgnoreElements(options),
             this.jobId,
             snapshotName,
-            this.sessionId,
+            this.driver.getSessionId().toString(),
             this.sessionMetadataBlob);
 
     if (options.getTestName() != null) {
@@ -403,12 +406,11 @@ public class VisualApi {
       input.setCaptureDom(captureDom);
     }
 
-    String clipSelector = options.getClipSelector();
-    if (clipSelector != null) {
-      input.setClipSelector(clipSelector);
+    if (options.getClipElement() != null) {
+      input.setClipElement(options.getClipElement());
+    } else if (options.getClipSelector() != null) {
+      input.setClipElement(this.driver.findElement(By.cssSelector(options.getClipSelector())));
     }
-
-    Optional.ofNullable(options.getClipElement()).ifPresent(input::setClipElement);
 
     FullPageScreenshotConfig fullPageScreenshotConfig =
         Optional.ofNullable(options.getFullPageScreenshotConfig())
