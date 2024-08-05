@@ -1,5 +1,11 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.6.2
+
+### Patch Changes
+
+- d6dd344: add clipElement support
+
 ## 0.6.1
 
 ### Patch Changes
