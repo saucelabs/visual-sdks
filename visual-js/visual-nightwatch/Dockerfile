@@ -22,4 +22,4 @@ WORKDIR integration-tests
 
 RUN npm install
 
-ENTRYPOINT ["npm", "run", "login-test"]
+ENTRYPOINT ["npm", "run", "external"]
