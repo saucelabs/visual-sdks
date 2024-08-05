@@ -22,7 +22,7 @@ class VisualApiTest {
   void sauceVisualResultsTest() throws IllegalAccessException {
     VisualApi api =
         new VisualApi(
-            "", "", new VisualBuild(null, null, null, null, null, null), "", "", "u", "k");
+            "", null, new VisualBuild(null, null, null, null, null, null), "", "", "u", "k");
     GraphQLClient mockGraphQLClient = mock(GraphQLClient.class);
     when(mockGraphQLClient.execute(any(), any()))
         .thenReturn(

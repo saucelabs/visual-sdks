@@ -30,6 +30,7 @@ public class CheckOptions {
       DiffingOptionsIn diffingOptions,
       Boolean captureDom,
       String clipSelector,
+      WebElement clipElement,
       FullPageScreenshotConfig fullPageScreenshotConfig) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
@@ -39,6 +40,7 @@ public class CheckOptions {
     this.diffingMethod = diffingMethod;
     this.captureDom = captureDom;
     this.clipSelector = clipSelector;
+    this.clipElement = clipElement;
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
     this.diffingOptions = diffingOptions;
   }
@@ -53,6 +55,7 @@ public class CheckOptions {
   private DiffingOptionsIn diffingOptions;
   private Boolean captureDom;
   private String clipSelector;
+  private WebElement clipElement;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
 
   public static class Builder {
@@ -65,6 +68,7 @@ public class CheckOptions {
     private DiffingOptionsIn diffingOptions;
     private Boolean captureDom;
     private String clipSelector;
+    private WebElement clipElement;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
@@ -107,6 +111,11 @@ public class CheckOptions {
       return this;
     }
 
+    public Builder withClipElement(WebElement clipElement) {
+      this.clipElement = clipElement;
+      return this;
+    }
+
     public Builder disableOnly(EnumSet<DiffingFlag> flags) {
       this.diffingOptions = new DiffingOptionsIn();
       DiffingFlag.setAll(this.diffingOptions, true);
@@ -144,6 +153,7 @@ public class CheckOptions {
           diffingOptions,
           captureDom,
           clipSelector,
+          clipElement,
           fullPageScreenshotConfig);
     }
   }
@@ -214,6 +224,14 @@ public class CheckOptions {
 
   public void setClipSelector(String clipSelector) {
     this.clipSelector = clipSelector;
+  }
+
+  public WebElement getClipElement() {
+    return clipElement;
+  }
+
+  public void setClipElement(WebElement clipElement) {
+    this.clipElement = clipElement;
   }
 
   public FullPageScreenshotConfig getFullPageScreenshotConfig() {

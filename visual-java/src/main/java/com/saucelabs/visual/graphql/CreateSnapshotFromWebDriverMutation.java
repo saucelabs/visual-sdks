@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
   public static final String OPERATION_DOCUMENT =
@@ -42,6 +44,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     public Optional<Boolean> captureDom = Optional.empty();
 
     public Optional<String> clipSelector = Optional.empty();
+
+    public Optional<String> clipElement = Optional.empty();
 
     public Optional<FullPageScreenshotConfig> fullPageConfig = Optional.empty();
 
@@ -82,6 +86,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setClipSelector(String clipSelector) {
       this.clipSelector = Optional.of(clipSelector);
+    }
+
+    public void setClipElement(WebElement clipElement) {
+      this.clipElement = Optional.of(((RemoteWebElement) clipElement).getId());
     }
 
     public void setFullPageConfig(FullPageScreenshotConfig fullPageConfig) {

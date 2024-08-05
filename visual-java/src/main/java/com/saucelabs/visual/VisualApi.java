@@ -16,6 +16,7 @@ import dev.failsafe.RetryPolicy;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -115,6 +116,7 @@ public class VisualApi {
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
   private String sessionMetadataBlob;
+  private final RemoteWebDriver driver;
 
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
@@ -181,11 +183,12 @@ public class VisualApi {
     this.jobId = jobIdString == null ? sessionId : jobIdString;
     this.build = VisualBuild.getBuildOnce(this, buildAttributes);
     this.sessionMetadataBlob = this.webdriverSessionInfo().blob;
+    this.driver = driver;
   }
 
   VisualApi(
       String jobId,
-      String sessionId,
+      RemoteWebDriver driver,
       VisualBuild build,
       String sessionMetadataBlob,
       String url,
@@ -201,7 +204,8 @@ public class VisualApi {
     }
     this.build = build;
     this.jobId = jobId;
-    this.sessionId = sessionId;
+    this.sessionId = driver.getSessionId().toString();
+    this.driver = driver;
     this.client = new GraphQLClient(url, username, accessKey);
     this.sessionMetadataBlob = sessionMetadataBlob;
   }
@@ -403,9 +407,10 @@ public class VisualApi {
       input.setCaptureDom(captureDom);
     }
 
-    String clipSelector = options.getClipSelector();
-    if (clipSelector != null) {
-      input.setClipSelector(clipSelector);
+    if (options.getClipElement() != null) {
+      input.setClipElement(options.getClipElement());
+    } else if (options.getClipSelector() != null) {
+      input.setClipElement(this.driver.findElement(By.cssSelector(options.getClipSelector())));
     }
 
     FullPageScreenshotConfig fullPageScreenshotConfig =
