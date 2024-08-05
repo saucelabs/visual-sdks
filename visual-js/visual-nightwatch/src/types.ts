@@ -40,6 +40,10 @@ export interface CheckOptions {
    * A querySelector compatible selector of an element that we should crop the screenshot to.
    */
   clipSelector?: string;
+  /**
+   * A NightwatchElement that we should crop the screenshot to. Takes priority over a clipSelector
+   */
+  clipElement?: ScopedElement;
 }
 
 export interface SauceVisualServiceOptions
