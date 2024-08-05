@@ -1,7 +1,7 @@
 import { NightwatchTests } from 'nightwatch';
 
 /*
- * The assertions for this test is located in the tests folder at the project root. Modify accordingly.
+ * The assertions for this test are located in the tests folder at the project root. Modify accordingly.
  */
 const home: NightwatchTests = {
   'Check Login Page': () => {
