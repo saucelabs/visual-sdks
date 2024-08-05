@@ -111,11 +111,12 @@ public class VisualApi {
 
   private final VisualBuild build;
   private final String jobId;
-  private final RemoteWebDriver driver;
+  private final String sessionId;
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
   private String sessionMetadataBlob;
+  private final RemoteWebDriver driver;
 
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
@@ -177,12 +178,12 @@ public class VisualApi {
               + "Please check your SauceLabs username and access key at https://app.saucelabs.com/user-settings");
     }
     this.client = new GraphQLClient(url, username, accessKey);
-    this.driver = driver;
-    String sessionId = driver.getSessionId().toString();
+    this.sessionId = driver.getSessionId().toString();
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;
     this.build = VisualBuild.getBuildOnce(this, buildAttributes);
     this.sessionMetadataBlob = this.webdriverSessionInfo().blob;
+    this.driver = driver;
   }
 
   VisualApi(
@@ -203,6 +204,7 @@ public class VisualApi {
     }
     this.build = build;
     this.jobId = jobId;
+    this.sessionId = driver.getSessionId().toString();
     this.driver = driver;
     this.client = new GraphQLClient(url, username, accessKey);
     this.sessionMetadataBlob = sessionMetadataBlob;
@@ -234,8 +236,7 @@ public class VisualApi {
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
-            new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(
-                this.jobId, this.driver.getSessionId().toString()));
+            new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
     try {
       WebdriverSessionInfoQuery.Data response =
           this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
@@ -386,7 +387,7 @@ public class VisualApi {
             extractIgnoreElements(options),
             this.jobId,
             snapshotName,
-            this.driver.getSessionId().toString(),
+            this.sessionId,
             this.sessionMetadataBlob);
 
     if (options.getTestName() != null) {
