@@ -29,7 +29,8 @@ namespace SauceLabs.Visual.GraphQL
         public string? TestName { get; set; }
         [JsonProperty("captureDom")]
         public bool? CaptureDom { get; set; }
-
+        [JsonProperty("baselineOverride")]
+        public BaselineOverrideIn? BaselineOverride { get; set; }
         [JsonProperty("clipSelector")]
         public string? ClipSelector { get; set; }
         [JsonProperty("clipElement")]
@@ -52,7 +53,8 @@ namespace SauceLabs.Visual.GraphQL
             string? testName,
             ElementIn[]? ignoredElements,
             FullPageConfigIn? fullPageConfig,
-            DiffingOptionsIn? diffingOptions
+            DiffingOptionsIn? diffingOptions,
+            BaselineOverrideIn? baselineOverride
         )
         {
             BuildUuid = buildUuid;
@@ -70,6 +72,7 @@ namespace SauceLabs.Visual.GraphQL
             TestName = testName;
             FullPageConfig = fullPageConfig;
             DiffingOptions = diffingOptions;
+            BaselineOverride = baselineOverride;
         }
     }
 }

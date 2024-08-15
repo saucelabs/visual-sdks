@@ -24,6 +24,7 @@ namespace SauceLabs.Visual
         private readonly List<string> _screenshotIds = new List<string>();
         public VisualBuild Build { get; private set; }
         public bool CaptureDom { get; set; } = false;
+        public BaselineOverride? BaselineOverride { get; set; }
         private readonly ResiliencePipeline _retryPipeline;
 
         private string? _previousSuiteName = null;
@@ -183,7 +184,8 @@ namespace SauceLabs.Visual
                 suiteName: options.SuiteName,
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
-                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn()
+                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
+                baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn()
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
