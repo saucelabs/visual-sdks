@@ -38,7 +38,7 @@ namespace SauceLabs.Visual
         /// <c>TestName</c> manually set the TestName of the Test.
         /// </summary>
         public string? TestName { get; set; }
-        
+
         /// <summary>
         /// <c>BaselineOverride</c> override the baseline matching behavior for the test.
         /// </summary>
