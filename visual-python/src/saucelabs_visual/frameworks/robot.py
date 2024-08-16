@@ -7,6 +7,7 @@ from robot.api import logger
 from robot.api.deco import library, keyword
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
@@ -48,8 +49,8 @@ class SauceLabsVisual:
 
         return BuiltIn().get_library_instance(self.selenium_library_key)
 
-    def _get_selenium_id(self) -> str:
-        return self._get_selenium_library().get_session_id()
+    def _get_driver(self) -> RemoteWebDriver:
+        return self._get_selenium_library().driver
 
     def _parse_full_page_config(self, value: Union[bool, FullPageConfig, dict, str]) -> Union[
         FullPageConfig, None
@@ -251,8 +252,6 @@ class SauceLabsVisual:
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
     ):
-        session_id = self._get_selenium_id()
-
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
         # to set proper default / optional values.
@@ -265,7 +264,7 @@ class SauceLabsVisual:
 
         self.client.create_snapshot_from_webdriver(
             name=name,
-            session_id=session_id,
+            driver=self._get_driver(),
             test_name=BuiltIn().get_variable_value('\${TEST NAME}'),
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,

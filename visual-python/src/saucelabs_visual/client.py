@@ -8,6 +8,7 @@ from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
@@ -162,7 +163,7 @@ class SauceLabsVisual:
         self.meta_cache.clear()
         return self.client.execute(query, variable_values=values)
 
-    def get_selenium_metadata(self, session_id: str, job_id: str = None) -> str:
+    def get_selenium_metadata(self, session_id: str, job_id: str) -> str:
         query = gql(
             # language=GraphQL
             """
@@ -184,7 +185,7 @@ class SauceLabsVisual:
             }
             """
         )
-        values = {"sessionId": session_id, "jobId": job_id or session_id}
+        values = {"sessionId": session_id, "jobId": job_id}
         meta = self.client.execute(query, variable_values=values)
         return meta['meta']['blob']
 
@@ -199,11 +200,13 @@ class SauceLabsVisual:
 
         return meta
 
+    def _get_session_ids(self, driver: RemoteWebDriver) -> tuple[str, str]:
+        return [driver.session_id, driver.capabilities.get('jobUuid') or driver.session_id]
+
     def create_snapshot_from_webdriver(
             self,
             name: str,
-            session_id: str,
-            job_id: str,
+            driver: RemoteWebDriver,
             test_name: Union[str, None] = None,
             suite_name: Union[str, None] = None,
             capture_dom: bool = False,
@@ -218,8 +221,8 @@ class SauceLabsVisual:
         """
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
         :param name: A name to identify this snapshot in the UI.
-        :param session_id: The session ID for the current running Selenium / Webdriver session.
-        :param job_id: The job ID returned by the driver instance.
+        :param driver: The remote webdriver instance (chrome, firefox, appium, etc) used to control
+            your device.
         :param test_name: The name of the current suite to group / identify in the UI.
         :param suite_name: The name of the current test to group / identify in the UI.
         :param capture_dom: Whether we should capture the DOM while taking a screenshot.
@@ -273,6 +276,7 @@ class SauceLabsVisual:
             }
             """
         )
+        [session_id, job_id] = self._get_session_ids(driver)
         meta = self._get_meta(session_id, job_id)
         values = {
             "name": name,
