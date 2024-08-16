@@ -162,7 +162,7 @@ class SauceLabsVisual:
         self.meta_cache.clear()
         return self.client.execute(query, variable_values=values)
 
-    def get_selenium_metadata(self, session_id: str) -> str:
+    def get_selenium_metadata(self, session_id: str, job_id: str = None) -> str:
         query = gql(
             # language=GraphQL
             """
@@ -184,16 +184,18 @@ class SauceLabsVisual:
             }
             """
         )
-        values = {"sessionId": session_id, "jobId": session_id}
+        values = {"sessionId": session_id, "jobId": job_id or session_id}
         meta = self.client.execute(query, variable_values=values)
         return meta['meta']['blob']
 
-    def _get_meta(self, session_id: str) -> str:
-        meta = self.meta_cache.get(session_id)
+    def _get_meta(self, session_id: str, job_id: str = None) -> str:
+        job_id = job_id or session_id
+        cache_key = f'{session_id}:{job_id}'.format(session_id=session_id, job_id=job_id)
+        meta = self.meta_cache.get(cache_key)
 
         if meta is None:
-            meta = self.get_selenium_metadata(session_id)
-            self.meta_cache[session_id] = meta
+            meta = self.get_selenium_metadata(session_id, job_id)
+            self.meta_cache[cache_key] = meta
 
         return meta
 
@@ -201,6 +203,7 @@ class SauceLabsVisual:
             self,
             name: str,
             session_id: str,
+            job_id: str,
             test_name: Union[str, None] = None,
             suite_name: Union[str, None] = None,
             capture_dom: bool = False,
@@ -216,6 +219,7 @@ class SauceLabsVisual:
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
         :param name: A name to identify this snapshot in the UI.
         :param session_id: The session ID for the current running Selenium / Webdriver session.
+        :param job_id: The job ID returned by the driver instance.
         :param test_name: The name of the current suite to group / identify in the UI.
         :param suite_name: The name of the current test to group / identify in the UI.
         :param capture_dom: Whether we should capture the DOM while taking a screenshot.
@@ -269,7 +273,7 @@ class SauceLabsVisual:
             }
             """
         )
-        meta = self._get_meta(session_id)
+        meta = self._get_meta(session_id, job_id)
         values = {
             "name": name,
             "sessionId": session_id,
