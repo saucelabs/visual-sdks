@@ -12,7 +12,7 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
-    DiffingOptions, IgnoreElementRegion, BuildMode
+    DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride
 
 PKG_VERSION = '0.0.14'
 
@@ -38,6 +38,8 @@ class SauceLabsVisual:
     the same session ID.
     """
     region: Region = None
+    capture_dom: bool = False
+    baseline_overrides: Union[BaselineOverride, None] = None
 
     @property
     def client(self):
@@ -217,6 +219,7 @@ class SauceLabsVisual:
             full_page_config: Union[FullPageConfig, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
+            baseline_override: Union[BaselineOverride, None] = None,
     ):
         """
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
@@ -234,6 +237,8 @@ class SauceLabsVisual:
         :param diffing_method: The diffing method we should use for comparison.
         :param diffing_options: Options to customize the DOM <-> Visual behavior for the BALANCED
             diffing method.
+        :param baseline_override: One or more keys we should use as an override when matching
+            a baseline.
         :return:
         """
         query = gql(
@@ -254,6 +259,7 @@ class SauceLabsVisual:
                 $fullPageConfig: FullPageConfigIn,
                 $diffingMethod: DiffingMethod,
                 $diffingOptions: DiffingOptionsIn,
+                $baselineOverride: BaselineOverrideIn,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -270,6 +276,7 @@ class SauceLabsVisual:
                     fullPageConfig: $fullPageConfig,
                     diffingMethod: $diffingMethod,
                     diffingOptions: $diffingOptions,
+                    baselineOverride: $baselineOverride,
                 }){
                     id
                 }
@@ -299,6 +306,9 @@ class SauceLabsVisual:
             "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
             "diffingOptions": diffing_options,
+            "baselineOverride": {
+                key: value for key, value in asdict(baseline_override).items() if value is not None
+            } if baseline_override is not None else None,
         }
         return self.client.execute(query, variable_values=values)
 

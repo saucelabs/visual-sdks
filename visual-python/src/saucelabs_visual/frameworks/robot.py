@@ -11,7 +11,7 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
-    IgnoreElementRegion
+    IgnoreElementRegion, BaselineOverride, Browser, OperatingSystem
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
 
@@ -236,6 +236,29 @@ class SauceLabsVisual:
             scrollLimit=scroll_limit,
         )
 
+    @keyword(name="Visual BaselineOverride")
+    def visual_baseline_override(
+            self,
+            browser: Union[Browser, None] = None,
+            browser_version: Union[str, None] = None,
+            device: Union[str, None] = None,
+            name: Union[str, None] = None,
+            operating_system: Union[OperatingSystem, None] = None,
+            operating_system_version: Union[str, None] = None,
+            suite_name: Union[str, None] = None,
+            test_name: Union[str, None] = None,
+    ):
+        return BaselineOverride(
+            browser=browser,
+            browserVersion=browser_version,
+            device=device,
+            name=name,
+            operatingSystem=operating_system,
+            operatingSystemVersion=operating_system_version,
+            suiteName=suite_name,
+            testName=test_name,
+        )
+
     @keyword(name="Visual Snapshot")
     def visual_snapshot(
             # Params 'duplicated' here, so we get type casting and named parameters provided by
@@ -251,6 +274,7 @@ class SauceLabsVisual:
             full_page_config: Union[FullPageConfig, dict, bool, str, None] = None,
             diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
             diffing_options: Union[DiffingOptions, None] = None,
+            baseline_override: Union[BaselineOverride, None] = None,
     ):
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
@@ -275,6 +299,7 @@ class SauceLabsVisual:
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
             diffing_options=diffing_options,
+            baseline_override=baseline_override,
         )
 
     @keyword(name="Visual Build Status")
