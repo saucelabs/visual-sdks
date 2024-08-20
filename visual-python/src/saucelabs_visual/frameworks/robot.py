@@ -219,6 +219,22 @@ class SauceLabsVisual:
             disable_only=disable_only,
         )
 
+    @keyword(name="Visual Set Global BaselineOverride")
+    def visual_set_baseline_override(self, baseline_override: Union[BaselineOverride, None]):
+        self.client.baseline_override = baseline_override
+
+    @keyword(name="Visual Set Global CaptureDom")
+    def visual_set_capture_dom(self, capture_dom: Union[bool, None]):
+        self.client.capture_dom = capture_dom
+
+    @keyword(name="Visual Set Global DiffingMethod")
+    def visual_set_diffing_method(self, diffing_method: Union[DiffingMethod, None]):
+        self.client.diffing_method = diffing_method
+
+    @keyword(name="Visual Set Global FullPageConfig")
+    def visual_set_full_page_config(self, full_page_config: Union[FullPageConfig, None]):
+        self.client.full_page_config = full_page_config
+
     @keyword(name="Visual FullPageConfig")
     def visual_full_page_config(
             self,
@@ -265,14 +281,14 @@ class SauceLabsVisual:
             # Robot Framework for free.
             self,
             name: str,
-            capture_dom: bool = False,
+            capture_dom: Union[bool, None] = None,
             clip_selector: Union[str, None] = None,
             clip_element: Union[WebElement, None] = None,
             ignore_regions: List[Union[
                 List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
             ]] = None,
             full_page_config: Union[FullPageConfig, dict, bool, str, None] = None,
-            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_method: Union[DiffingMethod, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
             baseline_override: Union[BaselineOverride, None] = None,
     ):
