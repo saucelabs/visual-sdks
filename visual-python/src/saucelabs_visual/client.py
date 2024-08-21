@@ -8,35 +8,41 @@ from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from requests.auth import HTTPBasicAuth
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
-    DiffingOptions, IgnoreElementRegion, BuildMode
+    DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride
 
 PKG_VERSION = '0.0.14'
 
 
 class SauceLabsVisual:
     _client: Client = None
-    build_id: Union[str, None] = None
+    _build_id: Union[str, None] = None
     """
     The UUID of the current build managed by this client. 
     """
-    is_build_external: bool = False
+    _is_build_external: bool = False
     """
     Whether this build was created externally and passed here. When 'True', we should not perform
     any mutations on the build itself assuming the lifecycle is managed externally.
     """
-    build_url: Union[str, None] = None
+    _build_url: Union[str, None] = None
     """
     The URL for the current build in the Sauce Labs UI.
     """
-    meta_cache: dict = {}
+    _meta_cache: dict = {}
     """
     A cache holding session metadata for a job so we don't have to re-query for every snapshot for
     the same session ID.
     """
-    region: Region = None
+    _region: Region = None
+
+    capture_dom: Union[bool, None] = None
+    diffing_method: Union[DiffingMethod, None] = None
+    baseline_override: Union[BaselineOverride, None] = None
+    full_page_config: Union[FullPageConfig, None] = None
 
     @property
     def client(self):
@@ -54,8 +60,8 @@ class SauceLabsVisual:
                 '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
 
-        self.region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
-        region_url = self.region.graphql_endpoint
+        self._region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
+        region_url = self._region.graphql_endpoint
         user_agent = 'visual-python/{version}'.format(version=PKG_VERSION)
         transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key),
                                           headers={
@@ -93,9 +99,9 @@ class SauceLabsVisual:
         custom_build = self._get_external_build()
 
         if custom_build is not None:
-            self.build_id = custom_build['id']
-            self.build_url = custom_build['url']
-            self.is_build_external = True
+            self._build_id = custom_build['id']
+            self._build_url = custom_build['url']
+            self._is_build_external = True
             return custom_build
 
         query = gql(
@@ -133,8 +139,8 @@ class SauceLabsVisual:
             "keepAliveTimeout": keep_alive_timeout,
         }
         build = self.client.execute(query, variable_values=values)
-        self.build_id = build['createBuild']['id']
-        self.build_url = build['createBuild']['url']
+        self._build_id = build['createBuild']['id']
+        self._build_url = build['createBuild']['url']
         return build
 
     def finish_build(self, build_id: Union[str, None] = None):
@@ -143,7 +149,7 @@ class SauceLabsVisual:
         :param build_id: An optional param to allow finishing an external build.
         :return:
         """
-        if self.is_build_external:
+        if self._is_build_external:
             return
 
         query = gql(
@@ -158,11 +164,11 @@ class SauceLabsVisual:
             }
             """
         )
-        values = {"id": build_id or self.build_id}
-        self.meta_cache.clear()
+        values = {"id": build_id or self._build_id}
+        self._meta_cache.clear()
         return self.client.execute(query, variable_values=values)
 
-    def get_selenium_metadata(self, session_id: str) -> str:
+    def get_selenium_metadata(self, session_id: str, job_id: str) -> str:
         query = gql(
             # language=GraphQL
             """
@@ -184,38 +190,45 @@ class SauceLabsVisual:
             }
             """
         )
-        values = {"sessionId": session_id, "jobId": session_id}
+        values = {"sessionId": session_id, "jobId": job_id}
         meta = self.client.execute(query, variable_values=values)
         return meta['meta']['blob']
 
-    def _get_meta(self, session_id: str) -> str:
-        meta = self.meta_cache.get(session_id)
+    def _get_meta(self, session_id: str, job_id: str = None) -> str:
+        job_id = job_id or session_id
+        cache_key = f'{session_id}:{job_id}'.format(session_id=session_id, job_id=job_id)
+        meta = self._meta_cache.get(cache_key)
 
         if meta is None:
-            meta = self.get_selenium_metadata(session_id)
-            self.meta_cache[session_id] = meta
+            meta = self.get_selenium_metadata(session_id, job_id)
+            self._meta_cache[cache_key] = meta
 
         return meta
+
+    def _get_session_ids(self, driver: RemoteWebDriver) -> tuple[str, str]:
+        return [driver.session_id, driver.capabilities.get('jobUuid') or driver.session_id]
 
     def create_snapshot_from_webdriver(
             self,
             name: str,
-            session_id: str,
+            driver: RemoteWebDriver,
             test_name: Union[str, None] = None,
             suite_name: Union[str, None] = None,
-            capture_dom: bool = False,
+            capture_dom: Union[bool, None] = None,
             clip_selector: Union[str, None] = None,
             clip_element: Union[WebElement, None] = None,
             ignore_regions: Union[List[IgnoreRegion], None] = None,
             ignore_elements: Union[List[IgnoreElementRegion], None] = None,
             full_page_config: Union[FullPageConfig, None] = None,
-            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_method: Union[DiffingMethod, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
+            baseline_override: Union[BaselineOverride, None] = None,
     ):
         """
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
         :param name: A name to identify this snapshot in the UI.
-        :param session_id: The session ID for the current running Selenium / Webdriver session.
+        :param driver: The remote webdriver instance (chrome, firefox, appium, etc) used to control
+            your device.
         :param test_name: The name of the current suite to group / identify in the UI.
         :param suite_name: The name of the current test to group / identify in the UI.
         :param capture_dom: Whether we should capture the DOM while taking a screenshot.
@@ -227,6 +240,8 @@ class SauceLabsVisual:
         :param diffing_method: The diffing method we should use for comparison.
         :param diffing_options: Options to customize the DOM <-> Visual behavior for the BALANCED
             diffing method.
+        :param baseline_override: One or more keys we should use as an override when matching
+            a baseline.
         :return:
         """
         query = gql(
@@ -247,6 +262,7 @@ class SauceLabsVisual:
                 $fullPageConfig: FullPageConfigIn,
                 $diffingMethod: DiffingMethod,
                 $diffingOptions: DiffingOptionsIn,
+                $baselineOverride: BaselineOverrideIn,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -263,21 +279,26 @@ class SauceLabsVisual:
                     fullPageConfig: $fullPageConfig,
                     diffingMethod: $diffingMethod,
                     diffingOptions: $diffingOptions,
+                    baselineOverride: $baselineOverride,
                 }){
                     id
                 }
             }
             """
         )
-        meta = self._get_meta(session_id)
+        [session_id, job_id] = self._get_session_ids(driver)
+        meta = self._get_meta(session_id, job_id)
+        full_page_config = full_page_config or self.full_page_config
+        baseline_override = baseline_override or self.baseline_override
+        diffing_method = diffing_method or self.diffing_method
         values = {
             "name": name,
             "sessionId": session_id,
             "meta": meta,
-            "buildId": self.build_id,
+            "buildId": self._build_id,
             "testName": test_name,
             "suiteName": suite_name,
-            "captureDom": capture_dom,
+            "captureDom": capture_dom if capture_dom is not None else self.capture_dom,
             "clipSelector": clip_selector,
             "clipElement": clip_element.id if clip_element is not None else None,
             "ignoreRegions": [
@@ -291,6 +312,9 @@ class SauceLabsVisual:
             "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
             "diffingOptions": diffing_options,
+            "baselineOverride": {
+                key: value for key, value in asdict(baseline_override).items() if value is not None
+            } if baseline_override is not None else None,
         }
         return self.client.execute(query, variable_values=values)
 
@@ -384,7 +408,7 @@ class SauceLabsVisual:
             """
         )
         values = {
-            "buildId": self.build_id,
+            "buildId": self._build_id,
         }
 
         if not wait:
@@ -415,7 +439,7 @@ class SauceLabsVisual:
         Get the dashboard build link for viewing the current build on Sauce Labs.
         :return:
         """
-        return self.build_url
+        return self._build_url
 
     def get_build_created_link(self) -> str:
         return f'Sauce Labs Visual build created:\t{self.get_build_link()}'
