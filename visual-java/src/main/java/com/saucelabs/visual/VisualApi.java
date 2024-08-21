@@ -431,16 +431,16 @@ public class VisualApi {
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
     if (options == null || options.getDiffingMethod() == null) {
-      return null;
+      return DiffingMethod.BALANCED;
     }
 
     switch (options.getDiffingMethod()) {
-      case BALANCED:
-        return DiffingMethod.BALANCED;
+      case SIMPLE:
+        return DiffingMethod.SIMPLE;
       case EXPERIMENTAL:
         return DiffingMethod.EXPERIMENTAL;
       default:
-        return DiffingMethod.SIMPLE;
+        return DiffingMethod.BALANCED;
     }
   }
 

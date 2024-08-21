@@ -62,7 +62,7 @@ export type VisualCheckOptions = {
    */
   ignoredRegions?: (PlainRegion | Cypress.Chainable)[];
   /**
-   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Simple.
+   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
   diffingMethod?: DiffingMethod;
   /**
@@ -70,7 +70,7 @@ export type VisualCheckOptions = {
    */
   diffingOptions?: DiffingOptionsIn;
   /**
-   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Simple.
+   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
   regions?: VisualRegion[];
   /**

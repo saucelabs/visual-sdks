@@ -1,4 +1,5 @@
 import {
+  DiffingMethod,
   ElementIn,
   ensureError,
   getFullPageConfig,
@@ -151,6 +152,7 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         clipElement:
           (await options.clipElement?.getId()) ?? clipElementFromClipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,
+        diffingMethod: options.diffingMethod ?? DiffingMethod.Balanced,
       });
 
       global.uploadedDiffIds.push(

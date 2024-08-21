@@ -51,7 +51,7 @@ class SmokeTest extends SauceBaseTest {
     WebElement cookieBanner = driver.findElement(By.id("onetrust-banner-sdk"));
 
     CheckOptions checkOptions = new CheckOptions();
-    checkOptions.setDiffingMethod(DiffingMethod.EXPERIMENTAL);
+    checkOptions.setDiffingMethod(DiffingMethod.BALANCED);
     checkOptions.setIgnoreRegions(
         IgnoreRegion.forElement(driver, Arrays.asList(header, caroussel, cookieBanner)));
 
