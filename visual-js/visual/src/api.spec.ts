@@ -61,9 +61,9 @@ test(
       image: { path: './fixtures/sauce-test-results.png' },
       dom: { path: './fixtures/sauce-test-results.html' },
     });
-    api.createSnapshot({
-      buildId,
-      uploadId,
+    await api.createSnapshot({
+      buildUuid: buildId,
+      uploadUuid: uploadId,
       name: 'Test Snapshot',
       operatingSystem: metaInfo?.operatingSystem ?? null,
       operatingSystemVersion: metaInfo?.operatingSystemVersion ?? null,
@@ -71,8 +71,6 @@ test(
       browserVersion: metaInfo?.browserVersion ?? null,
       suiteName: null,
       testName: null,
-      viewportWidth: null,
-      viewportHeight: null,
       ignoreRegions: null,
       device: null,
       diffingMethod: null,
