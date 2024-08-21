@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.6.5
+
+### Patch Changes
+
+- a1f4373: Update types
+
 ## 0.6.4
 
 ### Patch Changes

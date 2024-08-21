@@ -30,7 +30,9 @@ export type Scalars = {
 
 export type ApplicationSummary = {
   __typename?: 'ApplicationSummary';
+  id: Scalars['String'];
   name: Scalars['String'];
+  version: Scalars['String'];
 };
 
 export type ApproveBuildIn = {
@@ -47,6 +49,9 @@ export type ApproveBuildIn = {
  */
 export type Baseline = Node & {
   __typename?: 'Baseline';
+  appId: Maybe<Scalars['String']>;
+  appName: Maybe<Scalars['String']>;
+  appVersion: Maybe<Scalars['String']>;
   branch: Maybe<Scalars['String']>;
   browser: Maybe<Browser>;
   browserVersion: Maybe<Scalars['String']>;
@@ -127,6 +132,18 @@ export type BaselineFilter = {
   id?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `snapshotId` field. */
   snapshotId?: InputMaybe<UuidFilter>;
+};
+
+/** One or more values from 'SnapshotIn' we should use as an override when finding a baseline. */
+export type BaselineOverrideIn = {
+  browser?: InputMaybe<Browser>;
+  browserVersion?: InputMaybe<Scalars['String']>;
+  device?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  operatingSystem?: InputMaybe<OperatingSystem>;
+  operatingSystemVersion?: InputMaybe<Scalars['String']>;
+  suiteName?: InputMaybe<Scalars['String']>;
+  testName?: InputMaybe<Scalars['String']>;
 };
 
 /** A connection to a list of `Baseline` values. */
@@ -431,6 +448,11 @@ export type CreateDerivedBaselinesIn = {
 };
 
 export type CreateSnapshotFromWebDriverIn = {
+  /**
+   * One or more overrides for locating the matching baseline. Can be used for cross browser / OS
+   * visual testing.
+   */
+  baselineOverride?: InputMaybe<BaselineOverrideIn>;
   /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
   buildId?: InputMaybe<Scalars['ID']>;
   buildUuid?: InputMaybe<Scalars['UUID']>;
@@ -696,7 +718,7 @@ export type FullPageConfigIn = {
   delayAfterScrollMs?: InputMaybe<Scalars['Int']>;
   /** Disable CSS animations and the input caret in the app. */
   disableCSSAnimation?: InputMaybe<Scalars['Boolean']>;
-  /** Hide elements on the page after first scroll by css selectors. */
+  /** @deprecated Use hideElementsAfterFirstScroll instead where available. */
   hideAfterFirstScroll?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   /** Hide elements on the page after first scroll using their server-assigned ID from webdriver. */
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
@@ -1149,6 +1171,9 @@ export type RegionIn = {
 
 export type Snapshot = Node & {
   __typename?: 'Snapshot';
+  appId: Maybe<Scalars['String']>;
+  appName: Maybe<Scalars['String']>;
+  appVersion: Maybe<Scalars['String']>;
   /** Reads and enables pagination through a set of `Baseline`. */
   baselines: BaselinesConnection;
   branch: Maybe<Scalars['String']>;
@@ -1253,6 +1278,14 @@ export type SnapshotFilter = {
 };
 
 export type SnapshotIn = {
+  appId?: InputMaybe<Scalars['String']>;
+  appName?: InputMaybe<Scalars['String']>;
+  appVersion?: InputMaybe<Scalars['String']>;
+  /**
+   * One or more overrides for locating the matching baseline. Can be used for cross browser / OS
+   * visual testing.
+   */
+  baselineOverride?: InputMaybe<BaselineOverrideIn>;
   browser?: InputMaybe<Browser>;
   browserVersion?: InputMaybe<Scalars['String']>;
   /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
@@ -1273,10 +1306,6 @@ export type SnapshotIn = {
   /** @deprecated Use `uploadUuid`. This field will be removed in a future update. */
   uploadId?: InputMaybe<Scalars['ID']>;
   uploadUuid?: InputMaybe<Scalars['UUID']>;
-  /** @deprecated For forward compatibility, do not send this field. */
-  viewportHeight?: InputMaybe<Scalars['Int']>;
-  /** @deprecated For forward compatibility, do not send this field. */
-  viewportWidth?: InputMaybe<Scalars['Int']>;
 };
 
 export type SnapshotUpload = {
@@ -1285,7 +1314,7 @@ export type SnapshotUpload = {
   domUploadUrl: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   imageUploadUrl: Maybe<Scalars['String']>;
-  /** @deprecated "Use imageUploadUrl." */
+  /** @deprecated Use imageUploadUrl. */
   uploadUrl: Scalars['String'];
 };
 
@@ -1385,13 +1414,10 @@ export type WebdriverSession = {
   blob: Scalars['WebdriverSessionBlob'];
   browser: Maybe<Browser>;
   browserVersion: Maybe<Scalars['String']>;
+  deviceDpr: Maybe<Scalars['Float']>;
   deviceName: Maybe<Scalars['String']>;
   operatingSystem: Maybe<OperatingSystem>;
   operatingSystemVersion: Maybe<Scalars['String']>;
-  /** @deprecated This will be removed by 2023-11-11. */
-  viewportHeight: Maybe<Scalars['Int']>;
-  /** @deprecated This will be removed by 2023-11-11. */
-  viewportWidth: Maybe<Scalars['Int']>;
 };
 
 export type WebdriverSessionInfoIn = {
