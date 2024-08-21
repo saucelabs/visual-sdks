@@ -160,6 +160,7 @@ export const buildSnapshotMetadata = ({
   buildId,
   name,
   ignoreRegions,
+  diffingMethod,
 }: {
   browserName: string | undefined;
   browserVersion: string | undefined;
@@ -168,9 +169,10 @@ export const buildSnapshotMetadata = ({
   buildId: string;
   name: string;
   ignoreRegions: SnapshotIn['ignoreRegions'];
+  diffingMethod: DiffingMethod | undefined;
 }): Omit<SnapshotIn, 'uploadId'> => {
   return {
-    diffingMethod: DiffingMethod.Balanced,
+    diffingMethod: diffingMethod || DiffingMethod.Balanced,
     browser: getKnownBrowserType(browserName),
     browserVersion: browserVersion ? `Playwright - ${browserVersion}` : null,
     buildUuid: buildId,

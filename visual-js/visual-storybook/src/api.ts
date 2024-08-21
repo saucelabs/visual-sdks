@@ -151,6 +151,7 @@ export const postVisit = async (page: Page, context: TestContext) => {
     delay,
     captureDom,
     ignoreRegions: userIgnoreRegions,
+    diffingMethod,
   } = sauceVisualParams ?? {};
   const { animations = 'disabled', caret } = screenshotOptions;
   let ignoreRegions: RegionIn[] = [];
@@ -292,6 +293,7 @@ export const postVisit = async (page: Page, context: TestContext) => {
     buildId,
     name: `${context.title}/${context.name}`,
     ignoreRegions,
+    diffingMethod,
   });
 
   await api.createSnapshot({
