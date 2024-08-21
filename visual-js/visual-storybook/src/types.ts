@@ -1,4 +1,4 @@
-import { DiffingMethod, RegionIn, SauceRegion } from '@saucelabs/visual';
+import { RegionIn, SauceRegion } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
 export interface SauceVisualParams {

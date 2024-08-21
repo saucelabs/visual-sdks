@@ -1,4 +1,3 @@
-import { DiffingMethod } from '@saucelabs/visual';
 import { VisualOpts } from './types';
 
 export const OPTS_ENV_KEY = 'SAUCE_VISUAL_STORYBOOK_OPTS';
@@ -14,5 +13,4 @@ export const DEFAULT_OPTS: VisualOpts = {
   region: 'us-west-1',
   buildName: 'Storybook Build',
   customId: null,
-  diffingMethod: DiffingMethod.Balanced,
 };
