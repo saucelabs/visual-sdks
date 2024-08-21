@@ -4,7 +4,6 @@ import com.saucelabs.saucebindings.SaucePlatform;
 import com.saucelabs.saucebindings.UnhandledPromptBehavior;
 import com.saucelabs.saucebindings.junit5.SauceBaseTest;
 import com.saucelabs.saucebindings.options.SauceOptions;
-import com.saucelabs.visual.CheckOptions.DiffingMethod;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
