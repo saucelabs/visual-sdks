@@ -70,7 +70,7 @@ export type VisualCheckOptions = {
    */
   diffingOptions?: DiffingOptionsIn;
   /**
-   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
+   * Specify what kind of checks needs to be done in a specific region
    */
   regions?: VisualRegion[];
   /**
