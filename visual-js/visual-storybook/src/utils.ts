@@ -2,6 +2,7 @@ import { VisualOpts } from './types';
 import * as os from 'os';
 import {
   Browser,
+  DiffingMethod,
   OperatingSystem,
   SauceRegion,
   SnapshotIn,
@@ -169,7 +170,7 @@ export const buildSnapshotMetadata = ({
   ignoreRegions: SnapshotIn['ignoreRegions'];
 }): Omit<SnapshotIn, 'uploadId'> => {
   return {
-    diffingMethod: null,
+    diffingMethod: DiffingMethod.Balanced,
     browser: getKnownBrowserType(browserName),
     browserVersion: browserVersion ? `Playwright - ${browserVersion}` : null,
     buildUuid: buildId,
