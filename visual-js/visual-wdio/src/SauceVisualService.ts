@@ -21,6 +21,7 @@ import {
   RegionType,
   SauceRegion,
   selectiveRegionOptionsToDiffingOptions,
+  BaselineOverrideIn,
   VisualApi,
   WebdriverSession,
 } from '@saucelabs/visual';
@@ -83,7 +84,7 @@ declare global {
   }
 }
 
-type SauceVisualServiceOptions = {
+export type SauceVisualServiceOptions = {
   buildName?: string;
   buildId?: string;
   project?: string;
@@ -95,6 +96,7 @@ type SauceVisualServiceOptions = {
   clipElement?: WdioElement;
   region?: SauceRegion;
   fullPage?: FullPageScreenshotOptions;
+  baselineOverride?: BaselineOverrideIn;
 };
 
 // This type is derived from what provides Cucumber as framework
@@ -130,6 +132,7 @@ export type CheckOptions = {
   diffingMethod?: DiffingMethod;
   disable?: (keyof DiffingOptionsIn)[];
   fullPage?: FullPageScreenshotOptions;
+  baselineOverride?: BaselineOverrideIn;
 };
 
 export let uploadedDiffIds: string[] = [];
@@ -164,6 +167,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   clipElement: WdioElement | undefined;
   fullPage?: FullPageScreenshotOptions;
   apiClient: VisualApi;
+  baselineOverride?: BaselineOverrideIn;
 
   constructor(
     public options: SauceVisualServiceOptions,
@@ -175,6 +179,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
     this.clipSelector = options.clipSelector;
     this.clipElement = options.clipElement;
     this.fullPage = options.fullPage;
+    this.baselineOverride = options.baselineOverride;
     this.apiClient = getApi(
       {
         ...this.config,
@@ -438,6 +443,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         suiteName: this.test?.parent,
         testName: this.test?.title,
         fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
+        baselineOverride: options.baselineOverride || this.baselineOverride,
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));
       log.info('Check result', result);

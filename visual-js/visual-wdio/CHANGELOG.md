@@ -1,5 +1,11 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.5.5
+
+### Patch Changes
+
+- 6a62a83: Add baseline override support
+
 ## 0.5.4
 
 ### Patch Changes
