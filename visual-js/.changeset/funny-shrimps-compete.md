@@ -1,9 +1,9 @@
 ---
-"@saucelabs/nightwatch-sauce-visual-service": major
-"@saucelabs/visual-storybook": major
-"@saucelabs/cypress-visual-plugin": major
-"@saucelabs/wdio-sauce-visual-service": major
-"@saucelabs/visual": major
+'@saucelabs/nightwatch-sauce-visual-service': minor
+'@saucelabs/visual-storybook': minor
+'@saucelabs/cypress-visual-plugin': minor
+'@saucelabs/wdio-sauce-visual-service': minor
+'@saucelabs/visual': minor
 ---
 
 Change default diffingMethod to BALANCED
