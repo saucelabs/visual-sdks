@@ -49,12 +49,20 @@ for release in $releases; do
     # Get the corresponding filename from the mapping
     filename=${FILE_MAP[$release_name]}
 
+    # Exit immediately if a command exits with a non-zero status
+    set -e
+
     # Check if the filename exists
     if [ -n "$filename" ] && [ -f "$filename" ]; then
         # Replace the version placeholder in the file
-        sed -i '' "s/PKG_VERSION/$version/g" "$filename"
-        echo "Updated $filename with version $version"
+        if sed -i "s/PKG_VERSION/$version/g" "$filename"; then
+            echo "Updated $filename with version $version"
+        else
+            echo "Error: Failed to update $filename" >&2
+            exit 1
+        fi
     else
         echo "File for release $release_name not found"
+        exit 1
     fi
 done
