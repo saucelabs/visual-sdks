@@ -1,5 +1,16 @@
 # @saucelabs/visual-storybook
 
+## 0.5.0
+
+### Minor Changes
+
+- 4bafb87: Change default diffingMethod to BALANCED
+
+### Patch Changes
+
+- Updated dependencies [4bafb87]
+  - @saucelabs/visual@0.7.0
+
 ## 0.4.2
 
 ### Patch Changes

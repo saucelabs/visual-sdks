@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.7.0
+
+### Minor Changes
+
+- 4bafb87: Change default diffingMethod to BALANCED
+
 ## 0.6.6
 
 ### Patch Changes
