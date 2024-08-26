@@ -438,7 +438,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
           disableOnly: options.disable ?? [],
         }),
         sessionMetadata: metaInfo,
-        diffingMethod: options.diffingMethod || this.diffingMethod,
+        diffingMethod:
+          options.diffingMethod || this.diffingMethod || DiffingMethod.Balanced,
         suiteName: this.test?.parent,
         testName: this.test?.title,
         fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),

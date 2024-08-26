@@ -173,7 +173,7 @@ namespace SauceLabs.Visual
                 buildUuid: Build.Id,
                 name: name,
                 jobId: _jobId,
-                diffingMethod: options.DiffingMethod ?? DiffingMethod.Simple,
+                diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,
                 regions: ignoredRegions.RegionsIn,
                 ignoredElements: ignoredRegions.ElementsIn,
                 sessionId: _sessionId,

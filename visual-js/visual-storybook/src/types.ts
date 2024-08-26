@@ -1,4 +1,4 @@
-import { RegionIn, SauceRegion } from '@saucelabs/visual';
+import { DiffingMethod, RegionIn, SauceRegion } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
 export interface SauceVisualParams {
@@ -25,6 +25,10 @@ export interface SauceVisualParams {
    * don't want to diff.
    */
   ignoreRegions?: (RegionIn | string)[];
+  /**
+   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
+   */
+  diffingMethod?: DiffingMethod;
 }
 
 export interface VisualOpts {

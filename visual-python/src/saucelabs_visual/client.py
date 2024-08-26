@@ -310,7 +310,7 @@ class SauceLabsVisual:
                 for element in group.as_dict_array()
             ] if ignore_elements is not None else None,
             "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
-            "diffingMethod": (diffing_method or DiffingMethod.SIMPLE).value,
+            "diffingMethod": (diffing_method or DiffingMethod.BALANCED).value,
             "diffingOptions": diffing_options,
             "baselineOverride": {
                 key: value for key, value in asdict(baseline_override).items() if value is not None

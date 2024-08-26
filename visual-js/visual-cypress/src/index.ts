@@ -381,7 +381,10 @@ Sauce Labs Visual: Unable to create new build.
             ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
             : 'Desktop',
           devicePixelRatio: metadata.devicePixelRatio,
-          diffingMethod: metadata.diffingMethod || this.diffingMethod,
+          diffingMethod:
+            metadata.diffingMethod ||
+            this.diffingMethod ||
+            DiffingMethod.Balanced,
           jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
         });
         logger.info(`    ${chalk.green('✔')} ${metadata.name} `);
