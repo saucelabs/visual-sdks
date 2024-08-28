@@ -24,6 +24,7 @@ const documents = {
     "mutation createSnapshotUpload($input: SnapshotUploadIn!) {\n  result: createSnapshotUpload(input: $input) {\n    id\n    buildId\n    imageUploadUrl\n    domUploadUrl\n  }\n}": types.CreateSnapshotUploadDocument,
     "query diffsForTestResult($input: UUID!) {\n  result: diffs(condition: {buildId: $input}) {\n    nodes {\n      id\n      status\n    }\n  }\n}": types.DiffsForTestResultDocument,
     "mutation FinishBuildDocument($input: FinishBuildIn!) {\n  result: finishBuild(input: $input) {\n    id\n    name\n    status\n    url\n  }\n}": types.FinishBuildDocumentDocument,
+    "mutation mergeBaselines($input: MergeBaselinesInput!) {\n  result: mergeBaselines(input: $input) {\n    baselines {\n      id\n    }\n  }\n}": types.MergeBaselinesDocument,
     "mutation UpdateDiff($input: UpdateDiffIn!) {\n  result: updateDiff(input: $input) {\n    id\n    status\n    baselineId\n    snapshotId\n  }\n}": types.UpdateDiffDocument,
     "query webdriverSessionInfo($input: WebdriverSessionInfoIn!) {\n  result: webdriverSessionInfo(input: $input) {\n    blob\n    operatingSystem\n    operatingSystemVersion\n    browser\n    browserVersion\n    deviceName\n  }\n}": types.WebdriverSessionInfoDocument,
 };
@@ -86,6 +87,10 @@ export function graphql(source: "query diffsForTestResult($input: UUID!) {\n  re
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation FinishBuildDocument($input: FinishBuildIn!) {\n  result: finishBuild(input: $input) {\n    id\n    name\n    status\n    url\n  }\n}"): (typeof documents)["mutation FinishBuildDocument($input: FinishBuildIn!) {\n  result: finishBuild(input: $input) {\n    id\n    name\n    status\n    url\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation mergeBaselines($input: MergeBaselinesInput!) {\n  result: mergeBaselines(input: $input) {\n    baselines {\n      id\n    }\n  }\n}"): (typeof documents)["mutation mergeBaselines($input: MergeBaselinesInput!) {\n  result: mergeBaselines(input: $input) {\n    baselines {\n      id\n    }\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

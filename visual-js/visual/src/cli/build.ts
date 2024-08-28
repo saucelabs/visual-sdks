@@ -7,8 +7,6 @@ import { DiffStatus } from '../graphql/__generated__/graphql';
 /**
  * Utils
  */
-const defaultRegion = VisualApiRegion.fromName('us-west-1');
-
 const hasBuildIdOrCustomId = (args: {
   customId?: string;
   buildId?: string;
@@ -23,29 +21,19 @@ const hasBuildIdOrCustomId = (args: {
   }
 };
 
-const regionParser = (
-  input: string,
-  _previous: VisualApiRegion,
-): VisualApiRegion => {
-  if (!input) {
-    return VisualApiRegion.fromName('us-west-1');
-  }
-  try {
-    return VisualApiRegion.fromName(input);
-  } catch (e: unknown) {
-    program.error(String(e));
-  }
-};
+function apiFromOptions(opts: { region: VisualApiRegion }): VisualApi {
+  return getApi({
+    region: opts.region,
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+  });
+}
 
 /**
  * Common options
  */
 export const buildIdOption: Option = new Option('-b, --build-id <build-id>');
 export const customIdOption: Option = new Option('-c, --custom-id <custom-id>');
-export const regionOption = new Option(
-  '-r, --region <region>',
-  'The Sauce Labs region. Options: us-west-1, eu-central-1 (Default: "us-west-1)"',
-).argParser(regionParser);
 
 /**
  * Functions for visual status
@@ -76,16 +64,12 @@ const getBuildResults = async (
     }, {});
 };
 
-export const buildStatusCommand = async (
-  options: BuildStatusCommandOptions,
-) => {
+export const buildStatusCommand = async (_: unknown, cmd: Command) => {
+  const options = cmd.optsWithGlobals<BuildStatusCommandOptions>();
+
   hasBuildIdOrCustomId(options);
 
-  const visualApi = getApi({
-    region: options.region || defaultRegion,
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-  });
+  const visualApi = apiFromOptions(options);
 
   const status = await getBuildResults(visualApi, options);
   displayStatusTable(options.buildId || options.customId || '', status);
@@ -104,7 +88,7 @@ export const buildStatusCommand = async (
 type BuildStatusCommandOptions = {
   buildId?: string;
   customId?: string;
-  region?: VisualApiRegion;
+  region: VisualApiRegion;
 };
 const statusCommand = () =>
   new Command()
@@ -112,18 +96,15 @@ const statusCommand = () =>
     .description('Fetches status from a Sauce Visual build')
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .addOption(regionOption)
     .action(buildStatusCommand);
 
 /**
  * Functions for build create
  */
-export const buildCreate = async (options: BuildCreateCommandOptions) => {
-  const visualApi = getApi({
-    region: options.region || defaultRegion,
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-  });
+export const buildCreate = async (_: unknown, cmd: Command) => {
+  const options = cmd.optsWithGlobals<BuildCreateCommandOptions>();
+
+  const visualApi = apiFromOptions(options);
 
   const build = await visualApi.createBuild({
     name: options.name,
@@ -139,7 +120,7 @@ export const buildCreate = async (options: BuildCreateCommandOptions) => {
  * command: visual build create
  */
 type BuildCreateCommandOptions = {
-  region?: VisualApiRegion;
+  region: VisualApiRegion;
   name: string;
   branch?: string;
   customId?: string;
@@ -152,7 +133,6 @@ const buildCreateCommand = () =>
     .description('Creates a Sauce Visual build')
     .requiredOption('-n, --name <name>')
     .addOption(customIdOption)
-    .addOption(regionOption)
     .option('--branch <branch>')
     .option('--default-branch <defaultBranch>')
     .option('-p, --project <project>')
@@ -161,14 +141,12 @@ const buildCreateCommand = () =>
 /**
  * Functions for build finish
  */
-export const buildFinish = async (options: BuildFinishCommandOptions) => {
+export const buildFinish = async (_: unknown, cmd: Command) => {
+  const options = cmd.optsWithGlobals<BuildFinishCommandOptions>();
+
   hasBuildIdOrCustomId(options);
 
-  const visualApi = getApi({
-    region: options.region || defaultRegion,
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-  });
+  const visualApi = apiFromOptions(options);
 
   let { buildId } = options;
 
@@ -190,7 +168,7 @@ export const buildFinish = async (options: BuildFinishCommandOptions) => {
 type BuildFinishCommandOptions = {
   customId?: string;
   buildId?: string;
-  region?: VisualApiRegion;
+  region: VisualApiRegion;
 };
 const buildFinishCommand = () =>
   new Command()
@@ -198,7 +176,6 @@ const buildFinishCommand = () =>
     .description('Finishes a Sauce Visual build')
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .addOption(regionOption)
     .action(buildFinish);
 
 /**

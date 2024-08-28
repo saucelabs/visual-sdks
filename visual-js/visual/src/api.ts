@@ -30,6 +30,7 @@ import {
   WebdriverSessionInfoDocument,
   BuildWithDiffsByCustomIdDocument,
   BuildByCustomIdDocument,
+  MergeBaselinesDocument,
 } from './graphql/__generated__/graphql.js';
 import {
   VisualApiRegion,
@@ -101,6 +102,7 @@ export const getApi = (
     createSnapshot: makeQuery(apollo, CreateSnapshotDocument),
     createSnapshotUpload: makeQuery(apollo, CreateSnapshotUploadDocument),
     finishBuild: makeQuery(apollo, FinishBuildDocumentDocument),
+    mergeBaselines: makeQuery(apollo, MergeBaselinesDocument),
     createSnapshotFromWebDriver: makeQuery(
       apollo,
       CreateSnapshotFromWebDriverDocument,
