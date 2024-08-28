@@ -4,7 +4,6 @@ import com.saucelabs.saucebindings.SaucePlatform;
 import com.saucelabs.saucebindings.UnhandledPromptBehavior;
 import com.saucelabs.saucebindings.junit5.SauceBaseTest;
 import com.saucelabs.saucebindings.options.SauceOptions;
-import com.saucelabs.visual.CheckOptions.DiffingMethod;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
@@ -51,7 +50,6 @@ class SmokeTest extends SauceBaseTest {
     WebElement cookieBanner = driver.findElement(By.id("onetrust-banner-sdk"));
 
     CheckOptions checkOptions = new CheckOptions();
-    checkOptions.setDiffingMethod(DiffingMethod.EXPERIMENTAL);
     checkOptions.setIgnoreRegions(
         IgnoreRegion.forElement(driver, Arrays.asList(header, caroussel, cookieBanner)));
 

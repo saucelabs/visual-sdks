@@ -1,5 +1,22 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.6.0
+
+### Minor Changes
+
+- 4bafb87: Change default diffingMethod to BALANCED
+
+### Patch Changes
+
+- Updated dependencies [4bafb87]
+  - @saucelabs/visual@0.7.0
+
+## 0.5.5
+
+### Patch Changes
+
+- 6a62a83: Add baseline override support
+
 ## 0.5.4
 
 ### Patch Changes

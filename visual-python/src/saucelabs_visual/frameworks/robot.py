@@ -7,10 +7,11 @@ from robot.api import logger
 from robot.api.deco import library, keyword
 from robot.libraries.BuiltIn import BuiltIn
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
-    IgnoreElementRegion
+    IgnoreElementRegion, BaselineOverride, Browser, OperatingSystem
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
 
@@ -48,8 +49,8 @@ class SauceLabsVisual:
 
         return BuiltIn().get_library_instance(self.selenium_library_key)
 
-    def _get_selenium_id(self) -> str:
-        return self._get_selenium_library().get_session_id()
+    def _get_driver(self) -> RemoteWebDriver:
+        return self._get_selenium_library().driver
 
     def _parse_full_page_config(self, value: Union[bool, FullPageConfig, dict, str]) -> Union[
         FullPageConfig, None
@@ -218,6 +219,22 @@ class SauceLabsVisual:
             disable_only=disable_only,
         )
 
+    @keyword(name="Visual Set Global BaselineOverride")
+    def visual_set_baseline_override(self, baseline_override: Union[BaselineOverride, None]):
+        self.client.baseline_override = baseline_override
+
+    @keyword(name="Visual Set Global CaptureDom")
+    def visual_set_capture_dom(self, capture_dom: Union[bool, None]):
+        self.client.capture_dom = capture_dom
+
+    @keyword(name="Visual Set Global DiffingMethod")
+    def visual_set_diffing_method(self, diffing_method: Union[DiffingMethod, None]):
+        self.client.diffing_method = diffing_method
+
+    @keyword(name="Visual Set Global FullPageConfig")
+    def visual_set_full_page_config(self, full_page_config: Union[FullPageConfig, None]):
+        self.client.full_page_config = full_page_config
+
     @keyword(name="Visual FullPageConfig")
     def visual_full_page_config(
             self,
@@ -235,24 +252,46 @@ class SauceLabsVisual:
             scrollLimit=scroll_limit,
         )
 
+    @keyword(name="Visual BaselineOverride")
+    def visual_baseline_override(
+            self,
+            browser: Union[Browser, None] = None,
+            browser_version: Union[str, None] = None,
+            device: Union[str, None] = None,
+            name: Union[str, None] = None,
+            operating_system: Union[OperatingSystem, None] = None,
+            operating_system_version: Union[str, None] = None,
+            suite_name: Union[str, None] = None,
+            test_name: Union[str, None] = None,
+    ):
+        return BaselineOverride(
+            browser=browser,
+            browserVersion=browser_version,
+            device=device,
+            name=name,
+            operatingSystem=operating_system,
+            operatingSystemVersion=operating_system_version,
+            suiteName=suite_name,
+            testName=test_name,
+        )
+
     @keyword(name="Visual Snapshot")
     def visual_snapshot(
             # Params 'duplicated' here, so we get type casting and named parameters provided by
             # Robot Framework for free.
             self,
             name: str,
-            capture_dom: bool = False,
+            capture_dom: Union[bool, None] = None,
             clip_selector: Union[str, None] = None,
             clip_element: Union[WebElement, None] = None,
             ignore_regions: List[Union[
                 List[WebElement], IgnoreRegion, str, WebElement, IgnoreElementRegion, dict
             ]] = None,
             full_page_config: Union[FullPageConfig, dict, bool, str, None] = None,
-            diffing_method: DiffingMethod = DiffingMethod.SIMPLE,
+            diffing_method: Union[DiffingMethod, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
+            baseline_override: Union[BaselineOverride, None] = None,
     ):
-        session_id = self._get_selenium_id()
-
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
         # to set proper default / optional values.
@@ -265,7 +304,7 @@ class SauceLabsVisual:
 
         self.client.create_snapshot_from_webdriver(
             name=name,
-            session_id=session_id,
+            driver=self._get_driver(),
             test_name=BuiltIn().get_variable_value('\${TEST NAME}'),
             suite_name=BuiltIn().get_variable_value('\${SUITE NAME}'),
             capture_dom=capture_dom,
@@ -276,6 +315,7 @@ class SauceLabsVisual:
             full_page_config=parsed_fpc,
             diffing_method=diffing_method,
             diffing_options=diffing_options,
+            baseline_override=baseline_override,
         )
 
     @keyword(name="Visual Build Status")

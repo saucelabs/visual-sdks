@@ -125,3 +125,34 @@ class BuildStatus(Enum):
     REJECTED = 'REJECTED'
     RUNNING = 'RUNNING'
     UNAPPROVED = 'UNAPPROVED'
+
+
+class Browser(str, Enum):
+    CHROME = 'CHROME'
+    EDGE = 'EDGE'
+    SAFARI = 'SAFARI'
+    FIREFOX = 'FIREFOX'
+    PLAYWRIGHT_WEBKIT = 'PLAYWRIGHT_WEBKIT'
+
+
+class OperatingSystem(str, Enum):
+    ANDROID = 'ANDROID'
+    IOS = 'IOS'
+    LINUX = 'LINUX'
+    MACOS = 'MACOS'
+    WINDOWS = 'WINDOWS'
+
+
+@dataclass
+class BaselineOverride:
+    """
+    One or more keys we should use as an override when matching a baseline.
+    """
+    browser: Union[Browser, None] = None
+    browserVersion: Union[str, None] = None
+    device: Union[str, None] = None
+    name: Union[str, None] = None
+    operatingSystem: Union[OperatingSystem, None] = None
+    operatingSystemVersion: Union[str, None] = None
+    suiteName: Union[str, None] = None
+    testName: Union[str, None] = None

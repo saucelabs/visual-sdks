@@ -1,6 +1,3 @@
-using OpenQA.Selenium;
-using SauceLabs.Visual.Models;
-
 namespace SauceLabs.Visual
 {
 

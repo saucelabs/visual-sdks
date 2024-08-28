@@ -1,5 +1,23 @@
 # @saucelabs/visual
 
+## 0.7.0
+
+### Minor Changes
+
+- 4bafb87: Change default diffingMethod to BALANCED
+
+## 0.6.6
+
+### Patch Changes
+
+- 58c9211: replace deprecated field in buildStatus query
+
+## 0.6.5
+
+### Patch Changes
+
+- a1f4373: Update types
+
 ## 0.6.4
 
 ### Patch Changes
