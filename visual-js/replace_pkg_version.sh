@@ -29,7 +29,7 @@ fi
 # Define the mapping between release names and filenames
 declare -A FILE_MAP
 FILE_MAP=(
-    ["@saucelabs/visual"]="visual/src/api.ts"
+    ["@saucelabs/visual"]="visual/src/common/api.ts"
     ["@saucelabs/cypress-visual-plugin"]="visual-cypress/src/index.ts"
     ["@saucelabs/nightwatch-sauce-visual-service"]="visual-nightwatch/src/utils/constants.ts"
     ["@saucelabs/visual-storybook"]="visual-storybook/src/api.ts"
