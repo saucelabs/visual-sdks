@@ -74,6 +74,7 @@ export type Baseline = Node & {
   nodeId: Scalars['ID'];
   operatingSystem: Maybe<OperatingSystem>;
   operatingSystemVersion: Maybe<Scalars['String']>;
+  parentId: Maybe<Scalars['UUID']>;
   project: Maybe<Scalars['String']>;
   /** Reads a single `Snapshot` that is related to this `Baseline`. */
   snapshot: Maybe<Snapshot>;
@@ -183,6 +184,46 @@ export enum BaselinesOrderBy {
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
   SnapshotIdAsc = 'SNAPSHOT_ID_ASC',
   SnapshotIdDesc = 'SNAPSHOT_ID_DESC'
+}
+
+export type Branch = Node & {
+  __typename?: 'Branch';
+  lastUsed: Scalars['Datetime'];
+  name: Scalars['String'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID'];
+  /** Reads a single `Project` that is related to this `Branch`. */
+  project: Maybe<Project>;
+  projectName: Scalars['String'];
+};
+
+/** A connection to a list of `Branch` values. */
+export type BranchesConnection = {
+  __typename?: 'BranchesConnection';
+  /** A list of edges which contains the `Branch` and cursor to aid in pagination. */
+  edges: Array<BranchesEdge>;
+  /** A list of `Branch` objects. */
+  nodes: Array<Branch>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `Branch` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `Branch` edge in the connection. */
+export type BranchesEdge = {
+  __typename?: 'BranchesEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `Branch` at the end of the edge. */
+  node: Branch;
+};
+
+/** Methods to use when ordering `Branch`. */
+export enum BranchesOrderBy {
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
 }
 
 export enum Browser {
@@ -739,6 +780,31 @@ export type FullTextFilter = {
   matches?: InputMaybe<Scalars['String']>;
 };
 
+/** All input for the `mergeBaselines` mutation. */
+export type MergeBaselinesInput = {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']>;
+  projectName: Scalars['String'];
+  sourceBranch: Scalars['String'];
+  targetBranch: Scalars['String'];
+};
+
+/** The output of our `mergeBaselines` mutation. */
+export type MergeBaselinesPayload = {
+  __typename?: 'MergeBaselinesPayload';
+  baselines: Maybe<Array<Baseline>>;
+  /**
+   * The exact same `clientMutationId` that was provided in the mutation input,
+   * unchanged and unused. May be used by a client to track mutations.
+   */
+  clientMutationId: Maybe<Scalars['String']>;
+  /** Our root query field type. Allows us to run any query from our mutation payload. */
+  query: Maybe<Query>;
+};
+
 /** The root mutation type which contains root level fields which mutate data. */
 export type Mutation = {
   __typename?: 'Mutation';
@@ -753,6 +819,7 @@ export type Mutation = {
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
   finishBuild: Build;
+  mergeBaselines: MergeBaselinesPayload;
   updateDiff: Diff;
 };
 
@@ -796,6 +863,12 @@ export type MutationCreateSnapshotUploadArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationMergeBaselinesArgs = {
+  input: MergeBaselinesInput;
 };
 
 
@@ -943,6 +1016,55 @@ export type PageInfo = {
   startCursor: Maybe<Scalars['Cursor']>;
 };
 
+export type Project = Node & {
+  __typename?: 'Project';
+  /** Reads and enables pagination through a set of `Branch`. */
+  branches: BranchesConnection;
+  lastUsed: Scalars['Datetime'];
+  name: Scalars['String'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID'];
+};
+
+
+export type ProjectBranchesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BranchesOrderBy>>;
+};
+
+/** A connection to a list of `Project` values. */
+export type ProjectsConnection = {
+  __typename?: 'ProjectsConnection';
+  /** A list of edges which contains the `Project` and cursor to aid in pagination. */
+  edges: Array<ProjectsEdge>;
+  /** A list of `Project` objects. */
+  nodes: Array<Project>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `Project` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `Project` edge in the connection. */
+export type ProjectsEdge = {
+  __typename?: 'ProjectsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `Project` at the end of the edge. */
+  node: Project;
+};
+
+/** Methods to use when ordering `Project`. */
+export enum ProjectsOrderBy {
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
 /** The root query type which gives access points into the data universe. */
 export type Query = Node & {
   __typename?: 'Query';
@@ -951,12 +1073,11 @@ export type Query = Node & {
   baselineByNodeId: Maybe<Baseline>;
   /** Reads and enables pagination through a set of `Baseline`. */
   baselines: Maybe<BaselinesConnection>;
-  /**
-   * List all the build branches that are visible to the current user and that include `filtername`.
-   *
-   * Results are limited to 100 entries.
-   */
-  branches: Array<Scalars['String']>;
+  branch: Maybe<Branch>;
+  /** Reads a single `Branch` using its globally unique `ID`. */
+  branchByNodeId: Maybe<Branch>;
+  /** Reads and enables pagination through a set of `Branch`. */
+  branches: Maybe<BranchesConnection>;
   build: Maybe<Build>;
   buildByCustomId: Maybe<Build>;
   /** Reads a single `Build` using its globally unique `ID`. */
@@ -968,9 +1089,23 @@ export type Query = Node & {
   diffByNodeId: Maybe<Diff>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: Maybe<DiffsConnection>;
+  /**
+   * List all the build branches that are visible to the current user and that include `filtername`.
+   *
+   * Results are limited to 100 entries.
+   */
+  filteredBranches: Array<Scalars['String']>;
+  /**
+   * List all the build projects that are visible to the current user and that include `filtername`.
+   *
+   * Results are limited to 100 entries.
+   */
+  filteredProjects: Array<Scalars['String']>;
   jwtOrgId: Maybe<Scalars['UUID']>;
   jwtTeamId: Maybe<Scalars['UUID']>;
   jwtUserId: Maybe<Scalars['UUID']>;
+  /** Reads and enables pagination through a set of `Baseline`. */
+  latestBaselines: BaselinesConnection;
   /** Fetches an object given its globally unique `ID`. */
   node: Maybe<Node>;
   /** The root query type must be a `Node` to work well with Relay 1 mutations. This just resolves to `query`. */
@@ -979,12 +1114,11 @@ export type Query = Node & {
   orgStat: Maybe<OrgStat>;
   /** Reads a single `OrgStat` using its globally unique `ID`. */
   orgStatByNodeId: Maybe<OrgStat>;
-  /**
-   * List all the build projects that are visible to the current user and that include `filtername`.
-   *
-   * Results are limited to 100 entries.
-   */
-  projects: Array<Scalars['String']>;
+  project: Maybe<Project>;
+  /** Reads a single `Project` using its globally unique `ID`. */
+  projectByNodeId: Maybe<Project>;
+  /** Reads and enables pagination through a set of `Project`. */
+  projects: Maybe<ProjectsConnection>;
   /**
    * Exposes the root query type nested one level down. This is helpful for Relay 1
    * which can only query top level fields if they are in a particular form.
@@ -1025,8 +1159,26 @@ export type QueryBaselinesArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryBranchArgs = {
+  name: Scalars['String'];
+  projectName: Scalars['String'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryBranchByNodeIdArgs = {
+  nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryBranchesArgs = {
-  filtername: InputMaybe<Scalars['String']>;
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BranchesOrderBy>>;
 };
 
 
@@ -1087,6 +1239,30 @@ export type QueryDiffsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryFilteredBranchesArgs = {
+  filtername: InputMaybe<Scalars['String']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryFilteredProjectsArgs = {
+  filtername: InputMaybe<Scalars['String']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryLatestBaselinesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  branchName: Scalars['String'];
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  projectName: Scalars['String'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryNodeArgs = {
   nodeId: Scalars['ID'];
 };
@@ -1106,8 +1282,25 @@ export type QueryOrgStatByNodeIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryProjectArgs = {
+  name: Scalars['String'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryProjectByNodeIdArgs = {
+  nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryProjectsArgs = {
-  filtername: InputMaybe<Scalars['String']>;
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<ProjectsOrderBy>>;
 };
 
 
@@ -1197,7 +1390,7 @@ export type Snapshot = Node & {
    * - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
    * - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
    * - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
-   * - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+   * - `{"domCode": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
    * - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
    *
    * Other error types may exist and the frontend should display a generic error message
@@ -1502,6 +1695,13 @@ export type FinishBuildDocumentMutationVariables = Exact<{
 
 export type FinishBuildDocumentMutation = { __typename?: 'Mutation', result: { __typename?: 'Build', id: string, name: string, status: BuildStatus, url: string } };
 
+export type MergeBaselinesMutationVariables = Exact<{
+  input: MergeBaselinesInput;
+}>;
+
+
+export type MergeBaselinesMutation = { __typename?: 'Mutation', result: { __typename?: 'MergeBaselinesPayload', baselines: Array<{ __typename?: 'Baseline', id: string }> | null } };
+
 export type UpdateDiffMutationVariables = Exact<{
   input: UpdateDiffIn;
 }>;
@@ -1519,7 +1719,7 @@ export type WebdriverSessionInfoQuery = { __typename?: 'Query', result: { __type
 
 export const BuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"build"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildQuery, BuildQueryVariables>;
 export const BuildByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}}]}}]}}]} as unknown as DocumentNode<BuildByCustomIdQuery, BuildByCustomIdQueryVariables>;
-export const BuildStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","alias":{"kind":"Name","value":"unapprovedCount"},"name":{"kind":"Name","value":"diffCount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"UNAPPROVED"}}]}]}}]}}]} as unknown as DocumentNode<BuildStatusQuery, BuildStatusQueryVariables>;
+export const BuildStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","alias":{"kind":"Name","value":"unapprovedCount"},"name":{"kind":"Name","value":"diffCountExtended"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"UNAPPROVED"}}]}}]}]}}]}}]} as unknown as DocumentNode<BuildStatusQuery, BuildStatusQueryVariables>;
 export const BuildWithDiffsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"build"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsQuery, BuildWithDiffsQueryVariables>;
 export const BuildWithDiffsByCustomIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"buildWithDiffsByCustomId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"buildByCustomId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"customId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"diffs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"snapshot"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildId"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffBounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}},{"kind":"Field","name":{"kind":"Name","value":"diffClusters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<BuildWithDiffsByCustomIdQuery, BuildWithDiffsByCustomIdQueryVariables>;
 export const CreateBuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createBuild"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BuildIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"project"}},{"kind":"Field","name":{"kind":"Name","value":"branch"}},{"kind":"Field","name":{"kind":"Name","value":"defaultBranch"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<CreateBuildMutation, CreateBuildMutationVariables>;
@@ -1528,5 +1728,6 @@ export const CreateSnapshotFromWebDriverDocument = {"kind":"Document","definitio
 export const CreateSnapshotUploadDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSnapshotUpload"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SnapshotUploadIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"createSnapshotUpload"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"buildId"}},{"kind":"Field","name":{"kind":"Name","value":"imageUploadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"domUploadUrl"}}]}}]}}]} as unknown as DocumentNode<CreateSnapshotUploadMutation, CreateSnapshotUploadMutationVariables>;
 export const DiffsForTestResultDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"diffsForTestResult"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UUID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"diffs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"condition"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"buildId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]}}]} as unknown as DocumentNode<DiffsForTestResultQuery, DiffsForTestResultQueryVariables>;
 export const FinishBuildDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"FinishBuildDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FinishBuildIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"finishBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<FinishBuildDocumentMutation, FinishBuildDocumentMutationVariables>;
+export const MergeBaselinesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"mergeBaselines"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MergeBaselinesInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"mergeBaselines"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"baselines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<MergeBaselinesMutation, MergeBaselinesMutationVariables>;
 export const UpdateDiffDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDiff"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateDiffIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"updateDiff"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"baselineId"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotId"}}]}}]}}]} as unknown as DocumentNode<UpdateDiffMutation, UpdateDiffMutationVariables>;
 export const WebdriverSessionInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"webdriverSessionInfo"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WebdriverSessionInfoIn"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"result"},"name":{"kind":"Name","value":"webdriverSessionInfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"blob"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystem"}},{"kind":"Field","name":{"kind":"Name","value":"operatingSystemVersion"}},{"kind":"Field","name":{"kind":"Name","value":"browser"}},{"kind":"Field","name":{"kind":"Name","value":"browserVersion"}},{"kind":"Field","name":{"kind":"Name","value":"deviceName"}}]}}]}}]} as unknown as DocumentNode<WebdriverSessionInfoQuery, WebdriverSessionInfoQueryVariables>;

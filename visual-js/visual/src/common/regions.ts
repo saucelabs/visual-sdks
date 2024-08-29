@@ -1,4 +1,17 @@
-import { SauceRegion } from './api';
+export type SauceRegion =
+  | 'staging'
+  | 'eu-central-1'
+  | 'us-west-1'
+  | 'us-east-4'
+  /**
+   * The following regions need to be mentioned as they are legit sauce regions.
+   * It will throw errors in case it targets a region which is not supported.
+   */
+  | 'us'
+  | 'eu'
+  | 'apac'
+  | 'apac-southeast-1'
+  | 'us-east-1';
 
 export class VisualApiRegion {
   name: SauceRegion;

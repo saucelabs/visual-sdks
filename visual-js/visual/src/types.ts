@@ -1,5 +1,5 @@
 import { RegionIn } from './graphql/__generated__/graphql';
-import { SelectiveRegionOptions } from './selective-region';
+import { SelectiveRegionOptions } from './common/selective-region';
 
 export type FullPageScreenshotOptions =
   | boolean

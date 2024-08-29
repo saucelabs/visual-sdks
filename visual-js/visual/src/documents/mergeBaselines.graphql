@@ -1,0 +1,7 @@
+mutation mergeBaselines($input: MergeBaselinesInput!) {
+  result: mergeBaselines(input: $input) {
+    baselines {
+      id
+    }
+  }
+}

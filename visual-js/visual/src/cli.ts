@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-
 import { Command, program } from 'commander';
+
 import chalk from 'chalk';
 import {
   buildIdOption,
@@ -9,6 +9,7 @@ import {
   customIdOption,
   options as buildOptions,
 } from './cli/build.js';
+import { regionOption } from './cli/common-options.js';
 
 const defaultCommand = new Command()
   .name('default')
@@ -26,6 +27,7 @@ const defaultCommand = new Command()
   });
 
 program.name('visual').description('Interacts with Sauce Visual');
+program.addOption(regionOption);
 program.addCommand(defaultCommand, { isDefault: true, hidden: true });
 program.addCommand(buildCommand(), buildOptions);
 

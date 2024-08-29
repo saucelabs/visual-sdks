@@ -35,9 +35,9 @@
     "build": "tsup",
     "watch": "tsc-watch --declaration -p .",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "gen": "yarn gen:graphql",
+    "gen": "npm run gen:graphql",
     "gen:graphql": "graphql-codegen --config codegen.ts",
-    "pretest": "yarn gen",
+    "pretest": "npm run gen",
     "test": "node --experimental-vm-modules $(yarn bin jest) --collect-coverage"
   },
   "dependencies": {
