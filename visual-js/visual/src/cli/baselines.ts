@@ -10,14 +10,14 @@ function apiFromOptions(opts: { region: VisualApiRegion }): VisualApi {
   });
 }
 
-type BuildStatusCommandOptions = {
+type BaselineMergeCommandOptions = {
   project: string;
   sourceBranch: string;
   targetBranch: string;
   region: VisualApiRegion;
 };
 export async function baselineMergeCommand(_: unknown, cmd: Command) {
-  const options = cmd.optsWithGlobals<BuildStatusCommandOptions>();
+  const options = cmd.optsWithGlobals< BaselineMergeCommandOptions >();
 
   const visualApi = apiFromOptions(options);
   const result = await visualApi.mergeBaselines({
