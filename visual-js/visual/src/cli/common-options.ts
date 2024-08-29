@@ -1,5 +1,5 @@
 import { program, Option } from 'commander';
-import { VisualApiRegion } from 'src/common/regions';
+import { VisualApiRegion } from '../common/regions';
 
 const regionParser = (
   input: string,

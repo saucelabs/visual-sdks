@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import { BuildStatus } from '../graphql/__generated__/graphql';
 import { VisualApiRegion } from '../common/regions';
 
-jest.unstable_mockModule('../api', () => ({
+jest.unstable_mockModule('../common/api', () => ({
   getApi: jest.fn().mockReturnValue({
     createBuild: jest.fn(),
     finishBuild: jest.fn(),
@@ -12,7 +12,7 @@ jest.unstable_mockModule('../api', () => ({
   }),
 }));
 
-const api = await import('../api');
+const api = await import('../common/api');
 const { command } = await import('./build');
 
 const makeProgram = () => {

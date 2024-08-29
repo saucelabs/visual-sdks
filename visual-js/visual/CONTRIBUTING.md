@@ -15,3 +15,9 @@ yarn copy-schema
 yarn gen
 yarn build
 ```
+
+## Test
+
+```sh
+yarn test
+```
