@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.7.1
+
+### Patch Changes
+
+- ae29972: New CLI command to merge baselines into another branch
+
 ## 0.7.0
 
 ### Minor Changes
