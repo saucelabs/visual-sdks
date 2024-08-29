@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.7.1
+
+### Patch Changes
+
+- d769340: Add command to merge baselines
+
 ## 0.7.0
 
 ### Minor Changes
