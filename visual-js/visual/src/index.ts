@@ -1,5 +1,5 @@
 export * from './utils.js';
-export * from './api.js';
+export * from './common/api.js';
 export * from './types.js';
-export { regions, VisualApiRegion } from './regions.js';
-export { displayStatusTable } from './table.js';
+export { regions, VisualApiRegion } from './common/regions.js';
+export { displayStatusTable } from './common/table.js';

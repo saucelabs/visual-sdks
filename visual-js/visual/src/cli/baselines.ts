@@ -1,6 +1,7 @@
 import { Command, CommandOptions } from 'commander';
-import { VisualApiRegion } from '../regions';
+import { VisualApiRegion } from '../common/regions';
 import { VisualApi, getApi } from '../api';
+import { regionOption } from './common-options';
 
 function apiFromOptions(opts: { region: VisualApiRegion }): VisualApi {
   return getApi({
@@ -17,7 +18,7 @@ type BaselineMergeCommandOptions = {
   region: VisualApiRegion;
 };
 export async function baselineMergeCommand(_: unknown, cmd: Command) {
-  const options = cmd.optsWithGlobals< BaselineMergeCommandOptions >();
+  const options = cmd.optsWithGlobals<BaselineMergeCommandOptions>();
 
   const visualApi = apiFromOptions(options);
   const result = await visualApi.mergeBaselines({
@@ -31,6 +32,7 @@ const mergeCommand = () =>
   new Command()
     .name('merge')
     .description('Merge baselines from a source branch into a target branch')
+    .addOption(regionOption)
     .requiredOption('-p, --project', 'Project name')
     .requiredOption(
       '-s, --source-branch',

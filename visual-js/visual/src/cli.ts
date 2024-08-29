@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Command, Option, program } from 'commander';
+import { Command, program } from 'commander';
 
 import chalk from 'chalk';
 import {
@@ -9,27 +9,7 @@ import {
   customIdOption,
   options as buildOptions,
 } from './cli/build.js';
-import { VisualApiRegion } from './regions.js';
-
-const regionParser = (
-  input: string,
-  _previous: VisualApiRegion,
-): VisualApiRegion => {
-  if (!input) {
-    return VisualApiRegion.fromName('us-west-1');
-  }
-  try {
-    return VisualApiRegion.fromName(input);
-  } catch (e: unknown) {
-    program.error(String(e));
-  }
-};
-const regionOption = new Option(
-  '-r, --region <region>',
-  'The Sauce Labs region. Options: us-west-1, eu-central-1 (Default: "us-west-1)"',
-)
-  .argParser(regionParser)
-  .default(VisualApiRegion.fromName('us-west-1'));
+import { regionOption } from './cli/common-options.js';
 
 const defaultCommand = new Command()
   .name('default')

@@ -1,8 +1,9 @@
 import { Command, CommandOptions, Option, program } from 'commander';
-import { VisualApiRegion } from '../regions';
-import { VisualApi, getApi } from '../api';
-import { displayStatusTable } from '../table';
+import { VisualApiRegion } from '../common/regions';
+import { VisualApi, getApi } from '../common/api';
+import { displayStatusTable } from '../common/table';
 import { DiffStatus } from '../graphql/__generated__/graphql';
+import { regionOption } from './common-options';
 
 /**
  * Utils
@@ -94,6 +95,7 @@ const statusCommand = () =>
   new Command()
     .name('status')
     .description('Fetches status from a Sauce Visual build')
+    .addOption(regionOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
     .action(buildStatusCommand);
@@ -131,6 +133,7 @@ const buildCreateCommand = () =>
   new Command()
     .name('create')
     .description('Creates a Sauce Visual build')
+    .addOption(regionOption)
     .requiredOption('-n, --name <name>')
     .addOption(customIdOption)
     .option('--branch <branch>')
@@ -174,6 +177,7 @@ const buildFinishCommand = () =>
   new Command()
     .name('finish')
     .description('Finishes a Sauce Visual build')
+    .addOption(regionOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
     .action(buildFinish);

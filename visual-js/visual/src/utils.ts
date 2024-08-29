@@ -7,7 +7,7 @@ import {
   RegionIn,
 } from './graphql/__generated__/graphql';
 import { RegionType } from './types';
-import { selectiveRegionOptionsToDiffingOptions } from './selective-region';
+import { selectiveRegionOptionsToDiffingOptions } from './common/selective-region';
 
 export const getFullPageConfig: (
   main?: FullPageConfigIn | boolean,

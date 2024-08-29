@@ -3,7 +3,7 @@ import {
   VisualApiRegion,
   regions,
   resolveRegionFromOndemandHostname,
-} from './regions';
+} from './common/regions';
 
 describe('region names', () => {
   const names: { [key: string]: number } = {};

@@ -31,13 +31,14 @@ import {
   BuildWithDiffsByCustomIdDocument,
   BuildByCustomIdDocument,
   MergeBaselinesDocument,
-} from './graphql/__generated__/graphql.js';
+} from '../graphql/__generated__/graphql.js';
 import {
+  SauceRegion,
   VisualApiRegion,
   resolveRegionFromOndemandHostname,
 } from './regions.js';
 
-export * from './graphql/__generated__/graphql.js';
+export * from '../graphql/__generated__/graphql.js';
 export * from './selective-region.js';
 
 const clientVersion = 'PKG_VERSION';
@@ -259,21 +260,6 @@ function makeQuery<
 ): (input: Input) => Promise<Result> {
   return async (input: Input) => await genericQuery(apollo, doc, input);
 }
-
-export type SauceRegion =
-  | 'staging'
-  | 'eu-central-1'
-  | 'us-west-1'
-  | 'us-east-4'
-  /**
-   * The following regions need to be mentioned as they are legit sauce regions.
-   * It will throw errors in case it targets a region which is not supported.
-   */
-  | 'us'
-  | 'eu'
-  | 'apac'
-  | 'apac-southeast-1'
-  | 'us-east-1';
 
 export interface VisualConfig {
   region?: SauceRegion | VisualApiRegion;

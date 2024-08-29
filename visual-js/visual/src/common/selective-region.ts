@@ -2,7 +2,7 @@ import {
   DiffingOptionsIn,
   Rect,
   RegionIn,
-} from './graphql/__generated__/graphql';
+} from '../graphql/__generated__/graphql';
 
 export type SelectiveRegionOptions =
   | { enableOnly: Array<keyof DiffingOptionsIn>; disableOnly?: never }

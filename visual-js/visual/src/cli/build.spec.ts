@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Command } from 'commander';
 import { BuildStatus } from '../graphql/__generated__/graphql';
-import { VisualApiRegion } from '../regions';
+import { VisualApiRegion } from '../common/regions';
 
 jest.unstable_mockModule('../api', () => ({
   getApi: jest.fn().mockReturnValue({
