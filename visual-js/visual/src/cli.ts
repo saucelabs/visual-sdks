@@ -10,6 +10,7 @@ import {
   options as buildOptions,
 } from './cli/build.js';
 import { regionOption } from './cli/common-options.js';
+import { baselinesCommand, baselinesOptions } from './cli/baselines.js';
 
 const defaultCommand = new Command()
   .name('default')
@@ -30,6 +31,7 @@ program.name('visual').description('Interacts with Sauce Visual');
 program.addOption(regionOption);
 program.addCommand(defaultCommand, { isDefault: true, hidden: true });
 program.addCommand(buildCommand(), buildOptions);
+program.addCommand(baselinesCommand(), baselinesOptions);
 
 (async function () {
   try {
