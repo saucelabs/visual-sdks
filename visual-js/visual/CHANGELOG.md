@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.7.2
+
+### Patch Changes
+
+- 3f1e241: Enable merge baselines command
+
 ## 0.7.1
 
 ### Patch Changes
