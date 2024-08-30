@@ -1,6 +1,6 @@
 import { Command, CommandOptions } from 'commander';
 import { VisualApiRegion } from '../common/regions';
-import { VisualApi, getApi } from '../api';
+import { VisualApi, getApi } from '../common/api';
 import { regionOption } from './common-options';
 
 function apiFromOptions(opts: { region: VisualApiRegion }): VisualApi {
@@ -23,7 +23,8 @@ export async function baselineMergeCommand(_: unknown, cmd: Command) {
   const visualApi = apiFromOptions(options);
   const result = await visualApi.mergeBaselines({
     projectName: options.project,
-    ...options,
+    sourceBranch: options.sourceBranch,
+    targetBranch: options.targetBranch,
   });
   console.log(`Merged baselines: ${result.baselines?.length}`);
 }
@@ -33,25 +34,22 @@ const mergeCommand = () =>
     .name('merge')
     .description('Merge baselines from a source branch into a target branch')
     .addOption(regionOption)
-    .requiredOption('-p, --project', 'Project name')
+    .requiredOption('-p, --project <project>', 'Project name')
     .requiredOption(
-      '-s, --source-branch',
+      '-s, --source-branch <branch>',
       'Branch from which to copy the baselines',
     )
     .requiredOption(
-      '-t, --target-branch',
-      'Branch into which copy the baselines',
+      '-t, --target-branch <branch>',
+      'Branch into which to copy the baselines',
     )
     .action(baselineMergeCommand);
 
 /**
  * command: visual baselines
  */
-export const options: CommandOptions = {
-  hidden: false,
-  isDefault: false,
-};
-export const command = () =>
+export const baselinesOptions: CommandOptions = {};
+export const baselinesCommand = () =>
   new Command()
     .name('baselines')
     .description('Interacts with Sauce Visual baselines')
