@@ -183,16 +183,7 @@ const sauceVisualCheckCommand = (
       return result;
     });
 
-  const id = randomId();
-  cy.get<Cypress.Dimensions | undefined>('@clipToBounds').then(
-    (clipToBounds) => {
-      cy.screenshot(`sauce-visual-${id}`, {
-        clip: clipToBounds,
-        ...options?.cypress,
-      });
-    },
-  );
-
+  const screenshotId = `sauce-visual-${randomId()}`;
   cy.window({ log: false }).then((win) => {
     cy.task<string | undefined>('get-script', { log: false }).then((script) => {
       // See note around "viewport" declaration.
@@ -218,7 +209,7 @@ const sauceVisualCheckCommand = (
 
       return regionsPromise.then((regions) => {
         cy.task('visual-register-screenshot', {
-          id: `sauce-visual-${id}`,
+          id: screenshotId,
           name: screenshotName,
           suiteName: Cypress.currentTest.titlePath.slice(0, -1).join(' '),
           testName: Cypress.currentTest.title,
@@ -232,6 +223,15 @@ const sauceVisualCheckCommand = (
       });
     });
   });
+
+  cy.get<Cypress.Dimensions | undefined>('@clipToBounds').then(
+    (clipToBounds) => {
+      cy.screenshot(screenshotId, {
+        clip: clipToBounds,
+        ...options?.cypress,
+      });
+    },
+  );
 };
 
 Cypress.Commands.add(

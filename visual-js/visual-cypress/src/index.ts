@@ -265,27 +265,6 @@ Sauce Labs Visual: Unable to create new build.
     return null;
   }
 
-  computeScalingRatio(
-    viewport: SauceVisualViewport | undefined,
-    screenshotDimension: { height: number; width: number },
-  ): number {
-    if (!viewport) {
-      this.logColoredWarn(
-        `Viewport not available, Cypress scaling won't be corrected`,
-      );
-      return 1;
-    }
-
-    const heightRatio = screenshotDimension.height / viewport.height;
-    const widthRatio = screenshotDimension.width / viewport.width;
-
-    if (0.001 < Math.abs(heightRatio - widthRatio)) {
-      throw new Error(`Vertical ratio is not consistent with horizontal ratio`);
-    }
-
-    return heightRatio;
-  }
-
   private async getResultSummary(): Promise<Record<DiffStatus, number>> {
     const diffsForTestResult = await this.api.diffsForTestResult(this.buildId!);
     if (!diffsForTestResult) {
@@ -320,104 +299,89 @@ Sauce Labs Visual: Unable to create new build.
         retry: (error?: Error) => {
           return !!error && error instanceof DiffNotReadyError;
         },
-        // Will wait for 800ms + jitter with current settings
         // See https://www.npmjs.com/package/exponential-backoff#backoffoptions for details
-        delayFirstAttempt: false,
+        delayFirstAttempt: true,
         timeMultiple: 2,
-        numOfAttempts: 5,
+        numOfAttempts: 15,
         jitter: 'full',
-        startingDelay: 50,
+        startingDelay: 150,
+        maxDelay: 10_000,
       },
     );
   }
 
-  async processScreenshots(
-    spec: Cypress.Spec,
-    results: CypressCommandLine.RunResult,
-  ) {
-    if (!results.screenshots) {
-      return;
-    }
+  async processScreenshot(screenshot: Cypress.ScreenshotDetails) {
+    const metadata = this.screenshotsMetadata[screenshot.name];
+    if (!metadata) return;
 
     const osInfo = correctOsInfo(this.os || { osName: '', osVersion: '' });
-
-    logger.info(screenshotSectionStart());
-
-    // TODO:
-    //   Before displaying any green/red checkmark we should fetch the status and mark it
-    //   according discovery of the finding of the API.
-
     let hasFailedUpload = false;
-    for (const screenshot of results.screenshots) {
-      const metadata = this.screenshotsMetadata[screenshot.name];
-      // Skip screenshot without visual metadata
-      if (!metadata) {
-        return;
-      }
 
-      // Publish image
-      try {
-        const screenshotId = await this.api.uploadSnapshot({
-          buildId: this.buildId ?? '',
-          image: { path: screenshot.path },
-          dom: metadata.dom ? { data: Buffer.from(metadata.dom) } : undefined,
-        });
-        const result = await this.api.createSnapshot({
-          buildUuid: this.buildId ?? '',
-          uploadUuid: screenshotId,
-          name: metadata.name,
-          browser: (cypressBrowserToGraphQL(this.browser?.name) ??
-            null) as Browser,
-          browserVersion: (this.browser?.version ?? null) as string,
-          operatingSystem: osInfo.name,
-          operatingSystemVersion: osInfo.version,
-          suiteName: metadata.suiteName,
-          testName: metadata.testName,
-          ignoreRegions: metadata.regions.map((r) => ({
-            ...r.element,
-            diffingOptions: selectiveRegionOptionsToDiffingOptions(r),
-          })),
-          device: metadata.viewport
-            ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
-            : 'Desktop',
-          devicePixelRatio: metadata.devicePixelRatio,
-          diffingMethod:
-            metadata.diffingMethod ||
-            this.diffingMethod ||
-            DiffingMethod.Balanced,
-          jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
-        });
-        logger.info(`    ${chalk.green('✔')} ${metadata.name} `);
-        this.uploadedDiffIds.push(
-          ...result.diffs.nodes.flatMap((diff) => diff.id),
-        );
-      } catch (e) {
-        logger.error(
-          `    ${chalk.red('✖')} ${metadata.name}: upload failed (${errorMsg(
-            e,
-          )}))`,
-        );
-        logger.error(e);
-        hasFailedUpload = true;
-      }
-
-      if (hasFailedUpload) {
-        logger.error(
-          `Sauce Labs Visual: Some screenshots have not been uploaded successfully.`,
-        );
-        logger.error(`The execution of Cypress has been interrupted.`);
-        throw new Error('Sauce Labs Visual: Failed to upload some screenshots');
-      }
-      logger.info(); // add line break
+    // Publish image
+    try {
+      const screenshotId = await this.api.uploadSnapshot({
+        buildId: this.buildId ?? '',
+        image: { path: screenshot.path },
+        dom: metadata.dom ? { data: Buffer.from(metadata.dom) } : undefined,
+      });
+      const result = await this.api.createSnapshot({
+        buildUuid: this.buildId ?? '',
+        uploadUuid: screenshotId,
+        name: metadata.name,
+        browser: (cypressBrowserToGraphQL(this.browser?.name) ??
+          null) as Browser,
+        browserVersion: (this.browser?.version ?? null) as string,
+        operatingSystem: osInfo.name,
+        operatingSystemVersion: osInfo.version,
+        suiteName: metadata.suiteName,
+        testName: metadata.testName,
+        ignoreRegions: metadata.regions.map((r) => ({
+          ...r.element,
+          diffingOptions: selectiveRegionOptionsToDiffingOptions(r),
+        })),
+        device: metadata.viewport
+          ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
+          : 'Desktop',
+        devicePixelRatio: metadata.devicePixelRatio,
+        diffingMethod:
+          metadata.diffingMethod ||
+          this.diffingMethod ||
+          DiffingMethod.Balanced,
+        jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
+      });
+      logger.info(`    ${chalk.green('✔')} ${metadata.name} `);
+      this.uploadedDiffIds.push(
+        ...result.diffs.nodes.flatMap((diff) => diff.id),
+      );
+    } catch (e) {
+      logger.error(
+        `    ${chalk.red('✖')} ${metadata.name}: upload failed (${errorMsg(
+          e,
+        )}))`,
+      );
+      logger.error(e);
+      hasFailedUpload = true;
     }
+
+    if (hasFailedUpload) {
+      logger.error(
+        `Sauce Labs Visual: Some screenshots have not been uploaded successfully.`,
+      );
+      logger.error(`The execution of Cypress has been interrupted.`);
+      throw new Error('Sauce Labs Visual: Failed to upload some screenshots');
+    }
+    logger.info(); // add line break
   }
 
+  /**
+   * Cleans up leftover screenshot metadata after a spec is complete.
+   */
   cleanScreenshot() {
     this.screenshotsMetadata = {};
   }
 
   /**
-   * Wrapper arround logging
+   * Wrapper around logging
    */
   log(data: string) {
     logger.info(data);
@@ -456,18 +420,21 @@ Sauce Labs Visual: Unable to create new build.
     });
 
     on(
-      'after:spec',
+      'after:screenshot',
       async (
-        spec: Cypress.Spec,
-        results: CypressCommandLine.RunResult,
-      ): Promise<void> => {
-        await plugin.processScreenshots(spec, results);
-        plugin.cleanScreenshot();
+        details: Cypress.ScreenshotDetails,
+      ): Promise<Cypress.AfterScreenshotReturnObject> => {
+        await plugin.processScreenshot(details);
+        return details;
       },
     );
 
     on('after:run', async () => {
       await plugin.closeBuild();
+    });
+
+    on('after:spec', async (): Promise<void> => {
+      plugin.cleanScreenshot();
     });
 
     on('task', {
