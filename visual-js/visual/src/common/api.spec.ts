@@ -18,12 +18,7 @@ test('create and finish build', async () => {
   expect(status).toBe('RUNNING');
 
   {
-    const { status } = await api.finishBuild({ id });
-    expect(status).toBe('EMPTY');
-  }
-
-  {
-    const { status } = await api.finishBuild({ id });
+    const { status } = await api.finishBuild({ uuid: id });
     expect(status).toBe('EMPTY');
   }
 });
@@ -76,7 +71,7 @@ test(
       diffingMethod: null,
     });
 
-    await api.finishBuild({ id: buildId });
+    await api.finishBuild({ uuid: buildId });
   },
   60 * 1000,
 );
