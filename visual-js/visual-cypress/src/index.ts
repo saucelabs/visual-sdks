@@ -8,26 +8,25 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
-  getApi,
   Browser,
-  OperatingSystem,
-  VisualApi,
-  ensureError,
-  DiffStatus,
-  DiffingMethod,
-  VisualApiRegion,
   BuildMode,
+  DiffingMethod,
   DiffingOptionsIn,
+  DiffStatus,
+  ensureError,
+  getApi,
+  OperatingSystem,
   selectiveRegionOptionsToDiffingOptions,
+  VisualApi,
+  VisualApiRegion,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
-  ScreenshotMetadata,
   SauceVisualOptions,
-  SauceVisualViewport,
+  ScreenshotMetadata,
 } from './types';
 import { Logger } from './logger';
-import { buildUrl, screenshotSectionStart } from './messages';
+import { buildUrl } from './messages';
 import chalk from 'chalk';
 import macosRelease from 'macos-release';
 import { backOff } from 'exponential-backoff';
