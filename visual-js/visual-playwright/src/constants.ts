@@ -1,0 +1,1 @@
+export const OPTS_ENV_KEY = 'SAUCE_VISUAL_OPTS';

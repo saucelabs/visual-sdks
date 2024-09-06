@@ -6,7 +6,8 @@
     "visual-storybook",
     "visual-wdio",
     "visual-cypress",
-    "visual-nightwatch"
+    "visual-nightwatch",
+    "visual-playwright"
   ],
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
