@@ -29,8 +29,7 @@
   "scripts": {
     "build": "tsup-node",
     "watch": "tsc-watch --declaration -p .",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --collect-coverage"
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
     "@playwright/test": "^1.42.1",
