@@ -12,8 +12,7 @@ export interface SauceVisualParams {
    */
   clipSelector?: string;
   /**
-   * A number, in ms, that we should delay the snapshot by. Useful if the beginning of the story
-   * has unavoidable / javascript animations.
+   * A number, in ms, that we should delay before taking the snapshot.
    */
   delay?: number;
   /**

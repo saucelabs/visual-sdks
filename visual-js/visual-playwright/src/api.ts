@@ -113,7 +113,7 @@ export const waitForBuildResult = async (buildId: string) => {
 `,
     );
 
-    if (build.unapprovedCount > 0) {
+    if (build.unapprovedCount > 0 || build.errorCount > 0) {
       process.exitCode = 1;
     }
   } catch (e) {
@@ -162,6 +162,7 @@ export const takePlaywrightScreenshot = async (
   const { buildId } = getOpts();
 
   if (!buildId) {
+    console.warn('No Sauce Visual build present, skipping Visual snapshot.');
     return;
   }
 
@@ -227,7 +228,10 @@ export const takePlaywrightScreenshot = async (
         ignoreRegions = [
           ...userIgnoreRegions.filter(filterIgnoreRegion),
           ...selectorRegions,
-        ].filter((region) => 0 < region.width * region.height);
+        ].filter(
+          (region) =>
+            0 < Math.max(region.width, 0) * Math.max(region.height, 0),
+        );
       })(),
     );
   }
@@ -245,11 +249,22 @@ export const takePlaywrightScreenshot = async (
           }
 
           const clientDims = clipElement.getBoundingClientRect();
-          const { x, y, height, width } = clientDims;
+          let { x, y, height, width } = clientDims;
 
-          // If any values are falsy (or zero), then do not clip as those are invalid options for
+          // corrected coordinates
+          const cX = x < 0 ? Math.abs(x) : 0;
+          const cY = y < 0 ? Math.abs(y) : 0;
+
+          ({ x, y, width, height } = {
+            x: Math.max(x, 0),
+            y: Math.max(y, 0),
+            width: cX > 0 ? width - cX : width,
+            height: cY > 0 ? height - cY : height,
+          });
+
+          // If any values are < 0, then do not clip as those are invalid options for
           // playwright
-          if (x < 0 || y < 0 || !height || !width) {
+          if (x < 0 || y < 0 || height <= 0 || width <= 0) {
             return undefined;
           }
 

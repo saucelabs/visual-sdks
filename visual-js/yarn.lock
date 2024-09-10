@@ -3532,7 +3532,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@saucelabs/cypress-visual-plugin@workspace:visual-cypress"
   dependencies:
-    "@saucelabs/visual": ^0.7.0
+    "@saucelabs/visual": ^0.7.3
     "@tsconfig/node18": ^2.0.1
     "@types/cypress": ^1.1.3
     "@types/node": ^20.4.4
@@ -3641,7 +3641,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@saucelabs/visual@^0.7.0, @saucelabs/visual@workspace:visual":
+"@saucelabs/visual@^0.7.0, @saucelabs/visual@^0.7.3, @saucelabs/visual@workspace:visual":
   version: 0.0.0-use.local
   resolution: "@saucelabs/visual@workspace:visual"
   dependencies:

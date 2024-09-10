@@ -11,7 +11,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": "^16.13 || >=18"
+    "node": ">=18"
   },
   "keywords": [
     "saucelabs",
