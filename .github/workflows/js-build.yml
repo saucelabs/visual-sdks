@@ -28,7 +28,7 @@ jobs:
       - name: Build with lerna
         run: |
           corepack enable
-          yarn install
+          yarn install --immutable
           npm run lint --workspaces --if-present
           npm run build --workspaces --if-present
           npm run test --workspaces --if-present
