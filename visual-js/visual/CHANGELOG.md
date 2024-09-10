@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.8.1
+
+### Patch Changes
+
+- 7b1c3cc: Add playwright support
+
 ## 0.8.0
 
 ### Minor Changes
