@@ -34,6 +34,7 @@ FILE_MAP=(
     ["@saucelabs/nightwatch-sauce-visual-service"]="visual-nightwatch/src/utils/constants.ts"
     ["@saucelabs/visual-storybook"]="visual-storybook/src/api.ts"
     ["@saucelabs/wdio-sauce-visual-service"]="visual-wdio/src/SauceVisualService.ts"
+    ["@saucelabs/visual-playwright"]="visual-playwright/src/api.ts"
     # Add more mappings as needed
 )
 
