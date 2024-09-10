@@ -148,16 +148,19 @@ const uploadToUrl = async ({
   contentType,
   file,
   compress,
+  uploadTimeoutMs,
 }: {
   uploadUrl: string;
   contentType: string;
   file: DataContent | DataPath;
   compress?: boolean;
+  uploadTimeoutMs?: number;
 }) => {
   const uploadBody = isDataPath(file) ? fs.readFileSync(file.path) : file.data;
 
   const hash = crypto.createHash('md5').update(uploadBody).digest('base64');
   try {
+    uploadTimeoutMs ||= 10_000;
     const result = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
@@ -168,7 +171,7 @@ const uploadToUrl = async ({
       body: uploadBody,
       compress,
       ...fetchOptions,
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(uploadTimeoutMs),
     });
 
     if (!result.ok) {
