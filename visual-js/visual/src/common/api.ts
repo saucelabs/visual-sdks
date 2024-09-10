@@ -148,30 +148,43 @@ const uploadToUrl = async ({
   contentType,
   file,
   compress,
+  uploadTimeoutMs,
 }: {
   uploadUrl: string;
   contentType: string;
   file: DataContent | DataPath;
   compress?: boolean;
+  uploadTimeoutMs?: number;
 }) => {
   const uploadBody = isDataPath(file) ? fs.readFileSync(file.path) : file.data;
 
   const hash = crypto.createHash('md5').update(uploadBody).digest('base64');
+  try {
+    uploadTimeoutMs ||= 10_000;
+    const result = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Length': `${uploadBody.byteLength}`,
+        'Content-Type': contentType,
+        'Content-MD5': hash,
+      },
+      body: uploadBody,
+      compress,
+      ...fetchOptions,
+      signal: AbortSignal.timeout(uploadTimeoutMs),
+    });
 
-  const result = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Length': `${uploadBody.byteLength}`,
-      'Content-Type': contentType,
-      'Content-MD5': hash,
-    },
-    body: uploadBody,
-    compress,
-    ...fetchOptions,
-  });
-
-  if (!result.ok) {
-    throw new Error(`Failed to upload snapshot: ${result.statusText}`);
+    if (!result.ok) {
+      throw new Error(`Failed to upload snapshot: ${result.statusText}`);
+    }
+  } catch (ex: unknown) {
+    if (String(ex).includes('AbortError')) {
+      throw new Error(`Uploading snapshot reached timeout.
+Please check that you have connectivity and are able to do HTTP PUT requests.
+URL: ${uploadUrl}
+Note: This URL is valid only for a couple of minutes`);
+    }
+    throw new Error(`Upload failed with an unknown error: ${ex}`);
   }
 };
 
