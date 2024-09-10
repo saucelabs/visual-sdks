@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@playwright/test": "^1.42.1",
-    "@saucelabs/visual": "^0.7.0",
+    "@saucelabs/visual": "^0.8.0",
     "exponential-backoff": "^3.1.1"
   },
   "tsup": {
