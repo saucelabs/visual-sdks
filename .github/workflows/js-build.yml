@@ -27,6 +27,7 @@ jobs:
           node-version: 18.x
       - name: Build with lerna
         run: |
+          env
           corepack enable
           yarn install --immutable
           npm run lint --workspaces --if-present
