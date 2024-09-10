@@ -184,7 +184,7 @@ const uploadToUrl = async ({
       if (ex?.name === 'AbortError') {
         console.error();
         throw new Error(`Uploading snapshot reached timeout.
-Please check that you have connectivity, and are able to do HTTP PUT requests.
+Please check that you have connectivity and are able to do HTTP PUT requests.
 URL: ${uploadUrl}
 Note: This URL is valid only for a couple of minutes`);
       }
