@@ -15,7 +15,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "query build($input: UUID!) {\n  result: build(id: $input) {\n    id\n    name\n    url\n    status\n    project\n    branch\n    defaultBranch\n    mode\n  }\n}": types.BuildDocument,
     "query buildByCustomId($input: String!) {\n  result: buildByCustomId(customId: $input) {\n    id\n    name\n    url\n    status\n    project\n    branch\n    mode\n  }\n}": types.BuildByCustomIdDocument,
-    "query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n  }\n}": types.BuildStatusDocument,
+    "query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n    errorCount: diffCountExtended(input: {status: ERRORED})\n  }\n}": types.BuildStatusDocument,
     "query buildWithDiffs($input: UUID!) {\n  result: build(id: $input) {\n    id\n    name\n    url\n    status\n    project\n    branch\n    diffs {\n      nodes {\n        id\n        baselineId\n        status\n        baseline {\n          snapshot {\n            buildId\n          }\n        }\n        diffBounds {\n          x\n          y\n        }\n        diffClusters {\n          x\n          y\n          width\n          height\n        }\n      }\n    }\n  }\n}": types.BuildWithDiffsDocument,
     "query buildWithDiffsByCustomId($input: String!) {\n  result: buildByCustomId(customId: $input) {\n    id\n    name\n    url\n    status\n    project\n    branch\n    diffs {\n      nodes {\n        id\n        baselineId\n        status\n        baseline {\n          snapshot {\n            buildId\n          }\n        }\n        diffBounds {\n          x\n          y\n        }\n        diffClusters {\n          x\n          y\n        }\n      }\n    }\n  }\n}": types.BuildWithDiffsByCustomIdDocument,
     "mutation createBuild($input: BuildIn!) {\n  result: createBuild(input: $input) {\n    id\n    name\n    project\n    branch\n    defaultBranch\n    status\n    url\n  }\n}": types.CreateBuildDocument,
@@ -54,7 +54,7 @@ export function graphql(source: "query buildByCustomId($input: String!) {\n  res
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n  }\n}"): (typeof documents)["query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n  }\n}"];
+export function graphql(source: "query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n    errorCount: diffCountExtended(input: {status: ERRORED})\n  }\n}"): (typeof documents)["query buildStatus($input: UUID!) {\n  result: build(id: $input) {\n    url\n    status\n    unapprovedCount: diffCountExtended(input: {status: UNAPPROVED})\n    errorCount: diffCountExtended(input: {status: ERRORED})\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

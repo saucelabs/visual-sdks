@@ -3,5 +3,6 @@ query buildStatus($input: UUID!) {
     url
     status
     unapprovedCount: diffCountExtended(input: { status: UNAPPROVED })
+    errorCount: diffCountExtended(input: { status: ERRORED })
   }
 }

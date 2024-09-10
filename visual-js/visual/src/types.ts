@@ -1,5 +1,6 @@
 import { RegionIn } from './graphql/__generated__/graphql';
 import { SelectiveRegionOptions } from './common/selective-region';
+import { SauceRegion } from './common/regions';
 
 export type FullPageScreenshotOptions =
   | boolean
@@ -40,3 +41,18 @@ export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;
 export type RegionType<T> = { element: T } & SelectiveRegionOptions;
 
 export type ElementMeta = { id: string; name?: string };
+
+export interface VisualEnvOpts {
+  user: string | undefined;
+  key: string | undefined;
+  region: SauceRegion | undefined;
+  /**
+   * The build ID for the current run.
+   */
+  buildId: string | null;
+  buildName: string;
+  project: string | null;
+  branch: string | null;
+  defaultBranch: string | null;
+  customId: string | null;
+}
