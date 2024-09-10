@@ -1,5 +1,13 @@
 # @saucelabs/visual-storybook
 
+## 0.5.1
+
+### Patch Changes
+
+- 1399b9c: Debugging info when upload is reaching timeout
+- Updated dependencies [1399b9c]
+  - @saucelabs/visual@0.8.0
+
 ## 0.5.0
 
 ### Minor Changes

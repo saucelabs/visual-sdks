@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.8.0
+
+### Minor Changes
+
+- 1399b9c: Debugging info when upload is reaching timeout
+
 ## 0.7.3
 
 ### Patch Changes
