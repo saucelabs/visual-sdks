@@ -279,6 +279,7 @@ export type Build = Node & {
    * together with the JSON contents of `error`.
    */
   error: Maybe<Scalars['JSON']>;
+  finishAfter: Maybe<Scalars['Datetime']>;
   /** Full-text search ranking when filtered by `fullText`. */
   fullTextRank: Maybe<Scalars['Float']>;
   id: Scalars['UUID'];
@@ -287,6 +288,7 @@ export type Build = Node & {
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
+  openSessions: Maybe<Scalars['Int']>;
   owningTeamId: Scalars['UUID'];
   project: Maybe<Scalars['String']>;
   /** Reads and enables pagination through a set of `Snapshot`. */
@@ -744,9 +746,16 @@ export type ElementIn = {
 };
 
 export type FinishBuildIn = {
+  customId?: InputMaybe<Scalars['String']>;
+  /** Delay the finishing the build for at least the specified number of seconds. */
+  delay?: InputMaybe<Scalars['Int']>;
   /** @deprecated Use `uuid`. This field will be removed in a future update. */
   id?: InputMaybe<Scalars['ID']>;
   uuid?: InputMaybe<Scalars['UUID']>;
+};
+
+export type ForceFinishBuildIn = {
+  customId: Scalars['String'];
 };
 
 export type FullPageConfigIn = {
@@ -819,6 +828,7 @@ export type Mutation = {
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
   finishBuild: Build;
+  forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
   updateDiff: Diff;
 };
@@ -863,6 +873,12 @@ export type MutationCreateSnapshotUploadArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationForceFinishBuildArgs = {
+  input: ForceFinishBuildIn;
 };
 
 
