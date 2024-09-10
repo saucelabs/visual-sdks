@@ -178,16 +178,11 @@ const uploadToUrl = async ({
       throw new Error(`Failed to upload snapshot: ${result.statusText}`);
     }
   } catch (ex: unknown) {
-    const isObject = (value: unknown): value is any =>
-      !!value && typeof value === 'object';
-    if (isObject(ex)) {
-      if (ex?.name === 'AbortError') {
-        console.error();
-        throw new Error(`Uploading snapshot reached timeout.
+    if (String(ex).includes('AbortError')) {
+      throw new Error(`Uploading snapshot reached timeout.
 Please check that you have connectivity and are able to do HTTP PUT requests.
 URL: ${uploadUrl}
 Note: This URL is valid only for a couple of minutes`);
-      }
     }
     throw new Error(`Upload failed with an unknown error: ${ex}`);
   }
