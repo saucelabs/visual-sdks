@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.7.3
+
+### Patch Changes
+
+- 8a64e27: Update / regen types + update Cypress snapshot upload behavior
+
 ## 0.7.2
 
 ### Patch Changes

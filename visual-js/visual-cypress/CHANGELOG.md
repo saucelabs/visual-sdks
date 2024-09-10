@@ -1,5 +1,13 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.6.1
+
+### Patch Changes
+
+- 8a64e27: Update / regen types + update Cypress snapshot upload behavior
+- Updated dependencies [8a64e27]
+  - @saucelabs/visual@0.7.3
+
 ## 0.6.0
 
 ### Minor Changes
