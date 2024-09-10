@@ -39,6 +39,7 @@ describe('api', () => {
     status: BuildStatus.Running,
     url: 'https://fake-url',
     unapprovedCount: 0,
+    errorCount: 0,
   };
 
   describe('waitForBuildResult', () => {
