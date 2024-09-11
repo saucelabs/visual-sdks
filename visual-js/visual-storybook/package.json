@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@saucelabs/visual": "^0.8.0",
-    "@saucelabs/visual-playwright": "0.1.0",
+    "@saucelabs/visual-playwright": "^0.1.0",
     "@storybook/test-runner": ">=0.13.0",
     "exponential-backoff": "^3.1.1",
     "jest-playwright-preset": "^2.0.0 || ^3.0.0"
