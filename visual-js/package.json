@@ -3,11 +3,11 @@
   "private": true,
   "workspaces": [
     "visual",
-    "visual-storybook",
     "visual-wdio",
     "visual-cypress",
     "visual-nightwatch",
-    "visual-playwright"
+    "visual-playwright",
+    "visual-storybook"
   ],
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
