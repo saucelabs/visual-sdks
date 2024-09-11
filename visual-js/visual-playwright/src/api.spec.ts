@@ -1,20 +1,21 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-
-import { getApi as getVisualApi, waitForBuildResult } from './api';
-import * as utils from './utils';
+import type { MockInstance } from 'jest-mock';
 import * as sauceVisual from '@saucelabs/visual';
-import { BuildStatus, getApi } from '@saucelabs/visual';
-import { MockInstance } from 'jest-mock';
+import { BuildStatus, getEnvOpts, VisualApi } from '@saucelabs/visual';
+import VisualPlaywright from './api';
+import * as utils from './utils';
 
-jest.mock('@saucelabs/visual', () => ({
-  ...jest.requireActual<typeof sauceVisual>('@saucelabs/visual'),
-  getApi: () => ({
+jest.mock('@saucelabs/visual', () => {
+  const apiResult = {
     buildStatus: jest.fn(),
-  }),
-}));
+  };
+  return {
+    ...jest.requireActual<typeof sauceVisual>('@saucelabs/visual'),
+    getApi: () => apiResult,
+  };
+});
 
 describe('api', () => {
-  jest.spyOn(utils, 'getOpts').mockReturnValue(utils.getEnvOpts());
   const consoleInfoSpy = jest
     .spyOn(console, 'info')
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -23,18 +24,15 @@ describe('api', () => {
     .spyOn(console, 'error')
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     .mockImplementation(() => {});
-  const apiMock = getVisualApi();
-  const buildStatusSpy = apiMock.buildStatus as unknown as MockInstance<
-    ReturnType<typeof getApi>['buildStatus']
-  >;
+  jest.spyOn(utils, 'getOpts').mockReturnValue(getEnvOpts());
+  const buildStatusSpy = VisualPlaywright.api
+    .buildStatus as unknown as MockInstance<VisualApi['buildStatus']>;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  const fakeBuild: Awaited<
-    ReturnType<ReturnType<typeof getApi>['buildStatus']>
-  > = {
+  const fakeBuild: Awaited<ReturnType<VisualApi['buildStatus']>> = {
     __typename: 'Build',
     status: BuildStatus.Running,
     url: 'https://fake-url',
@@ -45,7 +43,7 @@ describe('api', () => {
   describe('waitForBuildResult', () => {
     it('should log a console error when a build is not found, and only query the API once', async () => {
       buildStatusSpy.mockResolvedValue(null);
-      await waitForBuildResult('');
+      await VisualPlaywright.waitForBuildResult('');
       expect(buildStatusSpy).toBeCalledTimes(1);
       expect(consoleErrorSpy).toBeCalledTimes(1);
       expect(consoleErrorSpy).toBeCalledWith(
@@ -64,7 +62,7 @@ describe('api', () => {
           ...fakeBuild,
           status: BuildStatus.Equal,
         });
-      await waitForBuildResult('');
+      await VisualPlaywright.waitForBuildResult('');
       expect(buildStatusSpy).toBeCalledTimes(2);
       expect(consoleInfoSpy).toBeCalledTimes(1);
       expect(consoleInfoSpy).toBeCalledWith(
@@ -86,7 +84,7 @@ describe('api', () => {
           ...fakeBuild,
           status: BuildStatus.Unapproved,
         });
-      await waitForBuildResult('');
+      await VisualPlaywright.waitForBuildResult('');
 
       // Should retry as many times as buildstatus === running
       expect(buildStatusSpy).toBeCalledTimes(3);
@@ -97,7 +95,7 @@ describe('api', () => {
         ...fakeBuild,
         status: BuildStatus.Equal,
       });
-      await waitForBuildResult('');
+      await VisualPlaywright.waitForBuildResult('');
 
       // Should retry as many times as buildstatus === running
       expect(buildStatusSpy).toBeCalledTimes(1);

@@ -1,19 +1,20 @@
-export { sauceVisualCheck } from './api';
-export { sauceVisualSetup, sauceVisualTeardown } from './setup-teardown';
+export {
+  sauceVisualSetup,
+  sauceVisualTeardown,
+  sauceVisualCheck,
+} from './playwright';
 export { sauceVisualFixtures, SauceVisualFixtures } from './fixtures';
 export { SauceVisualParams } from './types';
-
-import { takePlaywrightScreenshot, getApi } from './api';
-import { getOpts, parseOpts, setOpts } from './utils';
+import { VisualPlaywright } from './api';
+import { getOpts, setOpts, parseOpts } from './utils';
 
 /**
  * One or more internal functions / utilities exported to reduce code duplication. Not intended for
  * end users.
  */
 export const internals = {
-  takePlaywrightScreenshot,
+  VisualPlaywright,
   getOpts,
-  getApi,
-  parseOpts,
   setOpts,
+  parseOpts,
 };
