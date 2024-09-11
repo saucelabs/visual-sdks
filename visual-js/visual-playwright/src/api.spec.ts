@@ -24,7 +24,10 @@ describe('api', () => {
     .spyOn(console, 'error')
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     .mockImplementation(() => {});
-  jest.spyOn(utils, 'getOpts').mockReturnValue(getEnvOpts());
+  jest.spyOn(utils, 'getOpts').mockReturnValue({
+    ...getEnvOpts(),
+    externalBuildId: true,
+  });
   const buildStatusSpy = VisualPlaywright.api
     .buildStatus as unknown as MockInstance<VisualApi['buildStatus']>;
 
