@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
-      - name: Build with lerna
+      - name: Build
         run: |
           corepack enable
           yarn install
