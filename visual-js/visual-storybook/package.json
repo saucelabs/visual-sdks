@@ -11,7 +11,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": "^16.13 || >=18"
+    "node": ">=18"
   },
   "typeScriptVersion": "3.8.3",
   "keywords": [
@@ -38,11 +38,11 @@
   "scripts": {
     "build": "tsup",
     "watch": "tsc-watch --declaration -p .",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --collect-coverage"
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
   "dependencies": {
     "@saucelabs/visual": "^0.8.0",
+    "@saucelabs/visual-playwright": "0.1.0",
     "@storybook/test-runner": ">=0.13.0",
     "exponential-backoff": "^3.1.1",
     "jest-playwright-preset": "^2.0.0 || ^3.0.0"
