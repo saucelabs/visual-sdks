@@ -30,5 +30,5 @@ export interface PlaywrightEnvOpts extends VisualEnvOpts {
   /**
    * Whether this build was created externally and provided via an ENV (sharding, concurrency).
    */
-  externalBuildId?: boolean;
+  externalBuildId: boolean;
 }

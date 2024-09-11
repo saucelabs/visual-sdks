@@ -15,7 +15,10 @@ import { PlaywrightEnvOpts } from './types';
  * playwright setup & runtime.
  */
 export const parseOpts = () => {
-  serializeOpts(getEnvOpts());
+  serializeOpts({
+    ...getEnvOpts(),
+    externalBuildId: true,
+  });
 };
 
 const serializeOpts = <T extends PlaywrightEnvOpts>(opts: T) => {

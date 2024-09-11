@@ -4,7 +4,6 @@ import {
   downloadDomScript,
   getApi as getVisualApi,
   getDomScript,
-  getEnvOpts,
   RegionIn,
   removeDomScriptFile,
   VisualEnvOpts,
@@ -329,7 +328,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
 
     await downloadDomScript(this.api);
 
-    const { buildId: passedBuildId, customId } = getEnvOpts();
+    const { buildId: passedBuildId, customId } = getOpts();
     let buildId = passedBuildId;
     let customBuildId = null;
 

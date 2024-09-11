@@ -12,6 +12,6 @@ COPY ./visual-storybook/integration-tests/ ./integration-tests/
 
 WORKDIR integration-tests
 
-RUN npm install && npx playwright install --with-deps
+RUN npm install && npx playwright install --with-deps chromium
 
 ENTRYPOINT ["npm", "run", "test-storybook:ci"]
