@@ -360,8 +360,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   public async teardown() {
     await removeDomScriptFile();
 
-    const { buildId } = getOpts();
-    const externalBuildId = false;
+    const { buildId, externalBuildId } = getOpts();
     // Only finish the build automatically if we created it during globalSetup (if it's not external).
     if (!externalBuildId && buildId) {
       const finishedBuild = await this.finishBuild(buildId);
