@@ -1,5 +1,13 @@
 # @saucelabs/visual-storybook
 
+## 0.6.1
+
+### Patch Changes
+
+- 40cf18e: Correct passing options to global setup
+- Updated dependencies [40cf18e]
+  - @saucelabs/visual-playwright@0.1.2
+
 ## 0.6.0
 
 ### Minor Changes

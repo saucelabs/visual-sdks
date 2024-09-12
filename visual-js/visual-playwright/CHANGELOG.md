@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.1.2
+
+### Patch Changes
+
+- 40cf18e: Correct passing options to global setup
+
 ## 0.1.1
 
 ### Patch Changes
