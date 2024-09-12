@@ -1,18 +1,11 @@
 import type { Config } from '@jest/types';
-import { internals } from '@saucelabs/visual-playwright';
 import { VisualOpts } from './types';
-
-const { setOpts, parseOpts } = internals;
+import { VisualStorybook } from './api';
 
 export const getVisualTestConfig = (
   opts?: Partial<VisualOpts>,
 ): Partial<Config.InitialOptions> => {
-  parseOpts();
-
-  if (opts) {
-    setOpts(opts);
-  }
-
+  VisualStorybook.globalSetup(opts);
   return {
     globalSetup: require.resolve(
       '@saucelabs/visual-storybook/build/config/global-setup.js',

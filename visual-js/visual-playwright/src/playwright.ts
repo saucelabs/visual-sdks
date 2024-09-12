@@ -2,8 +2,12 @@ import VisualPlaywright from './api';
 import type { Page } from 'playwright-core';
 import { TestInfo } from '@playwright/test';
 import { SauceVisualParams } from './types';
+import { VisualEnvOpts } from '@saucelabs/visual';
 
-export const sauceVisualSetup = VisualPlaywright.setup.bind(VisualPlaywright);
+export const sauceVisualSetup = async (opts?: Partial<VisualEnvOpts>) => {
+  VisualPlaywright.globalSetup(opts);
+  return VisualPlaywright.setup();
+};
 export const sauceVisualTeardown =
   VisualPlaywright.teardown.bind(VisualPlaywright);
 export const sauceVisualCheck = async (
