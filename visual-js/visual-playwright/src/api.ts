@@ -319,13 +319,21 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     });
   }
 
-  public async setup(opts?: VisualEnvOpts) {
+  /**
+   * Method to parse ENVs and bootstrap settings for the runners -- executed once globally.
+   */
+  public globalSetup<T extends VisualEnvOpts>(opts?: Partial<T>) {
     parseOpts();
 
     if (opts) {
       setOpts(opts);
     }
+  }
 
+  /**
+   * Method to instantiate and create a build if not present during worker setup.
+   */
+  public async setup() {
     await downloadDomScript(this.api);
 
     const { buildId: passedBuildId, customId } = getOpts();
