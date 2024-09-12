@@ -1,37 +1,7 @@
-import { DiffingMethod, RegionIn, SauceRegion } from '@saucelabs/visual';
-import { PageScreenshotOptions } from 'playwright-core';
+import { SauceRegion } from '@saucelabs/visual';
+import { SauceVisualParams as PlaywrightParams } from '@saucelabs/visual-playwright';
 
-export interface SauceVisualParams {
-  screenshotOptions?: Pick<PageScreenshotOptions, 'animations' | 'caret'>;
-  /**
-   * Whether we should capture a dom snapshot.
-   */
-  captureDom?: boolean;
-  /**
-   * Whether we should clip the story reduce whitespaces in snapshots.
-   */
-  clip?: boolean;
-  /**
-   * A custom selector to clip to. Defaults to Storybook's default root element, `#storybook-root`.
-   */
-  clipSelector?: string;
-  /**
-   * A number, in ms, that we should delay the snapshot by. Useful if the beginning of the story
-   * has unavoidable / javascript animations.
-   */
-  delay?: number;
-  /**
-   * One or more regions on the page to ignore. Used to block dynamic or ever-changing content you
-   * don't want to diff.
-   */
-  ignoreRegions?: (RegionIn | string)[];
-  /**
-   * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
-   */
-  diffingMethod?: DiffingMethod;
-}
-
-export interface VisualOpts {
+export interface VisualOpts extends PlaywrightParams {
   user: string | undefined;
   key: string | undefined;
   region: SauceRegion | undefined;
@@ -48,4 +18,11 @@ export interface VisualOpts {
   branch: string | null;
   defaultBranch: string | null;
   customId: string | null;
+}
+
+export interface SauceVisualParams extends PlaywrightParams {
+  /**
+   * Whether we should clip the story reduce whitespaces in snapshots.
+   */
+  clip?: boolean;
 }

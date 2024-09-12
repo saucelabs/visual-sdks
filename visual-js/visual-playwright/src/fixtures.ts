@@ -1,7 +1,7 @@
 import { TestFixture, TestInfo } from '@playwright/test';
 import { Page } from 'playwright-core';
 import { SauceVisualParams } from './types';
-import { sauceVisualCheck } from './api';
+import { sauceVisualCheck } from './playwright';
 
 export type SauceVisualFixtures = {
   sauceVisual: {

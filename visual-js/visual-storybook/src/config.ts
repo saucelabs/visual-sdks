@@ -1,6 +1,8 @@
 import type { Config } from '@jest/types';
-import { parseOpts, setOpts } from './utils';
+import { internals } from '@saucelabs/visual-playwright';
 import { VisualOpts } from './types';
+
+const { setOpts, parseOpts } = internals;
 
 export const getVisualTestConfig = (
   opts?: Partial<VisualOpts>,

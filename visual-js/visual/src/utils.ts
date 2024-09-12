@@ -164,7 +164,7 @@ export const removeDomScriptFile = async () => {
   try {
     await fs.unlink(domScriptPath);
   } catch (err) {
-    console.error(err);
+    // Catch and log no errors. If the file isn't present this is noop.
   }
 };
 
