@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-playwright",
   "description": "Playwright Plugin / Bootstrapper for Sauce Labs Visual",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@playwright/test": "^1.42.1",
-    "@saucelabs/visual": "^0.8.1",
+    "@saucelabs/visual": "^0.8.2",
     "exponential-backoff": "^3.1.1"
   },
   "tsup": {

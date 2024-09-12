@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.8.2
+
+### Patch Changes
+
+- ff9cdb2: Rebase Storybook integration onto Playwright
+
 ## 0.8.1
 
 ### Patch Changes

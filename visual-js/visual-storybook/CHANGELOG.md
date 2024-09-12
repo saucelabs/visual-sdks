@@ -1,5 +1,17 @@
 # @saucelabs/visual-storybook
 
+## 0.6.0
+
+### Minor Changes
+
+- ff9cdb2: Rebase Storybook integration onto Playwright
+
+### Patch Changes
+
+- Updated dependencies [ff9cdb2]
+  - @saucelabs/visual-playwright@0.1.1
+  - @saucelabs/visual@0.8.2
+
 ## 0.5.1
 
 ### Patch Changes
