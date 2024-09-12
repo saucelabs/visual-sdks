@@ -3577,7 +3577,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@saucelabs/visual-playwright@^0.1.1, @saucelabs/visual-playwright@workspace:visual-playwright":
+"@saucelabs/visual-playwright@^0.1.2, @saucelabs/visual-playwright@workspace:visual-playwright":
   version: 0.0.0-use.local
   resolution: "@saucelabs/visual-playwright@workspace:visual-playwright"
   dependencies:
@@ -3613,7 +3613,7 @@ __metadata:
   dependencies:
     "@jest/globals": ^28.0.0 || ^29.0.0
     "@saucelabs/visual": ^0.8.2
-    "@saucelabs/visual-playwright": ^0.1.1
+    "@saucelabs/visual-playwright": ^0.1.2
     "@storybook/test-runner": ">=0.13.0"
     "@storybook/types": ^8.0.2
     "@tsconfig/node18": ^2.0.0
