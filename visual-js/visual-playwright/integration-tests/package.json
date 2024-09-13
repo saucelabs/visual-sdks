@@ -1,0 +1,17 @@
+{
+  "name": "playwright-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sauce-visual": "playwright test",
+    "sauce-visual-check": "VISUAL_CHECK=1 playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "1.47.0",
+    "@types/node": "22.5.4"
+  }
+}
