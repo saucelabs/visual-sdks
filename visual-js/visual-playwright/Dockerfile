@@ -8,9 +8,7 @@ COPY . ./
 
 RUN yarn install && npm run build --workspaces --if-present
 
-COPY ./visual-playwright/integration-tests/ ./integration-tests/
-
-WORKDIR integration-tests
+WORKDIR ./visual-playwright/integration-tests
 
 RUN npm install && npx playwright install --with-deps chromium
 
