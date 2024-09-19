@@ -1,0 +1,57 @@
+plugins {
+    alias(libs.plugins.android.library)
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.saucelabs.visual'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    publishing {
+        singleVariant("release") {
+        }
+    }
+}
+
+dependencies {
+    implementation libs.httpclient
+    implementation libs.jackson.databind
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.monitor
+    implementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.saucelabs.visual'
+            artifactId = 'visual-espresso'
+            version = '0.0.1'
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
