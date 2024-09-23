@@ -1,6 +1,8 @@
 package com.saucelabs.visual.model;
 
-import static com.saucelabs.visual.utils.EnvironmentVariables.SAUCE_REGION;
+import static com.saucelabs.visual.BuildConfig.SAUCE_REGION;
+
+import android.text.TextUtils;
 
 import com.saucelabs.visual.exception.VisualApiException;
 
@@ -15,11 +17,11 @@ public enum DataCenter {
         this.endpoint = endpoint;
     }
 
-    public static DataCenter fromSauceRegion() {
-        if (SAUCE_REGION == null) {
+    public static DataCenter fromSauceRegion(String region) {
+        if (TextUtils.isEmpty(region)) {
             return US_WEST_1;
         }
-        switch (SAUCE_REGION) {
+        switch (region) {
             case "us-west-1":
                 return US_WEST_1;
             case "eu-central-1":

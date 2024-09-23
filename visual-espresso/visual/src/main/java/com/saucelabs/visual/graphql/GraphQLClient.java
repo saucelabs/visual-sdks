@@ -1,8 +1,5 @@
 package com.saucelabs.visual.graphql;
 
-import static com.saucelabs.visual.utils.EnvironmentVariables.SAUCE_ACCESS_KEY;
-import static com.saucelabs.visual.utils.EnvironmentVariables.SAUCE_USERNAME;
-
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -32,25 +29,21 @@ public class GraphQLClient {
 
     private final ObjectMapper objectMapper;
 
-    public GraphQLClient() {
-        this(DataCenter.fromSauceRegion().endpoint, HttpClients.createSystem());
+    public GraphQLClient(String username, String accessKey) {
+        this(DataCenter.US_WEST_1, username, accessKey, HttpClients.createSystem());
     }
 
-    public GraphQLClient(HttpClient client) {
-        this(DataCenter.fromSauceRegion().endpoint, client);
+    public GraphQLClient(DataCenter region, String username, String accessKey) {
+        this(region, username, accessKey, HttpClients.createSystem());
     }
 
-    public GraphQLClient(String uri) {
-        this(uri, HttpClients.createSystem());
-    }
-
-    public GraphQLClient(String uri, HttpClient client) {
-        if (TextUtils.isEmpty(SAUCE_USERNAME) || TextUtils.isEmpty(SAUCE_ACCESS_KEY)) {
-            throw new VisualApiException("SAUCE_USERNAME or SAUCE_ACCESS_KEY is not set");
+    public GraphQLClient(DataCenter region, String username, String accessKey, HttpClient client) {
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(accessKey)) {
+            throw new VisualApiException("Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
         }
         this.client = client;
-        this.uri = uri;
-        this.authentication = Base64.encodeToString((SAUCE_USERNAME + ":" + SAUCE_ACCESS_KEY).getBytes(), Base64.NO_WRAP);
+        this.uri = region.endpoint;
+        this.authentication = Base64.encodeToString((username + ":" + accessKey).getBytes(), Base64.NO_WRAP);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper = mapper;

@@ -4,6 +4,7 @@ import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.mutation.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.mutation.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.model.DataCenter;
 import com.saucelabs.visual.model.OperatingSystem;
 
 public class VisualClient {
@@ -11,21 +12,59 @@ public class VisualClient {
     private final VisualBuild build;
     private final VisualApi visualApi;
 
-    public VisualClient(String name) {
-        this(new VisualApi(new GraphQLClient()), new BuildAttributes(name, null, null, null));
-    }
-
-    public VisualClient(BuildAttributes buildAttributes) {
-        this(new VisualApi(new GraphQLClient()), buildAttributes);
+    VisualClient(VisualApi visualApi, VisualBuild build) {
+        this.visualApi = visualApi;
+        this.build = build;
     }
 
     private VisualClient(VisualApi visualApi, BuildAttributes buildAttributes) {
         this(visualApi, VisualBuild.getBuildOnce(visualApi, buildAttributes));
     }
 
-    VisualClient(VisualApi visualApi, VisualBuild build) {
-        this.visualApi = visualApi;
-        this.build = build;
+    public static class Builder {
+        private final String username;
+        private final String accessKey;
+        private final DataCenter region;
+        private String buildName;
+        private String projectName;
+        private String branchName;
+        private String defaultBranchName;
+
+        public Builder(String username, String accessKey) {
+            this(DataCenter.US_WEST_1, username, accessKey);
+        }
+
+        public Builder(DataCenter region, String username, String accessKey) {
+            this.region = region;
+            this.username = username;
+            this.accessKey = accessKey;
+        }
+
+        public Builder withBuildName(String buildName) {
+            this.buildName = buildName;
+            return this;
+        }
+
+        public Builder withProjectName(String projectName) {
+            this.projectName = projectName;
+            return this;
+        }
+
+        public Builder withBranchName(String branchName) {
+            this.branchName = branchName;
+            return this;
+        }
+
+        public Builder withDefaultBranchName(String defaultBranchName) {
+            this.defaultBranchName = defaultBranchName;
+            return this;
+        }
+
+        public VisualClient build() {
+            VisualApi visualApi = new VisualApi(new GraphQLClient(region, username, accessKey));
+            BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
+            return new VisualClient(visualApi, buildAttributes);
+        }
     }
 
     public void sauceVisualCheck(String snapshotName) {

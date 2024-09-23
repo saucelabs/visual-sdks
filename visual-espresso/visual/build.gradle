@@ -11,6 +11,10 @@ android {
         minSdk 21
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "String", "SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\""
+        buildConfigField "String", "SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\""
+        buildConfigField "String", "SAUCE_REGION", "\"${System.getenv('SAUCE_REGION')}\""
     }
 
     buildTypes {
@@ -26,6 +30,9 @@ android {
     publishing {
         singleVariant("release") {
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
 }
 

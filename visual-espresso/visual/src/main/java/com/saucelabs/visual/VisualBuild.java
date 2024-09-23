@@ -46,5 +46,7 @@ public class VisualBuild {
             this.branch = branch;
             this.defaultBranch = defaultBranch;
         }
+
+
     }
 }
