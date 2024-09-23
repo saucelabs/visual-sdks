@@ -29,7 +29,6 @@ public class VisualBuild {
         synchronized (VisualBuild.class) {
             if (build == null) {
                 build = visualApi.createBuild(buildAttributes);
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> visualApi.finishBuild(build.id)));
             }
         }
         return build;

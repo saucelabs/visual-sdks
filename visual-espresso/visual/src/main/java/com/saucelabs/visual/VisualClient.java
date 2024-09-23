@@ -38,4 +38,8 @@ public class VisualClient {
                 this.build.getId(), data.result.id, snapshotName, options.resolveTestName(), options.resolveSuiteName(), OperatingSystem.ANDROID, "");
         visualApi.createSnapshot(input);
     }
+
+    public void finish() {
+        visualApi.finishBuild(this.build.getId());
+    }
 }
