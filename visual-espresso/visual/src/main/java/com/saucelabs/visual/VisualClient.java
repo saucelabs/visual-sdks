@@ -22,19 +22,19 @@ public class VisualClient {
     }
 
     public static class Builder {
+        private final String region;
         private final String username;
         private final String accessKey;
-        private final DataCenter region;
         private String buildName;
         private String projectName;
         private String branchName;
         private String defaultBranchName;
 
         public Builder(String username, String accessKey) {
-            this(DataCenter.US_WEST_1, username, accessKey);
+            this("us-west-1", username, accessKey);
         }
 
-        public Builder(DataCenter region, String username, String accessKey) {
+        public Builder(String region, String username, String accessKey) {
             this.region = region;
             this.username = username;
             this.accessKey = accessKey;
@@ -61,7 +61,8 @@ public class VisualClient {
         }
 
         public VisualClient build() {
-            VisualApi visualApi = new VisualApi(new GraphQLClient(region, username, accessKey));
+            GraphQLClient graphQLClient = new GraphQLClient(DataCenter.fromSauceRegion(region), username, accessKey);
+            VisualApi visualApi = new VisualApi(graphQLClient);
             BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
             return new VisualClient(visualApi, buildAttributes);
         }
