@@ -74,7 +74,13 @@ public class VisualClient {
     public void sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId());
         CreateSnapshotMutation.SnapshotIn input = new CreateSnapshotMutation.SnapshotIn(
-                this.build.getId(), data.result.id, snapshotName, options.resolveTestName(), options.resolveSuiteName(), OperatingSystem.ANDROID, "");
+                this.build.getId(),
+                data.result.id,
+                snapshotName,
+                options.resolveTestName(),
+                options.resolveSuiteName(),
+                OperatingSystem.ANDROID,
+                "");
         visualApi.createSnapshot(input);
     }
 

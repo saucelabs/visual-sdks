@@ -7,7 +7,6 @@ public class SmokeTest {
     @Test
     public void check() {
         VisualClient visual = new VisualClient.Builder(
-                BuildConfig.SAUCE_REGION,
                 BuildConfig.SAUCE_USERNAME,
                 BuildConfig.SAUCE_ACCESS_KEY)
                 .withBuildName("Smoke test")

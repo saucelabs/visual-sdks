@@ -12,9 +12,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField "String", "SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\""
-        buildConfigField "String", "SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\""
-        buildConfigField "String", "SAUCE_REGION", "\"${System.getenv('SAUCE_REGION')}\""
+        buildConfigField "String", "SAUCE_USERNAME", getProperty("SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\"")
+        buildConfigField "String", "SAUCE_ACCESS_KEY", getProperty("SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\"")
     }
 
     buildTypes {
@@ -36,6 +35,15 @@ android {
     }
 }
 
+String getProperty(String name, String defaultValue) {
+    if (!rootProject.file("./local.properties").exists()) {
+        return defaultValue
+    }
+    def properties = new Properties()
+    properties.load(rootProject.file("./local.properties").newDataInputStream())
+    return properties.containsKey(name) ? properties[name] : defaultValue
+}
+
 dependencies {
     implementation libs.httpclient
     implementation libs.jackson.databind
@@ -43,7 +51,11 @@ dependencies {
     implementation libs.material
     implementation libs.monitor
     implementation libs.junit
-    implementation libs.visualJava
+    implementation (libs.visualJava) {
+        exclude group: 'com.graphql-java'
+        exclude group: 'org.apache.httpcomponents'
+        exclude group: 'org.slf4j'
+    }
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
