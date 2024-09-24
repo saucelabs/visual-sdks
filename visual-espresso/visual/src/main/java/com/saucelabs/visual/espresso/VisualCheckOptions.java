@@ -1,6 +1,6 @@
-package com.saucelabs.visual;
+package com.saucelabs.visual.espresso;
 
-import com.saucelabs.visual.utils.TestMetaInfo;
+import com.saucelabs.visual.espresso.utils.TestMetaInfo;
 
 public class VisualCheckOptions {
     private String testName;

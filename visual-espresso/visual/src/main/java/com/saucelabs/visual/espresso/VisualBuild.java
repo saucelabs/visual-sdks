@@ -1,4 +1,4 @@
-package com.saucelabs.visual;
+package com.saucelabs.visual.espresso;
 
 public class VisualBuild {
 

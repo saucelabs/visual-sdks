@@ -1,4 +1,4 @@
-package com.saucelabs.visual.graphql.mutation;
+package com.saucelabs.visual.espresso.graphql.mutation;
 
 import androidx.annotation.NonNull;
 

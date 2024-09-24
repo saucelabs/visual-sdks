@@ -1,6 +1,6 @@
-package com.saucelabs.visual.junit;
+package com.saucelabs.visual.espresso.junit;
 
-import com.saucelabs.visual.utils.TestMetaInfo;
+import com.saucelabs.visual.espresso.utils.TestMetaInfo;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

@@ -1,4 +1,4 @@
-package com.saucelabs.visual.model;
+package com.saucelabs.visual.espresso.model;
 
 public enum OperatingSystem {
     ANDROID("ANDROID"),

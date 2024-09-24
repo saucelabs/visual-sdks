@@ -1,16 +1,15 @@
-package com.saucelabs.visual;
+package com.saucelabs.visual.espresso;
 
 import android.util.Log;
 
-import com.saucelabs.visual.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.espresso.graphql.GraphQLClient;
+import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
 import com.saucelabs.visual.exception.VisualApiException;
+import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.espresso.utils.ScreenshotHelper;
+import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
 import com.saucelabs.visual.graphql.FinishBuildMutation;
-import com.saucelabs.visual.graphql.GraphQLClient;
-import com.saucelabs.visual.graphql.mutation.CreateSnapshotMutation;
-import com.saucelabs.visual.graphql.mutation.CreateSnapshotUploadMutation;
-import com.saucelabs.visual.graphql.mutation.CreateSnapshotUploadMutation.CreateSnapshotUploadIn;
-import com.saucelabs.visual.utils.ScreenshotHelper;
 
 import java.io.IOException;
 
@@ -43,7 +42,7 @@ public class VisualApi {
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
-        CreateSnapshotUploadMutation mutation = new CreateSnapshotUploadMutation(new CreateSnapshotUploadIn(buildId));
+        CreateSnapshotUploadMutation mutation = new CreateSnapshotUploadMutation(new CreateSnapshotUploadMutation.CreateSnapshotUploadIn(buildId));
         CreateSnapshotUploadMutation.Data data = graphQLClient.execute(mutation, CreateSnapshotUploadMutation.Data.class);
         try {
             byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();

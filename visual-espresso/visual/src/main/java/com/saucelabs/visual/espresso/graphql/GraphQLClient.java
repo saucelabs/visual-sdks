@@ -1,4 +1,4 @@
-package com.saucelabs.visual.graphql;
+package com.saucelabs.visual.espresso.graphql;
 
 import android.text.TextUtils;
 import android.util.Base64;
@@ -6,8 +6,9 @@ import android.util.Base64;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.saucelabs.visual.DataCenter;
+import com.saucelabs.visual.espresso.model.DataCenter;
 import com.saucelabs.visual.exception.VisualApiException;
+import com.saucelabs.visual.graphql.GraphQLOperation;
 
 import java.io.IOException;
 
@@ -39,7 +40,7 @@ public class GraphQLClient {
 
     public GraphQLClient(DataCenter region, String username, String accessKey, HttpClient client) {
         if (TextUtils.isEmpty(username) || TextUtils.isEmpty(accessKey)) {
-            throw new VisualApiException("Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
+            throw new com.saucelabs.visual.exception.VisualApiException("Invalid SauceLabs credentials. Please check your SauceLabs username and access key at https://app.saucelabs.com/user-setting");
         }
         this.client = client;
         this.uri = region.endpoint;
@@ -50,7 +51,7 @@ public class GraphQLClient {
     }
 
     public <D> D execute(GraphQLOperation operation, Class<D> responseType)
-            throws VisualApiException {
+            throws com.saucelabs.visual.exception.VisualApiException {
         try {
             HttpPost request = new HttpPost(this.uri);
             request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -68,7 +69,7 @@ public class GraphQLClient {
             String responseString = EntityUtils.toString(entity, "UTF-8");
 
             if (status < 200 || status >= 300) {
-                throw new VisualApiException("Unexpected status code: " + status + " " + responseString);
+                throw new com.saucelabs.visual.exception.VisualApiException("Unexpected status code: " + status + " " + responseString);
             }
 
             JsonNode rootNode = objectMapper.readTree(responseString);
@@ -78,9 +79,9 @@ public class GraphQLClient {
             if (errors != null) {
                 JsonNode message = errors.findValue("message");
                 if (message != null) {
-                    throw new VisualApiException(message.asText());
+                    throw new com.saucelabs.visual.exception.VisualApiException(message.asText());
                 } else {
-                    throw new VisualApiException("Unexpected error");
+                    throw new com.saucelabs.visual.exception.VisualApiException("Unexpected error");
                 }
             }
 
