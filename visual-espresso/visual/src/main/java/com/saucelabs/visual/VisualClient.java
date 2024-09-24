@@ -4,7 +4,6 @@ import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.mutation.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.mutation.CreateSnapshotUploadMutation;
-import com.saucelabs.visual.model.DataCenter;
 import com.saucelabs.visual.model.OperatingSystem;
 
 public class VisualClient {

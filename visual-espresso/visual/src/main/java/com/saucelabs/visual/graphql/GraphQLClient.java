@@ -6,8 +6,8 @@ import android.util.Base64;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saucelabs.visual.DataCenter;
 import com.saucelabs.visual.exception.VisualApiException;
-import com.saucelabs.visual.model.DataCenter;
 
 import java.io.IOException;
 
