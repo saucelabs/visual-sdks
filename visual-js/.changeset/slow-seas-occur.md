@@ -8,3 +8,4 @@
 ---
 
 Fill out statuses in sauceVisualResults for cypress
+Bump all dependencies to use new ignore region calculation system
