@@ -21,7 +21,8 @@ public class ScreenshotHelper {
 
     private static ScreenshotHelper instance;
 
-    private ScreenshotHelper() {}
+    private ScreenshotHelper() {
+    }
 
     public static ScreenshotHelper getInstance() {
         if (instance == null) {
@@ -30,7 +31,7 @@ public class ScreenshotHelper {
         return instance;
     }
 
-     public byte[] getScreenshot() throws IOException {
+    public byte[] getScreenshot() throws IOException {
         ByteArrayOutputStream os = null;
         try {
             UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();

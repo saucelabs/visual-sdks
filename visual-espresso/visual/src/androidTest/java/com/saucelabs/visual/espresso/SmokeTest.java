@@ -4,7 +4,6 @@ import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.espresso.junit.TestMetaInfoRule;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 

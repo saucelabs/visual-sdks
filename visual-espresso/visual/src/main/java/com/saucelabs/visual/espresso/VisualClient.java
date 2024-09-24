@@ -1,16 +1,16 @@
 package com.saucelabs.visual.espresso;
 
-import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.model.DataCenter;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
-import com.saucelabs.visual.espresso.model.OperatingSystem;
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.espresso.graphql.GraphQLClient;
+import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
+import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.espresso.model.DataCenter;
+import com.saucelabs.visual.espresso.model.OperatingSystem;
 
 public class VisualClient {
 
-    private final com.saucelabs.visual.espresso.VisualBuild build;
-    private final com.saucelabs.visual.espresso.VisualApi visualApi;
+    private final VisualBuild build;
+    private final VisualApi visualApi;
 
     VisualClient(VisualApi visualApi, VisualBuild build) {
         this.visualApi = visualApi;

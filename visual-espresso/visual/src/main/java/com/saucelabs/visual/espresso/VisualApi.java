@@ -2,12 +2,12 @@ package com.saucelabs.visual.espresso;
 
 import android.util.Log;
 
+import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
-import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
 import com.saucelabs.visual.espresso.utils.ScreenshotHelper;
-import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
 import com.saucelabs.visual.graphql.FinishBuildMutation;
 

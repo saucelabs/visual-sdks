@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.saucelabs.visual.graphql.GraphQLOperation;
 import com.saucelabs.visual.espresso.model.OperatingSystem;
+import com.saucelabs.visual.graphql.GraphQLOperation;
 
 import java.util.Collections;
 import java.util.Map;

@@ -51,7 +51,7 @@ dependencies {
     implementation libs.material
     implementation libs.monitor
     implementation libs.junit
-    implementation (libs.visualJava) {
+    implementation(libs.visualJava) {
         exclude group: 'com.graphql-java'
         exclude group: 'org.apache.httpcomponents'
         exclude group: 'org.slf4j'
