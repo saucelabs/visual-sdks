@@ -272,7 +272,14 @@ Sauce Labs Visual: Unable to create new build.
 
     const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
       this.uploadedDiffIds.includes(diff.id);
-    const initialStatusSummary = {} as Record<DiffStatus, number>;
+    const initialStatusSummary = {
+      [DiffStatus.Queued]: 0,
+      [DiffStatus.Unapproved]: 0,
+      [DiffStatus.Approved]: 0,
+      [DiffStatus.Equal]: 0,
+      [DiffStatus.Errored]: 0,
+      [DiffStatus.Rejected]: 0,
+    } satisfies Record<DiffStatus, number>;
     const statusSummary = diffsForTestResult.nodes
       .filter(filterDiffsById)
       .reduce((statusSummary, diff) => {
