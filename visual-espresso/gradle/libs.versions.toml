@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.2"
+clientVersion = "0.0.2"
 httpclient = "4.5.8"
 jacksonDatabind = "2.17.2"
 junit = "4.13.2"
@@ -8,18 +9,17 @@ espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
 monitor = "1.7.2"
-visualJava = "0.11.0"
 
 [libraries]
 httpclient = { module = "cz.msebera.android:httpclient", version.ref = "httpclient" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
+java-client = { module = "com.apollographql.java:client", version.ref = "clientVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
-visualJava = { group = "com.saucelabs.visual", name = "java-client", version.ref = "visualJava" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

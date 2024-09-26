@@ -28,6 +28,6 @@ public class SmokeTest {
 
     @After
     public void tearDown() {
-        visual.finish();
+        //visual.finish();
     }
 }

@@ -2,16 +2,17 @@ package com.saucelabs.visual.espresso;
 
 import android.util.Log;
 
+import com.apollographql.apollo.api.Mutation;
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.espresso.exception.VisualApiException;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.espresso.type.BuildIn;
+import com.saucelabs.visual.espresso.type.FinishBuildIn;
+import com.saucelabs.visual.espresso.type.SnapshotIn;
+import com.saucelabs.visual.espresso.type.SnapshotUploadIn;
 import com.saucelabs.visual.espresso.utils.ScreenshotHelper;
-import com.saucelabs.visual.exception.VisualApiException;
-import com.saucelabs.visual.graphql.CreateBuildMutation;
-import com.saucelabs.visual.graphql.FinishBuildMutation;
 
-import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class VisualApi {
     private final static String LOG_TAG = VisualApi.class.getSimpleName();
@@ -23,45 +24,85 @@ public class VisualApi {
     }
 
     protected VisualBuild createBuild(BuildAttributes buildAttributes) {
-        CreateBuildMutation mutation =
-                new CreateBuildMutation(
-                        new CreateBuildMutation.BuildIn(
-                                buildAttributes.name,
-                                buildAttributes.project,
-                                buildAttributes.branch,
-                                buildAttributes.defaultBranch));
-        CreateBuildMutation.Data data = graphQLClient.execute(mutation, CreateBuildMutation.Data.class);
-        Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", data.result.url));
-        return new VisualBuild(
-                data.result.id,
-                data.result.name,
-                data.result.project,
-                data.result.branch,
-                data.result.defaultBranch,
-                data.result.url);
+        CreateBuildMutation mutation = CreateBuildMutation.builder().input(
+                        BuildIn.builder()
+                                .name(buildAttributes.name)
+                                .branch(buildAttributes.branch)
+                                .project(buildAttributes.project)
+                                .defaultBranch(buildAttributes.defaultBranch)
+                                .build())
+                .build();
+        try {
+            CreateBuildMutation.Data d = executeQuery(mutation).get();
+            Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
+            return new VisualBuild(d.result.id.toString(), d.result.name, d.result.project, d.result.branch, d.result.defaultBranch, d.result.url);
+        } catch (Exception e) {
+            throw new VisualApiException("yolo");
+        }
+    }
+
+    public <D extends Mutation.Data> CompletableFuture<D> executeQuery(Mutation<D> m) {
+        CompletableFuture<D> future = new CompletableFuture<>();
+
+        // Call enqueue() to execute a query asynchronously
+        graphQLClient.get().mutation(m).enqueue(response -> {
+            if (response.data != null) {
+                // Complete the future with the data
+                future.complete(response.data);
+            } else {
+                // Handle errors
+                if (response.exception != null) {
+                    // Complete the future exceptionally in case of non-GraphQL errors (e.g. network issues)
+                    future.completeExceptionally(response.exception);
+                } else {
+                    // Complete the future with GraphQL error details
+                }
+            }
+        });
+
+        return future;
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
-        CreateSnapshotUploadMutation mutation = new CreateSnapshotUploadMutation(new CreateSnapshotUploadMutation.CreateSnapshotUploadIn(buildId));
-        CreateSnapshotUploadMutation.Data data = graphQLClient.execute(mutation, CreateSnapshotUploadMutation.Data.class);
+        CreateSnapshotUploadMutation mutation = CreateSnapshotUploadMutation.builder().input(
+                SnapshotUploadIn.builder().buildUuid(buildId).build()).build();
         try {
+            CreateSnapshotUploadMutation.Data d = executeQuery(mutation).get();
             byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
-            ScreenshotHelper.getInstance().uploadToUrl(data.result.imageUploadUrl, screenshot);
-        } catch (IOException e) {
-            throw new VisualApiException("uploadSnapshot failed");
+            ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
+            return d;
+        } catch (Exception e) {
+            throw new VisualApiException("yolo");
         }
-        return data;
     }
 
-    void createSnapshot(CreateSnapshotMutation.SnapshotIn snapshotIn) {
+    void createSnapshot(SnapshotIn snapshotIn) {
         CreateSnapshotMutation mutation = new CreateSnapshotMutation(snapshotIn);
-        graphQLClient.execute(mutation, CreateSnapshotMutation.Data.class);
+        graphQLClient.get().mutation(mutation).enqueue(response -> {
+            if (response.data == null) {
+                // Something wrong happened
+                if (response.exception != null) {
+                    // Handle non-GraphQL errors, e.g. network issues
+                    response.exception.printStackTrace();
+                } else {
+                    // Handle GraphQL errors in response.errors
+                }
+            }
+        });
     }
 
     void finishBuild(String buildId) {
-        FinishBuildMutation mutation =
-                new FinishBuildMutation(new FinishBuildMutation.FinishBuildIn(buildId));
-        graphQLClient.execute(mutation, FinishBuildMutation.Data.class);
+        FinishBuildMutation mutation = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
+        graphQLClient.get().mutation(mutation).enqueue(response -> {
+            if (response.data == null) {
+                // Something wrong happened
+                if (response.exception != null) {
+                    // Handle non-GraphQL errors, e.g. network issues
+                    response.exception.printStackTrace();
+                } else {
+                    // Handle GraphQL errors in response.errors
+                }
+            }
+        });
     }
-
 }

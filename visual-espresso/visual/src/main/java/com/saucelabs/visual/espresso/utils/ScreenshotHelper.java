@@ -8,7 +8,7 @@ import android.util.Base64;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.saucelabs.visual.exception.VisualApiException;
+import com.saucelabs.visual.espresso.exception.VisualApiException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     id 'maven-publish'
+    id("com.apollographql.apollo") version "4.0.0"
 }
 
 android {
@@ -8,7 +9,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        minSdk 21
+        minSdk 24
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
@@ -51,11 +52,7 @@ dependencies {
     implementation libs.material
     implementation libs.monitor
     implementation libs.junit
-    implementation(libs.visualJava) {
-        exclude group: 'com.graphql-java'
-        exclude group: 'org.apache.httpcomponents'
-        exclude group: 'org.slf4j'
-    }
+    implementation libs.java.client
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
@@ -73,5 +70,12 @@ publishing {
     }
     repositories {
         mavenLocal()
+    }
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.saucelabs.visual.espresso")
+        generateKotlinModels.set(false)
     }
 }

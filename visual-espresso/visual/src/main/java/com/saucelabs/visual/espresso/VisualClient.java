@@ -4,10 +4,8 @@ import android.os.Build;
 
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
-import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotUploadMutation;
 import com.saucelabs.visual.espresso.model.DataCenter;
-import com.saucelabs.visual.espresso.model.OperatingSystem;
+import com.saucelabs.visual.espresso.type.SnapshotIn;
 
 public class VisualClient {
 
@@ -76,14 +74,15 @@ public class VisualClient {
 
     public void sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId());
-        CreateSnapshotMutation.SnapshotIn input = new CreateSnapshotMutation.SnapshotIn(
-                this.build.getId(),
-                data.result.id,
-                snapshotName,
-                options.resolveTestName(),
-                options.resolveSuiteName(),
-                OperatingSystem.ANDROID,
-                Build.VERSION.RELEASE);
+        SnapshotIn input = SnapshotIn.builder()
+                .buildUuid(this.build.getId())
+                .uploadUuid(data.result.id)
+                .name(snapshotName)
+                .testName(options.resolveTestName())
+                .suiteName(options.resolveSuiteName())
+                .operatingSystem(com.saucelabs.visual.espresso.type.OperatingSystem.ANDROID)
+                .operatingSystemVersion(Build.VERSION.RELEASE)
+                .build();
         visualApi.createSnapshot(input);
     }
 
