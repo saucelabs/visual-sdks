@@ -1,5 +1,7 @@
 package com.saucelabs.visual.espresso;
 
+import android.os.Build;
+
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.graphql.mutation.CreateSnapshotMutation;
@@ -81,7 +83,7 @@ public class VisualClient {
                 options.resolveTestName(),
                 options.resolveSuiteName(),
                 OperatingSystem.ANDROID,
-                "");
+                Build.VERSION.RELEASE);
         visualApi.createSnapshot(input);
     }
 
