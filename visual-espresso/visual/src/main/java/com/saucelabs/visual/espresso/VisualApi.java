@@ -19,7 +19,7 @@ public class VisualApi {
         this.graphQLClient = graphQLClient;
     }
 
-    protected VisualBuild createBuild(BuildAttributes buildAttributes) {
+    VisualBuild createBuild(BuildAttributes buildAttributes) {
         BuildIn input = BuildIn.builder()
                 .name(buildAttributes.name)
                 .branch(buildAttributes.branch)

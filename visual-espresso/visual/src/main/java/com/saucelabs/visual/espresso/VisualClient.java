@@ -41,21 +41,39 @@ public class VisualClient {
             this.accessKey = accessKey;
         }
 
+        /**
+         * @param buildName The build name you would like to appear in the Sauce Visual dashboard.
+         * @return Builder instance
+         */
         public Builder withBuildName(String buildName) {
             this.buildName = buildName;
             return this;
         }
 
+        /**
+         * @param projectName The label / project you would like to associate this build with.
+         * @return Builder instance
+         */
         public Builder withProjectName(String projectName) {
             this.projectName = projectName;
             return this;
         }
 
+        /**
+         * @param branchName The branch name you would like to associate this build with.
+         *                   We recommend using your current VCS branch in CI.
+         * @return Builder instance
+         */
         public Builder withBranchName(String branchName) {
             this.branchName = branchName;
             return this;
         }
 
+        /**
+         * @param defaultBranchName The main branch name you would like to associate this build with.
+         *                          Usually <code>main</code> or <code>master</code> or alternatively the branch name your current branch was derived from.
+         * @return Builder instance
+         */
         public Builder withDefaultBranchName(String defaultBranchName) {
             this.defaultBranchName = defaultBranchName;
             return this;
@@ -69,10 +87,21 @@ public class VisualClient {
         }
     }
 
+    /**
+     * Uploads and creates a snapshot with a given name and default options
+     *
+     * @param snapshotName A name for the snapshot
+     */
     public void sauceVisualCheck(String snapshotName) {
         this.sauceVisualCheck(snapshotName, new VisualCheckOptions());
     }
 
+    /**
+     * Uploads and creates a snapshot with a given snapshotName and options
+     *
+     * @param snapshotName A name for the snapshot
+     * @param options Options for the VisualCheck
+     */
     public void sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId());
         SnapshotIn input = SnapshotIn.builder()
@@ -87,6 +116,9 @@ public class VisualClient {
         visualApi.createSnapshot(input);
     }
 
+    /**
+     * Finishes a VisualBuild. Should be called explicitly in @AfterClass in your tests.
+     */
     public void finish() {
         visualApi.finishBuild(this.build.getId());
     }
