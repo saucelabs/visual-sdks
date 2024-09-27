@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class ScreenshotHelper {
 
@@ -31,7 +32,7 @@ public class ScreenshotHelper {
         return instance;
     }
 
-    public byte[] getScreenshot() throws IOException {
+    public byte[] getScreenshot() {
         ByteArrayOutputStream os = null;
         try {
             UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
@@ -41,12 +42,16 @@ public class ScreenshotHelper {
             return os.toByteArray();
         } finally {
             if (os != null) {
-                os.close();
+                try {
+                    os.close();
+                }
+                catch (IOException ignored) {
+                }
             }
         }
     }
 
-    public void uploadToUrl(String uploadUrl, byte[] file) throws IOException {
+    public void uploadToUrl(String uploadUrl, byte[] file) {
         HttpURLConnection connection = null;
         OutputStream os = null;
         try {
@@ -71,11 +76,15 @@ public class ScreenshotHelper {
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new VisualApiException("Snapshot upload failed. Response code: " + responseCode);
             }
-        } catch (Exception e) {
-            throw new VisualApiException("Snapshot upload failed", e);
+        } catch (IOException e) {
+            throw new VisualApiException("Snapshot upload failed due to an I/O error", e);
         } finally {
             if (os != null) {
-                os.close();
+                try {
+                    os.close();
+                }
+                catch (IOException ignored) {
+                }
             }
             if (connection != null) {
                 connection.disconnect();
@@ -83,8 +92,13 @@ public class ScreenshotHelper {
         }
     }
 
-    private String calculateMD5(byte[] data) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("MD5");
+    private String calculateMD5(byte[] data) {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new VisualApiException(e.getMessage(), e);
+        }
         md.update(data);
         byte[] mdBytes = md.digest();
         return Base64.encodeToString(mdBytes, DEFAULT);

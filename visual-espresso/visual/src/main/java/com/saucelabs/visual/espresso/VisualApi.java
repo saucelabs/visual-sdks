@@ -3,7 +3,6 @@ package com.saucelabs.visual.espresso;
 import android.util.Log;
 
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
-import com.saucelabs.visual.espresso.exception.VisualApiException;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.type.BuildIn;
 import com.saucelabs.visual.espresso.type.FinishBuildIn;
@@ -28,7 +27,7 @@ public class VisualApi {
                 .defaultBranch(buildAttributes.defaultBranch)
                 .build();
         CreateBuildMutation m = CreateBuildMutation.builder().input(input).build();
-        CreateBuildMutation.Data d = graphQLClient.executeMutationSync(m);
+        CreateBuildMutation.Data d = graphQLClient.executeMutation(m);
         Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
         return new VisualBuild(d);
     }
@@ -36,23 +35,19 @@ public class VisualApi {
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(
                 SnapshotUploadIn.builder().buildUuid(buildId).build()).build();
-        try {
-            CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutationSync(m);
-            byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
-            ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
-            return d;
-        } catch (Exception e) {
-            throw new VisualApiException("Something went wrong during uploadSnapshot");
-        }
+        CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
+        byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
+        ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
+        return d;
     }
 
     void createSnapshot(SnapshotIn snapshotIn) {
         CreateSnapshotMutation m = new CreateSnapshotMutation(snapshotIn);
-        graphQLClient.executeMutationSync(m);
+        graphQLClient.executeMutation(m);
     }
 
     void finishBuild(String buildId) {
         FinishBuildMutation m = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
-        graphQLClient.executeMutationSync(m);
+        graphQLClient.executeMutation(m);
     }
 }

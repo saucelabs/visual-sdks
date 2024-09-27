@@ -40,23 +40,23 @@ public class GraphQLClient {
         this.client = apolloClient;
     }
 
-    public <D extends Query.Data> D executeQuerySync(Query<D> m) {
+    public <D extends Query.Data> D executeQuery(Query<D> m) {
         CompletableFuture<D> future = new CompletableFuture<>();
         this.client.query(m).enqueue(response -> handleResponse(response, future));
         try {
             return future.get();
         } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new VisualApiException(e.getLocalizedMessage());
         }
     }
 
-    public <D extends Mutation.Data> D executeMutationSync(Mutation<D> m) {
+    public <D extends Mutation.Data> D executeMutation(Mutation<D> m) {
         CompletableFuture<D> future = new CompletableFuture<>();
         this.client.mutation(m).enqueue(response -> handleResponse(response, future));
         try {
             return future.get();
         } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new VisualApiException(e.getLocalizedMessage());
         }
     }
 
@@ -66,11 +66,7 @@ public class GraphQLClient {
         } else if (response.exception != null) {
             future.completeExceptionally(response.exception);
         } else {
-            future.completeExceptionally(new RuntimeException("GraphQL error occurred"));
+            future.completeExceptionally(new VisualApiException("Unexpected GraphQL error"));
         }
-    }
-
-    public ApolloClient get() {
-        return client;
     }
 }
