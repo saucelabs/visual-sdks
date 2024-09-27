@@ -5,6 +5,7 @@ import android.os.Build;
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.model.DataCenter;
+import com.saucelabs.visual.espresso.type.OperatingSystem;
 import com.saucelabs.visual.espresso.type.SnapshotIn;
 
 public class VisualClient {
@@ -80,7 +81,7 @@ public class VisualClient {
                 .name(snapshotName)
                 .testName(options.resolveTestName())
                 .suiteName(options.resolveSuiteName())
-                .operatingSystem(com.saucelabs.visual.espresso.type.OperatingSystem.ANDROID)
+                .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
                 .build();
         visualApi.createSnapshot(input);

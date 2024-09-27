@@ -3,9 +3,12 @@ package com.saucelabs.visual.espresso.graphql;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import com.apollographql.apollo.api.Mutation;
 import com.apollographql.java.client.ApolloClient;
 import com.saucelabs.visual.espresso.exception.VisualApiException;
 import com.saucelabs.visual.espresso.model.DataCenter;
+
+import java.util.concurrent.CompletableFuture;
 
 public class GraphQLClient {
 
@@ -31,6 +34,26 @@ public class GraphQLClient {
 
     public GraphQLClient(ApolloClient apolloClient) {
         this.client = apolloClient;
+    }
+
+    public <D extends Mutation.Data> CompletableFuture<D> executeMutation(Mutation<D> m) {
+        CompletableFuture<D> future = new CompletableFuture<>();
+        // Call enqueue() to execute a query asynchronously
+        this.client.mutation(m).enqueue(response -> {
+            if (response.data != null) {
+                // Complete the future with the data
+                future.complete(response.data);
+            } else {
+                // Handle errors
+                if (response.exception != null) {
+                    // Complete the future exceptionally in case of non-GraphQL errors (e.g. network issues)
+                    future.completeExceptionally(response.exception);
+                } else {
+                    // Complete the future with GraphQL error details
+                }
+            }
+        });
+        return future;
     }
 
     public ApolloClient get() {
