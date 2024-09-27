@@ -41,9 +41,9 @@ public class VisualApi {
         return d;
     }
 
-    void createSnapshot(SnapshotIn snapshotIn) {
+    CreateSnapshotMutation.Data createSnapshot(SnapshotIn snapshotIn) {
         CreateSnapshotMutation m = new CreateSnapshotMutation(snapshotIn);
-        graphQLClient.executeMutation(m);
+        return graphQLClient.executeMutation(m);
     }
 
     void finishBuild(String buildId) {

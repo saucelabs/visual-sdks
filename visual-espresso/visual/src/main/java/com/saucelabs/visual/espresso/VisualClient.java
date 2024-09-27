@@ -92,8 +92,8 @@ public class VisualClient {
      *
      * @param snapshotName A name for the snapshot
      */
-    public void sauceVisualCheck(String snapshotName) {
-        this.sauceVisualCheck(snapshotName, new VisualCheckOptions());
+    public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName) {
+        return this.sauceVisualCheck(snapshotName, new VisualCheckOptions());
     }
 
     /**
@@ -102,7 +102,7 @@ public class VisualClient {
      * @param snapshotName A name for the snapshot
      * @param options Options for the VisualCheck
      */
-    public void sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
+    public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId());
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())
@@ -113,7 +113,7 @@ public class VisualClient {
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
                 .build();
-        visualApi.createSnapshot(input);
+        return visualApi.createSnapshot(input);
     }
 
     /**

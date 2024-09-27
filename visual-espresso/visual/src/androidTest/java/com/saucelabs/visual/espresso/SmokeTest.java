@@ -1,5 +1,7 @@
 package com.saucelabs.visual.espresso;
 
+import static org.junit.Assert.assertNotNull;
+
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.espresso.junit.TestMetaInfoRule;
 
@@ -23,7 +25,8 @@ public class SmokeTest {
                 .withProjectName("Espresso")
                 .withBranchName("main")
                 .build();
-        visual.sauceVisualCheck("snap");
+        CreateSnapshotMutation.Data d = visual.sauceVisualCheck("snap");
+        assertNotNull(d.result.id);
     }
 
     @After
