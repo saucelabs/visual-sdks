@@ -8,6 +8,7 @@ import com.apollographql.apollo.api.Mutation;
 import com.apollographql.apollo.api.Operation;
 import com.apollographql.apollo.api.Query;
 import com.apollographql.java.client.ApolloClient;
+import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.espresso.exception.VisualApiException;
 import com.saucelabs.visual.espresso.model.DataCenter;
 
@@ -32,7 +33,7 @@ public class GraphQLClient {
                 .addHttpHeader("Content-Type", "application/json")
                 .addHttpHeader("Accept", "application/json")
                 .addHttpHeader("Authorization", "Basic " + authentication)
-                .addHttpHeader("User-Agent", "sauce-visual-espresso/0.0.1")
+                .addHttpHeader("User-Agent", "sauce-visual-espresso/" + BuildConfig.VERSION_NAME)
                 .build();
     }
 

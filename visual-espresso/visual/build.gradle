@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.android.library)
+    alias libs.plugins.android.library
+    alias libs.plugins.apollographql
     id 'maven-publish'
-    id("com.apollographql.apollo") version "4.0.0"
 }
 
 android {
@@ -10,11 +10,14 @@ android {
 
     defaultConfig {
         minSdk 24
+        versionCode 1
+        versionName "0.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField "String", "SAUCE_USERNAME", getProperty("SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\"")
         buildConfigField "String", "SAUCE_ACCESS_KEY", getProperty("SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\"")
+        buildConfigField "String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\""
     }
 
     buildTypes {
@@ -46,13 +49,11 @@ String getProperty(String name, String defaultValue) {
 }
 
 dependencies {
-    implementation libs.httpclient
-    implementation libs.jackson.databind
     implementation libs.appcompat
     implementation libs.material
     implementation libs.monitor
     implementation libs.junit
-    implementation libs.java.client
+    implementation libs.apollographql.java.client
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
@@ -60,9 +61,9 @@ dependencies {
 publishing {
     publications {
         release(MavenPublication) {
-            groupId = 'com.saucelabs.visual'
+            groupId = android.namespace
             artifactId = 'visual-espresso'
-            version = '0.0.1'
+            version = android.defaultConfig.versionName
             afterEvaluate {
                 from components.release
             }
@@ -77,5 +78,6 @@ apollo {
     service("service") {
         packageName.set("com.saucelabs.visual.espresso")
         generateKotlinModels.set(false)
+        warnOnDeprecatedUsages.set(false)
     }
 }
