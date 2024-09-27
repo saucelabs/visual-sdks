@@ -10,7 +10,7 @@ import com.apollographql.apollo.api.Query;
 import com.apollographql.java.client.ApolloClient;
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.espresso.exception.VisualApiException;
-import com.saucelabs.visual.espresso.model.DataCenter;
+import com.saucelabs.visual.espresso.DataCenter;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;

@@ -4,7 +4,6 @@ import android.os.Build;
 
 import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.model.DataCenter;
 import com.saucelabs.visual.espresso.type.OperatingSystem;
 import com.saucelabs.visual.espresso.type.SnapshotIn;
 

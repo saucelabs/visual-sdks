@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.model;
+package com.saucelabs.visual.espresso;
 
 import com.saucelabs.visual.espresso.exception.VisualApiException;
 
