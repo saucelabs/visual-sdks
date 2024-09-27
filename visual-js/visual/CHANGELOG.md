@@ -1,5 +1,12 @@
 # @saucelabs/visual
 
+## 0.8.3
+
+### Patch Changes
+
+- 5991881: Fill out statuses in sauceVisualResults for cypress
+  Bump all dependencies to use new ignore region calculation system
+
 ## 0.8.2
 
 ### Patch Changes

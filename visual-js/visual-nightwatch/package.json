@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/nightwatch-sauce-visual-service",
   "description": "Nightwatch service that add visual checks capabilities using Sauce Labs Visual",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -20,7 +20,7 @@
     "visual"
   ],
   "dependencies": {
-    "@saucelabs/visual": "^0.8.0",
+    "@saucelabs/visual": "^0.8.3",
     "chalk": "^4.1.2",
     "nightwatch": "^3.3.2"
   },

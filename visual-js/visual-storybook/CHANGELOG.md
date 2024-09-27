@@ -1,5 +1,15 @@
 # @saucelabs/visual-storybook
 
+## 0.6.2
+
+### Patch Changes
+
+- 5991881: Fill out statuses in sauceVisualResults for cypress
+  Bump all dependencies to use new ignore region calculation system
+- Updated dependencies [5991881]
+  - @saucelabs/visual@0.8.3
+  - @saucelabs/visual-playwright@0.1.3
+
 ## 0.6.1
 
 ### Patch Changes
