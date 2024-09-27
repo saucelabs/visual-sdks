@@ -33,8 +33,8 @@ public class VisualApi {
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
-        CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(
-                SnapshotUploadIn.builder().buildUuid(buildId).build()).build();
+        SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
+        CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
         byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
         ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
@@ -47,7 +47,8 @@ public class VisualApi {
     }
 
     void finishBuild(String buildId) {
-        FinishBuildMutation m = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
+        FinishBuildIn input = FinishBuildIn.builder().uuid(buildId).build();
+        FinishBuildMutation m = new FinishBuildMutation(input);
         graphQLClient.executeMutation(m);
     }
 }
