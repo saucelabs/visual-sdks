@@ -49,7 +49,6 @@ public class ScreenshotHelper {
     public void uploadToUrl(String uploadUrl, byte[] file) throws IOException {
         HttpURLConnection connection = null;
         OutputStream os = null;
-
         try {
             String md5Hash = calculateMD5(file);
 

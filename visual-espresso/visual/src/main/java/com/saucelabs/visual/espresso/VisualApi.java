@@ -28,35 +28,31 @@ public class VisualApi {
                 .defaultBranch(buildAttributes.defaultBranch)
                 .build();
         CreateBuildMutation m = CreateBuildMutation.builder().input(input).build();
-        try {
-            CreateBuildMutation.Data d = graphQLClient.executeMutation(m).get();
-            Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
-            return new VisualBuild(d);
-        } catch (Exception e) {
-            throw new VisualApiException("yolo");
-        }
+        CreateBuildMutation.Data d = graphQLClient.executeMutationSync(m);
+        Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
+        return new VisualBuild(d);
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(
                 SnapshotUploadIn.builder().buildUuid(buildId).build()).build();
         try {
-            CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m).get();
+            CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutationSync(m);
             byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
             ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
             return d;
         } catch (Exception e) {
-            throw new VisualApiException("yolo");
+            throw new VisualApiException("Something went wrong during uploadSnapshot");
         }
     }
 
     void createSnapshot(SnapshotIn snapshotIn) {
         CreateSnapshotMutation m = new CreateSnapshotMutation(snapshotIn);
-        graphQLClient.executeMutation(m);
+        graphQLClient.executeMutationSync(m);
     }
 
     void finishBuild(String buildId) {
         FinishBuildMutation m = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
-        graphQLClient.executeMutation(m);
+        graphQLClient.executeMutationSync(m);
     }
 }
