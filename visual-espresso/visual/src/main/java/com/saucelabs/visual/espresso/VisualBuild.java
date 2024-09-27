@@ -19,6 +19,15 @@ public class VisualBuild {
         this.url = url;
     }
 
+    VisualBuild(CreateBuildMutation.Data data) {
+        this(data.result.id.toString(),
+                data.result.name,
+                data.result.project,
+                data.result.branch,
+                data.result.defaultBranch,
+                data.result.url);
+    }
+
     public String getId() {
         return id;
     }

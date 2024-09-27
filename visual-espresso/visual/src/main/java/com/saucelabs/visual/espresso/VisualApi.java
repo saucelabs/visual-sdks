@@ -27,21 +27,21 @@ public class VisualApi {
                 .project(buildAttributes.project)
                 .defaultBranch(buildAttributes.defaultBranch)
                 .build();
-        CreateBuildMutation mutation = CreateBuildMutation.builder().input(input).build();
+        CreateBuildMutation m = CreateBuildMutation.builder().input(input).build();
         try {
-            CreateBuildMutation.Data d = graphQLClient.executeMutation(mutation).get();
+            CreateBuildMutation.Data d = graphQLClient.executeMutation(m).get();
             Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
-            return new VisualBuild(d.result.id.toString(), d.result.name, d.result.project, d.result.branch, d.result.defaultBranch, d.result.url);
+            return new VisualBuild(d);
         } catch (Exception e) {
             throw new VisualApiException("yolo");
         }
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
-        CreateSnapshotUploadMutation mutation = CreateSnapshotUploadMutation.builder().input(
+        CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(
                 SnapshotUploadIn.builder().buildUuid(buildId).build()).build();
         try {
-            CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(mutation).get();
+            CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m).get();
             byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
             ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
             return d;
@@ -51,12 +51,12 @@ public class VisualApi {
     }
 
     void createSnapshot(SnapshotIn snapshotIn) {
-        CreateSnapshotMutation mutation = new CreateSnapshotMutation(snapshotIn);
-        graphQLClient.executeMutation(mutation);
+        CreateSnapshotMutation m = new CreateSnapshotMutation(snapshotIn);
+        graphQLClient.executeMutation(m);
     }
 
     void finishBuild(String buildId) {
-        FinishBuildMutation mutation = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
-        graphQLClient.executeMutation(mutation);
+        FinishBuildMutation m = new FinishBuildMutation(FinishBuildIn.builder().uuid(buildId).build());
+        graphQLClient.executeMutation(m);
     }
 }
