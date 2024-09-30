@@ -92,19 +92,13 @@ function chainableWaitForAll<S>(
 ): Cypress.Chainable<S[]> {
   const result: S[] = [];
 
-  if (list.length < 1) return cy.wrap<S[]>([]);
-
-  let curChainable = list[0];
-  for (let idx = 1; idx < list.length; idx++) {
-    curChainable = curChainable.then((resolved) => {
-      result.push(resolved);
-      return list[idx];
+  list.forEach((item) => {
+    item.then((el) => {
+      result.push(el);
     });
-  }
-  return curChainable.then((item) => {
-    result.push(item);
-    return result;
   });
+
+  return cy.wrap(result);
 }
 
 const sauceVisualCheckCommand = (
