@@ -44,8 +44,7 @@ public class ScreenshotHelper {
             if (os != null) {
                 try {
                     os.close();
-                }
-                catch (IOException ignored) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -82,8 +81,7 @@ public class ScreenshotHelper {
             if (os != null) {
                 try {
                     os.close();
-                }
-                catch (IOException ignored) {
+                } catch (IOException ignored) {
                 }
             }
             if (connection != null) {
