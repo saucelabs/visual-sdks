@@ -97,7 +97,7 @@ public class ScreenshotHelper {
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            throw new VisualApiException(e.getMessage(), e);
+            throw new VisualApiException(e.getLocalizedMessage());
         }
         md.update(data);
         byte[] mdBytes = md.digest();
