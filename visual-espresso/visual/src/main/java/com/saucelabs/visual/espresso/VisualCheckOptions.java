@@ -1,14 +1,23 @@
 package com.saucelabs.visual.espresso;
 
+import static androidx.test.espresso.Espresso.onView;
+
+import android.view.View;
+
 import com.saucelabs.visual.espresso.type.RegionIn;
+import com.saucelabs.visual.espresso.utils.GetRegionAction;
 import com.saucelabs.visual.espresso.utils.TestMetaInfo;
 
+import org.hamcrest.Matcher;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class VisualCheckOptions {
-    private String testName;
-    private String suiteName;
-    private List<RegionIn> ignoreRegions;
+    private final String testName;
+    private final String suiteName;
+    private final List<RegionIn> ignoreRegions;
 
     private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions) {
         this.testName = testName;
@@ -19,7 +28,7 @@ public class VisualCheckOptions {
     public static class Builder {
         private String testName;
         private String suiteName;
-        private List<RegionIn> ignoreRegions;
+        private List<RegionIn> ignoreRegions = new ArrayList<>();
 
         public Builder withTestName(String testName) {
             this.testName = testName;
@@ -31,8 +40,37 @@ public class VisualCheckOptions {
             return this;
         }
 
-        public Builder withIgnoreRegions(List<RegionIn> ignoreRegions) {
-            this.ignoreRegions = ignoreRegions;
+        public Builder withIgnoreRegions(RegionIn... regions) {
+            this.ignoreRegions.addAll(Arrays.asList(regions));
+            return this;
+        }
+
+        @SafeVarargs
+        public final Builder withIgnoreRegions(Matcher<View>... regions) {
+            List<RegionIn> ignoreRegions = new ArrayList<>();
+            for (Matcher<View> region : regions) {
+                GetRegionAction action = new GetRegionAction();
+                onView(region).perform(action);
+                ignoreRegions.add(action.getRegion());
+            }
+            this.ignoreRegions.addAll(ignoreRegions);
+            return this;
+        }
+
+        public Builder withIgnoreRegions(View... regions) {
+            List<RegionIn> ignoreRegions = new ArrayList<>();
+            for (View view : regions) {
+                int[] loc = new int[2];
+                view.getLocationOnScreen(loc);
+                RegionIn region = RegionIn.builder()
+                        .x(loc[0])
+                        .y(loc[1])
+                        .width(view.getWidth())
+                        .height(view.getHeight())
+                        .build();
+                ignoreRegions.add(region);
+            }
+            this.ignoreRegions.addAll(ignoreRegions);
             return this;
         }
 
