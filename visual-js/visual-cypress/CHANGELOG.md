@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.6.4
+
+### Patch Changes
+
+- 4d79c86: fix ignore regions for multiple elements
+
 ## 0.6.3
 
 ### Patch Changes
