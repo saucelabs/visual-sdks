@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import com.saucelabs.visual.espresso.exception.VisualApiException;
 
@@ -18,35 +19,38 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class ScreenshotHelper {
+public class SnapshotHelper {
 
-    private static ScreenshotHelper instance;
+    private static SnapshotHelper instance;
 
-    private ScreenshotHelper() {
+    private SnapshotHelper() {
     }
 
-    public static ScreenshotHelper getInstance() {
+    public static SnapshotHelper getInstance() {
         if (instance == null) {
-            instance = new ScreenshotHelper();
+            instance = new SnapshotHelper();
         }
         return instance;
     }
 
     public byte[] getScreenshot() {
-        ByteArrayOutputStream os = null;
-        try {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
             Bitmap screenshot = uiAutomation.takeScreenshot();
-            os = new ByteArrayOutputStream();
             screenshot.compress(Bitmap.CompressFormat.PNG, 100, os);
             return os.toByteArray();
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException ignored) {
-                }
-            }
+        } catch (IOException e) {
+            throw new VisualApiException(e.getLocalizedMessage());
+        }
+    }
+
+    public byte[] getDom() {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            device.dumpWindowHierarchy(os);
+            return os.toByteArray();
+        } catch (IOException e) {
+            throw new VisualApiException(e.getLocalizedMessage());
         }
     }
 

@@ -8,7 +8,7 @@ import com.saucelabs.visual.espresso.type.BuildIn;
 import com.saucelabs.visual.espresso.type.FinishBuildIn;
 import com.saucelabs.visual.espresso.type.SnapshotIn;
 import com.saucelabs.visual.espresso.type.SnapshotUploadIn;
-import com.saucelabs.visual.espresso.utils.ScreenshotHelper;
+import com.saucelabs.visual.espresso.utils.SnapshotHelper;
 
 public class VisualApi {
     private final static String LOG_TAG = VisualApi.class.getSimpleName();
@@ -32,12 +32,16 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, Boolean captureDom) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
-        byte[] screenshot = ScreenshotHelper.getInstance().getScreenshot();
-        ScreenshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
+        if (captureDom) {
+            byte[] dom = SnapshotHelper.getInstance().getDom();
+            SnapshotHelper.getInstance().uploadToUrl(d.result.domUploadUrl, dom);
+        }
+        byte[] screenshot = SnapshotHelper.getInstance().getScreenshot();
+        SnapshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
         return d;
     }
 

@@ -55,6 +55,7 @@ dependencies {
     implementation libs.junit
     implementation libs.apollographql.java.client
     implementation libs.espresso.core
+    implementation libs.uiautomator
     androidTestImplementation libs.ext.junit
 }
 
