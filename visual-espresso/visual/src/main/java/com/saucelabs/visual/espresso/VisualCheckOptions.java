@@ -60,15 +60,7 @@ public class VisualCheckOptions {
         public Builder withIgnoreRegions(View... regions) {
             List<RegionIn> ignoreRegions = new ArrayList<>();
             for (View view : regions) {
-                int[] loc = new int[2];
-                view.getLocationOnScreen(loc);
-                RegionIn region = RegionIn.builder()
-                        .x(loc[0])
-                        .y(loc[1])
-                        .width(view.getWidth())
-                        .height(view.getHeight())
-                        .build();
-                ignoreRegions.add(region);
+                ignoreRegions.add(GetRegionAction.toRegion(view));
             }
             this.ignoreRegions.addAll(ignoreRegions);
             return this;
