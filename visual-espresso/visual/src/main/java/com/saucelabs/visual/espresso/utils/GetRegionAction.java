@@ -1,5 +1,7 @@
 package com.saucelabs.visual.espresso.utils;
 
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+
 import android.view.View;
 
 import androidx.test.espresso.UiController;
@@ -14,12 +16,12 @@ public class GetRegionAction implements ViewAction {
 
     @Override
     public Matcher<View> getConstraints() {
-        return null;  // No constraints, can be applied to any view
+        return isDisplayed();
     }
 
     @Override
     public String getDescription() {
-        return "Get a RegionIn from a View";
+        return "Get a Region from a View";
     }
 
     @Override
