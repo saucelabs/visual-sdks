@@ -113,7 +113,7 @@ public class VisualClient {
      * @param options      Options for the VisualCheck
      */
     public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
-        Boolean captureDom = Optional.of(this.captureDom).orElse(options.getCaptureDom());
+        Boolean captureDom = Optional.ofNullable(this.captureDom).orElse(options.getCaptureDom());
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId(), captureDom);
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())
@@ -123,6 +123,7 @@ public class VisualClient {
                 .suiteName(options.resolveSuiteName())
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
+                .device(Build.MODEL)
                 .ignoreRegions(options.getIgnoreRegions())
                 .build();
         return visualApi.createSnapshot(input);

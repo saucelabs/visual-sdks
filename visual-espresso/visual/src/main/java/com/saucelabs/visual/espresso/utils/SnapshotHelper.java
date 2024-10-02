@@ -54,7 +54,7 @@ public class SnapshotHelper {
         }
     }
 
-    public void uploadToUrl(String uploadUrl, byte[] file) {
+    public void uploadToUrl(String uploadUrl, byte[] file, boolean captureDom) {
         HttpURLConnection connection = null;
         OutputStream os = null;
         try {
@@ -66,7 +66,11 @@ public class SnapshotHelper {
 
             // Set headers
             connection.setRequestProperty("Content-MD5", md5Hash);
-            connection.setRequestProperty("Content-Type", "image/png");
+            if(captureDom) {
+                connection.setRequestProperty("Content-Type", "text/html");
+            } else {
+                connection.setRequestProperty("Content-Type", "image/png");
+            }
             connection.setDoOutput(true);
 
             // Write file to output stream

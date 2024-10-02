@@ -38,10 +38,10 @@ public class VisualApi {
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
         if (captureDom) {
             byte[] dom = SnapshotHelper.getInstance().getDom();
-            SnapshotHelper.getInstance().uploadToUrl(d.result.domUploadUrl, dom);
+            SnapshotHelper.getInstance().uploadToUrl(d.result.domUploadUrl, dom, true);
         }
         byte[] screenshot = SnapshotHelper.getInstance().getScreenshot();
-        SnapshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot);
+        SnapshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot, false);
         return d;
     }
 
