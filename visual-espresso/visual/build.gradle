@@ -54,8 +54,8 @@ dependencies {
     implementation libs.monitor
     implementation libs.junit
     implementation libs.apollographql.java.client
+    implementation libs.espresso.core
     androidTestImplementation libs.ext.junit
-    androidTestImplementation libs.espresso.core
 }
 
 publishing {
