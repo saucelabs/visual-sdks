@@ -6,11 +6,16 @@ COPY tsconfig.prod.json .
 COPY tsconfig.json .
 COPY package.json .
 
+COPY ./visual/src ./visual/src
+COPY ./visual/package.json ./visual/package.json
+COPY ./visual/tsconfig.json ./visual/tsconfig.json
 COPY ./visual-wdio/src ./visual-wdio/src
 COPY ./visual-wdio/package.json ./visual-wdio/package.json
 COPY ./visual-wdio/tsconfig.json ./visual-wdio/tsconfig.json
 COPY ./visual-wdio/tsconfig.build.json ./visual-wdio/tsconfig.build.json
 
+RUN npm install --workspace=visual
+RUN npm run build --workspace=visual
 RUN npm install --workspace=visual-wdio
 RUN npm run build --workspace=visual-wdio
 
