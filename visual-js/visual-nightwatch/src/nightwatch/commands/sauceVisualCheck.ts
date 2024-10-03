@@ -10,7 +10,11 @@ import {
 } from '@saucelabs/visual';
 import { getMetaInfo, getVisualApi } from '../../utils/api';
 import { VISUAL_BUILD_ID_KEY } from '../../utils/constants';
-import { NightwatchAPI, NightwatchCustomCommandsModel } from 'nightwatch';
+import {
+  NightwatchAPI,
+  NightwatchCustomCommandsModel,
+  ScopedElement,
+} from 'nightwatch';
 import { CheckOptions, NightwatchIgnorable, RunnerSettings } from '../../types';
 import type { Runnable } from 'mocha';
 
@@ -148,7 +152,11 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         sessionMetadata: metaInfo,
         suiteName,
         testName,
-        fullPageConfig: getFullPageConfig(fullPage, options.fullPage),
+        fullPageConfig: await getFullPageConfig<ScopedElement>(
+          fullPage,
+          options.fullPage,
+          async (el) => await el.getId(),
+        ),
         clipElement:
           (await options.clipElement?.getId()) ?? clipElementFromClipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,

@@ -774,6 +774,8 @@ export type FullPageConfigIn = {
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
   /** Hide all scrollbars in the app. */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
+  /** @experimental Define custom scrollable element */
+  scrollElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /**
    * Limit the number of screenshots taken for scrolling and stitching.
    * Default and max value is 10

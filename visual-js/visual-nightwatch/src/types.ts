@@ -31,7 +31,7 @@ export interface CheckOptions {
   ignore?: NightwatchIgnorable[];
   regions?: RegionType<ElementType>[];
   diffingMethod?: DiffingMethod;
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotOptions<ScopedElement>;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
    */

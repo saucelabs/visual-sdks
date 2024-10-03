@@ -6,17 +6,18 @@ import {
   InputMaybe,
   RegionIn,
 } from './graphql/__generated__/graphql';
-import { RegionType, VisualEnvOpts } from './types';
+import { FullPageScreenshotOptions, RegionType, VisualEnvOpts } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './common/selective-region';
 import { getApi } from './common/api';
 import fs from 'fs/promises';
 import * as os from 'node:os';
 import { SauceRegion } from './common/regions';
 
-export const getFullPageConfig: (
-  main?: FullPageConfigIn | boolean,
-  local?: FullPageConfigIn | boolean,
-) => FullPageConfigIn | undefined = (main, local) => {
+export const getFullPageConfig: <T>(
+  main?: FullPageScreenshotOptions<T> | boolean,
+  local?: FullPageScreenshotOptions<T> | boolean,
+  getId?: (el: T) => Promise<string> | string,
+) => Promise<FullPageConfigIn | undefined> = async (main, local, getId) => {
   const isNoConfig = !main && !local;
   const isLocalOff = local === false;
 
@@ -24,9 +25,15 @@ export const getFullPageConfig: (
     return;
   }
 
-  const globalCfg = typeof main === 'object' ? main : {};
-  const localCfg = typeof local === 'object' ? local : {};
-  return { ...globalCfg, ...localCfg };
+  const globalCfg: typeof main = typeof main === 'object' ? main : {};
+  const localCfg: typeof main = typeof local === 'object' ? local : {};
+  const { scrollElement, ...rest } = { ...globalCfg, ...localCfg };
+  const result: FullPageConfigIn = rest;
+  if (scrollElement && getId) {
+    result.scrollElement = await getId(await scrollElement);
+  }
+
+  return result;
 };
 
 export const isSkipMode = (): boolean => {
