@@ -66,11 +66,8 @@ public class SnapshotHelper {
 
             // Set headers
             connection.setRequestProperty("Content-MD5", md5Hash);
-            if(captureDom) {
-                connection.setRequestProperty("Content-Type", "text/html");
-            } else {
-                connection.setRequestProperty("Content-Type", "image/png");
-            }
+            String contentType = captureDom ? "text/html" : "image/png";
+            connection.setRequestProperty("Content-Type", contentType);
             connection.setDoOutput(true);
 
             // Write file to output stream
