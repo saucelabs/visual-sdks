@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.7.0
+
+### Minor Changes
+
+- 8572e1b: scrollElement native fps
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+
 ## 0.6.2
 
 ### Patch Changes

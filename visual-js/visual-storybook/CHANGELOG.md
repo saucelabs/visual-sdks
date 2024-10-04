@@ -1,5 +1,13 @@
 # @saucelabs/visual-storybook
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+  - @saucelabs/visual-playwright@0.1.4
+
 ## 0.6.2
 
 ### Patch Changes

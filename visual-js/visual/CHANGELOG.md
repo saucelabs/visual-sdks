@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.9.0
+
+### Minor Changes
+
+- 8572e1b: scrollElement native fps
+
 ## 0.8.3
 
 ### Patch Changes
