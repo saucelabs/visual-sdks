@@ -96,7 +96,7 @@ public class SnapshotHelper {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
             // Add the xml declaration manually
-            String xmlDeclaration = "<?xml version=\"1.0\"?>\n";
+            String xmlDeclaration = "<?xml version=\"1.0\"?>";
             os.write(xmlDeclaration.getBytes("UTF-8"));
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -113,7 +113,7 @@ public class SnapshotHelper {
             String xmlString = os.toString("UTF-8");
 
             // Prepend the DOCTYPE declaration manually
-            String docType = "<!DOCTYPE android-page-source>\n";
+            String docType = "<!DOCTYPE android-page-source>";
             String finalXml = docType + xmlString;
 
             return finalXml.getBytes("UTF-8");
