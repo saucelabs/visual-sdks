@@ -10,6 +10,7 @@
 import {
   PlainRegion,
   ResolvedVisualRegion,
+  SauceConfig,
   SauceVisualViewport,
   ScreenshotMetadata,
   VisualCheckOptions,
@@ -33,6 +34,9 @@ declare global {
       ): Chainable<Subject>;
 
       sauceVisualResults(): Chainable<Subject>;
+    }
+    interface EndToEndConfigOptions {
+      saucelabs: SauceConfig;
     }
   }
 }
