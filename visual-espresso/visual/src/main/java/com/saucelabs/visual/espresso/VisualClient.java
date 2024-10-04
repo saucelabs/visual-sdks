@@ -140,11 +140,11 @@ public class VisualClient {
         this.captureDom = captureDom;
     }
 
-    public Builder builder(String username, String accessKey) {
+    public static Builder builder(String username, String accessKey) {
         return new Builder(username, accessKey);
     }
 
-    public Builder builder(String region, String username, String accessKey) {
+    public static Builder builder(String region, String username, String accessKey) {
         return new Builder(region, username, accessKey);
     }
 }
