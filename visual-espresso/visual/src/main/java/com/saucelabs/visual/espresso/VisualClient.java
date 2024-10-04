@@ -7,10 +7,13 @@ import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.type.OperatingSystem;
 import com.saucelabs.visual.espresso.type.SnapshotIn;
 
+import java.util.Optional;
+
 public class VisualClient {
 
     private final VisualBuild build;
     private final VisualApi visualApi;
+    private Boolean captureDom;
 
     VisualClient(VisualApi visualApi, VisualBuild build) {
         this.visualApi = visualApi;
@@ -29,6 +32,7 @@ public class VisualClient {
         private String projectName;
         private String branchName;
         private String defaultBranchName;
+        private Boolean captureDom;
 
         public Builder(String username, String accessKey) {
             this("us-west-1", username, accessKey);
@@ -78,11 +82,18 @@ public class VisualClient {
             return this;
         }
 
+        public Builder enableCaptureDom() {
+            this.captureDom = true;
+            return this;
+        }
+
         public VisualClient build() {
             GraphQLClient graphQLClient = new GraphQLClient(DataCenter.fromSauceRegion(region), username, accessKey);
             VisualApi visualApi = new VisualApi(graphQLClient);
             BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
-            return new VisualClient(visualApi, buildAttributes);
+            VisualClient client = new VisualClient(visualApi, buildAttributes);
+            client.setCaptureDom(this.captureDom);
+            return client;
         }
     }
 
@@ -102,7 +113,8 @@ public class VisualClient {
      * @param options      Options for the VisualCheck
      */
     public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
-        CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId());
+        Boolean captureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
+        CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(this.build.getId(), captureDom);
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())
                 .uploadUuid(data.result.id)
@@ -111,6 +123,7 @@ public class VisualClient {
                 .suiteName(options.resolveSuiteName())
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
+                .device(Build.MODEL)
                 .ignoreRegions(options.getIgnoreRegions())
                 .build();
         return visualApi.createSnapshot(input);
@@ -121,5 +134,9 @@ public class VisualClient {
      */
     public void finish() {
         visualApi.finishBuild(this.build.getId());
+    }
+
+    private void setCaptureDom(Boolean captureDom) {
+        this.captureDom = captureDom;
     }
 }

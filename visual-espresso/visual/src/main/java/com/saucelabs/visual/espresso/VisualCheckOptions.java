@@ -18,17 +18,20 @@ public class VisualCheckOptions {
     private final String testName;
     private final String suiteName;
     private final List<RegionIn> ignoreRegions;
+    private final Boolean captureDom;
 
-    private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions) {
+    private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions, Boolean captureDom) {
         this.testName = testName;
         this.suiteName = suiteName;
         this.ignoreRegions = ignoreRegions;
+        this.captureDom = captureDom;
     }
 
     public static class Builder {
         private String testName;
         private String suiteName;
-        private List<RegionIn> ignoreRegions = new ArrayList<>();
+        private final List<RegionIn> ignoreRegions = new ArrayList<>();
+        private Boolean captureDom;
 
         public Builder withTestName(String testName) {
             this.testName = testName;
@@ -66,8 +69,13 @@ public class VisualCheckOptions {
             return this;
         }
 
+        public Builder enableCaptureDom() {
+            this.captureDom = true;
+            return this;
+        }
+
         public VisualCheckOptions build() {
-            return new VisualCheckOptions(testName, suiteName, ignoreRegions);
+            return new VisualCheckOptions(testName, suiteName, ignoreRegions, captureDom);
         }
 
     }
@@ -98,5 +106,9 @@ public class VisualCheckOptions {
 
     public List<RegionIn> getIgnoreRegions() {
         return ignoreRegions;
+    }
+
+    public Boolean getCaptureDom() {
+        return captureDom;
     }
 }
