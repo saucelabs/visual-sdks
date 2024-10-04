@@ -7,8 +7,6 @@ import com.saucelabs.visual.espresso.graphql.GraphQLClient;
 import com.saucelabs.visual.espresso.type.OperatingSystem;
 import com.saucelabs.visual.espresso.type.SnapshotIn;
 
-import java.util.Optional;
-
 public class VisualClient {
 
     private final VisualBuild build;
