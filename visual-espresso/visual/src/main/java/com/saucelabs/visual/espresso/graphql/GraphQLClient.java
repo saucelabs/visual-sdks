@@ -12,8 +12,7 @@ import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.espresso.DataCenter;
 import com.saucelabs.visual.espresso.exception.VisualApiException;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
 
 public class GraphQLClient {
 
@@ -41,33 +40,57 @@ public class GraphQLClient {
         this.client = apolloClient;
     }
 
-    public <D extends Query.Data> D executeQuery(Query<D> m) {
-        CompletableFuture<D> future = new CompletableFuture<>();
-        this.client.query(m).enqueue(response -> handleResponse(response, future));
+    public <D extends Query.Data> D executeQuery(Query<D> q) {
+        final D[] result = (D[]) new Query.Data[1]; // Placeholder for the result
+        final Exception[] exception = new Exception[1]; // Placeholder for exceptions
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        // Execute the mutation and handle the response
+        this.client.query(q).enqueue(response -> handleResponse(response, result, exception, latch));
+
         try {
-            return future.get();
-        } catch (ExecutionException | InterruptedException e) {
+            latch.await(); // Wait for the mutation to complete
+        } catch (InterruptedException e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
+
+        if (exception[0] != null) {
+            throw new VisualApiException(exception[0].getLocalizedMessage());
+        }
+
+        return result[0];
     }
+
 
     public <D extends Mutation.Data> D executeMutation(Mutation<D> m) {
-        CompletableFuture<D> future = new CompletableFuture<>();
-        this.client.mutation(m).enqueue(response -> handleResponse(response, future));
+        final D[] result = (D[]) new Mutation.Data[1]; // Placeholder for the result
+        final Exception[] exception = new Exception[1]; // Placeholder for exceptions
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        // Execute the mutation and handle the response
+        this.client.mutation(m).enqueue(response -> handleResponse(response, result, exception, latch));
+
         try {
-            return future.get();
-        } catch (ExecutionException | InterruptedException e) {
+            latch.await(); // Wait for the mutation to complete
+        } catch (InterruptedException e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
+
+        if (exception[0] != null) {
+            throw new VisualApiException(exception[0].getLocalizedMessage());
+        }
+
+        return result[0];
     }
 
-    private <D extends Operation.Data> void handleResponse(ApolloResponse<D> response, CompletableFuture<D> future) {
+    private <D extends Operation.Data> void handleResponse(ApolloResponse<D> response, D[] result, Exception[] exception, CountDownLatch latch) {
         if (response.data != null) {
-            future.complete(response.data);
+            result[0] = response.data;  // Assign the result
         } else if (response.exception != null) {
-            future.completeExceptionally(response.exception);
+            exception[0] = response.exception;  // Capture the exception
         } else {
-            future.completeExceptionally(new VisualApiException("Unexpected GraphQL error"));
+            exception[0] = new VisualApiException("Unexpected GraphQL error");
         }
+        latch.countDown(); // Signal that the response handling is done
     }
 }
