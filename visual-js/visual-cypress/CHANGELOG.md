@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.6.6
+
+### Patch Changes
+
+- 704c8a3: update types, fix devdep
+
 ## 0.6.5
 
 ### Patch Changes
