@@ -123,7 +123,7 @@ public class VisualClient {
                 .suiteName(options.resolveSuiteName())
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
-                .device(Build.MODEL)
+                .device(Build.DEVICE)
                 .ignoreRegions(options.getIgnoreRegions())
                 .build();
         return visualApi.createSnapshot(input);
