@@ -13,7 +13,6 @@ import com.saucelabs.visual.espresso.exception.VisualApiException;
 
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -78,6 +77,7 @@ public class SnapshotHelper {
             // Get a new XML document
             Document newDocument = builder.newDocument();
             DOMImplementation domImpl = newDocument.getImplementation();
+
             // Add the root element
             Element newRoot = newDocument.createElement("android-page-source");
             newDocument.appendChild(newRoot);
@@ -87,8 +87,7 @@ public class SnapshotHelper {
             newRoot.appendChild(importedRoot);
 
             return convertXMLToByteArray(new DOMSource(newDocument));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
     }
