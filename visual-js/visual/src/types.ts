@@ -2,7 +2,7 @@ import { RegionIn } from './graphql/__generated__/graphql';
 import { SelectiveRegionOptions } from './common/selective-region';
 import { SauceRegion } from './common/regions';
 
-export type FullPageScreenshotOptions =
+export type FullPageScreenshotOptions<T> =
   | boolean
   | {
       /**
@@ -34,6 +34,10 @@ export type FullPageScreenshotOptions =
        * Limit the number of screenshots taken for scrolling and stitching.
        */
       scrollLimit?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+      /**
+       * Element used for scrolling (available only in native apps)
+       */
+      scrollElement?: T | Promise<T>;
     };
 
 export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;

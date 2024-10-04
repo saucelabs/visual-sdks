@@ -28,7 +28,12 @@ import {
 
 import logger from '@wdio/logger';
 import chalk from 'chalk';
-import { Ignorable, isWdioElement, WdioElement } from './guarded-types.js';
+import {
+  FullPageScreenshotWdioOptions,
+  Ignorable,
+  isWdioElement,
+  WdioElement,
+} from './guarded-types.js';
 import { backOff } from 'exponential-backoff';
 import type { Test } from '@wdio/types/build/Frameworks';
 
@@ -95,7 +100,7 @@ export type SauceVisualServiceOptions = {
   clipSelector?: string;
   clipElement?: WdioElement;
   region?: SauceRegion;
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
 };
 
@@ -131,7 +136,7 @@ export type CheckOptions = {
   captureDom?: boolean;
   diffingMethod?: DiffingMethod;
   disable?: (keyof DiffingOptionsIn)[];
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
 };
 
@@ -165,7 +170,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
   clipElement: WdioElement | undefined;
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   apiClient: VisualApi;
   baselineOverride?: BaselineOverrideIn;
 
@@ -442,7 +447,11 @@ export default class SauceVisualService implements Services.ServiceInstance {
           options.diffingMethod || this.diffingMethod || DiffingMethod.Balanced,
         suiteName: this.test?.parent,
         testName: this.test?.title,
-        fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
+        fullPageConfig: await getFullPageConfig<WdioElement>(
+          this.fullPage,
+          options.fullPage,
+          (el) => el.elementId,
+        ),
         baselineOverride: options.baselineOverride || this.baselineOverride,
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));

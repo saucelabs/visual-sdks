@@ -1,12 +1,15 @@
 import { describe, expect, test } from '@jest/globals';
 import { getFullPageConfig, parseRegionsForAPI } from './utils';
-import { FullPageConfigIn, RegionIn } from './graphql/__generated__/graphql';
+import { RegionIn } from './graphql/__generated__/graphql';
+import { FullPageScreenshotOptions } from './types';
 
-const configDelay: FullPageConfigIn = {
+type MockElement = { elementId: string };
+
+const configDelay: FullPageScreenshotOptions<MockElement> = {
   delayAfterScrollMs: 1500,
 };
 
-const configDelayBig: FullPageConfigIn = {
+const configDelayBig: FullPageScreenshotOptions<MockElement> = {
   delayAfterScrollMs: 5000,
 };
 
@@ -23,66 +26,91 @@ const resolveForTest = async (itemPromise: string | Promise<RegionIn>) => {
 describe('utils', () => {
   describe('getFullPageConfig', () => {
     describe('returns undefined', () => {
-      test('when main is true and local is false', () => {
-        expect(getFullPageConfig(true, false)).toBeUndefined();
+      test('when main is true and local is false', async () => {
+        expect(await getFullPageConfig(true, false)).toBeUndefined();
       });
-      test('when main is false and local is false', () => {
-        expect(getFullPageConfig(false, false)).toBeUndefined();
+      test('when main is false and local is false', async () => {
+        expect(await getFullPageConfig(false, false)).toBeUndefined();
       });
-      test('when main is false and local is false', () => {
-        expect(getFullPageConfig(false, false)).toBeUndefined();
+      test('when main is false and local is false', async () => {
+        expect(await getFullPageConfig(false, false)).toBeUndefined();
       });
-      test('when main is object and local is false', () => {
-        expect(getFullPageConfig(configDelay, false)).toBeUndefined();
+      test('when main is object and local is false', async () => {
+        expect(await getFullPageConfig(configDelay, false)).toBeUndefined();
       });
-      test('when main is undefined and local is false', () => {
-        expect(getFullPageConfig(undefined, false)).toBeUndefined();
+      test('when main is undefined and local is false', async () => {
+        expect(await getFullPageConfig(undefined, false)).toBeUndefined();
       });
-      test('when main is undefined and local is undefined', () => {
-        expect(getFullPageConfig(undefined, undefined)).toBeUndefined();
+      test('when main is undefined and local is undefined', async () => {
+        expect(await getFullPageConfig(undefined, undefined)).toBeUndefined();
       });
-      test('when main is false and local is undefined', () => {
-        expect(getFullPageConfig(false, undefined)).toBeUndefined();
+      test('when main is false and local is undefined', async () => {
+        expect(await getFullPageConfig(false, undefined)).toBeUndefined();
       });
     });
     describe('returns empty config', () => {
-      test('when main is true and local is true', () => {
-        expect(getFullPageConfig(true, undefined)).toEqual({});
+      test('when main is true and local is true', async () => {
+        expect(await getFullPageConfig(true, undefined)).toEqual({});
       });
-      test('when main is false and local is true', () => {
-        expect(getFullPageConfig(true, undefined)).toEqual({});
+      test('when main is false and local is true', async () => {
+        expect(await getFullPageConfig(true, undefined)).toEqual({});
       });
-      test('when main is undefined and local is true', () => {
-        expect(getFullPageConfig(true, undefined)).toEqual({});
+      test('when main is undefined and local is true', async () => {
+        expect(await getFullPageConfig(true, undefined)).toEqual({});
       });
-      test('when main is true and local is undefined', () => {
-        expect(getFullPageConfig(true, undefined)).toEqual({});
+      test('when main is true and local is undefined', async () => {
+        expect(await getFullPageConfig(true, undefined)).toEqual({});
       });
     });
     describe('returns config', () => {
-      test('when main is config and local is true', () => {
-        expect(getFullPageConfig(configDelay, true)).toEqual(configDelay);
+      test('when main is config and local is true', async () => {
+        expect(await getFullPageConfig(configDelay, true)).toEqual(configDelay);
       });
-      test('when main is true and local is config', () => {
-        expect(getFullPageConfig(true, configDelay)).toEqual(configDelay);
+      test('when main is true and local is config', async () => {
+        expect(await getFullPageConfig(true, configDelay)).toEqual(configDelay);
       });
-      test('when main is false and local is config', () => {
-        expect(getFullPageConfig(true, configDelay)).toEqual(configDelay);
+      test('when main is false and local is config', async () => {
+        expect(await getFullPageConfig(true, configDelay)).toEqual(configDelay);
       });
-      test('when main is config and local is config', () => {
-        expect(getFullPageConfig(configDelay, configDelay)).toEqual(
+      test('when main is config and local is config', async () => {
+        expect(await getFullPageConfig(configDelay, configDelay)).toEqual(
           configDelay,
         );
       });
-      test('and local overwrites main config', () => {
-        expect(getFullPageConfig(configDelay, configDelayBig)).toEqual(
+      test('and local overwrites main config', async () => {
+        expect(await getFullPageConfig(configDelay, configDelayBig)).toEqual(
           configDelayBig,
         );
       });
-      test('with merged local and main config', () => {
+      test('with merged local and main config', async () => {
         const main = { delayAfterScrollMs: 500 };
         const local = { disableCSSAnimation: false };
-        expect(getFullPageConfig(main, local)).toEqual({ ...main, ...local });
+        expect(await getFullPageConfig(main, local)).toEqual({
+          ...main,
+          ...local,
+        });
+      });
+      test('with scrollElement when scrollElement is a promise', async () => {
+        const elementId = 'elementId';
+        const main = {};
+        const local = {
+          scrollElement: Promise.resolve({ elementId: elementId }),
+        };
+        expect(
+          await getFullPageConfig(main, local, (el) => el.elementId),
+        ).toEqual({
+          scrollElement: elementId,
+        });
+      });
+      test('with scrollElement when scrollElement is an object', async () => {
+        const elementId = 'elementId';
+        const main = { scrollElement: { elementId: elementId } };
+        const local = {};
+        expect(
+          await getFullPageConfig(main, local, (el) => el.elementId),
+        ).toEqual({
+          scrollElement: elementId,
+        });
       });
     });
   });
