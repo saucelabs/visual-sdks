@@ -1,6 +1,6 @@
-package com.saucelabs.visual.espresso;
+package com.saucelabs.visual;
 
-import com.saucelabs.visual.espresso.exception.VisualApiException;
+import com.saucelabs.visual.exception.VisualApiException;
 
 public enum DataCenter {
     US_WEST_1("https://api.us-west-1.saucelabs.com/v1/visual/graphql"),

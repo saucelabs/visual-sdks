@@ -1,12 +1,12 @@
-package com.saucelabs.visual.espresso;
+package com.saucelabs.visual;
 
 import static androidx.test.espresso.Espresso.onView;
 
 import android.view.View;
 
-import com.saucelabs.visual.espresso.type.RegionIn;
-import com.saucelabs.visual.espresso.utils.GetRegionAction;
-import com.saucelabs.visual.espresso.utils.TestMetaInfo;
+import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.espresso.GetRegionAction;
+import com.saucelabs.visual.utils.TestMetaInfo;
 
 import org.hamcrest.Matcher;
 

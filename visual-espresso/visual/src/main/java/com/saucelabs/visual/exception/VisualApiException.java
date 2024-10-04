@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.exception;
+package com.saucelabs.visual.exception;
 
 public class VisualApiException extends RuntimeException {
 

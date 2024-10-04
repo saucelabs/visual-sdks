@@ -3,7 +3,9 @@ package com.saucelabs.visual.espresso;
 import static org.junit.Assert.assertNotNull;
 
 import com.saucelabs.visual.BuildConfig;
-import com.saucelabs.visual.espresso.junit.TestMetaInfoRule;
+import com.saucelabs.visual.VisualCheckOptions;
+import com.saucelabs.visual.VisualClient;
+import com.saucelabs.visual.junit.TestMetaInfoRule;
 import com.saucelabs.visual.espresso.type.RegionIn;
 
 import org.junit.AfterClass;

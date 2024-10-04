@@ -1,4 +1,6 @@
-package com.saucelabs.visual.espresso;
+package com.saucelabs.visual;
+
+import com.saucelabs.visual.graphql.CreateBuildMutation;
 
 public class VisualBuild {
 

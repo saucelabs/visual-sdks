@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.utils;
+package com.saucelabs.visual.espresso;
 
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 
@@ -7,7 +7,7 @@ import android.view.View;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 
-import com.saucelabs.visual.espresso.type.RegionIn;
+import com.saucelabs.visual.graphql.type.RegionIn;
 
 import org.hamcrest.Matcher;
 

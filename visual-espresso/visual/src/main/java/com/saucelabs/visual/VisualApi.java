@@ -1,14 +1,18 @@
-package com.saucelabs.visual.espresso;
+package com.saucelabs.visual;
 
 import android.util.Log;
 
-import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
-import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.type.BuildIn;
-import com.saucelabs.visual.espresso.type.FinishBuildIn;
-import com.saucelabs.visual.espresso.type.SnapshotIn;
-import com.saucelabs.visual.espresso.type.SnapshotUploadIn;
-import com.saucelabs.visual.espresso.utils.SnapshotHelper;
+import com.saucelabs.visual.graphql.CreateBuildMutation;
+import com.saucelabs.visual.graphql.CreateSnapshotMutation;
+import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.graphql.FinishBuildMutation;
+import com.saucelabs.visual.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.graphql.GraphQLClient;
+import com.saucelabs.visual.graphql.type.BuildIn;
+import com.saucelabs.visual.graphql.type.FinishBuildIn;
+import com.saucelabs.visual.graphql.type.SnapshotIn;
+import com.saucelabs.visual.graphql.type.SnapshotUploadIn;
+import com.saucelabs.visual.utils.SnapshotHelper;
 
 public class VisualApi {
     private final static String LOG_TAG = VisualApi.class.getSimpleName();

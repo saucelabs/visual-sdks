@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.utils;
+package com.saucelabs.visual.utils;
 
 import androidx.annotation.NonNull;
 

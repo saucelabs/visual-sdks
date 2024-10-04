@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.utils;
+package com.saucelabs.visual.utils;
 
 import static android.util.Base64.DEFAULT;
 
@@ -9,9 +9,8 @@ import android.util.Base64;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
-import com.saucelabs.visual.espresso.exception.VisualApiException;
+import com.saucelabs.visual.exception.VisualApiException;
 
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -76,7 +75,6 @@ public class SnapshotHelper {
 
             // Get a new XML document
             Document newDocument = builder.newDocument();
-            DOMImplementation domImpl = newDocument.getImplementation();
 
             // Add the root element
             Element newRoot = newDocument.createElement("android-page-source");

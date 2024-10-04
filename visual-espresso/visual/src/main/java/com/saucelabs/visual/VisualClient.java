@@ -1,11 +1,13 @@
-package com.saucelabs.visual.espresso;
+package com.saucelabs.visual;
 
 import android.os.Build;
 
-import com.saucelabs.visual.espresso.VisualBuild.BuildAttributes;
-import com.saucelabs.visual.espresso.graphql.GraphQLClient;
-import com.saucelabs.visual.espresso.type.OperatingSystem;
-import com.saucelabs.visual.espresso.type.SnapshotIn;
+import com.saucelabs.visual.graphql.CreateSnapshotMutation;
+import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
+import com.saucelabs.visual.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.graphql.GraphQLClient;
+import com.saucelabs.visual.graphql.type.OperatingSystem;
+import com.saucelabs.visual.graphql.type.SnapshotIn;
 
 public class VisualClient {
 

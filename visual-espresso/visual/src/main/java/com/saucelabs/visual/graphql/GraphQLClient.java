@@ -1,4 +1,4 @@
-package com.saucelabs.visual.espresso.graphql;
+package com.saucelabs.visual.graphql;
 
 import android.text.TextUtils;
 import android.util.Base64;
@@ -9,8 +9,8 @@ import com.apollographql.apollo.api.Operation;
 import com.apollographql.apollo.api.Query;
 import com.apollographql.java.client.ApolloClient;
 import com.saucelabs.visual.BuildConfig;
-import com.saucelabs.visual.espresso.DataCenter;
-import com.saucelabs.visual.espresso.exception.VisualApiException;
+import com.saucelabs.visual.DataCenter;
+import com.saucelabs.visual.exception.VisualApiException;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -45,11 +45,11 @@ public class GraphQLClient {
         final Exception[] exception = new Exception[1]; // Placeholder for exceptions
         final CountDownLatch latch = new CountDownLatch(1);
 
-        // Execute the mutation and handle the response
+        // Execute the query and handle the response
         this.client.query(q).enqueue(response -> handleResponse(response, result, exception, latch));
 
         try {
-            latch.await(); // Wait for the mutation to complete
+            latch.await(); // Wait for the query to complete
         } catch (InterruptedException e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
