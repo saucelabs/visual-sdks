@@ -27,7 +27,7 @@ public class VisualCheckOptions {
         this.captureDom = captureDom;
     }
 
-    public static class Builder {
+    public static final class Builder {
         private String testName;
         private String suiteName;
         private final List<RegionIn> ignoreRegions = new ArrayList<>();
@@ -110,5 +110,9 @@ public class VisualCheckOptions {
 
     public Boolean getCaptureDom() {
         return captureDom;
+    }
+
+    public Builder builder() {
+        return new Builder();
     }
 }

@@ -24,7 +24,7 @@ public class VisualClient {
         this(visualApi, VisualBuild.getBuildOnce(visualApi, buildAttributes));
     }
 
-    public static class Builder {
+    public static final class Builder {
         private final String region;
         private final String username;
         private final String accessKey;
@@ -138,5 +138,13 @@ public class VisualClient {
 
     private void setCaptureDom(Boolean captureDom) {
         this.captureDom = captureDom;
+    }
+
+    public Builder builder(String username, String accessKey) {
+        return new Builder(username, accessKey);
+    }
+
+    public Builder builder(String region, String username, String accessKey) {
+        return new Builder(region, username, accessKey);
     }
 }
