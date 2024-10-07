@@ -2,9 +2,9 @@ package com.saucelabs.visual;
 
 import android.os.Build;
 
+import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
-import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.graphql.type.SnapshotIn;
@@ -48,7 +48,7 @@ public class VisualClient {
          * @param buildName The build name you would like to appear in the Sauce Visual dashboard.
          * @return Builder instance
          */
-        public Builder withBuildName(String buildName) {
+        public Builder buildName(String buildName) {
             this.buildName = buildName;
             return this;
         }
@@ -57,7 +57,7 @@ public class VisualClient {
          * @param projectName The label / project you would like to associate this build with.
          * @return Builder instance
          */
-        public Builder withProjectName(String projectName) {
+        public Builder projectName(String projectName) {
             this.projectName = projectName;
             return this;
         }
@@ -67,7 +67,7 @@ public class VisualClient {
          *                   We recommend using your current VCS branch in CI.
          * @return Builder instance
          */
-        public Builder withBranchName(String branchName) {
+        public Builder branchName(String branchName) {
             this.branchName = branchName;
             return this;
         }
@@ -77,12 +77,12 @@ public class VisualClient {
          *                          Usually <code>main</code> or <code>master</code> or alternatively the branch name your current branch was derived from.
          * @return Builder instance
          */
-        public Builder withDefaultBranchName(String defaultBranchName) {
+        public Builder defaultBranchName(String defaultBranchName) {
             this.defaultBranchName = defaultBranchName;
             return this;
         }
 
-        public Builder enableCaptureDom() {
+        public Builder captureDom() {
             this.captureDom = true;
             return this;
         }

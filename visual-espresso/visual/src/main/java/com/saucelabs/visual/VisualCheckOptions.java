@@ -1,17 +1,16 @@
 package com.saucelabs.visual;
 
-import static androidx.test.espresso.Espresso.onView;
-
 import android.view.View;
 
 import com.saucelabs.visual.graphql.type.RegionIn;
-import com.saucelabs.visual.espresso.GetRegionAction;
+import com.saucelabs.visual.model.Region;
+import com.saucelabs.visual.model.SelectiveRegion;
+import com.saucelabs.visual.utils.RegionInFactory;
 import com.saucelabs.visual.utils.TestMetaInfo;
 
 import org.hamcrest.Matcher;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class VisualCheckOptions {
@@ -31,47 +30,54 @@ public class VisualCheckOptions {
         private String testName;
         private String suiteName;
         private final List<RegionIn> ignoreRegions = new ArrayList<>();
+        private final List<RegionIn> regions = new ArrayList<>();
         private Boolean captureDom;
 
-        public Builder withTestName(String testName) {
+        public Builder testName(String testName) {
             this.testName = testName;
             return this;
         }
 
-        public Builder withSuiteName(String suiteName) {
+        public Builder suiteName(String suiteName) {
             this.suiteName = suiteName;
             return this;
         }
 
-        public Builder withIgnoreRegions(RegionIn... regions) {
-            this.ignoreRegions.addAll(Arrays.asList(regions));
+        public Builder ignoreRegions(Region... regions) {
+            for (Region region : regions) {
+                this.ignoreRegions.add(RegionInFactory.fromRegion(region));
+            }
             return this;
         }
 
         @SafeVarargs
-        public final Builder withIgnoreRegions(Matcher<View>... regions) {
-            List<RegionIn> ignoreRegions = new ArrayList<>();
-            for (Matcher<View> region : regions) {
-                GetRegionAction action = new GetRegionAction();
-                onView(region).perform(action);
-                ignoreRegions.add(action.getRegion());
+        public final Builder ignoreRegions(Matcher<View>... viewMatchers) {
+            List<RegionIn> result = new ArrayList<>();
+            for (Matcher<View> viewMatcher : viewMatchers) {
+                result.add(RegionInFactory.fromViewMatcher(viewMatcher));
             }
-            this.ignoreRegions.addAll(ignoreRegions);
+            this.ignoreRegions.addAll(result);
             return this;
         }
 
-        public Builder withIgnoreRegions(View... regions) {
-            List<RegionIn> ignoreRegions = new ArrayList<>();
-            for (View view : regions) {
-                ignoreRegions.add(GetRegionAction.toRegion(view));
+        public Builder ignoreRegions(View... views) {
+            List<RegionIn> result = new ArrayList<>();
+            for (View view : views) {
+                result.add(RegionInFactory.fromView(view));
             }
-            this.ignoreRegions.addAll(ignoreRegions);
+            this.ignoreRegions.addAll(result);
             return this;
         }
 
-        public Builder enableCaptureDom() {
-            this.captureDom = true;
+        public Builder captureDom(boolean captureDom) {
+            this.captureDom = captureDom;
             return this;
+        }
+
+        public Builder regions(SelectiveRegion... selectiveRegions) {
+            for (SelectiveRegion region : selectiveRegions) {
+                this.ignoreRegions.add(region.toRegionIn());
+            }
         }
 
         public VisualCheckOptions build() {
