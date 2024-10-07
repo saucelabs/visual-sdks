@@ -78,6 +78,7 @@ public class VisualCheckOptions {
             for (SelectiveRegion region : selectiveRegions) {
                 this.ignoreRegions.add(region.toRegionIn());
             }
+            return this;
         }
 
         public VisualCheckOptions build() {
