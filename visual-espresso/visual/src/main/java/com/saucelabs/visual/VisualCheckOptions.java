@@ -4,9 +4,7 @@ import android.view.View;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
-import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.Region;
-import com.saucelabs.visual.model.SelectiveRegion;
 import com.saucelabs.visual.utils.RegionInFactory;
 import com.saucelabs.visual.utils.TestMetaInfo;
 
@@ -75,22 +73,6 @@ public class VisualCheckOptions {
 
         public Builder captureDom(boolean captureDom) {
             this.captureDom = captureDom;
-            return this;
-        }
-
-        public Builder regions(SelectiveRegion... selectiveRegions) {
-            for (SelectiveRegion region : selectiveRegions) {
-                this.ignoreRegions.add(region.toRegionIn());
-            }
-            return this;
-        }
-
-        public Builder disable(DiffingOption... diffingOptions) {
-            DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
-            for (DiffingOption option : diffingOptions) {
-                option.apply(builder, false);
-            }
-            this.diffingOptions = builder.build();
             return this;
         }
 
