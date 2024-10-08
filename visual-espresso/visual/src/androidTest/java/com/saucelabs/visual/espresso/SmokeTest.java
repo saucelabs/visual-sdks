@@ -5,8 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.VisualCheckOptions;
 import com.saucelabs.visual.VisualClient;
+import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.junit.TestMetaInfoRule;
-import com.saucelabs.visual.espresso.type.RegionIn;
+import com.saucelabs.visual.model.Region;
 
 import org.junit.AfterClass;
 import org.junit.Rule;
@@ -20,9 +21,9 @@ public class SmokeTest {
     static VisualClient visual = new VisualClient.Builder(
             BuildConfig.SAUCE_USERNAME,
             BuildConfig.SAUCE_ACCESS_KEY)
-            .withBuildName("Smoke test")
-            .withProjectName("Espresso")
-            .withBranchName("main")
+            .buildName("Smoke test")
+            .projectName("Espresso")
+            .branchName("main")
             .build();
 
     @Test
@@ -33,11 +34,11 @@ public class SmokeTest {
 
     @Test
     public void checkWithIgnoreRegions() {
-        RegionIn ignore = RegionIn.builder()
+        Region region = Region.builder()
                 .x(100).y(100).width(100).height(100)
                 .build();
         VisualCheckOptions options = new VisualCheckOptions.Builder()
-                .withIgnoreRegions(ignore).build();
+                .ignoreRegions(region).build();
         CreateSnapshotMutation.Data d = visual.sauceVisualCheck("snap", options);
         assertNotNull(d.result.id);
     }

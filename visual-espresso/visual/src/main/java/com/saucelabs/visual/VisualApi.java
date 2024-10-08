@@ -2,11 +2,11 @@ package com.saucelabs.visual;
 
 import android.util.Log;
 
+import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
 import com.saucelabs.visual.graphql.FinishBuildMutation;
-import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.type.BuildIn;
 import com.saucelabs.visual.graphql.type.FinishBuildIn;
