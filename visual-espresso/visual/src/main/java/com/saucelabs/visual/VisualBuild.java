@@ -1,0 +1,61 @@
+package com.saucelabs.visual;
+
+import com.saucelabs.visual.graphql.CreateBuildMutation;
+
+public class VisualBuild {
+
+    private final String id;
+    private final String name;
+    private final String project;
+    private final String branch;
+    private final String defaultBranch;
+    private final String url;
+
+    VisualBuild(
+            String id, String name, String project, String branch, String defaultBranch, String url) {
+        this.id = id;
+        this.name = name;
+        this.project = project;
+        this.branch = branch;
+        this.defaultBranch = defaultBranch;
+        this.url = url;
+    }
+
+    VisualBuild(CreateBuildMutation.Data data) {
+        this(data.result.id.toString(),
+                data.result.name,
+                data.result.project,
+                data.result.branch,
+                data.result.defaultBranch,
+                data.result.url);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    private static volatile VisualBuild build = null;
+
+    public static VisualBuild getBuildOnce(VisualApi visualApi, BuildAttributes buildAttributes) {
+        synchronized (VisualBuild.class) {
+            if (build == null) {
+                build = visualApi.createBuild(buildAttributes);
+            }
+        }
+        return build;
+    }
+
+    public static class BuildAttributes {
+        public final String name;
+        public final String project;
+        public final String branch;
+        public final String defaultBranch;
+
+        public BuildAttributes(String name, String project, String branch, String defaultBranch) {
+            this.name = name;
+            this.project = project;
+            this.branch = branch;
+            this.defaultBranch = defaultBranch;
+        }
+    }
+}
