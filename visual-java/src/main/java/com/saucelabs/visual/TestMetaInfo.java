@@ -9,7 +9,7 @@ public class TestMetaInfo {
    * VisualApi
    */
   public static final ThreadLocal<Optional<TestMetaInfo>> THREAD_LOCAL =
-      ThreadLocal.withInitial(Optional::empty);
+      ThreadLocal.withInitial(() -> Optional.empty());
 
   private final String testSuite;
   private final String testName;

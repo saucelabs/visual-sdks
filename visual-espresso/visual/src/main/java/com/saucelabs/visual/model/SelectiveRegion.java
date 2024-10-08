@@ -3,8 +3,8 @@ package com.saucelabs.visual.model;
 import android.view.View;
 
 import com.saucelabs.visual.exception.VisualApiException;
-import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.utils.DiffingOptionsHelper;
 import com.saucelabs.visual.utils.RegionInFactory;
 
 import org.hamcrest.Matcher;
@@ -65,39 +65,12 @@ public class SelectiveRegion {
 
     public RegionIn toRegionIn() {
         if (this.view != null) {
-            return RegionInFactory.fromView(view, toDiffingOptionsIn(this.enableOnly, this.disableOnly));
+            return RegionInFactory.fromView(view, DiffingOptionsHelper.toDiffingOptionsIn(this.enableOnly, this.disableOnly));
         }
         if (this.viewMatcher != null) {
-            return RegionInFactory.fromViewMatcher(viewMatcher, toDiffingOptionsIn(this.enableOnly, this.disableOnly));
+            return RegionInFactory.fromViewMatcher(viewMatcher, DiffingOptionsHelper.toDiffingOptionsIn(this.enableOnly, this.disableOnly));
         }
         throw new VisualApiException("No region has been provided");
-    }
-
-    public static DiffingOptionsIn toDiffingOptionsIn(EnumSet<DiffingOption> enable, EnumSet<DiffingOption> disable) {
-        DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
-        if (enable != null) {
-            builder = getBuilderWithDefault(builder, false);
-            for (DiffingOption option : enable) {
-                option.apply(builder, true);
-            }
-        }
-        if (disable != null) {
-            builder = getBuilderWithDefault(builder, true);
-            for (DiffingOption option : disable) {
-                option.apply(builder, false);
-            }
-        }
-        return builder.build();
-    }
-
-    public static DiffingOptionsIn.Builder getBuilderWithDefault(DiffingOptionsIn.Builder builder, boolean value) {
-        return builder
-                .content(value)
-                .dimensions(value)
-                .position(value)
-                .structure(value)
-                .style(value)
-                .visual(value);
     }
 
 }

@@ -18,14 +18,18 @@ public class RegionInFactory {
         return fromViewMatcher(viewMatcher, null);
     }
 
+    public static RegionIn fromView(View view) {
+        return fromView(view, null);
+    }
+
+    public static RegionIn fromRegion(Region region) {
+        return fromRegion(region, null);
+    }
+
     public static RegionIn fromViewMatcher(Matcher<View> viewMatcher, DiffingOptionsIn diffingOptions) {
         GetViewAction action = new GetViewAction();
         onView(viewMatcher).perform(action);
         return fromView(action.getView(), diffingOptions);
-    }
-
-    public static RegionIn fromView(View view) {
-        return fromView(view, null);
     }
 
     public static RegionIn fromView(View view, DiffingOptionsIn diffingOptions) {
@@ -38,10 +42,6 @@ public class RegionInFactory {
                 .width(view.getWidth())
                 .height(view.getHeight())
                 .build();
-    }
-
-    public static RegionIn fromRegion(Region region) {
-        return fromRegion(region, null);
     }
 
     public static RegionIn fromRegion(Region region, DiffingOptionsIn diffingOptions) {
