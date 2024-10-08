@@ -19,7 +19,7 @@ public class GetViewAction implements ViewAction {
 
     @Override
     public String getDescription() {
-        return "Get a Region from a View";
+        return "Extract view from a matcher";
     }
 
     @Override
