@@ -82,8 +82,8 @@ public class VisualClient {
             return this;
         }
 
-        public Builder captureDom() {
-            this.captureDom = true;
+        public Builder captureDom(boolean captureDom) {
+            this.captureDom = captureDom;
             return this;
         }
 
