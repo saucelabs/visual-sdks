@@ -125,6 +125,7 @@ public class VisualClient {
                 .operatingSystemVersion(Build.VERSION.RELEASE)
                 .device(Build.DEVICE)
                 .ignoreRegions(options.getIgnoreRegions())
+                .diffingOptions(options.getDiffingOptions())
                 .build();
         return visualApi.createSnapshot(input);
     }

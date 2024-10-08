@@ -2,7 +2,9 @@ package com.saucelabs.visual;
 
 import android.view.View;
 
+import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.model.DiffingOption;
 import com.saucelabs.visual.model.Region;
 import com.saucelabs.visual.model.SelectiveRegion;
 import com.saucelabs.visual.utils.RegionInFactory;
@@ -18,20 +20,22 @@ public class VisualCheckOptions {
     private final String suiteName;
     private final List<RegionIn> ignoreRegions;
     private final Boolean captureDom;
+    private final DiffingOptionsIn diffingOptions;
 
-    private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions, Boolean captureDom) {
+    private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions, Boolean captureDom, DiffingOptionsIn diffingOptions) {
         this.testName = testName;
         this.suiteName = suiteName;
         this.ignoreRegions = ignoreRegions;
         this.captureDom = captureDom;
+        this.diffingOptions = diffingOptions;
     }
 
     public static final class Builder {
         private String testName;
         private String suiteName;
         private final List<RegionIn> ignoreRegions = new ArrayList<>();
-        private final List<RegionIn> regions = new ArrayList<>();
         private Boolean captureDom;
+        private DiffingOptionsIn diffingOptions;
 
         public Builder testName(String testName) {
             this.testName = testName;
@@ -81,8 +85,17 @@ public class VisualCheckOptions {
             return this;
         }
 
+        public Builder disable(DiffingOption... diffingOptions) {
+            DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
+            for (DiffingOption option : diffingOptions) {
+                option.apply(builder, false);
+            }
+            this.diffingOptions = builder.build();
+            return this;
+        }
+
         public VisualCheckOptions build() {
-            return new VisualCheckOptions(testName, suiteName, ignoreRegions, captureDom);
+            return new VisualCheckOptions(testName, suiteName, ignoreRegions, captureDom, diffingOptions);
         }
 
     }
@@ -117,6 +130,10 @@ public class VisualCheckOptions {
 
     public Boolean getCaptureDom() {
         return captureDom;
+    }
+
+    public DiffingOptionsIn getDiffingOptions() {
+        return diffingOptions;
     }
 
     public static Builder builder() {

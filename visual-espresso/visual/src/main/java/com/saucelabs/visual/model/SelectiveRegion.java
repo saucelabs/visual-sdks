@@ -35,32 +35,32 @@ public class SelectiveRegion {
         return new SelectiveRegion(viewMatcher, null, null);
     }
 
-    public static SelectiveRegion enabledFor(Matcher<View> viewMatcher, EnumSet<DiffingOption> flags) {
-        return new SelectiveRegion(viewMatcher, flags, null);
+    public static SelectiveRegion enabledFor(Matcher<View> viewMatcher, DiffingOption... options) {
+        return new SelectiveRegion(viewMatcher, EnumSet.of(options[0], options), null);
     }
 
     public static SelectiveRegion enabledFor(View view) {
         return new SelectiveRegion(view, null, null);
     }
 
-    public static SelectiveRegion enabledFor(View view, EnumSet<DiffingOption> flags) {
-        return new SelectiveRegion(view, null, flags);
+    public static SelectiveRegion enabledFor(View view, DiffingOption... options) {
+        return new SelectiveRegion(view, EnumSet.of(options[0], options), null);
     }
 
     public static SelectiveRegion disabledFor(Matcher<View> viewMatcher) {
         return new SelectiveRegion(viewMatcher, null, null);
     }
 
-    public static SelectiveRegion disabledFor(Matcher<View> viewMatcher, EnumSet<DiffingOption> flags) {
-        return new SelectiveRegion(viewMatcher, null, flags);
+    public static SelectiveRegion disabledFor(Matcher<View> viewMatcher, DiffingOption... options) {
+        return new SelectiveRegion(viewMatcher, null, EnumSet.of(options[0], options));
     }
 
     public static SelectiveRegion disabledFor(View view) {
         return new SelectiveRegion(view, null, null);
     }
 
-    public static SelectiveRegion disabledFor(View view, EnumSet<DiffingOption> flags) {
-        return new SelectiveRegion(view, null, flags);
+    public static SelectiveRegion disabledFor(View view, DiffingOption... options) {
+        return new SelectiveRegion(view, null, EnumSet.of(options[0], options));
     }
 
     public RegionIn toRegionIn() {
@@ -73,19 +73,31 @@ public class SelectiveRegion {
         throw new VisualApiException("No region has been provided");
     }
 
-    public DiffingOptionsIn toDiffingOptionsIn(EnumSet<DiffingOption> enable, EnumSet<DiffingOption> disable) {
+    public static DiffingOptionsIn toDiffingOptionsIn(EnumSet<DiffingOption> enable, EnumSet<DiffingOption> disable) {
         DiffingOptionsIn.Builder builder = DiffingOptionsIn.builder();
         if (enable != null) {
+            builder = getBuilderWithDefault(builder, false);
             for (DiffingOption option : enable) {
                 option.apply(builder, true);
             }
         }
         if (disable != null) {
+            builder = getBuilderWithDefault(builder, true);
             for (DiffingOption option : disable) {
                 option.apply(builder, false);
             }
         }
         return builder.build();
+    }
+
+    public static DiffingOptionsIn.Builder getBuilderWithDefault(DiffingOptionsIn.Builder builder, boolean value) {
+        return builder
+                .content(value)
+                .dimensions(value)
+                .position(value)
+                .structure(value)
+                .style(value)
+                .visual(value);
     }
 
 }
