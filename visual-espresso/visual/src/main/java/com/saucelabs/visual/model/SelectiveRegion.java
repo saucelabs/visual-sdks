@@ -32,7 +32,7 @@ public class SelectiveRegion {
     }
 
     public static SelectiveRegion enabledFor(Matcher<View> viewMatcher) {
-        return new SelectiveRegion(viewMatcher, null, null);
+        return new SelectiveRegion(viewMatcher, EnumSet.noneOf(DiffingOption.class), null);
     }
 
     public static SelectiveRegion enabledFor(Matcher<View> viewMatcher, DiffingOption... options) {
@@ -40,7 +40,7 @@ public class SelectiveRegion {
     }
 
     public static SelectiveRegion enabledFor(View view) {
-        return new SelectiveRegion(view, null, null);
+        return new SelectiveRegion(view, EnumSet.noneOf(DiffingOption.class), null);
     }
 
     public static SelectiveRegion enabledFor(View view, DiffingOption... options) {
@@ -48,7 +48,7 @@ public class SelectiveRegion {
     }
 
     public static SelectiveRegion disabledFor(Matcher<View> viewMatcher) {
-        return new SelectiveRegion(viewMatcher, null, null);
+        return new SelectiveRegion(viewMatcher, null, EnumSet.noneOf(DiffingOption.class));
     }
 
     public static SelectiveRegion disabledFor(Matcher<View> viewMatcher, DiffingOption... options) {
@@ -56,7 +56,7 @@ public class SelectiveRegion {
     }
 
     public static SelectiveRegion disabledFor(View view) {
-        return new SelectiveRegion(view, null, null);
+        return new SelectiveRegion(view, null, EnumSet.noneOf(DiffingOption.class));
     }
 
     public static SelectiveRegion disabledFor(View view, DiffingOption... options) {
