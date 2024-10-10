@@ -54,12 +54,17 @@ public class SnapshotHelper {
 
     public byte[] getScreenshot(View view) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-            view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+            // Get the width and height of the view
+            int width = view.getWidth();
+            int height = view.getHeight();
 
-            Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+            // Create a bitmap with the same size as the view
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+            // Create a canvas to draw the view into the bitmap
             Canvas canvas = new Canvas(bitmap);
+
+            // Draw the view onto the canvas without altering the view's position
             view.draw(canvas);
 
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
