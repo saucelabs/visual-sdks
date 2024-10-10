@@ -22,6 +22,7 @@ public class VisualCheckOptions {
     private final List<RegionIn> ignoreRegions;
     private final Boolean captureDom;
     private final DiffingOptionsIn diffingOptions;
+    private final View clipElement;
 
     private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions, Boolean captureDom, DiffingOptionsIn diffingOptions) {
         this.testName = testName;
@@ -132,6 +133,10 @@ public class VisualCheckOptions {
 
     public DiffingOptionsIn getDiffingOptions() {
         return diffingOptions;
+    }
+
+    public View getClipElement() {
+        return clipElement;
     }
 
     public static Builder builder() {
