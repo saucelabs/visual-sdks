@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.1.5
+
+### Patch Changes
+
+- 08db254: fix ignore region positioning when clipSelector is also present
+
 ## 0.1.4
 
 ### Patch Changes

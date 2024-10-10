@@ -1,5 +1,13 @@
 # @saucelabs/visual-storybook
 
+## 0.6.4
+
+### Patch Changes
+
+- 08db254: fix ignore region positioning when clipSelector is also present
+- Updated dependencies [08db254]
+  - @saucelabs/visual-playwright@0.1.5
+
 ## 0.6.3
 
 ### Patch Changes
