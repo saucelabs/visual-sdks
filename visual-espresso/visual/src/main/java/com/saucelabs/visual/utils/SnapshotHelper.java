@@ -2,8 +2,6 @@ package com.saucelabs.visual.utils;
 
 import static android.util.Base64.DEFAULT;
 
-import static androidx.test.espresso.Espresso.onView;
-
 import android.app.UiAutomation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,10 +11,8 @@ import android.view.View;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
-import com.saucelabs.visual.espresso.GetViewAction;
 import com.saucelabs.visual.exception.VisualApiException;
 
-import org.hamcrest.Matcher;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
