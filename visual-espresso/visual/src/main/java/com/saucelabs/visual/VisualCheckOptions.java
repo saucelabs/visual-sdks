@@ -24,12 +24,19 @@ public class VisualCheckOptions {
     private final DiffingOptionsIn diffingOptions;
     private final View clipElement;
 
-    private VisualCheckOptions(String testName, String suiteName, List<RegionIn> ignoreRegions, Boolean captureDom, DiffingOptionsIn diffingOptions) {
+    private VisualCheckOptions(
+            String testName,
+            String suiteName,
+            List<RegionIn> ignoreRegions,
+            Boolean captureDom,
+            DiffingOptionsIn diffingOptions,
+            View clipElement) {
         this.testName = testName;
         this.suiteName = suiteName;
         this.ignoreRegions = ignoreRegions;
         this.captureDom = captureDom;
         this.diffingOptions = diffingOptions;
+        this.clipElement = clipElement;
     }
 
     public static final class Builder {
@@ -94,7 +101,13 @@ public class VisualCheckOptions {
         }
 
         public VisualCheckOptions build() {
-            return new VisualCheckOptions(testName, suiteName, ignoreRegions, captureDom, diffingOptions);
+            return new VisualCheckOptions(
+                    testName,
+                    suiteName,
+                    ignoreRegions,
+                    captureDom,
+                    diffingOptions,
+                    clipElement);
         }
 
     }
