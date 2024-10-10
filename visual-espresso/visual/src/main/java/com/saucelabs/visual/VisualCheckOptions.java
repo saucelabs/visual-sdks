@@ -1,7 +1,10 @@
 package com.saucelabs.visual;
 
+import static androidx.test.espresso.Espresso.onView;
+
 import android.view.View;
 
+import com.saucelabs.visual.espresso.GetViewAction;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.Region;
@@ -34,6 +37,7 @@ public class VisualCheckOptions {
         private final List<RegionIn> ignoreRegions = new ArrayList<>();
         private Boolean captureDom;
         private DiffingOptionsIn diffingOptions;
+        private View clipElement;
 
         public Builder testName(String testName) {
             this.testName = testName;
@@ -73,6 +77,18 @@ public class VisualCheckOptions {
 
         public Builder captureDom(boolean captureDom) {
             this.captureDom = captureDom;
+            return this;
+        }
+
+        public Builder clipElement(Matcher<View> viewMatcher) {
+            GetViewAction action = new GetViewAction();
+            onView(viewMatcher).perform(action);
+            this.clipElement = action.getView();
+            return this;
+        }
+
+        public Builder clipElement(View view) {
+            this.clipElement = view;
             return this;
         }
 

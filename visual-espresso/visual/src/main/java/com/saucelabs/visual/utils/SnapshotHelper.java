@@ -52,27 +52,16 @@ public class SnapshotHelper {
         return instance;
     }
 
-    public byte[] getScreenshot(Matcher<View> viewMatcher) {
-        GetViewAction action = new GetViewAction();
-        onView(viewMatcher).perform(action);
-        return getScreenshot(action.getView());
-    }
-
     public byte[] getScreenshot(View view) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            // Measure the view
             view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-
-            // Layout the view
             view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 
-            // Create the bitmap
             Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
-
-            // Draw the view on the canvas
             view.draw(canvas);
+
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
             return os.toByteArray();
         } catch (IOException e) {
