@@ -169,54 +169,6 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       promises.push(new Promise((resolve) => setTimeout(resolve, delay)));
     }
 
-    if (userIgnoreRegions) {
-      promises.push(
-        (async (): Promise<void> => {
-          const filterIgnoreRegion = (
-            region: RegionIn | string,
-          ): region is RegionIn => typeof region !== 'string';
-          const filterIgnoreSelector = (
-            region: RegionIn | string,
-          ): region is string => typeof region === 'string';
-
-          const selectors = userIgnoreRegions.filter(filterIgnoreSelector);
-          let selectorRegions: RegionIn[] = [];
-
-          if (selectors.length) {
-            selectorRegions = await page.evaluate(
-              ({ selectors }) => {
-                const selectorRegions: RegionIn[] = [];
-                selectors.forEach((selector) => {
-                  const elements = document.querySelectorAll(selector);
-                  elements.forEach((element) => {
-                    const rect = element.getBoundingClientRect();
-
-                    selectorRegions.push({
-                      name: selector,
-                      x: Math.round(rect.x),
-                      y: Math.round(rect.y),
-                      height: Math.round(rect.height),
-                      width: Math.round(rect.width),
-                    });
-                  });
-                });
-                return selectorRegions;
-              },
-              { selectors },
-            );
-          }
-
-          ignoreRegions = [
-            ...userIgnoreRegions.filter(filterIgnoreRegion),
-            ...selectorRegions,
-          ].filter(
-            (region) =>
-              0 < Math.max(region.width, 0) * Math.max(region.height, 0),
-          );
-        })(),
-      );
-    }
-
     // Await all queued / concurrent promises before resuming
     await Promise.all(promises);
 
@@ -259,6 +211,61 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
           { clipSelector },
         )
       : undefined;
+
+    if (userIgnoreRegions) {
+      const filterIgnoreRegion = (
+        region: RegionIn | string,
+      ): region is RegionIn => typeof region !== 'string';
+      const filterIgnoreSelector = (
+        region: RegionIn | string,
+      ): region is string => typeof region === 'string';
+
+      const selectors = userIgnoreRegions.filter(filterIgnoreSelector);
+      let selectorRegions: RegionIn[] = [];
+
+      if (selectors.length) {
+        selectorRegions = await page.evaluate(
+          ({ selectors }) => {
+            const selectorRegions: RegionIn[] = [];
+            selectors.forEach((selector) => {
+              const elements = document.querySelectorAll(selector);
+              elements.forEach((element) => {
+                const rect = element.getBoundingClientRect();
+
+                selectorRegions.push({
+                  name: selector,
+                  x: Math.round(rect.x),
+                  y: Math.round(rect.y),
+                  height: Math.round(rect.height),
+                  width: Math.round(rect.width),
+                });
+              });
+            });
+            return selectorRegions;
+          },
+          { selectors },
+        );
+      }
+
+      ignoreRegions = [
+        ...userIgnoreRegions.filter(filterIgnoreRegion),
+        ...selectorRegions,
+      ]
+        .map((region) =>
+          clip
+            ? {
+                // Offset ignore regions using the location of the element we clipped to
+                ...region,
+                x: Math.round(region.x - clip.x),
+                y: Math.round(region.y - clip.y),
+              }
+            : region,
+        )
+        .filter(
+          (region) =>
+            0 < Math.max(region.width, 0) * Math.max(region.height, 0),
+        );
+    }
 
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
