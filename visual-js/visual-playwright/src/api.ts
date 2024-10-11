@@ -1,6 +1,7 @@
 import type { Page } from 'playwright-core';
 import {
   BuildStatus,
+  DiffStatus,
   downloadDomScript,
   getApi as getVisualApi,
   getDomScript,
@@ -16,6 +17,7 @@ const clientVersion = 'PKG_VERSION';
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
+  uploadedDiffIds: Record<string, string[]> = {};
 
   public get api() {
     let api = globalThis.visualApi;
@@ -135,11 +137,12 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       testName: string | undefined;
       suiteName: string | undefined;
       deviceName: string | undefined;
+      testId: string;
     },
     name: string,
     options?: Partial<SauceVisualParams>,
   ) {
-    const { testName, suiteName, deviceName } = info;
+    const { testName, suiteName, deviceName, testId } = info;
     const { buildId } = getOpts();
 
     if (!buildId) {
@@ -156,7 +159,13 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       ignoreRegions: userIgnoreRegions,
       diffingMethod,
     } = options ?? {};
-    const { animations = 'disabled', caret } = screenshotOptions;
+    const {
+      animations = 'disabled',
+      caret,
+      fullPage = true,
+      style,
+      timeout,
+    } = screenshotOptions;
     let ignoreRegions: RegionIn[] = [];
 
     const promises: Promise<unknown>[] = [
@@ -270,7 +279,9 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
     const screenshotBuffer = await page.screenshot({
-      fullPage: true,
+      fullPage,
+      style,
+      timeout,
       animations,
       caret,
       clip,
@@ -318,12 +329,64 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       diffingMethod,
     });
 
-    await this.api.createSnapshot({
+    const { diffs } = await this.api.createSnapshot({
       ...meta,
       testName,
       suiteName,
       uploadUuid: uploadId,
     });
+
+    if (!this.uploadedDiffIds[testId]) this.uploadedDiffIds[testId] = [];
+
+    this.uploadedDiffIds[testId].push(...diffs.nodes.map((diff) => diff.id));
+  }
+
+  public async visualResults({ testId }: { testId: string }) {
+    const initialStatusSummary: Record<DiffStatus, number> = {
+      [DiffStatus.Approved]: 0,
+      [DiffStatus.Equal]: 0,
+      [DiffStatus.Unapproved]: 0,
+      [DiffStatus.Rejected]: 0,
+      [DiffStatus.Queued]: 0,
+      [DiffStatus.Errored]: 0,
+    };
+    const { buildId } = getOpts();
+    if (!buildId) {
+      throw new Error(
+        'No Sauce Visual build present, cannot determine visual results.',
+      );
+    }
+
+    // Bypass all API requests if we have no uploaded diff IDs for this test.
+    if (
+      !this.uploadedDiffIds[testId] ||
+      this.uploadedDiffIds[testId].length === 0
+    ) {
+      return initialStatusSummary;
+    }
+
+    return backOff(
+      async () => {
+        const summary = { ...initialStatusSummary };
+        const diffsForTestResult = await this.api.diffsForTestResult(buildId);
+        if (!diffsForTestResult) {
+          return summary;
+        }
+        const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
+          this.uploadedDiffIds[testId].includes(diff.id);
+
+        return diffsForTestResult.nodes
+          .filter(filterDiffsById)
+          .reduce((statusSummary, diff) => {
+            statusSummary[diff.status]++;
+            return statusSummary;
+          }, summary);
+      },
+      {
+        maxDelay: 10000,
+        numOfAttempts: 10,
+      },
+    );
   }
 
   /**

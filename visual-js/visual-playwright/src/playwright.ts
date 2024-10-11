@@ -22,7 +22,12 @@ export const sauceVisualCheck = async (
       deviceName: testInfo.project.name,
       testName: testInfo.title,
       suiteName: testInfo.titlePath.slice(0, -1).join('/'),
+      testId: testInfo.testId,
     },
     name,
     options,
   );
+export const sauceVisualResults = async (testInfo: TestInfo) =>
+  await VisualPlaywright.visualResults({
+    testId: testInfo.testId,
+  });

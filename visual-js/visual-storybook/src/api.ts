@@ -33,6 +33,7 @@ export const postVisit = async (page: Page, context: TestContext) => {
       testName: undefined,
       suiteName: undefined,
       deviceName: deviceName || undefined,
+      testId: context.id,
     },
     `${context.title}/${context.name}`,
     {
