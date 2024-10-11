@@ -10,7 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.saucelabs.visual.graphql.type.RegionIn;
 
-public class BarCoordinatesHelper {
+public class BarRegionHelper {
 
     public static RegionIn getStatusBarRegion() {
         int statusBarHeight = getStatusBarHeight();
