@@ -8,6 +8,7 @@ import com.saucelabs.visual.espresso.GetViewAction;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.Region;
+import com.saucelabs.visual.utils.BarCoordinatesHelper;
 import com.saucelabs.visual.utils.RegionInFactory;
 import com.saucelabs.visual.utils.TestMetaInfo;
 
@@ -137,6 +138,8 @@ public class VisualCheckOptions {
     }
 
     public List<RegionIn> getIgnoreRegions() {
+        ignoreRegions.add(BarCoordinatesHelper.getStatusBarRegion());
+        ignoreRegions.add(BarCoordinatesHelper.getNavigationBarRegion());
         return ignoreRegions;
     }
 
