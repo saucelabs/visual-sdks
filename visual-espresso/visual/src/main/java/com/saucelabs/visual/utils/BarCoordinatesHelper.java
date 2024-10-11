@@ -25,9 +25,9 @@ public class BarCoordinatesHelper {
 
     public static RegionIn getNavigationBarRegion() {
         int navigationBarHeight = getNavigationBarHeight();
-        Point screenDimensions = getScreenSize();
-        int screenHeight = screenDimensions.y;
-        int screenWidth = screenDimensions.x;
+        Point screenSize = getScreenSize();
+        int screenHeight = screenSize.y;
+        int screenWidth = screenSize.x;
         return RegionIn.builder()
                 .x(0)
                 .y(screenHeight - navigationBarHeight)
