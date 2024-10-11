@@ -17,7 +17,7 @@ export type SauceVisualFixtures = {
      * `test` or `afterEach` block since it uses the current test context for finding matching
      * visual results.
      */
-    resultsForCurrentTest: () => Promise<Record<DiffStatus, number>>;
+    sauceVisualResults: () => Promise<Record<DiffStatus, number>>;
   };
 };
 
@@ -32,7 +32,7 @@ export const sauceVisualFixtures: (defaultOptions?: SauceVisualParams) => {
           ...options,
         });
       },
-      resultsForCurrentTest: async () => await sauceVisualResults(testInfo),
+      sauceVisualResults: async () => await sauceVisualResults(testInfo),
     });
   },
 });

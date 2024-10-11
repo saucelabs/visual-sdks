@@ -2,6 +2,7 @@ export {
   sauceVisualSetup,
   sauceVisualTeardown,
   sauceVisualCheck,
+  sauceVisualResults,
 } from './playwright';
 export { sauceVisualFixtures, SauceVisualFixtures } from './fixtures';
 export { SauceVisualParams } from './types';
