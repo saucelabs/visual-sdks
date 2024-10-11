@@ -35,6 +35,7 @@ public class BarRegionHelper {
                 .height(navigationBarHeight)
                 .build();
     }
+
     private static int getStatusBarHeight() {
         return getBarHeight("status_bar_height");
     }
