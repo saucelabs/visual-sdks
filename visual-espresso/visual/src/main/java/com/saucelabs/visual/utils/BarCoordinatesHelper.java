@@ -14,7 +14,7 @@ public class BarCoordinatesHelper {
 
     public static RegionIn getStatusBarRegion() {
         int statusBarHeight = getStatusBarHeight();
-        int screenWidth = getScreenWidth();
+        int screenWidth = getScreenSize().x;
         return RegionIn.builder()
                 .x(0)
                 .y(0)
@@ -25,8 +25,9 @@ public class BarCoordinatesHelper {
 
     public static RegionIn getNavigationBarRegion() {
         int navigationBarHeight = getNavigationBarHeight();
-        int screenHeight = getScreenHeight();
-        int screenWidth = getScreenWidth();
+        Point screenDimensions = getScreenSize();
+        int screenHeight = screenDimensions.y;
+        int screenWidth = screenDimensions.x;
         return RegionIn.builder()
                 .x(0)
                 .y(screenHeight - navigationBarHeight)
@@ -34,42 +35,26 @@ public class BarCoordinatesHelper {
                 .height(navigationBarHeight)
                 .build();
     }
-
     private static int getStatusBarHeight() {
-        int statusBarHeight = 0;
-        Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
-        int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            statusBarHeight = resources.getDimensionPixelSize(resourceId);
-        }
-        return statusBarHeight;
+        return getBarHeight("status_bar_height");
     }
 
     private static int getNavigationBarHeight() {
-        int navigationBarHeight = 0;
+        return getBarHeight("navigation_bar_height");
+    }
+
+    private static int getBarHeight(String resourceName) {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
-        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            navigationBarHeight = resources.getDimensionPixelSize(resourceId);
-        }
-        return navigationBarHeight;
+        int resourceId = resources.getIdentifier(resourceName, "dimen", "android");
+        return resourceId > 0 ? resources.getDimensionPixelSize(resourceId) : 0;
     }
 
-    private static int getScreenHeight() {
+    private static Point getScreenSize() {
         WindowManager wm = (WindowManager) InstrumentationRegistry.getInstrumentation().getContext()
                 .getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        return size.y;
-    }
-
-    private static int getScreenWidth() {
-        WindowManager wm = (WindowManager) InstrumentationRegistry.getInstrumentation().getContext()
-                .getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size.x;
+        return size;
     }
 }
