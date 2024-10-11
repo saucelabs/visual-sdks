@@ -58,7 +58,7 @@ public class VisualCheckOptions {
             return this;
         }
 
-        public Builder ignoreRegions(Region... regions) {
+        public Builder ignore(Region... regions) {
             for (Region region : regions) {
                 this.ignoreRegions.add(RegionInFactory.fromRegion(region));
             }
@@ -66,7 +66,7 @@ public class VisualCheckOptions {
         }
 
         @SafeVarargs
-        public final Builder ignoreRegions(Matcher<View>... viewMatchers) {
+        public final Builder ignore(Matcher<View>... viewMatchers) {
             List<RegionIn> result = new ArrayList<>();
             for (Matcher<View> viewMatcher : viewMatchers) {
                 result.add(RegionInFactory.fromViewMatcher(viewMatcher));
@@ -75,7 +75,7 @@ public class VisualCheckOptions {
             return this;
         }
 
-        public Builder ignoreRegions(View... views) {
+        public Builder ignore(View... views) {
             List<RegionIn> result = new ArrayList<>();
             for (View view : views) {
                 result.add(RegionInFactory.fromView(view));

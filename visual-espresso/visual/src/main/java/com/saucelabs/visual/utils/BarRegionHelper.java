@@ -46,6 +46,7 @@ public class BarRegionHelper {
 
     private static int getBarHeight(String resourceName) {
         Resources resources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
+        // There are better ways to get the bar height with API 23+ using WindowInsets (#getSystemWindowInsetTop)
         int resourceId = resources.getIdentifier(resourceName, "dimen", "android");
         return resourceId > 0 ? resources.getDimensionPixelSize(resourceId) : 0;
     }

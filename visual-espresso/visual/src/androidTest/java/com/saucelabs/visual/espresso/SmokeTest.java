@@ -38,7 +38,7 @@ public class SmokeTest {
                 .x(100).y(100).width(100).height(100)
                 .build();
         VisualCheckOptions options = new VisualCheckOptions.Builder()
-                .ignoreRegions(region).build();
+                .ignore(region).build();
         CreateSnapshotMutation.Data d = visual.sauceVisualCheck("snap", options);
         assertNotNull(d.result.id);
     }
