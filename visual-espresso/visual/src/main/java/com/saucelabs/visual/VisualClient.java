@@ -116,7 +116,7 @@ public class VisualClient {
         Boolean captureDom = options.getCaptureDom() != null ? options.getCaptureDom() : this.captureDom;
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(
                 this.build.getId(),
-                captureDom,
+                captureDom == Boolean.TRUE,
                 options.getClipElement()
         );
         SnapshotIn input = SnapshotIn.builder()
