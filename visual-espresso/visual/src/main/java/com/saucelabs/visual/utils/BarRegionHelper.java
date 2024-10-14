@@ -56,7 +56,7 @@ public class BarRegionHelper {
                 .getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
-        display.getSize(size);
+        display.getRealSize(size);
         return size;
     }
 }
