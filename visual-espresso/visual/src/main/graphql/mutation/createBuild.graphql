@@ -7,5 +7,6 @@ mutation createBuild($input: BuildIn!) {
         defaultBranch
         status
         url
+        customId
     }
 }

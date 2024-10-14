@@ -10,8 +10,6 @@ import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.graphql.type.SnapshotIn;
 
-import java.util.UUID;
-
 public class VisualClient {
 
     private final VisualBuild build;
@@ -23,7 +21,7 @@ public class VisualClient {
         this.build = build;
     }
 
-    private VisualClient(VisualApi visualApi, BuildAttributes buildAttributes, String customId, UUID buildId) {
+    private VisualClient(VisualApi visualApi, BuildAttributes buildAttributes, String customId, String buildId) {
         this(visualApi, VisualBuild.getBuildOnce(visualApi, buildAttributes, customId, buildId));
     }
 
@@ -37,7 +35,7 @@ public class VisualClient {
         private String defaultBranchName;
         private Boolean captureDom;
         private String customId;
-        private UUID buildId;
+        private String buildId;
 
         public Builder(String username, String accessKey) {
             this("us-west-1", username, accessKey);
@@ -91,7 +89,7 @@ public class VisualClient {
          * @param captureDom Toggle DOM capturing for the whole build
          * @return Builder instance
          */
-        public Builder captureDom(boolean captureDom) {
+        public Builder captureDom(Boolean captureDom) {
             this.captureDom = captureDom;
             return this;
         }
@@ -101,7 +99,7 @@ public class VisualClient {
             return this;
         }
 
-        public Builder buildId(UUID buildId) {
+        public Builder buildId(String buildId) {
             this.buildId = buildId;
             return this;
         }
@@ -150,7 +148,7 @@ public class VisualClient {
         Boolean captureDom = options.getCaptureDom() != null ? options.getCaptureDom() : this.captureDom;
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(
                 this.build.getId(),
-                captureDom,
+                captureDom == Boolean.TRUE,
                 options.getClipElement()
         );
         if (data.result == null) {
@@ -172,7 +170,7 @@ public class VisualClient {
     }
 
     /**
-     * Finishes a VisualBuild. Should be called explicitly in @AfterClass/@AfterTest
+     * Finishes a VisualBuild. Should be called explicitly in @After/@AfterClass
      */
     public void finish() {
         visualApi.finishBuild(this.build.getId());

@@ -17,8 +17,6 @@ import com.saucelabs.visual.graphql.type.SnapshotIn;
 import com.saucelabs.visual.graphql.type.SnapshotUploadIn;
 import com.saucelabs.visual.utils.SnapshotHelper;
 
-import java.util.UUID;
-
 public class VisualApi {
     private final static String LOG_TAG = VisualApi.class.getSimpleName();
 
@@ -41,7 +39,7 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, Boolean captureDom, View clipElement) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
@@ -67,7 +65,7 @@ public class VisualApi {
         graphQLClient.executeMutation(m);
     }
 
-    BuildQuery.Data getBuild(UUID buildId) {
+    BuildQuery.Data getBuild(String buildId) {
         BuildQuery q = new BuildQuery(buildId);
         return graphQLClient.executeQuery(q);
     }

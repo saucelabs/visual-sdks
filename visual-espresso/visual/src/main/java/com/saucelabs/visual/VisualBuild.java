@@ -67,11 +67,12 @@ public class VisualBuild {
     public static VisualBuild getBuildOnce(VisualApi visualApi,
                                            BuildAttributes buildAttributes,
                                            String customId,
-                                           UUID buildId) {
+                                           String buildId) {
         synchronized (VisualBuild.class) {
             if (build == null) {
                 VisualBuild externalBuild = getExternalBuild(visualApi, customId, buildId);
                 if (externalBuild != null) {
+                    Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", externalBuild.url));
                     build = externalBuild;
                 } else {
                     build = visualApi.createBuild(buildAttributes);
@@ -81,8 +82,9 @@ public class VisualBuild {
         return build;
     }
 
-    public static VisualBuild getExternalBuild(VisualApi api, String customId, UUID buildId) {
-        if (!TextUtils.isEmpty(buildId.toString())) {
+    public static VisualBuild getExternalBuild(VisualApi api, String customId, String buildId) {
+        if (!TextUtils.isEmpty(buildId)) {
+            ensureValidUUID(buildId);
             BuildQuery.Data data = api.getBuild(buildId);
             if (data.result != null) {
                 if (data.result.mode == BuildMode.COMPLETED) {
@@ -116,6 +118,14 @@ public class VisualBuild {
             this.project = project;
             this.branch = branch;
             this.defaultBranch = defaultBranch;
+        }
+    }
+
+    private static void ensureValidUUID(String uuid) {
+        try {
+            UUID.fromString(uuid);
+        } catch (Exception e) {
+            throw new VisualApiException("External build ID is not a valid UUID");
         }
     }
 }
