@@ -35,8 +35,10 @@ public class RegionInFactory {
     public static RegionIn fromView(View view, DiffingOptionsIn diffingOptions) {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);  // Get the coordinates of the view on the screen
+        String resourceName = view.getResources().getResourceEntryName(view.getId());
         return RegionIn.builder()
                 .diffingOptions(diffingOptions)
+                .name(resourceName)
                 .x(loc[0])
                 .y(loc[1])
                 .width(view.getWidth())

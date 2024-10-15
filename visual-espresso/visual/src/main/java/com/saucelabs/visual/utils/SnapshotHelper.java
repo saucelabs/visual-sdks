@@ -4,7 +4,9 @@ import static android.util.Base64.DEFAULT;
 
 import android.app.UiAutomation;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.util.Base64;
+import android.view.View;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
@@ -44,6 +46,28 @@ public class SnapshotHelper {
             instance = new SnapshotHelper();
         }
         return instance;
+    }
+
+    public byte[] getScreenshot(View view) {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            // Get the width and height of the view
+            int width = view.getWidth();
+            int height = view.getHeight();
+
+            // Create a bitmap with the same size as the view
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+            // Create a canvas to draw the view into the bitmap
+            Canvas canvas = new Canvas(bitmap);
+
+            // Draw the view onto the canvas without altering the view's position
+            view.draw(canvas);
+
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+            return os.toByteArray();
+        } catch (IOException e) {
+            throw new VisualApiException(e.getLocalizedMessage());
+        }
     }
 
     public byte[] getScreenshot() {

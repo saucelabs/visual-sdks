@@ -1,6 +1,7 @@
 package com.saucelabs.visual;
 
 import android.util.Log;
+import android.view.View;
 
 import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
@@ -36,7 +37,7 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, Boolean captureDom) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, Boolean captureDom, View clipElement) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
@@ -44,7 +45,9 @@ public class VisualApi {
             byte[] dom = SnapshotHelper.getInstance().getDom();
             SnapshotHelper.getInstance().uploadToUrl(d.result.domUploadUrl, dom, true);
         }
-        byte[] screenshot = SnapshotHelper.getInstance().getScreenshot();
+        byte[] screenshot = clipElement != null
+                ? SnapshotHelper.getInstance().getScreenshot(clipElement)
+                : SnapshotHelper.getInstance().getScreenshot();
         SnapshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot, false);
         return d;
     }
