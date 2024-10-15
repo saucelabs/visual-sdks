@@ -1,7 +1,12 @@
-import { describe, expect, test } from '@jest/globals';
-import { getFullPageConfig, parseRegionsForAPI } from './utils';
-import { RegionIn } from './graphql/__generated__/graphql';
+import { describe, expect, jest, test } from '@jest/globals';
+import {
+  getFullPageConfig,
+  getVisualResults,
+  parseRegionsForAPI,
+} from './utils';
+import { DiffStatus, RegionIn } from './graphql/__generated__/graphql';
 import { FullPageScreenshotOptions } from './types';
+import { getApi, VisualConfig } from './common/api';
 
 type MockElement = { elementId: string };
 
@@ -22,6 +27,9 @@ const resolveForTest = async (itemPromise: string | Promise<RegionIn>) => {
   if (typeof item === 'object') return [item];
   return [{ id: item }];
 };
+
+jest.mock('@wdio/logger', () => () => ({ default: jest.fn() }));
+jest.mock('chalk', () => ({ default: jest.fn() }));
 
 describe('utils', () => {
   describe('getFullPageConfig', () => {
@@ -147,6 +155,77 @@ describe('utils', () => {
       expect(result.ignoreElements[0]).toMatchSnapshot();
       expect(result.ignoreElements[1]).toMatchSnapshot();
       expect(result.ignoreRegions[0]).toMatchSnapshot();
+    });
+  });
+
+  describe('getVisualResults', () => {
+    const config: VisualConfig = { region: 'us', user: 'u', key: 'k' };
+    const api = getApi(config);
+    const diffsForTestResult = jest.spyOn(api, 'diffsForTestResult');
+
+    test('Should throw an error if a build id is not present', async () => {
+      diffsForTestResult.mockReset();
+      diffsForTestResult.mockImplementation(() => {
+        return Promise.resolve({ nodes: [] });
+      });
+      await expect(
+        getVisualResults(api, {
+          buildId: null,
+          diffIds: [],
+        }),
+      ).rejects.toThrowError(
+        'No Sauce Visual build present, cannot determine visual results.',
+      );
+    });
+
+    test('Should return no unapproved diffs when there are no diffs at all', async () => {
+      diffsForTestResult.mockReset();
+      diffsForTestResult.mockImplementation(() => {
+        return Promise.resolve({ nodes: [] });
+      });
+      const result = await getVisualResults(api, {
+        buildId: '123',
+        diffIds: [],
+      });
+      expect(result.UNAPPROVED).toEqual(0);
+      expect(diffsForTestResult).not.toBeCalled();
+    });
+
+    test('Should return no unapproved diffs when there are only equal diffs', async () => {
+      diffsForTestResult.mockReset();
+      diffsForTestResult.mockImplementationOnce(() => {
+        return Promise.resolve({
+          nodes: [
+            { id: '1', status: DiffStatus.Approved },
+            { id: '2', status: DiffStatus.Approved },
+          ],
+        });
+      });
+      const result = await getVisualResults(api, {
+        buildId: '123',
+        diffIds: ['1', '2'],
+      });
+      expect(result.APPROVED).toEqual(2);
+    });
+
+    test('Should return unapproved diffs when there are unapproved diffs', async () => {
+      diffsForTestResult.mockReset();
+      diffsForTestResult
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            nodes: [{ id: '1', status: DiffStatus.Queued }],
+          });
+        })
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            nodes: [{ id: '1', status: DiffStatus.Unapproved }],
+          });
+        });
+      const result = await getVisualResults(api, {
+        buildId: '123',
+        diffIds: ['1', '2'],
+      });
+      expect(result.UNAPPROVED).toEqual(1);
     });
   });
 });
