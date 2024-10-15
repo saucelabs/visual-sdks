@@ -20,8 +20,8 @@ public class VisualClient {
         this.build = build;
     }
 
-    private VisualClient(VisualApi visualApi, BuildAttributes buildAttributes) {
-        this(visualApi, VisualBuild.getBuildOnce(visualApi, buildAttributes));
+    private VisualClient(VisualApi visualApi, BuildAttributes buildAttributes, String customId, String buildId) {
+        this(visualApi, VisualBuild.getBuildOnce(visualApi, buildAttributes, customId, buildId));
     }
 
     public static final class Builder {
@@ -33,6 +33,8 @@ public class VisualClient {
         private String branchName;
         private String defaultBranchName;
         private Boolean captureDom;
+        private String customId;
+        private String buildId;
 
         public Builder(String username, String accessKey) {
             this("us-west-1", username, accessKey);
@@ -82,8 +84,30 @@ public class VisualClient {
             return this;
         }
 
-        public Builder captureDom(boolean captureDom) {
+        /**
+         * @param captureDom Toggle DOM capturing for the whole build
+         * @return Builder instance
+         */
+        public Builder captureDom(Boolean captureDom) {
             this.captureDom = captureDom;
+            return this;
+        }
+
+        /**
+         * @param customId For advanced users, a user-supplied custom ID to identify this build.
+         * @return Builder instance
+         */
+        public Builder customId(String customId) {
+            this.customId = customId;
+            return this;
+        }
+
+        /**
+         * @param buildId For advanced users, a user-supplied Sauce Labs Visual build ID.
+         * @return Builder instance
+         */
+        public Builder buildId(String buildId) {
+            this.buildId = buildId;
             return this;
         }
 
@@ -91,10 +115,25 @@ public class VisualClient {
             GraphQLClient graphQLClient = new GraphQLClient(DataCenter.fromSauceRegion(region), username, accessKey);
             VisualApi visualApi = new VisualApi(graphQLClient);
             BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
-            VisualClient client = new VisualClient(visualApi, buildAttributes);
+            VisualClient client = new VisualClient(visualApi, buildAttributes, customId, buildId);
             client.setCaptureDom(this.captureDom);
             return client;
         }
+    }
+
+    private void setCaptureDom(Boolean captureDom) {
+        this.captureDom = captureDom;
+    }
+
+    /**
+     * Convenience methods for creating new builder instances
+     */
+    public static Builder builder(String username, String accessKey) {
+        return new Builder(username, accessKey);
+    }
+
+    public static Builder builder(String region, String username, String accessKey) {
+        return new Builder(region, username, accessKey);
     }
 
     /**
@@ -135,21 +174,10 @@ public class VisualClient {
     }
 
     /**
-     * Finishes a VisualBuild. Should be called explicitly in @AfterClass in your tests.
+     * Finishes a VisualBuild. Should be called explicitly in @After/@AfterClass
      */
     public void finish() {
         visualApi.finishBuild(this.build.getId());
     }
 
-    private void setCaptureDom(Boolean captureDom) {
-        this.captureDom = captureDom;
-    }
-
-    public static Builder builder(String username, String accessKey) {
-        return new Builder(username, accessKey);
-    }
-
-    public static Builder builder(String region, String username, String accessKey) {
-        return new Builder(region, username, accessKey);
-    }
 }

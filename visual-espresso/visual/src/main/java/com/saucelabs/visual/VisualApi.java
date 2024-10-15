@@ -4,6 +4,8 @@ import android.util.Log;
 import android.view.View;
 
 import com.saucelabs.visual.VisualBuild.BuildAttributes;
+import com.saucelabs.visual.graphql.BuildByCustomIdQuery;
+import com.saucelabs.visual.graphql.BuildQuery;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
@@ -37,7 +39,7 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, Boolean captureDom, View clipElement) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
@@ -62,4 +64,15 @@ public class VisualApi {
         FinishBuildMutation m = new FinishBuildMutation(input);
         graphQLClient.executeMutation(m);
     }
+
+    BuildQuery.Data getBuild(String buildId) {
+        BuildQuery q = new BuildQuery(buildId);
+        return graphQLClient.executeQuery(q);
+    }
+
+    BuildByCustomIdQuery.Data getBuildByCustomId(String customId) {
+        BuildByCustomIdQuery q = new BuildByCustomIdQuery(customId);
+        return graphQLClient.executeQuery(q);
+    }
+
 }
