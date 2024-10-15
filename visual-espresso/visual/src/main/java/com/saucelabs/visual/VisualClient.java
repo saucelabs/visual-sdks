@@ -3,7 +3,6 @@ package com.saucelabs.visual;
 import android.os.Build;
 
 import com.saucelabs.visual.VisualBuild.BuildAttributes;
-import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
 import com.saucelabs.visual.graphql.GraphQLClient;
@@ -151,9 +150,6 @@ public class VisualClient {
                 captureDom == Boolean.TRUE,
                 options.getClipElement()
         );
-        if (data.result == null) {
-            throw new VisualApiException("Failed to upload snapshot");
-        }
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())
                 .uploadUuid(data.result.id)
