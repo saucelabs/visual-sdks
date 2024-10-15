@@ -93,11 +93,19 @@ public class VisualClient {
             return this;
         }
 
+        /**
+         * @param customId For advanced users, a user-supplied custom ID to identify this build.
+         * @return Builder instance
+         */
         public Builder customId(String customId) {
             this.customId = customId;
             return this;
         }
 
+        /**
+         * @param buildId For advanced users, a user-supplied Sauce Labs Visual build ID.
+         * @return Builder instance
+         */
         public Builder buildId(String buildId) {
             this.buildId = buildId;
             return this;
