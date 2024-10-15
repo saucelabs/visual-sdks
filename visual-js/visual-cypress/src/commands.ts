@@ -16,6 +16,7 @@ import {
   VisualCheckOptions,
   VisualRegion,
 } from './types';
+import type { DiffStatus } from '@saucelabs/visual';
 
 declare global {
   namespace Cypress {
@@ -33,7 +34,7 @@ declare global {
         options?: VisualCheckOptions,
       ): Chainable<Subject>;
 
-      sauceVisualResults(): Chainable<Subject>;
+      sauceVisualResults(): Chainable<Record<DiffStatus, number>>;
     }
     interface EndToEndConfigOptions {
       saucelabs: SauceConfig;

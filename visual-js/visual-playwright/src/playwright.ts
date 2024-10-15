@@ -1,8 +1,8 @@
 import VisualPlaywright from './api';
 import type { Page } from 'playwright-core';
-import { TestInfo } from '@playwright/test';
-import { SauceVisualParams } from './types';
-import { VisualEnvOpts } from '@saucelabs/visual';
+import type { TestInfo } from '@playwright/test';
+import type { SauceVisualParams } from './types';
+import type { VisualEnvOpts } from '@saucelabs/visual';
 
 export const sauceVisualSetup = async (opts?: Partial<VisualEnvOpts>) => {
   VisualPlaywright.globalSetup(opts);

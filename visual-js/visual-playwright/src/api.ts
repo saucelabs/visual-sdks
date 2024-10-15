@@ -1,10 +1,10 @@
 import type { Page } from 'playwright-core';
 import {
   BuildStatus,
-  DiffStatus,
   downloadDomScript,
   getApi as getVisualApi,
   getDomScript,
+  getVisualResults,
   RegionIn,
   removeDomScriptFile,
   VisualEnvOpts,
@@ -342,60 +342,11 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   }
 
   public async visualResults({ testId }: { testId: string }) {
-    const initialStatusSummary: Record<DiffStatus, number> = {
-      [DiffStatus.Approved]: 0,
-      [DiffStatus.Equal]: 0,
-      [DiffStatus.Unapproved]: 0,
-      [DiffStatus.Rejected]: 0,
-      [DiffStatus.Queued]: 0,
-      [DiffStatus.Errored]: 0,
-    };
     const { buildId } = getOpts();
-    if (!buildId) {
-      throw new Error(
-        'No Sauce Visual build present, cannot determine visual results.',
-      );
-    }
-
-    // Bypass all API requests if we have no uploaded diff IDs for this test.
-    if (
-      !this.uploadedDiffIds[testId] ||
-      this.uploadedDiffIds[testId].length === 0
-    ) {
-      return initialStatusSummary;
-    }
-
-    return backOff(
-      async () => {
-        const summary = { ...initialStatusSummary };
-        const diffsForTestResult = await this.api.diffsForTestResult(buildId);
-        if (!diffsForTestResult) {
-          return summary;
-        }
-        const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
-          this.uploadedDiffIds[testId].includes(diff.id);
-
-        const statusSummary = diffsForTestResult.nodes
-          .filter(filterDiffsById)
-          .reduce(
-            (statusSummary, diff) => {
-              statusSummary[diff.status]++;
-              return statusSummary;
-            },
-            { ...summary },
-          );
-
-        if (statusSummary[DiffStatus.Queued] > 0) {
-          throw new Error('Some diffs are not ready');
-        }
-
-        return statusSummary;
-      },
-      {
-        maxDelay: 10000,
-        numOfAttempts: 10,
-      },
-    );
+    return await getVisualResults(this.api, {
+      buildId,
+      diffIds: this.uploadedDiffIds[testId] ?? [],
+    });
   }
 
   /**

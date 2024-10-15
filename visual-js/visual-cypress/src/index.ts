@@ -19,6 +19,7 @@ import {
   selectiveRegionOptionsToDiffingOptions,
   VisualApi,
   VisualApiRegion,
+  getVisualResults,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -265,35 +266,10 @@ Sauce Labs Visual: Unable to create new build.
   }
 
   private async getResultSummary(): Promise<Record<DiffStatus, number>> {
-    const diffsForTestResult = await this.api.diffsForTestResult(this.buildId!);
-    if (!diffsForTestResult) {
-      throw new Error('Something went wrong while fetching test results');
-    }
-
-    const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
-      this.uploadedDiffIds.includes(diff.id);
-    const initialStatusSummary = {
-      [DiffStatus.Queued]: 0,
-      [DiffStatus.Unapproved]: 0,
-      [DiffStatus.Approved]: 0,
-      [DiffStatus.Equal]: 0,
-      [DiffStatus.Errored]: 0,
-      [DiffStatus.Rejected]: 0,
-    } satisfies Record<DiffStatus, number>;
-    const statusSummary = diffsForTestResult.nodes
-      .filter(filterDiffsById)
-      .reduce((statusSummary, diff) => {
-        if (!statusSummary[diff.status]) {
-          statusSummary[diff.status] = 0;
-        }
-        statusSummary[diff.status]++;
-        return statusSummary;
-      }, initialStatusSummary);
-    if (statusSummary[DiffStatus.Queued]) {
-      throw new DiffNotReadyError('Some diffs are not ready');
-    }
-
-    return statusSummary;
+    return await getVisualResults(this.api, {
+      buildId: this.buildId,
+      diffIds: this.uploadedDiffIds,
+    });
   }
 
   async getTestResults(): Promise<Record<DiffStatus, number>> {

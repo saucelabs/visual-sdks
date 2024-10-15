@@ -12,7 +12,6 @@ import {
   DiffStatus,
   ElementIn,
   ensureError,
-  FullPageScreenshotOptions,
   getApi,
   getFullPageConfig,
   isIgnoreRegion,
@@ -24,6 +23,7 @@ import {
   BaselineOverrideIn,
   VisualApi,
   WebdriverSession,
+  getVisualResults,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
@@ -34,7 +34,6 @@ import {
   isWdioElement,
   WdioElement,
 } from './guarded-types.js';
-import { backOff } from 'exponential-backoff';
 import type { Test } from '@wdio/types/build/Frameworks';
 
 const clientVersion = 'PKG_VERSION';
@@ -51,13 +50,7 @@ const {
   SAUCE_VISUAL_CUSTOM_ID,
 } = process.env;
 
-type ResultStatus = {
-  [DiffStatus.Approved]: number;
-  [DiffStatus.Equal]: number;
-  [DiffStatus.Unapproved]: number;
-  [DiffStatus.Rejected]: number;
-  [DiffStatus.Queued]: number;
-};
+type ResultStatus = Record<DiffStatus, number>;
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -356,33 +349,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   };
 
   public sauceVisualResults = (api: VisualApi, buildId: string) => async () => {
-    return await backOff(async () => {
-      const initialStatusSummary: { [key: string]: number } = {
-        [DiffStatus.Approved]: 0,
-        [DiffStatus.Equal]: 0,
-        [DiffStatus.Unapproved]: 0,
-        [DiffStatus.Rejected]: 0,
-        [DiffStatus.Queued]: 0,
-      };
-      const diffsForTestResult = await api.diffsForTestResult(buildId);
-      if (!diffsForTestResult) {
-        return initialStatusSummary;
-      }
-
-      const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
-        uploadedDiffIds.includes(diff.id);
-      const statusSummary = diffsForTestResult.nodes
-        .filter(filterDiffsById)
-        .reduce((statusSummary, diff) => {
-          statusSummary[diff.status]++;
-          return statusSummary;
-        }, initialStatusSummary);
-      if (statusSummary[DiffStatus.Queued] > 0) {
-        throw new Error('Some diffs are not ready');
-      }
-
-      return statusSummary;
-    });
+    return await getVisualResults(api, { buildId, diffIds: uploadedDiffIds });
   };
 
   private sauceVisualCheck =
