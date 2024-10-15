@@ -37,6 +37,7 @@ import {
   VisualApiRegion,
   resolveRegionFromOndemandHostname,
 } from './regions.js';
+import { backOff } from 'exponential-backoff';
 
 export * from '../graphql/__generated__/graphql.js';
 export * from './selective-region.js';
@@ -157,11 +158,11 @@ const uploadToUrl = async ({
   uploadTimeoutMs?: number;
 }) => {
   const uploadBody = isDataPath(file) ? fs.readFileSync(file.path) : file.data;
-
+  const timeout = uploadTimeoutMs ?? 10_000;
   const hash = crypto.createHash('md5').update(uploadBody).digest('base64');
-  try {
-    uploadTimeoutMs ||= 10_000;
-    const result = await fetch(uploadUrl, {
+
+  const uploadItem = async () =>
+    await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
         'Content-Length': `${uploadBody.byteLength}`,
@@ -171,7 +172,12 @@ const uploadToUrl = async ({
       body: uploadBody,
       compress,
       ...fetchOptions,
-      signal: AbortSignal.timeout(uploadTimeoutMs),
+      signal: AbortSignal.timeout(timeout),
+    });
+
+  try {
+    const result = await backOff(uploadItem, {
+      numOfAttempts: 3,
     });
 
     if (!result.ok) {
