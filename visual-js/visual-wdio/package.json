@@ -56,7 +56,7 @@
     "build": "tsc --declaration -p tsconfig.build.json",
     "watch": "tsc -w --declaration -p tsconfig.build.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --collect-coverage"
+    "test": "jest --collect-coverage --passWithNoTests"
   },
   "publishConfig": {
     "access": "public"
