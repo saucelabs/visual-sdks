@@ -375,12 +375,21 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
         const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
           this.uploadedDiffIds[testId].includes(diff.id);
 
-        return diffsForTestResult.nodes
+        const statusSummary = diffsForTestResult.nodes
           .filter(filterDiffsById)
-          .reduce((statusSummary, diff) => {
-            statusSummary[diff.status]++;
-            return statusSummary;
-          }, summary);
+          .reduce(
+            (statusSummary, diff) => {
+              statusSummary[diff.status]++;
+              return statusSummary;
+            },
+            { ...summary },
+          );
+
+        if (statusSummary[DiffStatus.Queued] > 0) {
+          throw new Error('Some diffs are not ready');
+        }
+
+        return statusSummary;
       },
       {
         maxDelay: 10000,
