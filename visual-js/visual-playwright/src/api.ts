@@ -4,6 +4,7 @@ import {
   downloadDomScript,
   getApi as getVisualApi,
   getDomScript,
+  getVisualResults,
   RegionIn,
   removeDomScriptFile,
   VisualEnvOpts,
@@ -16,6 +17,7 @@ const clientVersion = 'PKG_VERSION';
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
+  uploadedDiffIds: Record<string, string[]> = {};
 
   public get api() {
     let api = globalThis.visualApi;
@@ -135,11 +137,12 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       testName: string | undefined;
       suiteName: string | undefined;
       deviceName: string | undefined;
+      testId: string;
     },
     name: string,
     options?: Partial<SauceVisualParams>,
   ) {
-    const { testName, suiteName, deviceName } = info;
+    const { testName, suiteName, deviceName, testId } = info;
     const { buildId } = getOpts();
 
     if (!buildId) {
@@ -156,7 +159,13 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       ignoreRegions: userIgnoreRegions,
       diffingMethod,
     } = options ?? {};
-    const { animations = 'disabled', caret } = screenshotOptions;
+    const {
+      animations = 'disabled',
+      caret,
+      fullPage = true,
+      style,
+      timeout,
+    } = screenshotOptions;
     let ignoreRegions: RegionIn[] = [];
 
     const promises: Promise<unknown>[] = [
@@ -270,7 +279,9 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
     const screenshotBuffer = await page.screenshot({
-      fullPage: true,
+      fullPage,
+      style,
+      timeout,
       animations,
       caret,
       clip,
@@ -318,11 +329,23 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       diffingMethod,
     });
 
-    await this.api.createSnapshot({
+    const { diffs } = await this.api.createSnapshot({
       ...meta,
       testName,
       suiteName,
       uploadUuid: uploadId,
+    });
+
+    if (!this.uploadedDiffIds[testId]) this.uploadedDiffIds[testId] = [];
+
+    this.uploadedDiffIds[testId].push(...diffs.nodes.map((diff) => diff.id));
+  }
+
+  public async visualResults({ testId }: { testId: string }) {
+    const { buildId } = getOpts();
+    return await getVisualResults(this.api, {
+      buildId,
+      diffIds: this.uploadedDiffIds[testId] ?? [],
     });
   }
 
