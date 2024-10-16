@@ -1,5 +1,12 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.8.1
+
+### Patch Changes
+
+- Updated dependencies [f797342]
+  - @saucelabs/visual@0.10.0
+
 ## 0.8.0
 
 ### Minor Changes

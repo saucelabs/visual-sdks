@@ -1,5 +1,12 @@
 # @saucelabs/visual
 
+## 0.10.0
+
+### Minor Changes
+
+- f797342: Unify result checking behavior into utility
+  Add automatic retry mechanism to file uploads for timeouts
+
 ## 0.9.0
 
 ### Minor Changes
