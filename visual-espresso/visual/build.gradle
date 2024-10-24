@@ -1,0 +1,84 @@
+plugins {
+    alias libs.plugins.android.library
+    alias libs.plugins.apollographql
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.saucelabs.visual'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        versionCode 1
+        versionName "0.0.1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "String", "SAUCE_USERNAME", getProperty("SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\"")
+        buildConfigField "String", "SAUCE_ACCESS_KEY", getProperty("SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\"")
+        buildConfigField "String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    publishing {
+        singleVariant("release") {
+        }
+    }
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+String getProperty(String name, String defaultValue) {
+    if (!rootProject.file("./local.properties").exists()) {
+        return defaultValue
+    }
+    def properties = new Properties()
+    properties.load(rootProject.file("./local.properties").newDataInputStream())
+    return properties.containsKey(name) ? properties[name] : defaultValue
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.junit
+    implementation libs.apollo.runtime
+    implementation libs.apollo.rx3.support
+    implementation libs.espresso.core
+    implementation libs.uiautomator
+    androidTestImplementation libs.ext.junit
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = android.namespace
+            artifactId = 'visual-espresso'
+            version = android.defaultConfig.versionName
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.saucelabs.visual.graphql")
+        generateKotlinModels.set(false)
+        warnOnDeprecatedUsages.set(false)
+    }
+}
