@@ -3,16 +3,20 @@ package com.saucelabs.visual.graphql;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import com.apollographql.apollo.api.ApolloResponse;
-import com.apollographql.apollo.api.Mutation;
-import com.apollographql.apollo.api.Operation;
-import com.apollographql.apollo.api.Query;
-import com.apollographql.java.client.ApolloClient;
+import com.apollographql.apollo3.ApolloCall;
+import com.apollographql.apollo3.ApolloClient;
+import com.apollographql.apollo3.api.ApolloResponse;
+import com.apollographql.apollo3.api.Error;
+import com.apollographql.apollo3.api.Mutation;
+import com.apollographql.apollo3.api.Operation;
+import com.apollographql.apollo3.api.Query;
+import com.apollographql.apollo3.exception.ApolloHttpException;
+import com.apollographql.apollo3.rx3.Rx3Apollo;
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.DataCenter;
 import com.saucelabs.visual.exception.VisualApiException;
 
-import java.util.concurrent.CountDownLatch;
+import io.reactivex.rxjava3.core.Single;
 
 public class GraphQLClient {
 
@@ -41,56 +45,45 @@ public class GraphQLClient {
     }
 
     public <D extends Query.Data> D executeQuery(Query<D> q) {
-        final D[] result = (D[]) new Query.Data[1]; // Placeholder for the result
-        final Exception[] exception = new Exception[1]; // Placeholder for exceptions
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        // Execute the query and handle the response
-        this.client.query(q).enqueue(response -> handleResponse(response, result, exception, latch));
-
+        ApolloCall<D> call = client.query(q);
+        Single<ApolloResponse<D>> single = Rx3Apollo.single(call);
         try {
-            latch.await(); // Wait for the query to complete
-        } catch (InterruptedException e) {
-            throw new VisualApiException(e.getLocalizedMessage());
+            ApolloResponse<D> response = single.blockingGet();
+            return handleResponse(response);
         }
-
-        if (exception[0] != null) {
-            throw new VisualApiException(exception[0].getLocalizedMessage());
+        catch (ApolloHttpException e) {
+            throw new VisualApiException(e.getMessage());
         }
-
-        return result[0];
     }
 
 
     public <D extends Mutation.Data> D executeMutation(Mutation<D> m) {
-        final D[] result = (D[]) new Mutation.Data[1]; // Placeholder for the result
-        final Exception[] exception = new Exception[1]; // Placeholder for exceptions
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        // Execute the mutation and handle the response
-        this.client.mutation(m).enqueue(response -> handleResponse(response, result, exception, latch));
-
+        ApolloCall<D> call = client.mutation(m);
+        Single<ApolloResponse<D>> single = Rx3Apollo.single(call);
         try {
-            latch.await(); // Wait for the mutation to complete
-        } catch (InterruptedException e) {
-            throw new VisualApiException(e.getLocalizedMessage());
+            ApolloResponse<D> response = single.blockingGet();
+            return handleResponse(response);
         }
-
-        if (exception[0] != null) {
-            throw new VisualApiException(exception[0].getLocalizedMessage());
+        catch (ApolloHttpException e) {
+            throw new VisualApiException(e.getMessage());
         }
-
-        return result[0];
     }
 
-    private <D extends Operation.Data> void handleResponse(ApolloResponse<D> response, D[] result, Exception[] exception, CountDownLatch latch) {
+    private <D extends Operation.Data> D handleResponse(ApolloResponse<D> response) {
         if (response.data != null) {
-            result[0] = response.data;  // Assign the result
-        } else if (response.exception != null) {
-            exception[0] = response.exception;  // Capture the exception
+            return response.data;
+        } else if (response.errors != null) {
+            StringBuilder message = new StringBuilder();
+            for (Error error : response.errors) {
+                if (message.length() > 0) {
+                    message.append(", ");
+                }
+                message.append(error.getMessage());
+            }
+            throw new VisualApiException(message.toString());
         } else {
-            exception[0] = new VisualApiException("Unexpected GraphQL error");
+            throw new VisualApiException("Unexpected GraphQL error");
         }
-        latch.countDown(); // Signal that the response handling is done
     }
+
 }

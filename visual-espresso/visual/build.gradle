@@ -51,9 +51,9 @@ String getProperty(String name, String defaultValue) {
 dependencies {
     implementation libs.appcompat
     implementation libs.material
-    implementation libs.monitor
     implementation libs.junit
-    implementation libs.apollographql.java.client
+    implementation libs.apollo.runtime
+    implementation libs.apollo.rx3.support
     implementation libs.espresso.core
     implementation libs.uiautomator
     androidTestImplementation libs.ext.junit
