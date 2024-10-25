@@ -72,6 +72,8 @@ publishing {
             version = android.defaultConfig.versionName
             afterEvaluate {
                 from components.release
+                artifact sourcesJar
+                artifact javadocJar
             }
             pom {
                 name = "${artifactName}"
@@ -102,6 +104,27 @@ publishing {
     repositories {
         mavenLocal()
     }
+}
+
+// Task for generating sources JAR
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier.set("sources")
+    from android.sourceSets.main.java.srcDirs
+}
+
+// Task for generating Javadoc JAR
+tasks.register('javadocJar', Jar) {
+    archiveClassifier.set("javadoc")
+    dependsOn "androidJavadocs"
+    from androidJavadocs.destinationDir
+}
+
+// Android-specific Javadoc generation task
+tasks.register('androidJavadocs', Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    destinationDir = file("../javadoc/")
+    failOnError false
 }
 
 apollo {
