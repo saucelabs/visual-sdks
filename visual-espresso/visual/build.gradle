@@ -59,14 +59,43 @@ dependencies {
     androidTestImplementation libs.ext.junit
 }
 
+ext {
+    scmUrl = 'git@github.com:saucelabs/visual-sdks.git'
+    artifactName = 'visual-espresso'
+}
+
 publishing {
     publications {
         release(MavenPublication) {
             groupId = android.namespace
-            artifactId = 'visual-espresso'
+            artifactId = "${artifactName}"
             version = android.defaultConfig.versionName
             afterEvaluate {
                 from components.release
+            }
+            pom {
+                name = "${artifactName}"
+                description = 'Sauce Visual Espresso SDK'
+                url = 'https://github.com/saucelabs/visual-sdks'
+                scm {
+                    connection = "scm:git:${scmUrl}"
+                    developerConnection = "scm:git:${scmUrl}"
+                    url = "${scmUrl}"
+                }
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://github.com/saucelabs/visual-sdks/blob/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'Sauce Labs Visual Team'
+                        email = 'visual.team@saucelabs.com'
+                        organization = 'Sauce Labs'
+                        organizationUrl = 'https://saucelabs.com/'
+                    }
+                }
             }
         }
     }
