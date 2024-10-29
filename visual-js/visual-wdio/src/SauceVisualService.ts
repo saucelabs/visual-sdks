@@ -114,6 +114,11 @@ type CucumberWorld = {
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
 
+  /**
+   * XPath selectors to ignore changes (available only with full-page screenshots and mobile native apps).
+   */
+  ignoreSelectors?: Array<string>;
+
   regions?: Array<RegionType<Ignorable>>;
   /**
    * A querySelector compatible selector of an element that we should crop the screenshot to.
@@ -405,6 +410,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        ignoreRegionSelectors: options.ignoreSelectors,
         ignoreElements,
         diffingOptions: selectiveRegionOptionsToDiffingOptions({
           disableOnly: options.disable ?? [],

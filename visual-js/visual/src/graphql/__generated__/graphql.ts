@@ -531,6 +531,8 @@ export type CreateSnapshotFromWebDriverIn = {
    */
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
   ignoreElements?: InputMaybe<Array<ElementIn>>;
+  /** XPath selectors to ignore changes (available only with full-page screenshots and mobile native apps). */
+  ignoreRegionSelectors?: InputMaybe<Array<Scalars['String']>>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   /** This will be mandatory in the future. */
   jobId?: InputMaybe<Scalars['String']>;
@@ -565,6 +567,8 @@ export type DatetimeFilter = {
  */
 export type Diff = Node & {
   __typename?: 'Diff';
+  /** @deprecated Experimental. May be removed at any time. */
+  altDomDiffUrl: Maybe<Scalars['String']>;
   /** Reads a single `Baseline` that is related to this `Diff`. */
   baseline: Maybe<Baseline>;
   baselineId: Maybe<Scalars['UUID']>;
@@ -692,6 +696,8 @@ export type DiffStatusFilter = {
  * Method to use for diffing.
  *
  * SIMPLE is the default.
+ *
+ * Note: EXPERIMENTAL is deprecated. Use BALANCED instead.
  */
 export enum DiffingMethod {
   Balanced = 'BALANCED',
@@ -1117,6 +1123,8 @@ export type Query = Node & {
   /** Reads a single `Baseline` using its globally unique `ID`. */
   baselineByNodeId: Maybe<Baseline>;
   /** Reads and enables pagination through a set of `Baseline`. */
+  baselineHistory: Maybe<BaselinesConnection>;
+  /** Reads and enables pagination through a set of `Baseline`. */
   baselines: Maybe<BaselinesConnection>;
   branch: Maybe<Branch>;
   /**
@@ -1199,6 +1207,17 @@ export type QueryBaselineArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryBaselineByNodeIdArgs = {
   nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryBaselineHistoryArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  baselineId: Scalars['UUID'];
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -1311,11 +1330,11 @@ export type QueryFilteredProjectsArgs = {
 export type QueryLatestBaselinesArgs = {
   after: InputMaybe<Scalars['Cursor']>;
   before: InputMaybe<Scalars['Cursor']>;
-  branchName: Scalars['String'];
+  branchName: InputMaybe<Scalars['String']>;
   first: InputMaybe<Scalars['Int']>;
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
-  projectName: Scalars['String'];
+  projectName: InputMaybe<Scalars['String']>;
 };
 
 
