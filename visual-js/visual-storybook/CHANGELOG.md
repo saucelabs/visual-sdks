@@ -1,5 +1,34 @@
 # @saucelabs/visual-storybook
 
+## 0.7.0
+
+### Minor Changes
+
+- f797342: Unify result checking behavior into utility
+  Add automatic retry mechanism to file uploads for timeouts
+
+### Patch Changes
+
+- Updated dependencies [f797342]
+  - @saucelabs/visual-playwright@0.2.0
+  - @saucelabs/visual@0.10.0
+
+## 0.6.4
+
+### Patch Changes
+
+- 08db254: fix ignore region positioning when clipSelector is also present
+- Updated dependencies [08db254]
+  - @saucelabs/visual-playwright@0.1.5
+
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+  - @saucelabs/visual-playwright@0.1.4
+
 ## 0.6.2
 
 ### Patch Changes

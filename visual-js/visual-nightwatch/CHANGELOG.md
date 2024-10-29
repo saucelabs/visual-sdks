@@ -1,5 +1,23 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.8.1
+
+### Patch Changes
+
+- Updated dependencies [f797342]
+  - @saucelabs/visual@0.10.0
+
+## 0.8.0
+
+### Minor Changes
+
+- 8572e1b: scrollElement native fps
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+
 ## 0.7.2
 
 ### Patch Changes

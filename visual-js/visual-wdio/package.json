@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/wdio-sauce-visual-service",
   "description": "WebdriverIO service that add visual checks capabilities using Sauce Labs Visual",
-  "version": "0.6.2",
+  "version": "0.8.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@saucelabs/visual": "^0.8.3",
+    "@saucelabs/visual": "^0.10.0",
     "@wdio/globals": "8.10.5",
     "@wdio/logger": "8.6.6",
     "@wdio/types": "8.10.4",
@@ -56,7 +56,7 @@
     "build": "tsc --declaration -p tsconfig.build.json",
     "watch": "tsc -w --declaration -p tsconfig.build.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --collect-coverage"
+    "test": "jest --collect-coverage --passWithNoTests"
   },
   "publishConfig": {
     "access": "public"

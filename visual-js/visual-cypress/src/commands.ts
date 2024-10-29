@@ -10,11 +10,13 @@
 import {
   PlainRegion,
   ResolvedVisualRegion,
+  SauceConfig,
   SauceVisualViewport,
   ScreenshotMetadata,
   VisualCheckOptions,
   VisualRegion,
 } from './types';
+import type { DiffStatus } from '@saucelabs/visual';
 
 declare global {
   namespace Cypress {
@@ -32,7 +34,10 @@ declare global {
         options?: VisualCheckOptions,
       ): Chainable<Subject>;
 
-      sauceVisualResults(): Chainable<Subject>;
+      sauceVisualResults(): Chainable<Record<DiffStatus, number>>;
+    }
+    interface EndToEndConfigOptions {
+      saucelabs: SauceConfig;
     }
   }
 }
@@ -92,19 +97,13 @@ function chainableWaitForAll<S>(
 ): Cypress.Chainable<S[]> {
   const result: S[] = [];
 
-  if (list.length < 1) return cy.wrap<S[]>([]);
-
-  let curChainable = list[0];
-  for (let idx = 1; idx < list.length; idx++) {
-    curChainable = curChainable.then((resolved) => {
-      result.push(resolved);
-      return list[idx];
+  list.forEach((item) => {
+    item.then((el) => {
+      result.push(el);
     });
-  }
-  return curChainable.then((item) => {
-    result.push(item);
-    return result;
   });
+
+  return cy.wrap(result);
 }
 
 const sauceVisualCheckCommand = (

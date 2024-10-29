@@ -4,10 +4,14 @@ WORKDIR app
 
 COPY tsconfig.prod.json tsconfig.json package.json ./
 
+COPY ./visual/src ./visual/src
+COPY ./visual/package.json ./visual/tsconfig.json ./visual/
 COPY ./visual-nightwatch/src ./visual-nightwatch/src
-COPY ./visual-nightwatch/package.json ./visual-nightwatch/tsconfig.json ./visual-nightwatch
+COPY ./visual-nightwatch/package.json ./visual-nightwatch/tsconfig.json ./visual-nightwatch/
 
 RUN npm install --save-dev @tsconfig/node18
+RUN npm install --workspace=visual
+RUN npm run build --workspace=visual
 RUN npm install --workspace=visual-nightwatch
 RUN npm run build --workspace=visual-nightwatch
 

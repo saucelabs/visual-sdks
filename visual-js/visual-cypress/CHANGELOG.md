@@ -1,5 +1,36 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.7.0
+
+### Minor Changes
+
+- f797342: Unify result checking behavior into utility
+  Add automatic retry mechanism to file uploads for timeouts
+
+### Patch Changes
+
+- Updated dependencies [f797342]
+  - @saucelabs/visual@0.10.0
+
+## 0.6.6
+
+### Patch Changes
+
+- 704c8a3: update types, fix devdep
+
+## 0.6.5
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+
+## 0.6.4
+
+### Patch Changes
+
+- 4d79c86: fix ignore regions for multiple elements
+
 ## 0.6.3
 
 ### Patch Changes

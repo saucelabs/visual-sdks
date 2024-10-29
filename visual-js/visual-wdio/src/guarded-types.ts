@@ -1,7 +1,14 @@
 import { type } from 'arktype';
-import { makeValidate, RegionIn } from '@saucelabs/visual';
+import {
+  FullPageScreenshotOptions,
+  makeValidate,
+  RegionIn,
+} from '@saucelabs/visual';
 
 export type WdioElement = WebdriverIO.Element;
+
+export type FullPageScreenshotWdioOptions =
+  FullPageScreenshotOptions<WdioElement>;
 
 const wdioElementType = type({
   elementId: 'string',

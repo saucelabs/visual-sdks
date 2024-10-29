@@ -1,5 +1,28 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.8.0
+
+### Minor Changes
+
+- f797342: Unify result checking behavior into utility
+  Add automatic retry mechanism to file uploads for timeouts
+
+### Patch Changes
+
+- Updated dependencies [f797342]
+  - @saucelabs/visual@0.10.0
+
+## 0.7.0
+
+### Minor Changes
+
+- 8572e1b: scrollElement native fps
+
+### Patch Changes
+
+- Updated dependencies [8572e1b]
+  - @saucelabs/visual@0.9.0
+
 ## 0.6.2
 
 ### Patch Changes

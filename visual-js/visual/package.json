@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual",
   "description": "JS client bindings for Sauce Labs Visual",
-  "version": "0.8.3",
+  "version": "0.10.0",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",
@@ -43,12 +43,12 @@
   "dependencies": {
     "@apollo/client": "^3.7.14",
     "@graphql-typed-document-node/core": "3.2.0",
-    "@jest/globals": "^29.5.0",
     "arktype": "^1.0.29-alpha",
     "axios": "^1.7.4",
     "chalk": "^4.0.0",
     "cli-table3": "^0.6.3",
     "commander": "^12.0.0",
+    "exponential-backoff": "^3.1.1",
     "proxy-agent": "^6.3.1"
   },
   "tsup": {
@@ -69,6 +69,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "3.3.1",
     "@graphql-codegen/client-preset": "^3.0.1",
+    "@jest/globals": "^29.5.0",
     "@tsconfig/node18": "^2.0.0",
     "@types/argparse": "^2.0.14",
     "@types/node": "^18.13.0",

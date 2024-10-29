@@ -1,22 +1,25 @@
 import { type, Type } from 'arktype';
 import {
   DiffingOptionsIn,
+  DiffStatus,
   ElementIn,
   FullPageConfigIn,
   InputMaybe,
   RegionIn,
 } from './graphql/__generated__/graphql';
-import { RegionType, VisualEnvOpts } from './types';
+import { FullPageScreenshotOptions, RegionType, VisualEnvOpts } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './common/selective-region';
-import { getApi } from './common/api';
+import { getApi, VisualApi } from './common/api';
 import fs from 'fs/promises';
 import * as os from 'node:os';
 import { SauceRegion } from './common/regions';
+import { backOff } from 'exponential-backoff';
 
-export const getFullPageConfig: (
-  main?: FullPageConfigIn | boolean,
-  local?: FullPageConfigIn | boolean,
-) => FullPageConfigIn | undefined = (main, local) => {
+export const getFullPageConfig: <T>(
+  main?: FullPageScreenshotOptions<T> | boolean,
+  local?: FullPageScreenshotOptions<T> | boolean,
+  getId?: (el: T) => Promise<string> | string,
+) => Promise<FullPageConfigIn | undefined> = async (main, local, getId) => {
   const isNoConfig = !main && !local;
   const isLocalOff = local === false;
 
@@ -24,9 +27,15 @@ export const getFullPageConfig: (
     return;
   }
 
-  const globalCfg = typeof main === 'object' ? main : {};
-  const localCfg = typeof local === 'object' ? local : {};
-  return { ...globalCfg, ...localCfg };
+  const globalCfg: typeof main = typeof main === 'object' ? main : {};
+  const localCfg: typeof main = typeof local === 'object' ? local : {};
+  const { scrollElement, ...rest } = { ...globalCfg, ...localCfg };
+  const result: FullPageConfigIn = rest;
+  if (scrollElement && getId) {
+    result.scrollElement = await getId(await scrollElement);
+  }
+
+  return result;
 };
 
 export const isSkipMode = (): boolean => {
@@ -223,4 +232,64 @@ export const getEnvOpts = (): VisualEnvOpts => {
       SAUCE_VISUAL_BUILD_NAME || SAUCE_BUILD_NAME || 'Sauce Visual Build',
     customId: SAUCE_VISUAL_CUSTOM_ID ?? null,
   };
+};
+
+/**
+ * Get the result summary for the requested build & diff IDs.
+ */
+export const getVisualResults = async (
+  api: VisualApi,
+  filter: { buildId: string | null | undefined; diffIds: string[] },
+) => {
+  const { buildId, diffIds } = filter;
+  const initialStatusSummary: Record<DiffStatus, number> = {
+    [DiffStatus.Approved]: 0,
+    [DiffStatus.Equal]: 0,
+    [DiffStatus.Unapproved]: 0,
+    [DiffStatus.Rejected]: 0,
+    [DiffStatus.Queued]: 0,
+    [DiffStatus.Errored]: 0,
+  };
+
+  if (!buildId) {
+    throw new Error(
+      'No Sauce Visual build present, cannot determine visual results.',
+    );
+  }
+
+  // Bypass all API requests if we have been passed no uploaded diff IDs. Would allow someone to
+  // add this check / hook globally and for us to only make requests when diffs are present.
+  if (diffIds.length === 0) {
+    return initialStatusSummary;
+  }
+
+  return await backOff(
+    async () => {
+      const summary = { ...initialStatusSummary };
+      const diffsForTestResult = await api.diffsForTestResult(buildId);
+      if (!diffsForTestResult) {
+        return summary;
+      }
+
+      const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
+        diffIds.includes(diff.id);
+
+      const statusSummary = diffsForTestResult.nodes
+        .filter(filterDiffsById)
+        .reduce((statusSummary, diff) => {
+          statusSummary[diff.status]++;
+          return statusSummary;
+        }, summary);
+
+      if (statusSummary[DiffStatus.Queued] > 0) {
+        throw new Error('Some diffs are still in the queued state.');
+      }
+
+      return statusSummary;
+    },
+    {
+      maxDelay: 10000,
+      numOfAttempts: 10,
+    },
+  );
 };

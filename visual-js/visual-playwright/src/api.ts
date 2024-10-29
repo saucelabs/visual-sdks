@@ -4,6 +4,7 @@ import {
   downloadDomScript,
   getApi as getVisualApi,
   getDomScript,
+  getVisualResults,
   RegionIn,
   removeDomScriptFile,
   VisualEnvOpts,
@@ -16,6 +17,7 @@ const clientVersion = 'PKG_VERSION';
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
+  uploadedDiffIds: Record<string, string[]> = {};
 
   public get api() {
     let api = globalThis.visualApi;
@@ -135,11 +137,12 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       testName: string | undefined;
       suiteName: string | undefined;
       deviceName: string | undefined;
+      testId: string;
     },
     name: string,
     options?: Partial<SauceVisualParams>,
   ) {
-    const { testName, suiteName, deviceName } = info;
+    const { testName, suiteName, deviceName, testId } = info;
     const { buildId } = getOpts();
 
     if (!buildId) {
@@ -156,7 +159,13 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       ignoreRegions: userIgnoreRegions,
       diffingMethod,
     } = options ?? {};
-    const { animations = 'disabled', caret } = screenshotOptions;
+    const {
+      animations = 'disabled',
+      caret,
+      fullPage = true,
+      style,
+      timeout,
+    } = screenshotOptions;
     let ignoreRegions: RegionIn[] = [];
 
     const promises: Promise<unknown>[] = [
@@ -167,54 +176,6 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     if (delay) {
       // If a delay has been configured by the user, append it to our promises
       promises.push(new Promise((resolve) => setTimeout(resolve, delay)));
-    }
-
-    if (userIgnoreRegions) {
-      promises.push(
-        (async (): Promise<void> => {
-          const filterIgnoreRegion = (
-            region: RegionIn | string,
-          ): region is RegionIn => typeof region !== 'string';
-          const filterIgnoreSelector = (
-            region: RegionIn | string,
-          ): region is string => typeof region === 'string';
-
-          const selectors = userIgnoreRegions.filter(filterIgnoreSelector);
-          let selectorRegions: RegionIn[] = [];
-
-          if (selectors.length) {
-            selectorRegions = await page.evaluate(
-              ({ selectors }) => {
-                const selectorRegions: RegionIn[] = [];
-                selectors.forEach((selector) => {
-                  const elements = document.querySelectorAll(selector);
-                  elements.forEach((element) => {
-                    const rect = element.getBoundingClientRect();
-
-                    selectorRegions.push({
-                      name: selector,
-                      x: Math.round(rect.x),
-                      y: Math.round(rect.y),
-                      height: Math.round(rect.height),
-                      width: Math.round(rect.width),
-                    });
-                  });
-                });
-                return selectorRegions;
-              },
-              { selectors },
-            );
-          }
-
-          ignoreRegions = [
-            ...userIgnoreRegions.filter(filterIgnoreRegion),
-            ...selectorRegions,
-          ].filter(
-            (region) =>
-              0 < Math.max(region.width, 0) * Math.max(region.height, 0),
-          );
-        })(),
-      );
     }
 
     // Await all queued / concurrent promises before resuming
@@ -260,10 +221,67 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
         )
       : undefined;
 
+    if (userIgnoreRegions) {
+      const filterIgnoreRegion = (
+        region: RegionIn | string,
+      ): region is RegionIn => typeof region !== 'string';
+      const filterIgnoreSelector = (
+        region: RegionIn | string,
+      ): region is string => typeof region === 'string';
+
+      const selectors = userIgnoreRegions.filter(filterIgnoreSelector);
+      let selectorRegions: RegionIn[] = [];
+
+      if (selectors.length) {
+        selectorRegions = await page.evaluate(
+          ({ selectors }) => {
+            const selectorRegions: RegionIn[] = [];
+            selectors.forEach((selector) => {
+              const elements = document.querySelectorAll(selector);
+              elements.forEach((element) => {
+                const rect = element.getBoundingClientRect();
+
+                selectorRegions.push({
+                  name: selector,
+                  x: Math.round(rect.x),
+                  y: Math.round(rect.y),
+                  height: Math.round(rect.height),
+                  width: Math.round(rect.width),
+                });
+              });
+            });
+            return selectorRegions;
+          },
+          { selectors },
+        );
+      }
+
+      ignoreRegions = [
+        ...userIgnoreRegions.filter(filterIgnoreRegion),
+        ...selectorRegions,
+      ]
+        .map((region) =>
+          clip
+            ? {
+                // Offset ignore regions using the location of the element we clipped to
+                ...region,
+                x: Math.round(region.x - clip.x),
+                y: Math.round(region.y - clip.y),
+              }
+            : region,
+        )
+        .filter(
+          (region) =>
+            0 < Math.max(region.width, 0) * Math.max(region.height, 0),
+        );
+    }
+
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
     const screenshotBuffer = await page.screenshot({
-      fullPage: true,
+      fullPage,
+      style,
+      timeout,
       animations,
       caret,
       clip,
@@ -311,11 +329,23 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       diffingMethod,
     });
 
-    await this.api.createSnapshot({
+    const { diffs } = await this.api.createSnapshot({
       ...meta,
       testName,
       suiteName,
       uploadUuid: uploadId,
+    });
+
+    if (!this.uploadedDiffIds[testId]) this.uploadedDiffIds[testId] = [];
+
+    this.uploadedDiffIds[testId].push(...diffs.nodes.map((diff) => diff.id));
+  }
+
+  public async visualResults({ testId }: { testId: string }) {
+    const { buildId } = getOpts();
+    return await getVisualResults(this.api, {
+      buildId,
+      diffIds: this.uploadedDiffIds[testId] ?? [],
     });
   }
 

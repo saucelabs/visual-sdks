@@ -2,7 +2,10 @@ import { DiffingMethod, RegionIn, VisualEnvOpts } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
 export interface SauceVisualParams {
-  screenshotOptions?: Pick<PageScreenshotOptions, 'animations' | 'caret'>;
+  screenshotOptions?: Pick<
+    PageScreenshotOptions,
+    'animations' | 'caret' | 'fullPage' | 'style' | 'timeout'
+  >;
   /**
    * Whether we should capture a dom snapshot.
    */

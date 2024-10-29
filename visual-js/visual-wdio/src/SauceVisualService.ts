@@ -12,7 +12,6 @@ import {
   DiffStatus,
   ElementIn,
   ensureError,
-  FullPageScreenshotOptions,
   getApi,
   getFullPageConfig,
   isIgnoreRegion,
@@ -24,12 +23,17 @@ import {
   BaselineOverrideIn,
   VisualApi,
   WebdriverSession,
+  getVisualResults,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
 import chalk from 'chalk';
-import { Ignorable, isWdioElement, WdioElement } from './guarded-types.js';
-import { backOff } from 'exponential-backoff';
+import {
+  FullPageScreenshotWdioOptions,
+  Ignorable,
+  isWdioElement,
+  WdioElement,
+} from './guarded-types.js';
 import type { Test } from '@wdio/types/build/Frameworks';
 
 const clientVersion = 'PKG_VERSION';
@@ -46,13 +50,7 @@ const {
   SAUCE_VISUAL_CUSTOM_ID,
 } = process.env;
 
-type ResultStatus = {
-  [DiffStatus.Approved]: number;
-  [DiffStatus.Equal]: number;
-  [DiffStatus.Unapproved]: number;
-  [DiffStatus.Rejected]: number;
-  [DiffStatus.Queued]: number;
-};
+type ResultStatus = Record<DiffStatus, number>;
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -95,7 +93,7 @@ export type SauceVisualServiceOptions = {
   clipSelector?: string;
   clipElement?: WdioElement;
   region?: SauceRegion;
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
 };
 
@@ -131,7 +129,7 @@ export type CheckOptions = {
   captureDom?: boolean;
   diffingMethod?: DiffingMethod;
   disable?: (keyof DiffingOptionsIn)[];
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
 };
 
@@ -165,7 +163,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
   clipElement: WdioElement | undefined;
-  fullPage?: FullPageScreenshotOptions;
+  fullPage?: FullPageScreenshotWdioOptions;
   apiClient: VisualApi;
   baselineOverride?: BaselineOverrideIn;
 
@@ -351,33 +349,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   };
 
   public sauceVisualResults = (api: VisualApi, buildId: string) => async () => {
-    return await backOff(async () => {
-      const initialStatusSummary: { [key: string]: number } = {
-        [DiffStatus.Approved]: 0,
-        [DiffStatus.Equal]: 0,
-        [DiffStatus.Unapproved]: 0,
-        [DiffStatus.Rejected]: 0,
-        [DiffStatus.Queued]: 0,
-      };
-      const diffsForTestResult = await api.diffsForTestResult(buildId);
-      if (!diffsForTestResult) {
-        return initialStatusSummary;
-      }
-
-      const filterDiffsById = (diff: { id: string; status: DiffStatus }) =>
-        uploadedDiffIds.includes(diff.id);
-      const statusSummary = diffsForTestResult.nodes
-        .filter(filterDiffsById)
-        .reduce((statusSummary, diff) => {
-          statusSummary[diff.status]++;
-          return statusSummary;
-        }, initialStatusSummary);
-      if (statusSummary[DiffStatus.Queued] > 0) {
-        throw new Error('Some diffs are not ready');
-      }
-
-      return statusSummary;
-    });
+    return await getVisualResults(api, { buildId, diffIds: uploadedDiffIds });
   };
 
   private sauceVisualCheck =
@@ -442,7 +414,11 @@ export default class SauceVisualService implements Services.ServiceInstance {
           options.diffingMethod || this.diffingMethod || DiffingMethod.Balanced,
         suiteName: this.test?.parent,
         testName: this.test?.title,
-        fullPageConfig: getFullPageConfig(this.fullPage, options.fullPage),
+        fullPageConfig: await getFullPageConfig<WdioElement>(
+          this.fullPage,
+          options.fullPage,
+          (el) => el.elementId,
+        ),
         baselineOverride: options.baselineOverride || this.baselineOverride,
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));

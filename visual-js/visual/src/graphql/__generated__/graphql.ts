@@ -60,9 +60,11 @@ export type Baseline = Node & {
   createdByUser: User;
   createdByUserId: Scalars['UUID'];
   device: Maybe<Scalars['String']>;
+  devicePixelRatio: Maybe<Scalars['Float']>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
   hasDom: Scalars['Boolean'];
+  height: Maybe<Scalars['Int']>;
   id: Scalars['UUID'];
   ignoreRegions: Array<Maybe<Region>>;
   imageUrl: Scalars['String'];
@@ -81,10 +83,12 @@ export type Baseline = Node & {
   snapshotId: Maybe<Scalars['UUID']>;
   suiteName: Maybe<Scalars['String']>;
   testName: Maybe<Scalars['String']>;
+  thumbnailUrl: Scalars['String'];
   uiIgnoreRegions: Array<Maybe<Region>>;
   uploadId: Scalars['String'];
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
+  width: Maybe<Scalars['Int']>;
 };
 
 
@@ -109,6 +113,8 @@ export type BaselineDiffsArgs = {
  * for equality and combined with a logical ‘and.’
  */
 export type BaselineCondition = {
+  /** Checks for equality with the object’s `branch` field. */
+  branch?: InputMaybe<Scalars['String']>;
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars['Datetime']>;
   /** Checks for equality with the object’s `createdByOrgId` field. */
@@ -117,12 +123,16 @@ export type BaselineCondition = {
   createdByUserId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `project` field. */
+  project?: InputMaybe<Scalars['String']>;
   /** Checks for equality with the object’s `snapshotId` field. */
   snapshotId?: InputMaybe<Scalars['UUID']>;
 };
 
 /** A filter to be used against `Baseline` object types. All fields are combined with a logical ‘and.’ */
 export type BaselineFilter = {
+  /** Filter by the object’s `branch` field. */
+  branch?: InputMaybe<StringFilter>;
   /** Filter by the object’s `createdAt` field. */
   createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdByOrgId` field. */
@@ -131,6 +141,8 @@ export type BaselineFilter = {
   createdByUserId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `project` field. */
+  project?: InputMaybe<StringFilter>;
   /** Filter by the object’s `snapshotId` field. */
   snapshotId?: InputMaybe<UuidFilter>;
 };
@@ -171,6 +183,8 @@ export type BaselinesEdge = {
 
 /** Methods to use when ordering `Baseline`. */
 export enum BaselinesOrderBy {
+  BranchAsc = 'BRANCH_ASC',
+  BranchDesc = 'BRANCH_DESC',
   CreatedAtAsc = 'CREATED_AT_ASC',
   CreatedAtDesc = 'CREATED_AT_DESC',
   CreatedByOrgIdAsc = 'CREATED_BY_ORG_ID_ASC',
@@ -182,19 +196,22 @@ export enum BaselinesOrderBy {
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  ProjectAsc = 'PROJECT_ASC',
+  ProjectDesc = 'PROJECT_DESC',
   SnapshotIdAsc = 'SNAPSHOT_ID_ASC',
   SnapshotIdDesc = 'SNAPSHOT_ID_DESC'
 }
 
 export type Branch = Node & {
   __typename?: 'Branch';
+  id: Scalars['String'];
   lastUsed: Scalars['Datetime'];
-  name: Scalars['String'];
+  name: Maybe<Scalars['String']>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
   /** Reads a single `Project` that is related to this `Branch`. */
   project: Maybe<Project>;
-  projectName: Scalars['String'];
+  projectId: Scalars['String'];
 };
 
 /** A connection to a list of `Branch` values. */
@@ -432,6 +449,8 @@ export type BuildStatusFilter = {
   greaterThanOrEqualTo?: InputMaybe<BuildStatus>;
   /** Included in the specified list. */
   in?: InputMaybe<Array<BuildStatus>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
   /** Less than the specified value. */
   lessThan?: InputMaybe<BuildStatus>;
   /** Less than or equal to the specified value. */
@@ -531,6 +550,8 @@ export type DatetimeFilter = {
   greaterThanOrEqualTo?: InputMaybe<Scalars['Datetime']>;
   /** Included in the specified list. */
   in?: InputMaybe<Array<Scalars['Datetime']>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
   /** Less than the specified value. */
   lessThan?: InputMaybe<Scalars['Datetime']>;
   /** Less than or equal to the specified value. */
@@ -659,6 +680,8 @@ export type DiffStatusFilter = {
   greaterThanOrEqualTo?: InputMaybe<DiffStatus>;
   /** Included in the specified list. */
   in?: InputMaybe<Array<DiffStatus>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
   /** Less than the specified value. */
   lessThan?: InputMaybe<DiffStatus>;
   /** Less than or equal to the specified value. */
@@ -774,6 +797,8 @@ export type FullPageConfigIn = {
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
   /** Hide all scrollbars in the app. */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
+  /** @experimental Element used for scrolling (available only in native apps) */
+  scrollElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /**
    * Limit the number of screenshots taken for scrolling and stitching.
    * Default and max value is 10
@@ -1034,10 +1059,14 @@ export type PageInfo = {
 
 export type Project = Node & {
   __typename?: 'Project';
-  /** Reads and enables pagination through a set of `Branch`. */
+  /**
+   * Reads and enables pagination through a set of `Branch`.
+   * @deprecated Experimental API, could change at any time. Use with caution.
+   */
   branches: BranchesConnection;
+  id: Scalars['String'];
   lastUsed: Scalars['Datetime'];
-  name: Scalars['String'];
+  name: Maybe<Scalars['String']>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
 };
@@ -1090,9 +1119,15 @@ export type Query = Node & {
   /** Reads and enables pagination through a set of `Baseline`. */
   baselines: Maybe<BaselinesConnection>;
   branch: Maybe<Branch>;
-  /** Reads a single `Branch` using its globally unique `ID`. */
+  /**
+   * Reads a single `Branch` using its globally unique `ID`.
+   * @deprecated Experimental API, could change at any time. Use with caution.
+   */
   branchByNodeId: Maybe<Branch>;
-  /** Reads and enables pagination through a set of `Branch`. */
+  /**
+   * Reads and enables pagination through a set of `Branch`.
+   * @deprecated Experimental API, could change at any time. Use with caution.
+   */
   branches: Maybe<BranchesConnection>;
   build: Maybe<Build>;
   buildByCustomId: Maybe<Build>;
@@ -1131,9 +1166,15 @@ export type Query = Node & {
   /** Reads a single `OrgStat` using its globally unique `ID`. */
   orgStatByNodeId: Maybe<OrgStat>;
   project: Maybe<Project>;
-  /** Reads a single `Project` using its globally unique `ID`. */
+  /**
+   * Reads a single `Project` using its globally unique `ID`.
+   * @deprecated Experimental API, could change at any time. Use with caution.
+   */
   projectByNodeId: Maybe<Project>;
-  /** Reads and enables pagination through a set of `Project`. */
+  /**
+   * Reads and enables pagination through a set of `Project`.
+   * @deprecated Experimental API, could change at any time. Use with caution.
+   */
   projects: Maybe<ProjectsConnection>;
   /**
    * Exposes the root query type nested one level down. This is helpful for Relay 1
@@ -1176,8 +1217,8 @@ export type QueryBaselinesArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryBranchArgs = {
-  name: Scalars['String'];
-  projectName: Scalars['String'];
+  id: Scalars['String'];
+  projectId: Scalars['String'];
 };
 
 
@@ -1299,7 +1340,7 @@ export type QueryOrgStatByNodeIdArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryProjectArgs = {
-  name: Scalars['String'];
+  id: Scalars['String'];
 };
 
 
@@ -1576,6 +1617,8 @@ export type StringFilter = {
   greaterThanOrEqualTo?: InputMaybe<Scalars['String']>;
   /** Included in the specified list. */
   in?: InputMaybe<Array<Scalars['String']>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
   /** Less than the specified value. */
   lessThan?: InputMaybe<Scalars['String']>;
   /** Less than or equal to the specified value. */
@@ -1590,6 +1633,8 @@ export type UuidFilter = {
   greaterThanOrEqualTo?: InputMaybe<Scalars['UUID']>;
   /** Included in the specified list. */
   in?: InputMaybe<Array<Scalars['UUID']>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
   /** Less than the specified value. */
   lessThan?: InputMaybe<Scalars['UUID']>;
   /** Less than or equal to the specified value. */
