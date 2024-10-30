@@ -3,6 +3,7 @@ package com.saucelabs.visual.model;
 import java.util.Arrays;
 import java.util.List;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 public class FullPageScreenshotConfig {
 
@@ -11,7 +12,7 @@ public class FullPageScreenshotConfig {
   private List<String> hideAfterFirstScroll;
   private Boolean hideScrollBars;
   private int scrollLimit;
-  private WebElement scrollElement;
+  private String scrollElement;
 
   public FullPageScreenshotConfig(
       int delayAfterScrollMs,
@@ -19,7 +20,7 @@ public class FullPageScreenshotConfig {
       List<String> hideAfterFirstScroll,
       Boolean hideScrollBars,
       int scrollLimit,
-      WebElement scrollElement) {
+      String scrollElement) {
     this.delayAfterScrollMs = delayAfterScrollMs;
     this.disableCSSAnimation = disableCSSAnimation;
     this.hideAfterFirstScroll = hideAfterFirstScroll;
@@ -34,7 +35,7 @@ public class FullPageScreenshotConfig {
     private List<String> hideAfterFirstScroll;
     private Boolean hideScrollBars;
     private int scrollLimit;
-    private WebElement scrollElement;
+    private String scrollElement;
 
     public Builder withDelayAfterScrollMs(int delayAfterScrollMs) {
       this.delayAfterScrollMs = delayAfterScrollMs;
@@ -62,7 +63,7 @@ public class FullPageScreenshotConfig {
     }
 
     public Builder withScrollElement(WebElement scrollElement) {
-      this.scrollElement = scrollElement;
+      this.scrollElement = ((RemoteWebElement) scrollElement).getId();
       return this;
     }
 
@@ -117,11 +118,11 @@ public class FullPageScreenshotConfig {
     this.scrollLimit = scrollLimit;
   }
 
-  public WebElement getScrollElement() {
+  public String getScrollElement() {
     return scrollElement;
   }
 
   public void setScrollElement(WebElement scrollElement) {
-    this.scrollElement = scrollElement;
+    this.scrollElement = ((RemoteWebElement) scrollElement).getId();
   }
 }
