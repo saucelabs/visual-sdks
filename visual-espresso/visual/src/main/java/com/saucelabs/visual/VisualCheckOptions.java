@@ -138,8 +138,10 @@ public class VisualCheckOptions {
     }
 
     public List<RegionIn> getIgnoreRegions() {
-        ignoreRegions.add(BarRegionHelper.getStatusBarRegion());
-        ignoreRegions.add(BarRegionHelper.getNavigationBarRegion());
+        if (clipElement == null) {
+            ignoreRegions.add(BarRegionHelper.getStatusBarRegion());
+            ignoreRegions.add(BarRegionHelper.getNavigationBarRegion());
+        }
         return ignoreRegions;
     }
 
