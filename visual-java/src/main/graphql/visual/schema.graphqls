@@ -4,7 +4,9 @@ schema {
 }
 
 type ApplicationSummary {
+  id: String!
   name: String!
+  version: String!
 }
 
 input ApproveBuildIn {
@@ -20,6 +22,9 @@ A `Baseline` is what a `Snapshot` is compared to.
 For details see https://docs.saucelabs.com/visual-testing/sauce-visual/index.html#baseline-matching
 """
 type Baseline implements Node {
+  appId: String
+  appName: String
+  appVersion: String
   branch: String
   browser: Browser
   browserVersion: String
@@ -28,6 +33,7 @@ type Baseline implements Node {
   createdByUser: User!
   createdByUserId: UUID!
   device: String
+  devicePixelRatio: Float
 
   """Reads and enables pagination through a set of `Diff`."""
   diffs(
@@ -63,9 +69,12 @@ type Baseline implements Node {
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
   hasDom: Boolean!
+  height: Int
   id: UUID!
+  ignoreRegions: [Region]!
   imageUrl: String!
   isLatest: Boolean!
+  latest: Baseline!
   metadata: JSON
   name: String!
 
@@ -75,6 +84,7 @@ type Baseline implements Node {
   nodeId: ID!
   operatingSystem: OperatingSystem
   operatingSystemVersion: String
+  parentId: UUID
   project: String
 
   """Reads a single `Snapshot` that is related to this `Baseline`."""
@@ -82,9 +92,12 @@ type Baseline implements Node {
   snapshotId: UUID
   suiteName: String
   testName: String
+  thumbnailUrl: String!
+  uiIgnoreRegions: [Region]!
   uploadId: String!
   viewportHeight: Int
   viewportWidth: Int
+  width: Int
 }
 
 """
@@ -92,6 +105,9 @@ A condition to be used against `Baseline` object types. All fields are tested
 for equality and combined with a logical ‘and.’
 """
 input BaselineCondition {
+  """Checks for equality with the object’s `branch` field."""
+  branch: String
+
   """Checks for equality with the object’s `createdAt` field."""
   createdAt: Datetime
 
@@ -104,6 +120,9 @@ input BaselineCondition {
   """Checks for equality with the object’s `id` field."""
   id: UUID
 
+  """Checks for equality with the object’s `project` field."""
+  project: String
+
   """Checks for equality with the object’s `snapshotId` field."""
   snapshotId: UUID
 }
@@ -112,6 +131,9 @@ input BaselineCondition {
 A filter to be used against `Baseline` object types. All fields are combined with a logical ‘and.’
 """
 input BaselineFilter {
+  """Filter by the object’s `branch` field."""
+  branch: StringFilter
+
   """Filter by the object’s `createdAt` field."""
   createdAt: DatetimeFilter
 
@@ -124,8 +146,25 @@ input BaselineFilter {
   """Filter by the object’s `id` field."""
   id: UUIDFilter
 
+  """Filter by the object’s `project` field."""
+  project: StringFilter
+
   """Filter by the object’s `snapshotId` field."""
   snapshotId: UUIDFilter
+}
+
+"""
+One or more values from 'SnapshotIn' we should use as an override when finding a baseline.
+"""
+input BaselineOverrideIn {
+  browser: Browser
+  browserVersion: String
+  device: String
+  name: String
+  operatingSystem: OperatingSystem
+  operatingSystemVersion: String
+  suiteName: String
+  testName: String
 }
 
 """A connection to a list of `Baseline` values."""
@@ -156,6 +195,8 @@ type BaselinesEdge {
 
 """Methods to use when ordering `Baseline`."""
 enum BaselinesOrderBy {
+  BRANCH_ASC
+  BRANCH_DESC
   CREATED_AT_ASC
   CREATED_AT_DESC
   CREATED_BY_ORG_ID_ASC
@@ -167,8 +208,58 @@ enum BaselinesOrderBy {
   NATURAL
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+  PROJECT_ASC
+  PROJECT_DESC
   SNAPSHOT_ID_ASC
   SNAPSHOT_ID_DESC
+}
+
+type Branch implements Node {
+  id: String!
+  lastUsed: Datetime!
+  name: String
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """Reads a single `Project` that is related to this `Branch`."""
+  project: Project
+  projectId: String!
+}
+
+"""A connection to a list of `Branch` values."""
+type BranchesConnection {
+  """
+  A list of edges which contains the `Branch` and cursor to aid in pagination.
+  """
+  edges: [BranchesEdge!]!
+
+  """A list of `Branch` objects."""
+  nodes: [Branch!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Branch` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Branch` edge in the connection."""
+type BranchesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Branch` at the end of the edge."""
+  node: Branch!
+}
+
+"""Methods to use when ordering `Branch`."""
+enum BranchesOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
 enum Browser {
@@ -189,14 +280,14 @@ type Build implements Node {
 
   """
   User provided id for a build.
-  
+
   Use `buildByCustomId` to look up a build by its `customId`.
-  
+
   Properties:
   - up to 64 bytes (try to stick to ASCII characters)
   - in case of colissions, the latest build is returned
   - collissions may hurt query performance
-  
+
   Recommendations:
   - generate the id from the CI pipeline link by applying a hashing function
   - prefix/postfix the id with a team id to avoid collisions with other teams, e.g. `sha512(teamId + ':' + url)`
@@ -207,7 +298,7 @@ type Build implements Node {
 
   """
   Returns the number of diffs in a build that have a specific status.
-  
+
   E.g. to get the number of "new" snapshots use `{ status: UNAPPROVED, withBaseline: false}`
   """
   diffCountExtended(input: DiffCountIn!): Int!
@@ -248,15 +339,16 @@ type Build implements Node {
 
   """
   If not null, it indicates that the build encountered an error.
-  
+
   By convention, the following errors exist:
   - `{"code": "TIMEOUT"}`: The build timed out, because `finishBuild` was not called.
   - `{"code": "DIFF_TIMEOUT"}`: At least one diff could not be computed within the time limit.
-  
+
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.
   """
   error: JSON
+  finishAfter: Datetime
 
   """Full-text search ranking when filtered by `fullText`."""
   fullTextRank: Float
@@ -269,6 +361,7 @@ type Build implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  openSessions: Int
   owningTeamId: UUID!
   project: String
 
@@ -432,6 +525,11 @@ input BuildStatusFilter {
   """Included in the specified list."""
   in: [BuildStatus!]
 
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
   """Less than the specified value."""
   lessThan: BuildStatus
 
@@ -490,7 +588,19 @@ enum BuildsOrderBy {
   STATUS_DESC
 }
 
+input CreateDerivedBaselinesIn {
+  baselineIds: [UUID!]!
+  onlyApplyIfIsLatest: Boolean
+  uiIgnoreRegions: [RegionIn!]
+}
+
 input CreateSnapshotFromWebDriverIn {
+  """
+  One or more overrides for locating the matching baseline. Can be used for cross browser / OS
+  visual testing.
+  """
+  baselineOverride: BaselineOverrideIn
+
   """
   @deprecated Use `buildUuid`. This field will be removed in a future update.
   """
@@ -527,15 +637,6 @@ input CreateSnapshotFromWebDriverIn {
   testName: String
 }
 
-input CreateSnapshotUploadFromWebDriverIn {
-  """
-  @deprecated Use `buildUuid`. This field will be removed in a future update.
-  """
-  buildId: ID
-  buildUuid: UUID
-  sessionId: ID!
-}
-
 """A location in a connection that can be used for resuming pagination."""
 scalar Cursor
 
@@ -558,6 +659,11 @@ input DatetimeFilter {
   """Included in the specified list."""
   in: [Datetime!]
 
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
   """Less than the specified value."""
   lessThan: Datetime
 
@@ -571,6 +677,8 @@ The result of diffing a `Baseline` with a `Snapshot`.
 See the documentation for `Baseline` for details how a `Snapshot` is matched to `Baseline`.
 """
 type Diff implements Node {
+  altDomDiffUrl: String @deprecated(reason: "Experimental. May be removed at any time.")
+
   """Reads a single `Baseline` that is related to this `Diff`."""
   baseline: Baseline
   baselineId: UUID
@@ -593,6 +701,7 @@ type Diff implements Node {
   """
   nodeId: ID!
   options: DiffingOption
+  preview(input: DiffPreviewIn!): [Rect!]!
 
   """Reads a single `Snapshot` that is related to this `Diff`."""
   snapshot: Snapshot
@@ -602,7 +711,7 @@ type Diff implements Node {
 
   """
   Last time the diff was updated.
-  
+
   By default `updatedAt = createdAt`.
   """
   updatedAt: Datetime!
@@ -667,6 +776,10 @@ input DiffFilter {
   status: DiffStatusFilter
 }
 
+input DiffPreviewIn {
+  ignoreRegions: [RegionIn!]!
+}
+
 """
 Lifecycle status of a `Diff`.
 
@@ -701,6 +814,11 @@ input DiffStatusFilter {
   """Included in the specified list."""
   in: [DiffStatus!]
 
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
   """Less than the specified value."""
   lessThan: DiffStatus
 
@@ -712,6 +830,8 @@ input DiffStatusFilter {
 Method to use for diffing.
 
 SIMPLE is the default.
+
+Note: EXPERIMENTAL is deprecated. Use BALANCED instead.
 """
 enum DiffingMethod {
   BALANCED
@@ -793,9 +913,20 @@ input ElementIn {
 }
 
 input FinishBuildIn {
+  customId: String
+
+  """
+  Delay the finishing the build for at least the specified number of seconds.
+  """
+  delay: Int
+
   """@deprecated Use `uuid`. This field will be removed in a future update."""
   id: ID
   uuid: UUID
+}
+
+input ForceFinishBuildIn {
+  customId: String!
 }
 
 input FullPageConfigIn {
@@ -811,7 +942,7 @@ input FullPageConfigIn {
   """Disable CSS animations and the input caret in the app."""
   disableCSSAnimation: Boolean
 
-  """Hide elements on the page after first scroll by css selectors."""
+  """@deprecated Use hideElementsAfterFirstScroll instead where available."""
   hideAfterFirstScroll: [String]
 
   """
@@ -821,6 +952,11 @@ input FullPageConfigIn {
 
   """Hide all scrollbars in the app."""
   hideScrollBars: Boolean
+
+  """
+  @experimental Element used for scrolling (available only in native apps)
+  """
+  scrollElement: WebdriverElementID
 
   """
   Limit the number of screenshots taken for scrolling and stitching.
@@ -847,6 +983,34 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+"""All input for the `mergeBaselines` mutation."""
+input MergeBaselinesInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  projectName: String!
+  sourceBranch: String!
+  targetBranch: String!
+}
+
+"""The output of our `mergeBaselines` mutation."""
+type MergeBaselinesPayload {
+  baselines: [Baseline!]
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """
 The root mutation type which contains root level fields which mutate data.
 """
@@ -863,6 +1027,17 @@ type Mutation {
     """
     input: BuildIn!
   ): Build!
+
+  """
+  Copy a set of baselines specified by `baselineIds` and save it as the latest baseline, but
+  replace uiIgnoreRegions with the provided value.
+  """
+  createDerivedBaselines(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateDerivedBaselinesIn!
+  ): [Baseline!]!
   createSnapshot(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -881,18 +1056,24 @@ type Mutation {
     """
     input: SnapshotUploadIn!
   ): SnapshotUpload!
-  createSnapshotUploadFromWebDriver(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateSnapshotUploadFromWebDriverIn!
-  ): SnapshotUpload! @deprecated(reason: "Use createSnapshotFromWebDriver. This will be removed by 2024-02-11.")
   finishBuild(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
     input: FinishBuildIn!
   ): Build!
+  forceFinishBuild(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: ForceFinishBuildIn!
+  ): Build
+  mergeBaselines(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: MergeBaselinesInput!
+  ): MergeBaselinesPayload!
   updateDiff(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1087,6 +1268,73 @@ type PageInfo {
   startCursor: Cursor
 }
 
+type Project implements Node {
+  """Reads and enables pagination through a set of `Branch`."""
+  branches(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Branch`."""
+    orderBy: [BranchesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BranchesConnection! @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  id: String!
+  lastUsed: Datetime!
+  name: String
+
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+}
+
+"""A connection to a list of `Project` values."""
+type ProjectsConnection {
+  """
+  A list of edges which contains the `Project` and cursor to aid in pagination.
+  """
+  edges: [ProjectsEdge!]!
+
+  """A list of `Project` objects."""
+  nodes: [Project!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Project` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Project` edge in the connection."""
+type ProjectsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Project` at the end of the edge."""
+  node: Project!
+}
+
+"""Methods to use when ordering `Project`."""
+enum ProjectsOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 """The root query type which gives access points into the data universe."""
 type Query implements Node {
   baseline(id: UUID!): Baseline
@@ -1096,6 +1344,28 @@ type Query implements Node {
     """The globally unique `ID` to be used in selecting a single `Baseline`."""
     nodeId: ID!
   ): Baseline
+
+  """Reads and enables pagination through a set of `Baseline`."""
+  baselineHistory(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    baselineId: UUID!
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+  ): BaselinesConnection
 
   """Reads and enables pagination through a set of `Baseline`."""
   baselines(
@@ -1130,13 +1400,37 @@ type Query implements Node {
     """The method to use when ordering `Baseline`."""
     orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
   ): BaselinesConnection
+  branch(id: String!, projectId: String!): Branch
 
-  """
-  List all the build branches that are visible to the current user and that include `filtername`.
-  
-  Results are limited to 100 entries.
-  """
-  branches(filtername: String): [String!]!
+  """Reads a single `Branch` using its globally unique `ID`."""
+  branchByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Branch`."""
+    nodeId: ID!
+  ): Branch @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+
+  """Reads and enables pagination through a set of `Branch`."""
+  branches(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Branch`."""
+    orderBy: [BranchesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BranchesConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
   build(id: UUID!): Build
   buildByCustomId(customId: String!): Build
 
@@ -1220,9 +1514,46 @@ type Query implements Node {
     """The method to use when ordering `Diff`."""
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection
+
+  """
+  List all the build branches that are visible to the current user and that include `filtername`.
+
+  Results are limited to 100 entries.
+  """
+  filteredBranches(filtername: String): [String!]!
+
+  """
+  List all the build projects that are visible to the current user and that include `filtername`.
+
+  Results are limited to 100 entries.
+  """
+  filteredProjects(filtername: String): [String!]!
   jwtOrgId: UUID
   jwtTeamId: UUID
   jwtUserId: UUID
+
+  """Reads and enables pagination through a set of `Baseline`."""
+  latestBaselines(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    branchName: String
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    projectName: String
+  ): BaselinesConnection!
 
   """Fetches an object given its globally unique `ID`."""
   node(
@@ -1242,13 +1573,37 @@ type Query implements Node {
     """The globally unique `ID` to be used in selecting a single `OrgStat`."""
     nodeId: ID!
   ): OrgStat
+  project(id: String!): Project
 
-  """
-  List all the build projects that are visible to the current user and that include `filtername`.
-  
-  Results are limited to 100 entries.
-  """
-  projects(filtername: String): [String!]!
+  """Reads a single `Project` using its globally unique `ID`."""
+  projectByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Project`."""
+    nodeId: ID!
+  ): Project @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+
+  """Reads and enables pagination through a set of `Project`."""
+  projects(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Project`."""
+    orderBy: [ProjectsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ProjectsConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
 
   """
   Exposes the root query type nested one level down. This is helpful for Relay 1
@@ -1326,6 +1681,10 @@ input RegionIn {
 }
 
 type Snapshot implements Node {
+  appId: String
+  appName: String
+  appVersion: String
+
   """Reads and enables pagination through a set of `Baseline`."""
   baselines(
     """Read all values in the set after (below) this cursor."""
@@ -1408,15 +1767,15 @@ type Snapshot implements Node {
 
   """
   If not null, it indicates that the snapshot is invalid.
-  
+
   By convention, the following errors exist:
   - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
   - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
   - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
   - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
-  - `{"domCode": "DOM_MISSING"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+  - `{"domCode": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
   - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
-  
+
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.
   """
@@ -1435,6 +1794,7 @@ type Snapshot implements Node {
   URL that is used by the frontend to link to the job, task or process that has generated this snapshot. For exemple, a link to a Sauce Session.
   """
   jobUrl: String
+  latestBaseline: Baseline
   metadata: JSON
   name: String!
 
@@ -1471,6 +1831,9 @@ input SnapshotCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+
+  """Checks for equality with the object’s `uploadId` field."""
+  uploadId: String
 }
 
 """
@@ -1485,9 +1848,21 @@ input SnapshotFilter {
 
   """Filter by the object’s `id` field."""
   id: UUIDFilter
+
+  """Filter by the object’s `uploadId` field."""
+  uploadId: StringFilter
 }
 
 input SnapshotIn {
+  appId: String
+  appName: String
+  appVersion: String
+
+  """
+  One or more overrides for locating the matching baseline. Can be used for cross browser / OS
+  visual testing.
+  """
+  baselineOverride: BaselineOverrideIn
   browser: Browser
   browserVersion: String
 
@@ -1514,12 +1889,6 @@ input SnapshotIn {
   """
   uploadId: ID
   uploadUuid: UUID
-
-  """@deprecated For forward compatibility, do not send this field."""
-  viewportHeight: Int
-
-  """@deprecated For forward compatibility, do not send this field."""
-  viewportWidth: Int
 }
 
 type SnapshotUpload {
@@ -1527,11 +1896,7 @@ type SnapshotUpload {
   domUploadUrl: String
   id: UUID!
   imageUploadUrl: String
-
-  """
-  @deprecated "Use imageUploadUrl."
-  """
-  uploadUrl: String!
+  uploadUrl: String! @deprecated(reason: "Use imageUploadUrl.")
 }
 
 input SnapshotUploadIn {
@@ -1579,6 +1944,8 @@ enum SnapshotsOrderBy {
   NATURAL
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+  UPLOAD_ID_ASC
+  UPLOAD_ID_DESC
 }
 
 """
@@ -1593,6 +1960,11 @@ input StringFilter {
 
   """Included in the specified list."""
   in: [String!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
 
   """Less than the specified value."""
   lessThan: String
@@ -1618,6 +1990,11 @@ input UUIDFilter {
 
   """Included in the specified list."""
   in: [UUID!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
 
   """Less than the specified value."""
   lessThan: UUID
@@ -1656,11 +2033,10 @@ type WebdriverSession {
   blob: WebdriverSessionBlob!
   browser: Browser
   browserVersion: String
+  deviceDpr: Float
   deviceName: String
   operatingSystem: OperatingSystem
   operatingSystemVersion: String
-  viewportHeight: Int @deprecated(reason: "This will be removed by 2023-11-11.")
-  viewportWidth: Int @deprecated(reason: "This will be removed by 2023-11-11.")
 }
 
 scalar WebdriverSessionBlob
