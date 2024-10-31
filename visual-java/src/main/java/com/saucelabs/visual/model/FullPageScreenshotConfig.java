@@ -62,6 +62,12 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+     * Only used for native app testing
+     *
+     * @param scrollElement WebElement to scroll to
+     * @return Builder instance
+     */
     public Builder withScrollElement(WebElement scrollElement) {
       this.scrollElement = ((RemoteWebElement) scrollElement).getId();
       return this;
@@ -122,6 +128,11 @@ public class FullPageScreenshotConfig {
     return scrollElement;
   }
 
+  /**
+   * Only used for native app testing
+   *
+   * @param scrollElement WebElement to scroll to
+   */
   public void setScrollElement(WebElement scrollElement) {
     this.scrollElement = ((RemoteWebElement) scrollElement).getId();
   }
