@@ -2,6 +2,8 @@ package com.saucelabs.visual.model;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 public class FullPageScreenshotConfig {
 
@@ -10,18 +12,21 @@ public class FullPageScreenshotConfig {
   private List<String> hideAfterFirstScroll;
   private Boolean hideScrollBars;
   private int scrollLimit;
+  private String scrollElement;
 
   public FullPageScreenshotConfig(
       int delayAfterScrollMs,
       Boolean disableCSSAnimation,
       List<String> hideAfterFirstScroll,
       Boolean hideScrollBars,
-      int scrollLimit) {
+      int scrollLimit,
+      String scrollElement) {
     this.delayAfterScrollMs = delayAfterScrollMs;
     this.disableCSSAnimation = disableCSSAnimation;
     this.hideAfterFirstScroll = hideAfterFirstScroll;
     this.hideScrollBars = hideScrollBars;
     this.scrollLimit = scrollLimit;
+    this.scrollElement = scrollElement;
   }
 
   public static class Builder {
@@ -30,6 +35,7 @@ public class FullPageScreenshotConfig {
     private List<String> hideAfterFirstScroll;
     private Boolean hideScrollBars;
     private int scrollLimit;
+    private String scrollElement;
 
     public Builder withDelayAfterScrollMs(int delayAfterScrollMs) {
       this.delayAfterScrollMs = delayAfterScrollMs;
@@ -56,13 +62,25 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+     * Only used for native app testing
+     *
+     * @param scrollElement WebElement to scroll to
+     * @return Builder instance
+     */
+    public Builder withScrollElement(WebElement scrollElement) {
+      this.scrollElement = ((RemoteWebElement) scrollElement).getId();
+      return this;
+    }
+
     public FullPageScreenshotConfig build() {
       return new FullPageScreenshotConfig(
           delayAfterScrollMs,
           disableCSSAnimation,
           hideAfterFirstScroll,
           hideScrollBars,
-          scrollLimit);
+          scrollLimit,
+          scrollElement);
     }
   }
 
@@ -104,5 +122,18 @@ public class FullPageScreenshotConfig {
 
   public void setScrollLimit(int scrollLimit) {
     this.scrollLimit = scrollLimit;
+  }
+
+  public String getScrollElement() {
+    return scrollElement;
+  }
+
+  /**
+   * Only used for native app testing
+   *
+   * @param scrollElement WebElement to scroll to
+   */
+  public void setScrollElement(WebElement scrollElement) {
+    this.scrollElement = ((RemoteWebElement) scrollElement).getId();
   }
 }
