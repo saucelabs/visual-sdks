@@ -5,6 +5,7 @@ import static androidx.test.espresso.Espresso.onView;
 import android.view.View;
 
 import com.saucelabs.visual.espresso.GetViewAction;
+import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.Region;
@@ -24,6 +25,7 @@ public class VisualCheckOptions {
     private final Boolean captureDom;
     private final DiffingOptionsIn diffingOptions;
     private final View clipElement;
+    private final DiffingMethod diffingMethod;
 
     private VisualCheckOptions(
             String testName,
@@ -31,13 +33,15 @@ public class VisualCheckOptions {
             List<RegionIn> ignoreRegions,
             Boolean captureDom,
             DiffingOptionsIn diffingOptions,
-            View clipElement) {
+            View clipElement,
+            DiffingMethod diffingMethod) {
         this.testName = testName;
         this.suiteName = suiteName;
         this.ignoreRegions = ignoreRegions;
         this.captureDom = captureDom;
         this.diffingOptions = diffingOptions;
         this.clipElement = clipElement;
+        this.diffingMethod = diffingMethod;
     }
 
     public static final class Builder {
@@ -47,6 +51,7 @@ public class VisualCheckOptions {
         private Boolean captureDom;
         private DiffingOptionsIn diffingOptions;
         private View clipElement;
+        private DiffingMethod diffingMethod;
 
         public Builder testName(String testName) {
             this.testName = testName;
@@ -101,6 +106,11 @@ public class VisualCheckOptions {
             return this;
         }
 
+        public Builder diffingMethod(DiffingMethod diffingMethod) {
+            this.diffingMethod = diffingMethod;
+            return this;
+        }
+
         public VisualCheckOptions build() {
             return new VisualCheckOptions(
                     testName,
@@ -108,7 +118,8 @@ public class VisualCheckOptions {
                     ignoreRegions,
                     captureDom,
                     diffingOptions,
-                    clipElement);
+                    clipElement,
+                    diffingMethod);
         }
 
     }
@@ -155,6 +166,10 @@ public class VisualCheckOptions {
 
     public View getClipElement() {
         return clipElement;
+    }
+
+    public DiffingMethod getDiffingMethod() {
+        return diffingMethod == null ? DiffingMethod.BALANCED : diffingMethod;
     }
 
     public static Builder builder() {
