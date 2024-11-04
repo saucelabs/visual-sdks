@@ -6,7 +6,6 @@ import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
 import com.saucelabs.visual.graphql.CreateSnapshotUploadMutation;
 import com.saucelabs.visual.graphql.GraphQLClient;
-import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.graphql.type.SnapshotIn;
 
@@ -167,7 +166,7 @@ public class VisualClient {
                 .suiteName(options.resolveSuiteName())
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
-                .device(Build.DEVICE)
+                .device(Build.MANUFACTURER + " " + Build.MODEL)
                 .ignoreRegions(options.getIgnoreRegions())
                 .diffingOptions(options.getDiffingOptions())
                 .diffingMethod(options.getDiffingMethod())

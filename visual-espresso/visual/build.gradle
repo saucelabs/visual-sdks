@@ -15,8 +15,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        buildConfigField "String", "SAUCE_USERNAME", getProperty("SAUCE_USERNAME", "\"${System.getenv('SAUCE_USERNAME')}\"")
-        buildConfigField "String", "SAUCE_ACCESS_KEY", getProperty("SAUCE_ACCESS_KEY", "\"${System.getenv('SAUCE_ACCESS_KEY')}\"")
+        buildConfigField "String", "SAUCE_USERNAME", "\"${getProperty("SAUCE_USERNAME", "")}\""
+        buildConfigField "String", "SAUCE_ACCESS_KEY", "\"${getProperty("SAUCE_ACCESS_KEY", "")}\""
         buildConfigField "String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\""
     }
 
@@ -40,12 +40,17 @@ android {
 }
 
 String getProperty(String name, String defaultValue) {
-    if (!rootProject.file("./local.properties").exists()) {
-        return defaultValue
+    if (rootProject.file("./local.properties").exists()) {
+        def properties = new Properties()
+        properties.load(rootProject.file("./local.properties").newDataInputStream())
+        if (properties.containsKey(name)) {
+            return properties[name]
+        }
     }
-    def properties = new Properties()
-    properties.load(rootProject.file("./local.properties").newDataInputStream())
-    return properties.containsKey(name) ? properties[name] : defaultValue
+    if (System.getenv(name) != null && !System.getenv(name).isBlank()) {
+        return System.getenv(name)
+    }
+    return defaultValue
 }
 
 dependencies {

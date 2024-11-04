@@ -22,7 +22,7 @@ public class SmokeTest {
             BuildConfig.SAUCE_USERNAME,
             BuildConfig.SAUCE_ACCESS_KEY)
             .buildName("Smoke test")
-            .projectName("Espresso")
+            .projectName("Espresso SDK")
             .branchName("main")
             .build();
 
@@ -35,7 +35,7 @@ public class SmokeTest {
     @Test
     public void checkWithIgnoreRegions() {
         Region region = Region.builder()
-                .x(100).y(100).width(100).height(100)
+                .x(200).y(200).width(100).height(100)
                 .build();
         VisualCheckOptions options = new VisualCheckOptions.Builder()
                 .ignore(region).build();
