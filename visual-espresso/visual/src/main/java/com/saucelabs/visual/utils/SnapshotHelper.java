@@ -53,15 +53,15 @@ public class SnapshotHelper {
 
     public byte[] captureView(View view) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            // Get the width and height of the view
+
             int width = view.getWidth();
             int height;
-            if(view instanceof ScrollView || view instanceof NestedScrollView) {
-                height = ((FrameLayout)view).getChildAt(0).getHeight();
-            }
-            else {
+            if (view instanceof ScrollView || view instanceof NestedScrollView) {
+                height = ((FrameLayout) view).getChildAt(0).getHeight();
+            } else {
                 height = view.getHeight();
             }
+
             // Create a bitmap with the same size as the view
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 

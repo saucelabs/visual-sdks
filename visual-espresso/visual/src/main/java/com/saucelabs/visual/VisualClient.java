@@ -1,6 +1,7 @@
 package com.saucelabs.visual;
 
 import android.os.Build;
+import android.view.View;
 
 import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;
@@ -153,11 +154,11 @@ public class VisualClient {
      */
     public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         Boolean captureDom = options.getCaptureDom() != null ? options.getCaptureDom() : this.captureDom;
+        View view = options.getClipElement() != null ? options.getClipElement() : options.getScrollView();
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(
                 this.build.getId(),
                 captureDom == Boolean.TRUE,
-                options.getClipElement(),
-                options.getScrollView()
+                view
         );
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())

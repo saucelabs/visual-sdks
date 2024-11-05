@@ -50,8 +50,7 @@ public class GraphQLClient {
         try {
             ApolloResponse<D> response = single.blockingGet();
             return handleResponse(response);
-        }
-        catch (ApolloHttpException e) {
+        } catch (ApolloHttpException e) {
             throw new VisualApiException(e.getMessage());
         }
     }
@@ -63,8 +62,7 @@ public class GraphQLClient {
         try {
             ApolloResponse<D> response = single.blockingGet();
             return handleResponse(response);
-        }
-        catch (ApolloHttpException e) {
+        } catch (ApolloHttpException e) {
             throw new VisualApiException(e.getMessage());
         }
     }

@@ -194,7 +194,7 @@ public class VisualCheckOptions {
     }
 
     public View getScrollView() {
-        if(!(scrollView instanceof ScrollView || scrollView instanceof NestedScrollView)) {
+        if (!(scrollView instanceof ScrollView || scrollView instanceof NestedScrollView)) {
             throw new VisualApiException("Full page screenshot only supports NestedScrollView or ScrollView instances");
         }
         return scrollView;
