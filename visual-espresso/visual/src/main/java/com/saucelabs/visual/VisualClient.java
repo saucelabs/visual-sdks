@@ -154,11 +154,11 @@ public class VisualClient {
      */
     public CreateSnapshotMutation.Data sauceVisualCheck(String snapshotName, VisualCheckOptions options) {
         Boolean captureDom = options.getCaptureDom() != null ? options.getCaptureDom() : this.captureDom;
-        View view = options.getClipElement() != null ? options.getClipElement() : options.getScrollView();
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(
                 this.build.getId(),
                 captureDom == Boolean.TRUE,
-                view
+                options.getClipElement(),
+                options.getScrollView()
         );
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())

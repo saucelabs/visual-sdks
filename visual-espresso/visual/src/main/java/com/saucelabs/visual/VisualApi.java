@@ -39,7 +39,7 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View view) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement, View scrollView) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
         CreateSnapshotUploadMutation.Data data = graphQLClient.executeMutation(m);
@@ -49,10 +49,14 @@ public class VisualApi {
             SnapshotHelper.getInstance().uploadDom(data.result.domUploadUrl, dom);
         }
 
-        byte[] screenshot = view != null
-                ? SnapshotHelper.getInstance().captureView(view)
-                : SnapshotHelper.getInstance().captureScreen();
-
+        byte[] screenshot;
+        if(clipElement != null) {
+            screenshot = SnapshotHelper.getInstance().captureView(clipElement, false);
+        } else if(scrollView != null) {
+            screenshot = SnapshotHelper.getInstance().captureView(scrollView, true);
+        } else {
+            screenshot = SnapshotHelper.getInstance().captureScreen();
+        }
         SnapshotHelper.getInstance().uploadScreenshot(data.result.imageUploadUrl, screenshot);
 
         return data;

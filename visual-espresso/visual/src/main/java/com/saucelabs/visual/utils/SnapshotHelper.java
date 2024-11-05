@@ -51,12 +51,12 @@ public class SnapshotHelper {
         return instance;
     }
 
-    public byte[] captureView(View view) {
+    public byte[] captureView(View view, boolean isFullPage) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
             int width = view.getWidth();
             int height;
-            if (view instanceof ScrollView || view instanceof NestedScrollView) {
+            if (isFullPage && view instanceof FrameLayout) {
                 height = ((FrameLayout) view).getChildAt(0).getHeight();
             } else {
                 height = view.getHeight();

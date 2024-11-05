@@ -170,7 +170,7 @@ public class VisualCheckOptions {
     }
 
     public List<RegionIn> getIgnoreRegions() {
-        if (clipElement == null) {
+        if (clipElement == null && scrollView == null) {
             ignoreRegions.add(BarRegionHelper.getStatusBarRegion());
             ignoreRegions.add(BarRegionHelper.getNavigationBarRegion());
         }
@@ -194,7 +194,7 @@ public class VisualCheckOptions {
     }
 
     public View getScrollView() {
-        if (!(scrollView instanceof ScrollView || scrollView instanceof NestedScrollView)) {
+        if (scrollView != null && !(scrollView instanceof ScrollView || scrollView instanceof NestedScrollView)) {
             throw new VisualApiException("Full page screenshot only supports NestedScrollView or ScrollView instances");
         }
         return scrollView;
