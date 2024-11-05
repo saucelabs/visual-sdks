@@ -3,8 +3,12 @@ package com.saucelabs.visual;
 import static androidx.test.espresso.Espresso.onView;
 
 import android.view.View;
+import android.widget.ScrollView;
+
+import androidx.core.widget.NestedScrollView;
 
 import com.saucelabs.visual.espresso.GetViewAction;
+import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
@@ -26,6 +30,7 @@ public class VisualCheckOptions {
     private final DiffingOptionsIn diffingOptions;
     private final View clipElement;
     private final DiffingMethod diffingMethod;
+    private final View scrollView;
 
     private VisualCheckOptions(
             String testName,
@@ -34,7 +39,8 @@ public class VisualCheckOptions {
             Boolean captureDom,
             DiffingOptionsIn diffingOptions,
             View clipElement,
-            DiffingMethod diffingMethod) {
+            DiffingMethod diffingMethod,
+            View scrollView) {
         this.testName = testName;
         this.suiteName = suiteName;
         this.ignoreRegions = ignoreRegions;
@@ -42,6 +48,7 @@ public class VisualCheckOptions {
         this.diffingOptions = diffingOptions;
         this.clipElement = clipElement;
         this.diffingMethod = diffingMethod;
+        this.scrollView = scrollView;
     }
 
     public static final class Builder {
@@ -52,6 +59,7 @@ public class VisualCheckOptions {
         private DiffingOptionsIn diffingOptions;
         private View clipElement;
         private DiffingMethod diffingMethod;
+        private View scrollView;
 
         public Builder testName(String testName) {
             this.testName = testName;
@@ -111,6 +119,18 @@ public class VisualCheckOptions {
             return this;
         }
 
+        public Builder fullPageScreenshot(Matcher<View> viewMatcher) {
+            GetViewAction action = new GetViewAction();
+            onView(viewMatcher).perform(action);
+            this.scrollView = action.getView();
+            return this;
+        }
+
+        public Builder fullPageScreenshot(View scrollView) {
+            this.scrollView = scrollView;
+            return this;
+        }
+
         public VisualCheckOptions build() {
             return new VisualCheckOptions(
                     testName,
@@ -119,7 +139,8 @@ public class VisualCheckOptions {
                     captureDom,
                     diffingOptions,
                     clipElement,
-                    diffingMethod);
+                    diffingMethod,
+                    scrollView);
         }
 
     }
@@ -170,6 +191,13 @@ public class VisualCheckOptions {
 
     public DiffingMethod getDiffingMethod() {
         return diffingMethod == null ? DiffingMethod.BALANCED : diffingMethod;
+    }
+
+    public View getScrollView() {
+        if(!(scrollView instanceof ScrollView || scrollView instanceof NestedScrollView)) {
+            throw new VisualApiException("Full page screenshot only supports NestedScrollView or ScrollView instances");
+        }
+        return scrollView;
     }
 
     public static Builder builder() {
