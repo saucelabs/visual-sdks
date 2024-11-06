@@ -61,16 +61,37 @@ public class VisualCheckOptions {
         private DiffingMethod diffingMethod;
         private View scrollView;
 
+        /**
+         * Specify the test name for your tests
+         * <br>
+         * Use this method in case {@link com.saucelabs.visual.junit.TestMetaInfoRule}
+         * doesn't work for some reason.
+         * @param testName The name of your test
+         * @return Builder instance
+         */
         public Builder testName(String testName) {
             this.testName = testName;
             return this;
         }
 
+        /**
+         * Specify the suite name for your tests
+         * <br>
+         * Use this method in case {@link com.saucelabs.visual.junit.TestMetaInfoRule}
+         * doesn't work for some reason.
+         * @param suiteName The name of your suite
+         * @return Builder instance
+         */
         public Builder suiteName(String suiteName) {
             this.suiteName = suiteName;
             return this;
         }
 
+        /**
+         * Specify a set of regions to be ignored by Sauce Visual
+         * @param regions Regions to be ignored
+         * @return Builder instance
+         */
         public Builder ignore(Region... regions) {
             for (Region region : regions) {
                 this.ignoreRegions.add(RegionInFactory.fromRegion(region));
@@ -78,6 +99,11 @@ public class VisualCheckOptions {
             return this;
         }
 
+        /**
+         * Specify a set of {@link Matcher}s that resolve to views to be ignored by Sauce Visual
+         * @param viewMatchers View matchers to be ignored
+         * @return Builder instance
+         */
         @SafeVarargs
         public final Builder ignore(Matcher<View>... viewMatchers) {
             List<RegionIn> result = new ArrayList<>();
@@ -88,6 +114,11 @@ public class VisualCheckOptions {
             return this;
         }
 
+        /**
+         * Specify a set of {@link View}s to be ignored by Sauce Visual
+         * @param views Views to be ignored
+         * @return Builder instance
+         */
         public Builder ignore(View... views) {
             List<RegionIn> result = new ArrayList<>();
             for (View view : views) {
@@ -97,11 +128,21 @@ public class VisualCheckOptions {
             return this;
         }
 
+        /**
+         * Specify if the DOM (Android hierarchy) needs to be captured.
+         * @param captureDom True to capture the DOM
+         * @return Builder instance
+         */
         public Builder captureDom(boolean captureDom) {
             this.captureDom = captureDom;
             return this;
         }
 
+        /**
+         * Specify a {@link Matcher} that will be resolved to a {@link View} that needs clipping
+         * @param viewMatcher View matchers to be clipped
+         * @return Builder instance
+         */
         public Builder clipElement(Matcher<View> viewMatcher) {
             GetViewAction action = new GetViewAction();
             onView(viewMatcher).perform(action);
@@ -109,23 +150,46 @@ public class VisualCheckOptions {
             return this;
         }
 
+        /**
+         * Specify a {@link View} that needs clipping
+         * @param view View to be clipped
+         * @return Builder instance
+         */
         public Builder clipElement(View view) {
             this.clipElement = view;
             return this;
         }
 
+        /**
+         * Specify the {@link DiffingMethod} to be used
+         * <br/>
+         * Default is BALANCED
+         * @param diffingMethod DiffingMethod to be used
+         * @return Builder instance
+         */
         public Builder diffingMethod(DiffingMethod diffingMethod) {
             this.diffingMethod = diffingMethod;
             return this;
         }
 
-        public Builder fullPageScreenshot(Matcher<View> viewMatcher) {
+        /**
+         * Specify a {@link Matcher} that resolves to a {@link NestedScrollView} or {@link ScrollView}
+         * that will be used for full page screenshots
+         * @param scrollViewMatcher View matchers to be used for full page screenshot
+         * @return Builder instance
+         */
+        public Builder fullPageScreenshot(Matcher<View> scrollViewMatcher) {
             GetViewAction action = new GetViewAction();
-            onView(viewMatcher).perform(action);
+            onView(scrollViewMatcher).perform(action);
             this.scrollView = action.getView();
             return this;
         }
 
+        /**
+         * Specify a {@link NestedScrollView} or {@link ScrollView} that will be used for full page screenshots
+         * @param scrollView View to be used for full page screenshot
+         * @return Builder instance
+         */
         public Builder fullPageScreenshot(View scrollView) {
             this.scrollView = scrollView;
             return this;
