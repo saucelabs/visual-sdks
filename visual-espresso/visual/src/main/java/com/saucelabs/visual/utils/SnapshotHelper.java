@@ -8,9 +8,7 @@ import android.graphics.Canvas;
 import android.util.Base64;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
 
-import androidx.core.widget.NestedScrollView;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 

@@ -1,7 +1,6 @@
 package com.saucelabs.visual;
 
 import android.os.Build;
-import android.view.View;
 
 import com.saucelabs.visual.VisualBuild.BuildAttributes;
 import com.saucelabs.visual.graphql.CreateSnapshotMutation;

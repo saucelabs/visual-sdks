@@ -50,9 +50,9 @@ public class VisualApi {
         }
 
         byte[] screenshot;
-        if(clipElement != null) {
+        if (clipElement != null) {
             screenshot = SnapshotHelper.getInstance().captureView(clipElement, false);
-        } else if(scrollView != null) {
+        } else if (scrollView != null) {
             screenshot = SnapshotHelper.getInstance().captureView(scrollView, true);
         } else {
             screenshot = SnapshotHelper.getInstance().captureScreen();

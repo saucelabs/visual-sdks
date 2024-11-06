@@ -66,6 +66,7 @@ public class VisualCheckOptions {
          * <br>
          * Use this method in case {@link com.saucelabs.visual.junit.TestMetaInfoRule}
          * doesn't work for some reason.
+         *
          * @param testName The name of your test
          * @return Builder instance
          */
@@ -79,6 +80,7 @@ public class VisualCheckOptions {
          * <br>
          * Use this method in case {@link com.saucelabs.visual.junit.TestMetaInfoRule}
          * doesn't work for some reason.
+         *
          * @param suiteName The name of your suite
          * @return Builder instance
          */
@@ -89,6 +91,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a set of regions to be ignored by Sauce Visual
+         *
          * @param regions Regions to be ignored
          * @return Builder instance
          */
@@ -101,6 +104,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a set of {@link Matcher}s that resolve to views to be ignored by Sauce Visual
+         *
          * @param viewMatchers View matchers to be ignored
          * @return Builder instance
          */
@@ -119,6 +123,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a set of {@link View}s to be ignored by Sauce Visual
+         *
          * @param views Views to be ignored
          * @return Builder instance
          */
@@ -133,6 +138,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify if the DOM (Android hierarchy) needs to be captured.
+         *
          * @param captureDom True to capture the DOM
          * @return Builder instance
          */
@@ -143,6 +149,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a {@link Matcher} that will be resolved to a {@link View} that needs clipping
+         *
          * @param viewMatcher View matchers to be clipped
          * @return Builder instance
          */
@@ -155,6 +162,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a {@link View} that needs clipping
+         *
          * @param view View to be clipped
          * @return Builder instance
          */
@@ -167,6 +175,7 @@ public class VisualCheckOptions {
          * Specify the {@link DiffingMethod} to be used
          * <br/>
          * Default is BALANCED
+         *
          * @param diffingMethod DiffingMethod to be used
          * @return Builder instance
          */
@@ -178,6 +187,7 @@ public class VisualCheckOptions {
         /**
          * Specify a {@link Matcher} that resolves to a {@link NestedScrollView} or {@link ScrollView}
          * that will be used for full page screenshots
+         *
          * @param scrollViewMatcher View matchers to be used for full page screenshot
          * @return Builder instance
          */
@@ -190,6 +200,7 @@ public class VisualCheckOptions {
 
         /**
          * Specify a {@link NestedScrollView} or {@link ScrollView} that will be used for full page screenshots
+         *
          * @param scrollView View to be used for full page screenshot
          * @return Builder instance
          */

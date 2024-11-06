@@ -48,7 +48,7 @@ public class RegionInFactory {
         int[] loc = new int[2];
         view.getLocationOnScreen(loc);
         int[] parentLoc = new int[2];
-        if(parentView != null) {
+        if (parentView != null) {
             parentView.getLocationOnScreen(parentLoc);
         }
         String resourceName = view.getResources().getResourceEntryName(view.getId());
