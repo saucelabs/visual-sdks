@@ -531,9 +531,8 @@ export type CreateSnapshotFromWebDriverIn = {
    */
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
   ignoreElements?: InputMaybe<Array<ElementIn>>;
-  /** XPath selectors to ignore changes (available only with full-page screenshots and mobile native apps). */
-  ignoreRegionSelectors?: InputMaybe<Array<Scalars['String']>>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
+  ignoreSelectors?: InputMaybe<Array<IgnoreSelectorIn>>;
   /** This will be mandatory in the future. */
   jobId?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
@@ -818,6 +817,12 @@ export type FullPageConfigIn = {
 export type FullTextFilter = {
   /** Performs a full text search on the field. */
   matches?: InputMaybe<Scalars['String']>;
+};
+
+export type IgnoreSelectorIn = {
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
+  name?: InputMaybe<Scalars['String']>;
+  selector: SelectorIn;
 };
 
 /** All input for the `mergeBaselines` mutation. */
@@ -1437,6 +1442,16 @@ export type RegionIn = {
   x: Scalars['Int'];
   y: Scalars['Int'];
 };
+
+export type SelectorIn = {
+  type: SelectorType;
+  value: Scalars['String'];
+};
+
+export enum SelectorType {
+  Css = 'CSS',
+  Xpath = 'XPATH'
+}
 
 export type Snapshot = Node & {
   __typename?: 'Snapshot';

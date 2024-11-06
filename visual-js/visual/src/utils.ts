@@ -4,6 +4,7 @@ import {
   DiffStatus,
   ElementIn,
   FullPageConfigIn,
+  IgnoreSelectorIn,
   InputMaybe,
   RegionIn,
 } from './graphql/__generated__/graphql';
@@ -85,6 +86,9 @@ const regionType: Type<RegionType<unknown>> = type([
 ]);
 export const isRegionType = (item: unknown): item is RegionType<unknown> =>
   typeof item === 'object' && regionType.allows(item);
+
+export const isIgnoreSelectorType = (item: unknown): item is IgnoreSelectorIn =>
+  typeof item === 'object' && item!.hasOwnProperty('selector');
 export const validateRegionType = makeValidate(elementIn);
 
 export const getDiffingOptions = <T>(
@@ -106,19 +110,29 @@ export const parseRegionsForAPI = async <T>(
   ignore: (T | RegionIn | RegionType<T> | Promise<RegionIn>)[],
   resolveItem: (
     item: T | Promise<RegionIn>,
-  ) => Promise<(RegionIn | ElementIn)[]>,
+  ) => Promise<(RegionIn | ElementIn | IgnoreSelectorIn)[]>,
 ): Promise<{
   ignoreRegions: RegionIn[];
   ignoreElements: ElementIn[];
+  ignoreSelectors: IgnoreSelectorIn[];
 }> => {
-  const promisedIgnorables: Promise<(RegionIn | ElementIn)[]>[] = ignore.map(
-    async (itemOrRegion): Promise<Array<RegionIn | ElementIn>> => {
-      const { item, diffingOptions } = isRegionType(itemOrRegion)
+  const promisedIgnorables: Promise<
+    (RegionIn | ElementIn | IgnoreSelectorIn)[]
+  >[] = ignore.map(
+    async (
+      itemOrRegionOrSelector,
+    ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
+      const { item, diffingOptions } = isRegionType(itemOrRegionOrSelector)
         ? {
-            item: itemOrRegion.element,
-            diffingOptions: getDiffingOptions(itemOrRegion),
+            item: itemOrRegionOrSelector.element,
+            diffingOptions: getDiffingOptions(itemOrRegionOrSelector),
           }
-        : { item: itemOrRegion, diffingOptions: undefined };
+        : isIgnoreSelectorType(itemOrRegionOrSelector)
+        ? {
+            item: itemOrRegionOrSelector,
+            diffingOptions: itemOrRegionOrSelector.diffingOptions,
+          }
+        : { item: itemOrRegionOrSelector, diffingOptions: undefined };
 
       const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
       return elements.map((element) => ({
@@ -133,6 +147,7 @@ export const parseRegionsForAPI = async <T>(
   return {
     ignoreRegions: flattened.filter(isIgnoreRegion),
     ignoreElements: flattened.filter(isElementIn),
+    ignoreSelectors: flattened.filter(isIgnoreSelectorType),
   };
 };
 
