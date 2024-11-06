@@ -108,7 +108,10 @@ public class VisualCheckOptions {
         public final Builder ignore(Matcher<View>... viewMatchers) {
             List<RegionIn> result = new ArrayList<>();
             for (Matcher<View> viewMatcher : viewMatchers) {
-                result.add(RegionInFactory.fromViewMatcher(viewMatcher));
+                RegionIn region = scrollView != null
+                        ? RegionInFactory.fromViewMatcher(viewMatcher, scrollView)
+                        : RegionInFactory.fromViewMatcher(viewMatcher);
+                result.add(region);
             }
             this.ignoreRegions.addAll(result);
             return this;
