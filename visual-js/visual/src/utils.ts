@@ -7,6 +7,7 @@ import {
   IgnoreSelectorIn,
   InputMaybe,
   RegionIn,
+  SelectorType,
 } from './graphql/__generated__/graphql';
 import { FullPageScreenshotOptions, RegionType, VisualEnvOpts } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './common/selective-region';
@@ -15,6 +16,7 @@ import fs from 'fs/promises';
 import * as os from 'node:os';
 import { SauceRegion } from './common/regions';
 import { backOff } from 'exponential-backoff';
+import { WdioElement } from '@saucelabs/wdio-sauce-visual-service/build/guarded-types';
 
 export const getFullPageConfig: <T>(
   main?: FullPageScreenshotOptions<T> | boolean,
@@ -87,8 +89,14 @@ const regionType: Type<RegionType<unknown>> = type([
 export const isRegionType = (item: unknown): item is RegionType<unknown> =>
   typeof item === 'object' && regionType.allows(item);
 
-export const isIgnoreSelectorType = (item: unknown): item is IgnoreSelectorIn =>
-  typeof item === 'object' && item!.hasOwnProperty('selector');
+// arktype has problem to check enums
+export const isIgnoreSelectorType = (
+  item: IgnoreSelectorIn,
+): item is IgnoreSelectorIn =>
+  typeof item === 'object' &&
+  typeof item.selector === 'object' &&
+  Object.values(SelectorType).includes(item.selector.type) &&
+  typeof item.selector.value === 'string';
 export const validateRegionType = makeValidate(elementIn);
 
 export const getDiffingOptions = <T>(
@@ -133,6 +141,9 @@ export const parseRegionsForAPI = async <T>(
             diffingOptions: itemOrRegionOrSelector.diffingOptions,
           }
         : { item: itemOrRegionOrSelector, diffingOptions: undefined };
+
+      const a = item as WdioElement;
+      a.selector;
 
       const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
       return elements.map((element) => ({
