@@ -50,11 +50,11 @@ public class VisualApi {
         }
 
         byte[] screenshot;
-        if (clipElement != null) {
+        if (clipElement != null && scrollView == null) { // Clipping only (without full page)
             screenshot = SnapshotHelper.getInstance().captureView(clipElement, false);
-        } else if (scrollView != null) {
+        } else if (scrollView != null) { // Full page (with or without clipping)
             screenshot = SnapshotHelper.getInstance().captureView(scrollView, true);
-        } else {
+        } else { // No clipping, no full page
             screenshot = SnapshotHelper.getInstance().captureScreen();
         }
         SnapshotHelper.getInstance().uploadScreenshot(data.result.imageUploadUrl, screenshot);
