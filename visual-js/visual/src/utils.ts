@@ -90,9 +90,7 @@ export const isRegionType = (item: unknown): item is RegionType<unknown> =>
   typeof item === 'object' && regionType.allows(item);
 
 // arktype has problem to check enums
-export const isIgnoreSelectorType = (
-  item: IgnoreSelectorIn,
-): item is IgnoreSelectorIn =>
+export const isIgnoreSelectorType = (item: any): item is IgnoreSelectorIn =>
   typeof item === 'object' &&
   typeof item.selector === 'object' &&
   Object.values(SelectorType).includes(item.selector.type) &&
