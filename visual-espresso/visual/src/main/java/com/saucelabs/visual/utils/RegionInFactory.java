@@ -33,15 +33,27 @@ public class RegionInFactory {
     }
 
     public static RegionIn fromView(View view) {
-        return fromView(view, null);
+        return fromView(view, null, null);
     }
 
-    public static RegionIn fromRegion(Region region) {
-        return fromRegion(region, null);
+    public static RegionIn fromView(View view, View parentView) {
+        return fromView(view, null, parentView);
     }
 
     public static RegionIn fromView(View view, DiffingOptionsIn diffingOptions) {
         return fromView(view, diffingOptions, null);
+    }
+
+    public static RegionIn fromRegion(Region region) {
+        return fromRegion(region, null, null);
+    }
+
+    public static RegionIn fromRegion(Region region, View parentView) {
+        return fromRegion(region, null, parentView);
+    }
+
+    public static RegionIn fromRegion(Region region, DiffingOptionsIn diffingOptions) {
+        return fromRegion(region, diffingOptions, null);
     }
 
     public static RegionIn fromView(View view, DiffingOptionsIn diffingOptions, View parentView) {
@@ -62,12 +74,16 @@ public class RegionInFactory {
                 .build();
     }
 
-    public static RegionIn fromRegion(Region region, DiffingOptionsIn diffingOptions) {
+    public static RegionIn fromRegion(Region region, DiffingOptionsIn diffingOptions, View parentView) {
+        int[] parentLoc = new int[2];
+        if (parentView != null) {
+            parentView.getLocationOnScreen(parentLoc);
+        }
         return RegionIn.builder()
                 .diffingOptions(diffingOptions)
                 .name(region.getName())
-                .x(region.getX())
-                .y(region.getY())
+                .x(region.getX() - parentLoc[0])
+                .y(region.getY() - parentLoc[1])
                 .width(region.getWidth())
                 .height(region.getHeight())
                 .build();

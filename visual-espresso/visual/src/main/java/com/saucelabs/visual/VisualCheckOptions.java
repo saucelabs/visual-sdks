@@ -96,8 +96,11 @@ public class VisualCheckOptions {
          * @return Builder instance
          */
         public Builder ignore(Region... regions) {
-            for (Region region : regions) {
-                this.ignoreRegions.add(RegionInFactory.fromRegion(region));
+            for (Region r : regions) {
+                RegionIn region = scrollView != null
+                        ? RegionInFactory.fromRegion(r, scrollView)
+                        : RegionInFactory.fromRegion(r);
+                this.ignoreRegions.add(region);
             }
             return this;
         }
@@ -130,7 +133,10 @@ public class VisualCheckOptions {
         public Builder ignore(View... views) {
             List<RegionIn> result = new ArrayList<>();
             for (View view : views) {
-                result.add(RegionInFactory.fromView(view));
+                RegionIn region = scrollView != null
+                        ? RegionInFactory.fromView(view, scrollView)
+                        : RegionInFactory.fromView(view);
+                result.add(region);
             }
             this.ignoreRegions.addAll(result);
             return this;
