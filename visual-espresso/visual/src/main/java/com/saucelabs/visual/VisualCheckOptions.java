@@ -90,7 +90,7 @@ public class VisualCheckOptions {
         }
 
         /**
-         * Specify a set of regions to be ignored by Sauce Visual
+         * Specify a set of {@link Region}s to be ignored by Sauce Visual
          *
          * @param regions Regions to be ignored
          * @return Builder instance
@@ -103,7 +103,7 @@ public class VisualCheckOptions {
         }
 
         /**
-         * Specify a set of {@link Matcher}s that resolve to views to be ignored by Sauce Visual
+         * Specify a set of {@link Matcher}s that resolve to {@link View}s to be ignored by Sauce Visual
          *
          * @param viewMatchers View matchers to be ignored
          * @return Builder instance
