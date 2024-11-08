@@ -27,7 +27,7 @@ public class RegionInFactory {
     }
 
     public static RegionIn fromViewMatcher(Matcher<View> viewMatcher, DiffingOptionsIn diffingOptions, View parentView) {
-        GetViewAction action = new GetViewAction();
+        GetViewAction action = new GetViewAction(parentView);
         onView(viewMatcher).perform(action);
         return fromView(action.getView(), diffingOptions, parentView);
     }
