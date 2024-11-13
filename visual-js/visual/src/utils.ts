@@ -16,7 +16,6 @@ import fs from 'fs/promises';
 import * as os from 'node:os';
 import { SauceRegion } from './common/regions';
 import { backOff } from 'exponential-backoff';
-import { WdioElement } from '@saucelabs/wdio-sauce-visual-service/build/guarded-types';
 
 export const getFullPageConfig: <T>(
   main?: FullPageScreenshotOptions<T> | boolean,
@@ -139,9 +138,6 @@ export const parseRegionsForAPI = async <T>(
             diffingOptions: itemOrRegionOrSelector.diffingOptions,
           }
         : { item: itemOrRegionOrSelector, diffingOptions: undefined };
-
-      const a = item as WdioElement;
-      a.selector;
 
       const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
       return elements.map((element) => ({
