@@ -133,17 +133,21 @@ export const parseRegionsForAPI = async <T>(
     async (
       itemOrRegionOrSelector,
     ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
-      const { item, diffingOptions } = isRegionType(itemOrRegionOrSelector)
-        ? {
+      const { item, diffingOptions } = (() => {
+        if (isRegionType(itemOrRegionOrSelector)) {
+          return {
             item: itemOrRegionOrSelector.element,
             diffingOptions: getDiffingOptions(itemOrRegionOrSelector),
-          }
-        : isIgnoreSelectorType(itemOrRegionOrSelector)
-        ? {
+          };
+        } else if (isIgnoreSelectorType(itemOrRegionOrSelector)) {
+          return {
             item: itemOrRegionOrSelector,
             diffingOptions: itemOrRegionOrSelector.diffingOptions,
-          }
-        : { item: itemOrRegionOrSelector, diffingOptions: undefined };
+          };
+        }
+
+        return { item: itemOrRegionOrSelector, diffingOptions: undefined };
+      })();
 
       const elements =
         isIgnoreRegion(item) || isIgnoreSelectorType(item)
