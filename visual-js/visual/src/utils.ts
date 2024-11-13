@@ -112,7 +112,13 @@ export const getDiffingOptions = <T>(
  * @param resolveItem A callback to resolve an element and gather the required data for the API.
  */
 export const parseRegionsForAPI = async <T>(
-  ignore: (T | RegionIn | RegionType<T> | Promise<RegionIn>)[],
+  ignore: (
+    | T
+    | RegionIn
+    | RegionType<T>
+    | Promise<RegionIn>
+    | IgnoreSelectorIn
+  )[],
   resolveItem: (
     item: T | Promise<RegionIn>,
   ) => Promise<(RegionIn | ElementIn | IgnoreSelectorIn)[]>,
@@ -139,7 +145,10 @@ export const parseRegionsForAPI = async <T>(
           }
         : { item: itemOrRegionOrSelector, diffingOptions: undefined };
 
-      const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
+      const elements =
+        isIgnoreRegion(item) || isIgnoreSelectorType(item)
+          ? [item]
+          : await resolveItem(item);
       return elements.map((element) => ({
         ...element,
         diffingOptions,
