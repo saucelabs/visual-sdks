@@ -63,6 +63,7 @@ export type Baseline = Node & {
   devicePixelRatio: Maybe<Scalars['Float']>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  domFormat: DomFormat;
   hasDom: Scalars['Boolean'];
   height: Maybe<Scalars['Int']>;
   id: Scalars['UUID'];
@@ -86,6 +87,7 @@ export type Baseline = Node & {
   thumbnailUrl: Scalars['String'];
   uiIgnoreRegions: Array<Maybe<Region>>;
   uploadId: Scalars['String'];
+  userAgent: Maybe<Scalars['String']>;
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   width: Maybe<Scalars['Int']>;
@@ -506,7 +508,8 @@ export enum BuildsOrderBy {
 
 export type CreateDerivedBaselinesIn = {
   baselineIds: Array<Scalars['UUID']>;
-  uiIgnoreRegions: Array<RegionIn>;
+  onlyApplyIfIsLatest?: InputMaybe<Scalars['Boolean']>;
+  uiIgnoreRegions?: InputMaybe<Array<RegionIn>>;
 };
 
 export type CreateSnapshotFromWebDriverIn = {
@@ -764,6 +767,13 @@ export enum DiffsOrderBy {
   StatusDesc = 'STATUS_DESC',
   StatusIsEqualAsc = 'STATUS_IS_EQUAL_ASC',
   StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
+}
+
+export enum DomFormat {
+  AndroidAppium = 'ANDROID_APPIUM',
+  Browser = 'BROWSER',
+  IosAppium = 'IOS_APPIUM',
+  None = 'NONE'
 }
 
 export type ElementIn = {
@@ -1449,7 +1459,6 @@ export type SelectorIn = {
 };
 
 export enum SelectorType {
-  Css = 'CSS',
   Xpath = 'XPATH'
 }
 
@@ -1473,6 +1482,7 @@ export type Snapshot = Node & {
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
   domDiffUrl: Maybe<Scalars['String']>;
+  domFormat: DomFormat;
   /**
    * If not null, it indicates that the snapshot is invalid.
    *
@@ -1508,6 +1518,7 @@ export type Snapshot = Node & {
   thumbnailUrl: Scalars['String'];
   uploadId: Scalars['String'];
   url: Scalars['String'];
+  userAgent: Maybe<Scalars['String']>;
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   /** `width` is determined asynchronously and may be null right after snapshot creation. */
@@ -1549,6 +1560,8 @@ export type SnapshotCondition = {
   createdAt?: InputMaybe<Scalars['Datetime']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `uploadId` field. */
+  uploadId?: InputMaybe<Scalars['String']>;
 };
 
 /** A filter to be used against `Snapshot` object types. All fields are combined with a logical ‘and.’ */
@@ -1559,6 +1572,8 @@ export type SnapshotFilter = {
   createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `uploadId` field. */
+  uploadId?: InputMaybe<StringFilter>;
 };
 
 export type SnapshotIn = {
@@ -1640,7 +1655,9 @@ export enum SnapshotsOrderBy {
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  UploadIdAsc = 'UPLOAD_ID_ASC',
+  UploadIdDesc = 'UPLOAD_ID_DESC'
 }
 
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
