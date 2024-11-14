@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.10.1
+
+### Patch Changes
+
+- 7a88f8d: add ignore region selectors for appium native fullpage
+
 ## 0.10.0
 
 ### Minor Changes
