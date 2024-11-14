@@ -3094,7 +3094,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@saucelabs/visual@^0.10.0, @saucelabs/visual@workspace:visual":
+"@saucelabs/visual@^0.10.0, @saucelabs/visual@^0.10.1, @saucelabs/visual@workspace:visual":
   version: 0.0.0-use.local
   resolution: "@saucelabs/visual@workspace:visual"
   dependencies:
@@ -3141,7 +3141,7 @@ __metadata:
   resolution: "@saucelabs/wdio-sauce-visual-service@workspace:visual-wdio"
   dependencies:
     "@jest/globals": ^29.7.0
-    "@saucelabs/visual": ^0.10.0
+    "@saucelabs/visual": ^0.10.1
     "@tsconfig/node18": ^2.0.0
     "@types/jest": ^29.5.6
     "@typescript-eslint/eslint-plugin": ^5.59.1
