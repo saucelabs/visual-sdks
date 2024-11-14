@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.Base64;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
@@ -48,11 +49,16 @@ public class SnapshotHelper {
         return instance;
     }
 
-    public byte[] getScreenshot(View view) {
+    public byte[] captureView(View view, boolean isFullPage) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            // Get the width and height of the view
+
             int width = view.getWidth();
-            int height = view.getHeight();
+            int height;
+            if (isFullPage && view instanceof FrameLayout) {
+                height = ((FrameLayout) view).getChildAt(0).getHeight();
+            } else {
+                height = view.getHeight();
+            }
 
             // Create a bitmap with the same size as the view
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -70,7 +76,7 @@ public class SnapshotHelper {
         }
     }
 
-    public byte[] getScreenshot() {
+    public byte[] captureScreen() {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
             Bitmap screenshot = uiAutomation.takeScreenshot();
@@ -81,7 +87,7 @@ public class SnapshotHelper {
         }
     }
 
-    public byte[] getDom() {
+    public byte[] captureDom() {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             device.dumpWindowHierarchy(os);
@@ -144,7 +150,15 @@ public class SnapshotHelper {
         }
     }
 
-    public void uploadToUrl(String uploadUrl, byte[] file, boolean captureDom) {
+    public void uploadDom(String uploadUrl, byte[] file) {
+        uploadToUrl(uploadUrl, file, true);
+    }
+
+    public void uploadScreenshot(String uploadUrl, byte[] file) {
+        uploadToUrl(uploadUrl, file, false);
+    }
+
+    private void uploadToUrl(String uploadUrl, byte[] file, boolean isDom) {
         HttpURLConnection connection = null;
         OutputStream os = null;
         try {
@@ -156,7 +170,7 @@ public class SnapshotHelper {
 
             // Set headers
             connection.setRequestProperty("Content-MD5", md5Hash);
-            String contentType = captureDom ? "text/html" : "image/png";
+            String contentType = isDom ? "text/html" : "image/png";
             connection.setRequestProperty("Content-Type", contentType);
             connection.setDoOutput(true);
 

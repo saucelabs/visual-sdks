@@ -6,6 +6,12 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+/**
+ * Initialize an instance of this rule to set the test name and suite name automatically
+ * for Sauce Visual Espresso tests.
+ * Usage:
+ * <pre>@Rule public TestMetaInfoRule testMetaInfoRule = new TestMetaInfoRule();</pre>
+ */
 public class TestMetaInfoRule implements TestRule {
 
     @Override

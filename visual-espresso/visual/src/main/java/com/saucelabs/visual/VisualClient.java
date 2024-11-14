@@ -156,7 +156,8 @@ public class VisualClient {
         CreateSnapshotUploadMutation.Data data = visualApi.uploadSnapshot(
                 this.build.getId(),
                 captureDom == Boolean.TRUE,
-                options.getClipElement()
+                options.getClipElement(),
+                options.getScrollView()
         );
         SnapshotIn input = SnapshotIn.builder()
                 .buildUuid(this.build.getId())
@@ -166,9 +167,10 @@ public class VisualClient {
                 .suiteName(options.resolveSuiteName())
                 .operatingSystem(OperatingSystem.ANDROID)
                 .operatingSystemVersion(Build.VERSION.RELEASE)
-                .device(Build.DEVICE)
+                .device(Build.MANUFACTURER + " " + Build.MODEL)
                 .ignoreRegions(options.getIgnoreRegions())
                 .diffingOptions(options.getDiffingOptions())
+                .diffingMethod(options.getDiffingMethod())
                 .build();
         return visualApi.createSnapshot(input);
     }

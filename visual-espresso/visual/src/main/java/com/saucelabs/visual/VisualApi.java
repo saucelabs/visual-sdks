@@ -39,19 +39,29 @@ public class VisualApi {
         return new VisualBuild(d);
     }
 
-    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement) {
+    CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement, View scrollView) {
         SnapshotUploadIn input = SnapshotUploadIn.builder().buildUuid(buildId).build();
         CreateSnapshotUploadMutation m = CreateSnapshotUploadMutation.builder().input(input).build();
-        CreateSnapshotUploadMutation.Data d = graphQLClient.executeMutation(m);
+        CreateSnapshotUploadMutation.Data data = graphQLClient.executeMutation(m);
+
         if (captureDom) {
-            byte[] dom = SnapshotHelper.getInstance().getDom();
-            SnapshotHelper.getInstance().uploadToUrl(d.result.domUploadUrl, dom, true);
+            byte[] dom = SnapshotHelper.getInstance().captureDom();
+            SnapshotHelper.getInstance().uploadDom(data.result.domUploadUrl, dom);
         }
-        byte[] screenshot = clipElement != null
-                ? SnapshotHelper.getInstance().getScreenshot(clipElement)
-                : SnapshotHelper.getInstance().getScreenshot();
-        SnapshotHelper.getInstance().uploadToUrl(d.result.imageUploadUrl, screenshot, false);
-        return d;
+
+        byte[] screenshot;
+        if (clipElement != null && clipElement == scrollView) { // Clip and fps views are same
+            screenshot = SnapshotHelper.getInstance().captureView(clipElement, true);
+        } else if (clipElement != null) { // Only clipping
+            screenshot = SnapshotHelper.getInstance().captureView(clipElement, false);
+        } else if (scrollView != null) { // Full page, no clipping
+            screenshot = SnapshotHelper.getInstance().captureView(scrollView, true);
+        } else { // No clipping, no full page
+            screenshot = SnapshotHelper.getInstance().captureScreen();
+        }
+        SnapshotHelper.getInstance().uploadScreenshot(data.result.imageUploadUrl, screenshot);
+
+        return data;
     }
 
     CreateSnapshotMutation.Data createSnapshot(SnapshotIn snapshotIn) {

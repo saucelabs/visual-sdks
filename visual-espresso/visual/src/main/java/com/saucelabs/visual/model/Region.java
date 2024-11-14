@@ -1,5 +1,8 @@
 package com.saucelabs.visual.model;
 
+/**
+ * Denotes a Sauce Visual region that can be used as an ignore region
+ */
 public class Region {
     private final String name;
     private final Integer x;
