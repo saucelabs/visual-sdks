@@ -1,5 +1,11 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.8.2
+
+### Patch Changes
+
+- cef6b06: auto append custom id when creating build in wdio
+
 ## 0.8.1
 
 ### Patch Changes
