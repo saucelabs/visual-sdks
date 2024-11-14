@@ -26,6 +26,7 @@ import {
   getVisualResults,
   isIgnoreSelectorType,
   IgnoreSelectorIn,
+  getEnvOpts,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
@@ -44,13 +45,7 @@ const log = logger('@saucelabs/wdio-sauce-visual-service');
 
 const VISUAL_BUILD_ID_KEY = 'SAUCE_VISUAL_BUILD_ID';
 
-const {
-  SAUCE_VISUAL_PROJECT,
-  SAUCE_VISUAL_BRANCH,
-  SAUCE_VISUAL_DEFAULT_BRANCH,
-  SAUCE_VISUAL_BUILD_NAME,
-  SAUCE_VISUAL_CUSTOM_ID,
-} = process.env;
+const { SAUCE_VISUAL_BUILD_NAME, SAUCE_VISUAL_CUSTOM_ID } = process.env;
 
 type ResultStatus = Record<DiffStatus, number>;
 
@@ -89,6 +84,7 @@ export type SauceVisualServiceOptions = {
   buildId?: string;
   project?: string;
   branch?: string;
+  customId?: string;
   defaultBranch?: string;
   diffingMethod?: DiffingMethod;
   captureDom?: boolean;
@@ -208,16 +204,17 @@ export default class SauceVisualService implements Services.ServiceInstance {
       isBuildExternal = true;
     } else {
       let build;
+      const { customId, defaultBranch, branch, project } = getEnvOpts();
       try {
         build = await this.apiClient.createBuild({
           name:
             this.options.buildName ||
             SAUCE_VISUAL_BUILD_NAME ||
             'WebdriverIO Visual Testing',
-          project: this.options.project || SAUCE_VISUAL_PROJECT || null,
-          branch: this.options.branch || SAUCE_VISUAL_BRANCH || null,
-          defaultBranch:
-            this.options.defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH || null,
+          project: this.options.project || project,
+          branch: this.options.branch || branch,
+          defaultBranch: this.options.defaultBranch || defaultBranch,
+          customId: this.options.customId || customId,
         });
       } catch (e: unknown) {
         const errorMessage = ensureError(e).message ?? 'Unknown error';
