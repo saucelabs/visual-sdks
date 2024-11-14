@@ -4,8 +4,10 @@ import {
   DiffStatus,
   ElementIn,
   FullPageConfigIn,
+  IgnoreSelectorIn,
   InputMaybe,
   RegionIn,
+  SelectorType,
 } from './graphql/__generated__/graphql';
 import { FullPageScreenshotOptions, RegionType, VisualEnvOpts } from './types';
 import { selectiveRegionOptionsToDiffingOptions } from './common/selective-region';
@@ -85,6 +87,13 @@ const regionType: Type<RegionType<unknown>> = type([
 ]);
 export const isRegionType = (item: unknown): item is RegionType<unknown> =>
   typeof item === 'object' && regionType.allows(item);
+
+// arktype has problem to check enums
+export const isIgnoreSelectorType = (item: any): item is IgnoreSelectorIn =>
+  typeof item === 'object' &&
+  typeof item.selector === 'object' &&
+  Object.values(SelectorType).includes(item.selector.type) &&
+  typeof item.selector.value === 'string';
 export const validateRegionType = makeValidate(elementIn);
 
 export const getDiffingOptions = <T>(
@@ -103,24 +112,47 @@ export const getDiffingOptions = <T>(
  * @param resolveItem A callback to resolve an element and gather the required data for the API.
  */
 export const parseRegionsForAPI = async <T>(
-  ignore: (T | RegionIn | RegionType<T> | Promise<RegionIn>)[],
+  ignore: (
+    | T
+    | RegionIn
+    | RegionType<T>
+    | Promise<RegionIn>
+    | IgnoreSelectorIn
+  )[],
   resolveItem: (
     item: T | Promise<RegionIn>,
-  ) => Promise<(RegionIn | ElementIn)[]>,
+  ) => Promise<(RegionIn | ElementIn | IgnoreSelectorIn)[]>,
 ): Promise<{
   ignoreRegions: RegionIn[];
   ignoreElements: ElementIn[];
+  ignoreSelectors: IgnoreSelectorIn[];
 }> => {
-  const promisedIgnorables: Promise<(RegionIn | ElementIn)[]>[] = ignore.map(
-    async (itemOrRegion): Promise<Array<RegionIn | ElementIn>> => {
-      const { item, diffingOptions } = isRegionType(itemOrRegion)
-        ? {
-            item: itemOrRegion.element,
-            diffingOptions: getDiffingOptions(itemOrRegion),
-          }
-        : { item: itemOrRegion, diffingOptions: undefined };
+  const promisedIgnorables: Promise<
+    (RegionIn | ElementIn | IgnoreSelectorIn)[]
+  >[] = ignore.map(
+    async (
+      itemOrRegionOrSelector,
+    ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
+      const { item, diffingOptions } = (() => {
+        if (isRegionType(itemOrRegionOrSelector)) {
+          return {
+            item: itemOrRegionOrSelector.element,
+            diffingOptions: getDiffingOptions(itemOrRegionOrSelector),
+          };
+        } else if (isIgnoreSelectorType(itemOrRegionOrSelector)) {
+          return {
+            item: itemOrRegionOrSelector,
+            diffingOptions: itemOrRegionOrSelector.diffingOptions,
+          };
+        }
 
-      const elements = isIgnoreRegion(item) ? [item] : await resolveItem(item);
+        return { item: itemOrRegionOrSelector, diffingOptions: undefined };
+      })();
+
+      const elements =
+        isIgnoreRegion(item) || isIgnoreSelectorType(item)
+          ? [item]
+          : await resolveItem(item);
       return elements.map((element) => ({
         ...element,
         diffingOptions,
@@ -133,6 +165,7 @@ export const parseRegionsForAPI = async <T>(
   return {
     ignoreRegions: flattened.filter(isIgnoreRegion),
     ignoreElements: flattened.filter(isElementIn),
+    ignoreSelectors: flattened.filter(isIgnoreSelectorType),
   };
 };
 

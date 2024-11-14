@@ -1,6 +1,7 @@
 import { type } from 'arktype';
 import {
   FullPageScreenshotOptions,
+  IgnoreSelectorIn,
   makeValidate,
   RegionIn,
 } from '@saucelabs/visual';
@@ -28,4 +29,5 @@ export type Ignorable =
   | WdioElement[]
   | Promise<WdioElement>
   | Promise<WdioElement[]>
-  | RegionIn;
+  | RegionIn
+  | IgnoreSelectorIn;

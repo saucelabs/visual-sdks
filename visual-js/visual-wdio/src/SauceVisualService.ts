@@ -24,6 +24,8 @@ import {
   VisualApi,
   WebdriverSession,
   getVisualResults,
+  isIgnoreSelectorType,
+  IgnoreSelectorIn,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
@@ -113,6 +115,11 @@ type CucumberWorld = {
 
 export type CheckOptions = {
   ignore?: Array<Ignorable>;
+
+  /**
+   * XPath selectors to ignore changes (available only with full-page screenshots and mobile native apps).
+   */
+  ignoreSelectors?: Array<string>;
 
   regions?: Array<RegionType<Ignorable>>;
   /**
@@ -367,11 +374,12 @@ export default class SauceVisualService implements Services.ServiceInstance {
 
       const resolveIgnorable = async (
         element: Ignorable | Promise<RegionIn>,
-      ): Promise<Array<RegionIn | ElementIn>> => {
+      ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
         if (isIgnoreRegion(element)) return [element];
 
         const awaited = await element;
         if (isIgnoreRegion(awaited)) return [awaited];
+        if (isIgnoreSelectorType(awaited)) return [awaited];
 
         const wdioElements = isWdioElement(awaited) ? [awaited] : awaited;
 
@@ -381,13 +389,20 @@ export default class SauceVisualService implements Services.ServiceInstance {
         }));
       };
 
-      const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
-        [...(options.regions ?? []), ...(options.ignore ?? [])],
-        resolveIgnorable,
-      );
+      const { ignoreRegions, ignoreElements, ignoreSelectors } =
+        await parseRegionsForAPI(
+          [...(options.regions ?? []), ...(options.ignore ?? [])],
+          resolveIgnorable,
+        );
 
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
+
+      const fullPageConfig = await getFullPageConfig<WdioElement>(
+        this.fullPage,
+        options.fullPage,
+        (el) => el.elementId,
+      );
 
       const clipSelector = options.clipSelector ?? this.clipSelector;
       const clipElement = clipSelector
@@ -405,6 +420,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         buildUuid: buildId,
         name: name,
         ignoreRegions,
+        ignoreSelectors,
         ignoreElements,
         diffingOptions: selectiveRegionOptionsToDiffingOptions({
           disableOnly: options.disable ?? [],
@@ -414,11 +430,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
           options.diffingMethod || this.diffingMethod || DiffingMethod.Balanced,
         suiteName: this.test?.parent,
         testName: this.test?.title,
-        fullPageConfig: await getFullPageConfig<WdioElement>(
-          this.fullPage,
-          options.fullPage,
-          (el) => el.elementId,
-        ),
+        fullPageConfig,
         baselineOverride: options.baselineOverride || this.baselineOverride,
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));

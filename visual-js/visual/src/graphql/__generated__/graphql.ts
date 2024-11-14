@@ -63,6 +63,7 @@ export type Baseline = Node & {
   devicePixelRatio: Maybe<Scalars['Float']>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  domFormat: DomFormat;
   hasDom: Scalars['Boolean'];
   height: Maybe<Scalars['Int']>;
   id: Scalars['UUID'];
@@ -86,6 +87,7 @@ export type Baseline = Node & {
   thumbnailUrl: Scalars['String'];
   uiIgnoreRegions: Array<Maybe<Region>>;
   uploadId: Scalars['String'];
+  userAgent: Maybe<Scalars['String']>;
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   width: Maybe<Scalars['Int']>;
@@ -506,7 +508,8 @@ export enum BuildsOrderBy {
 
 export type CreateDerivedBaselinesIn = {
   baselineIds: Array<Scalars['UUID']>;
-  uiIgnoreRegions: Array<RegionIn>;
+  onlyApplyIfIsLatest?: InputMaybe<Scalars['Boolean']>;
+  uiIgnoreRegions?: InputMaybe<Array<RegionIn>>;
 };
 
 export type CreateSnapshotFromWebDriverIn = {
@@ -532,6 +535,7 @@ export type CreateSnapshotFromWebDriverIn = {
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
   ignoreElements?: InputMaybe<Array<ElementIn>>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
+  ignoreSelectors?: InputMaybe<Array<IgnoreSelectorIn>>;
   /** This will be mandatory in the future. */
   jobId?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
@@ -565,6 +569,8 @@ export type DatetimeFilter = {
  */
 export type Diff = Node & {
   __typename?: 'Diff';
+  /** @deprecated Experimental. May be removed at any time. */
+  altDomDiffUrl: Maybe<Scalars['String']>;
   /** Reads a single `Baseline` that is related to this `Diff`. */
   baseline: Maybe<Baseline>;
   baselineId: Maybe<Scalars['UUID']>;
@@ -692,6 +698,8 @@ export type DiffStatusFilter = {
  * Method to use for diffing.
  *
  * SIMPLE is the default.
+ *
+ * Note: EXPERIMENTAL is deprecated. Use BALANCED instead.
  */
 export enum DiffingMethod {
   Balanced = 'BALANCED',
@@ -761,6 +769,13 @@ export enum DiffsOrderBy {
   StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
 }
 
+export enum DomFormat {
+  AndroidAppium = 'ANDROID_APPIUM',
+  Browser = 'BROWSER',
+  IosAppium = 'IOS_APPIUM',
+  None = 'NONE'
+}
+
 export type ElementIn = {
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /** The server-assigned ID of an element from webdriver. */
@@ -812,6 +827,12 @@ export type FullPageConfigIn = {
 export type FullTextFilter = {
   /** Performs a full text search on the field. */
   matches?: InputMaybe<Scalars['String']>;
+};
+
+export type IgnoreSelectorIn = {
+  diffingOptions?: InputMaybe<DiffingOptionsIn>;
+  name?: InputMaybe<Scalars['String']>;
+  selector: SelectorIn;
 };
 
 /** All input for the `mergeBaselines` mutation. */
@@ -1117,6 +1138,8 @@ export type Query = Node & {
   /** Reads a single `Baseline` using its globally unique `ID`. */
   baselineByNodeId: Maybe<Baseline>;
   /** Reads and enables pagination through a set of `Baseline`. */
+  baselineHistory: Maybe<BaselinesConnection>;
+  /** Reads and enables pagination through a set of `Baseline`. */
   baselines: Maybe<BaselinesConnection>;
   branch: Maybe<Branch>;
   /**
@@ -1199,6 +1222,17 @@ export type QueryBaselineArgs = {
 /** The root query type which gives access points into the data universe. */
 export type QueryBaselineByNodeIdArgs = {
   nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryBaselineHistoryArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  baselineId: Scalars['UUID'];
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -1311,11 +1345,11 @@ export type QueryFilteredProjectsArgs = {
 export type QueryLatestBaselinesArgs = {
   after: InputMaybe<Scalars['Cursor']>;
   before: InputMaybe<Scalars['Cursor']>;
-  branchName: Scalars['String'];
+  branchName: InputMaybe<Scalars['String']>;
   first: InputMaybe<Scalars['Int']>;
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
-  projectName: Scalars['String'];
+  projectName: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1419,6 +1453,15 @@ export type RegionIn = {
   y: Scalars['Int'];
 };
 
+export type SelectorIn = {
+  type: SelectorType;
+  value: Scalars['String'];
+};
+
+export enum SelectorType {
+  Xpath = 'XPATH'
+}
+
 export type Snapshot = Node & {
   __typename?: 'Snapshot';
   appId: Maybe<Scalars['String']>;
@@ -1439,6 +1482,7 @@ export type Snapshot = Node & {
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
   domDiffUrl: Maybe<Scalars['String']>;
+  domFormat: DomFormat;
   /**
    * If not null, it indicates that the snapshot is invalid.
    *
@@ -1474,6 +1518,7 @@ export type Snapshot = Node & {
   thumbnailUrl: Scalars['String'];
   uploadId: Scalars['String'];
   url: Scalars['String'];
+  userAgent: Maybe<Scalars['String']>;
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   /** `width` is determined asynchronously and may be null right after snapshot creation. */
@@ -1515,6 +1560,8 @@ export type SnapshotCondition = {
   createdAt?: InputMaybe<Scalars['Datetime']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `uploadId` field. */
+  uploadId?: InputMaybe<Scalars['String']>;
 };
 
 /** A filter to be used against `Snapshot` object types. All fields are combined with a logical ‘and.’ */
@@ -1525,6 +1572,8 @@ export type SnapshotFilter = {
   createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `uploadId` field. */
+  uploadId?: InputMaybe<StringFilter>;
 };
 
 export type SnapshotIn = {
@@ -1606,7 +1655,9 @@ export enum SnapshotsOrderBy {
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
-  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  UploadIdAsc = 'UPLOAD_ID_ASC',
+  UploadIdDesc = 'UPLOAD_ID_DESC'
 }
 
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
