@@ -402,9 +402,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
       );
 
       const clipSelector = options.clipSelector ?? this.clipSelector;
-      const clipElement = clipSelector
-        ? await browser.$(clipSelector).elementId
-        : null;
+      const clipElement =
+        clipSelector && !fullPageConfig
+          ? await browser.$(clipSelector).elementId
+          : null;
 
       const result = await api.createSnapshotFromWebDriver({
         captureDom: options.captureDom ?? this.captureDom,
@@ -412,6 +413,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
           options.clipElement?.elementId ??
           this.clipElement?.elementId ??
           clipElement,
+        clipSelector: !clipElement ? clipSelector : null,
         sessionId,
         jobId,
         buildUuid: buildId,
