@@ -20,9 +20,43 @@ export interface VisualOpts extends PlaywrightParams {
   customId: string | null;
 }
 
-export interface SauceVisualParams extends PlaywrightParams {
+export interface ArgsTypes {
+  [key: string]: any;
+}
+
+export interface StoryVariation<Args = ArgsTypes> {
+  /**
+   * A string to prepend prior to the story name when taking a snapshot.
+   */
+  prefix?: string;
+  /**
+   * A string to append after the story name when taking a snapshot.
+   */
+  postfix?: string;
+  /**
+   * One or more Args to overwrite in your Storybook stories. Will take a screenshot for each
+   * requested variation and upload it to Sauce Labs.
+   */
+  args?: Args;
+  /**
+   * A name to optionally use instead of the default story name.
+   */
+  name?: string;
+}
+
+export interface SauceVisualParams<Args = ArgsTypes> extends PlaywrightParams {
   /**
    * Whether we should clip the story reduce whitespaces in snapshots.
    */
   clip?: boolean;
+  /**
+   * Variations of the current story we should take in addition to the default state.
+   */
+  variations?: StoryVariation<Args>[];
+}
+
+export interface StoryContext {
+  id: string;
+  title: string;
+  name: string;
 }
