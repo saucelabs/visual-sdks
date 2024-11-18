@@ -48,8 +48,8 @@
     "jest-playwright-preset": "^2.0.0 || ^3.0.0"
   },
   "peerDependencies": {
-    "storybook": "^7.0.0 || ^8.0.0",
-    "@storybook/core": "^7.0.0 || ^8.0.0"
+    "@storybook/core": "^7.0.0 || ^8.0.0",
+    "storybook": "^7.0.0 || ^8.0.0"
   },
   "tsup": {
     "entry": [
