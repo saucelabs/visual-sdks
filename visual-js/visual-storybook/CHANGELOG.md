@@ -1,5 +1,11 @@
 # @saucelabs/visual-storybook
 
+## 0.8.0
+
+### Minor Changes
+
+- 7fcad30: add ability to test variations of a story using overridable args
+
 ## 0.7.0
 
 ### Minor Changes
