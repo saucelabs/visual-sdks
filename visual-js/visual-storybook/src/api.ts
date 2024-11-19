@@ -66,7 +66,7 @@ export const augmentStoryName = (
   }
 
   if (variation.postfix) {
-    name = `${variation.postfix}${name}`;
+    name = `${name}${variation.postfix}`;
   }
 
   return {

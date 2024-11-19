@@ -38,7 +38,8 @@
   "scripts": {
     "build": "tsup",
     "watch": "tsc-watch --declaration -p .",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "test": "jest --collect-coverage"
   },
   "dependencies": {
     "@saucelabs/visual": "^0.10.0",
