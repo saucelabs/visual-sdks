@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-storybook",
   "description": "Storybook Plugin / Bootstrapper for Sauce Labs Visual",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",

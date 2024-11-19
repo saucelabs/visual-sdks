@@ -1,5 +1,11 @@
 # @saucelabs/visual-storybook
 
+## 0.8.1
+
+### Patch Changes
+
+- 0270311: fix postfixing of storybook name when adding variations
+
 ## 0.8.0
 
 ### Minor Changes
