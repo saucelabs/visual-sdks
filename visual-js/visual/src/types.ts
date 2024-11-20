@@ -39,7 +39,7 @@ export type FullPageScreenshotOptions<T> =
        */
       scrollElement?: T | Promise<T>;
       /**
-       * XPATH selector of an element that we should crop the screenshot to. Available only on native apps.
+       * Selector of an element that we should crop the screenshot to. Available only on native apps.
        */
       nativeClipSelector?: SelectorIn;
     };
