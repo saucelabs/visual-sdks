@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.10.2
+
+### Patch Changes
+
+- e7abe58: expose nativeClipSelector for full page config
+
 ## 0.10.1
 
 ### Patch Changes
