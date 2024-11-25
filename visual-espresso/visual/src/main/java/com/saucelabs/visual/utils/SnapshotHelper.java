@@ -15,12 +15,10 @@ import androidx.test.uiautomator.UiDevice;
 import com.saucelabs.visual.exception.VisualApiException;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,14 +27,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 public class SnapshotHelper {
 
@@ -91,82 +81,38 @@ public class SnapshotHelper {
     }
 
     public byte[] captureDom(View clipElement) {
-        if(clipElement == null) {
-            return captureDom();
-        }
-        org.jsoup.nodes.Document doc = Jsoup.parse(new String(captureDom()), "", Parser.xmlParser());
-        String query = String.format("[resource-id=\"%s\"]",
-                clipElement.getResources().getResourceName(clipElement.getId()));
-        org.jsoup.nodes.Element element = doc.selectFirst(query);
-        if(element != null) {
-            return element.outerHtml().getBytes(StandardCharsets.UTF_8);
-        }
-        else {
-            return new byte[0];
-        }
-    }
-
-    public byte[] captureDom() {
+        String dom;
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             device.dumpWindowHierarchy(os);
-            return wrapDom(os.toByteArray());
+            dom = os.toString("UTF-8");
         } catch (IOException e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
-    }
+        if(clipElement == null) {
+            return wrapDom(dom).getBytes(StandardCharsets.UTF_8);
+        }
 
-    private byte[] wrapDom(byte[] originalDom) {
-        try (ByteArrayInputStream is = new ByteArrayInputStream(originalDom)) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Element originalRootElement = builder.parse(is).getDocumentElement();
-
-            // Get a new XML document
-            Document newDocument = builder.newDocument();
-
-            // Add the root element
-            Element newRoot = newDocument.createElement("android-page-source");
-            newDocument.appendChild(newRoot);
-
-            // Append the originalRoot
-            Node importedRoot = newDocument.importNode(originalRootElement, true);
-            newRoot.appendChild(importedRoot);
-
-            return convertXMLToByteArray(new DOMSource(newDocument));
-        } catch (Exception e) {
-            throw new VisualApiException(e.getLocalizedMessage());
+        Document doc = Jsoup.parse(dom, Parser.xmlParser());
+        String query = String.format("[resource-id=\"%s\"]",
+                clipElement.getResources().getResourceName(clipElement.getId()));
+        Element element = doc.selectFirst(query);
+        if(element != null) {
+            return wrapDom(element.outerHtml()).getBytes(StandardCharsets.UTF_8);
+        }
+        else {
+            throw new VisualApiException("Failed to clip DOM. No element matched:" + query);
         }
     }
 
-    private byte[] convertXMLToByteArray(DOMSource source) {
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-
-            // Add the xml declaration manually
-            String xmlDeclaration = "<?xml version=\"1.0\"?>";
-            os.write(xmlDeclaration.getBytes("UTF-8"));
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-
-            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-            // Transform the document to a string
-            StreamResult result = new StreamResult(os);
-            transformer.transform(source, result);
-
-            // Convert the output to a string
-            String xmlString = os.toString("UTF-8");
-
-            // Prepend the DOCTYPE declaration manually
-            String docType = "<!DOCTYPE android-page-source>";
-            String finalXml = docType + xmlString;
-
-            return finalXml.getBytes("UTF-8");
-        } catch (Exception e) {
-            throw new VisualApiException(e.getLocalizedMessage());
-        }
+    private String wrapDom(String originalDom) {
+        Document doc = Jsoup.parse(originalDom, "", Parser.xmlParser());
+        doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        return "<!DOCTYPE android-page-source>" +
+                "<?xml version=\"1.0\"?>" +
+                "<android-page-source>" +
+                doc.select("hierarchy").outerHtml() +
+                "</android-page-source>";
     }
 
     public void uploadDom(String uploadUrl, byte[] file) {
