@@ -14,6 +14,8 @@ import androidx.test.uiautomator.UiDevice;
 
 import com.saucelabs.visual.exception.VisualApiException;
 
+import org.jsoup.Jsoup;
+import org.jsoup.parser.Parser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -84,6 +87,22 @@ public class SnapshotHelper {
             return os.toByteArray();
         } catch (IOException e) {
             throw new VisualApiException(e.getLocalizedMessage());
+        }
+    }
+
+    public byte[] captureDom(View clipElement) {
+        if(clipElement == null) {
+            return captureDom();
+        }
+        org.jsoup.nodes.Document doc = Jsoup.parse(new String(captureDom()), "", Parser.xmlParser());
+        String query = String.format("[resource-id=\"%s\"]",
+                clipElement.getResources().getResourceName(clipElement.getId()));
+        org.jsoup.nodes.Element element = doc.selectFirst(query);
+        if(element != null) {
+            return element.outerHtml().getBytes(StandardCharsets.UTF_8);
+        }
+        else {
+            return new byte[0];
         }
     }
 

@@ -63,6 +63,7 @@ dependencies {
     implementation libs.apollo.rx3.support
     implementation libs.espresso.core
     implementation libs.uiautomator
+    implementation libs.jsoup
     androidTestImplementation libs.ext.junit
 }
 
