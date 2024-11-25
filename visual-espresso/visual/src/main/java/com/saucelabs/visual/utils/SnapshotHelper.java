@@ -89,7 +89,7 @@ public class SnapshotHelper {
         } catch (IOException e) {
             throw new VisualApiException(e.getLocalizedMessage());
         }
-        if(clipElement == null) {
+        if (clipElement == null) {
             return wrapDom(dom).getBytes(StandardCharsets.UTF_8);
         }
 
@@ -97,10 +97,9 @@ public class SnapshotHelper {
         String query = String.format("[resource-id=\"%s\"]",
                 clipElement.getResources().getResourceName(clipElement.getId()));
         Element element = doc.selectFirst(query);
-        if(element != null) {
+        if (element != null) {
             return wrapDom(element.outerHtml()).getBytes(StandardCharsets.UTF_8);
-        }
-        else {
+        } else {
             throw new VisualApiException("Failed to clip DOM. No element matched:" + query);
         }
     }
