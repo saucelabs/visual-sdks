@@ -1,6 +1,7 @@
 package com.saucelabs.visual;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
+import com.saucelabs.visual.graphql.type.SelectorIn;
 import com.saucelabs.visual.model.DiffingFlag;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
@@ -31,9 +32,11 @@ public class CheckOptions {
       Boolean captureDom,
       String clipSelector,
       WebElement clipElement,
-      FullPageScreenshotConfig fullPageScreenshotConfig) {
+      FullPageScreenshotConfig fullPageScreenshotConfig,
+      List<IgnoreSelectorIn> ignoreSelectors) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
+    this.ignoreSelectors = ignoreSelectors;
     this.regions = regions;
     this.testName = testName;
     this.suiteName = suiteName;
@@ -47,6 +50,7 @@ public class CheckOptions {
 
   private List<WebElement> ignoreElements = new ArrayList<>();
   private List<IgnoreRegion> ignoreRegions = new ArrayList<>();
+  private List<IgnoreSelectorIn> ignoreSelectors = new ArrayList<>();
   private List<VisualRegion> regions = new ArrayList<>();
 
   private String testName;
@@ -61,6 +65,7 @@ public class CheckOptions {
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
     private List<IgnoreRegion> ignoreRegions = new ArrayList<>();
+    private List<IgnoreSelectorIn> ignoreSelectors = new ArrayList<>();
     private List<VisualRegion> regions = new ArrayList<>();
     private String testName;
     private String suiteName;
@@ -78,6 +83,11 @@ public class CheckOptions {
 
     public Builder withIgnoreRegions(List<IgnoreRegion> ignoreRegions) {
       this.ignoreRegions = ignoreRegions;
+      return this;
+    }
+
+    public Builder withIgnoreSelectors(List<IgnoreSelectorIn> ignoreSelectors) {
+      this.ignoreSelectors = ignoreSelectors;
       return this;
     }
 
@@ -154,7 +164,8 @@ public class CheckOptions {
           captureDom,
           clipSelector,
           clipElement,
-          fullPageScreenshotConfig);
+          fullPageScreenshotConfig,
+          ignoreSelectors);
     }
   }
 
@@ -172,6 +183,14 @@ public class CheckOptions {
 
   public void setIgnoreRegions(List<IgnoreRegion> ignoreRegions) {
     this.ignoreRegions = ignoreRegions;
+  }
+
+  public List<IgnoreSelectorIn> getIgnoreSelectors() {
+    return ignoreSelectors;
+  }
+
+  public void setIgnoreSelectors(List<IgnoreSelectorIn> ignoreSelectors) {
+    this.ignoreSelectors = ignoreSelectors;
   }
 
   public String getTestName() {

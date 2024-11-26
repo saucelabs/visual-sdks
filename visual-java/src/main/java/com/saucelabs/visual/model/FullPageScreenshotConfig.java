@@ -2,6 +2,7 @@ package com.saucelabs.visual.model;
 
 import java.util.Arrays;
 import java.util.List;
+import com.saucelabs.visual.graphql.type.SelectorIn;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebElement;
 
@@ -13,6 +14,7 @@ public class FullPageScreenshotConfig {
   private Boolean hideScrollBars;
   private int scrollLimit;
   private String scrollElement;
+  private SelectorIn nativeClipSelector;
 
   public FullPageScreenshotConfig(
       int delayAfterScrollMs,
@@ -20,13 +22,15 @@ public class FullPageScreenshotConfig {
       List<String> hideAfterFirstScroll,
       Boolean hideScrollBars,
       int scrollLimit,
-      String scrollElement) {
+      String scrollElement,
+      SelectorIn nativeClipSelector) {
     this.delayAfterScrollMs = delayAfterScrollMs;
     this.disableCSSAnimation = disableCSSAnimation;
     this.hideAfterFirstScroll = hideAfterFirstScroll;
     this.hideScrollBars = hideScrollBars;
     this.scrollLimit = scrollLimit;
     this.scrollElement = scrollElement;
+    this.nativeClipSelector = nativeClipSelector;
   }
 
   public static class Builder {
@@ -36,6 +40,7 @@ public class FullPageScreenshotConfig {
     private Boolean hideScrollBars;
     private int scrollLimit;
     private String scrollElement;
+    private SelectorIn nativeClipSelector;
 
     public Builder withDelayAfterScrollMs(int delayAfterScrollMs) {
       this.delayAfterScrollMs = delayAfterScrollMs;
@@ -73,6 +78,17 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+     * Only used for native app testing
+     *
+     * @param nativeClipSelector SelectorIn to clip
+     * @return Builder instance
+     */
+    public Builder withNativeClipSelector(SelectorIn nativeClipSelector) {
+      this.nativeClipSelector = nativeClipSelector;
+      return this;
+    }
+
     public FullPageScreenshotConfig build() {
       return new FullPageScreenshotConfig(
           delayAfterScrollMs,
@@ -80,7 +96,8 @@ public class FullPageScreenshotConfig {
           hideAfterFirstScroll,
           hideScrollBars,
           scrollLimit,
-          scrollElement);
+          scrollElement,
+          nativeClipSelector);
     }
   }
 
@@ -135,5 +152,18 @@ public class FullPageScreenshotConfig {
    */
   public void setScrollElement(WebElement scrollElement) {
     this.scrollElement = ((RemoteWebElement) scrollElement).getId();
+  }
+
+  public SelectorIn getNativeClipSelector() {
+    return nativeClipSelector;
+  }
+
+  /**
+   * Only used for native app testing
+   *
+   * @param nativeClipSelector SelectorIn to clip
+   */
+  public void setNativeClipSelector(SelectorIn nativeClipSelector) {
+    this.nativeClipSelector = nativeClipSelector;
   }
 }
