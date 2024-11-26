@@ -98,10 +98,11 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
       return Promise.all(elements.map(async (e) => ({ id: await e.getId() })));
     };
 
-    const { ignoreRegions, ignoreElements } = await parseRegionsForAPI(
-      [...(options.ignore ?? []), ...(options.regions ?? [])].flat(),
-      resolveElement,
-    );
+    const { ignoreRegions, ignoreElements, ignoreSelectors } =
+      await parseRegionsForAPI(
+        [...(options.ignore ?? []), ...(options.regions ?? [])].flat(),
+        resolveElement,
+      );
 
     //
     // Get more info about the session
@@ -149,6 +150,7 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         name: name,
         ignoreRegions,
         ignoreElements,
+        ignoreSelectors,
         sessionMetadata: metaInfo,
         suiteName,
         testName,
