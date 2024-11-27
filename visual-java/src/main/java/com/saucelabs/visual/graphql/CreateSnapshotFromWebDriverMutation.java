@@ -9,10 +9,7 @@ import com.saucelabs.visual.graphql.type.ElementIn;
 import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebElement;
 
