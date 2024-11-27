@@ -3066,6 +3066,7 @@ __metadata:
     "@jest/globals": ^28.0.0 || ^29.0.0
     "@saucelabs/visual": ^0.10.0
     "@saucelabs/visual-playwright": ^0.2.0
+    "@storybook/core-events": ^8.4.5
     "@storybook/instrumenter": ^8.4.5
     "@storybook/test-runner": ">=0.13.0"
     "@storybook/types": ^8.4.5
@@ -3091,9 +3092,7 @@ __metadata:
     tsup: ^7.2.0
     typescript: ^5.0.4
   peerDependencies:
-    "@storybook/core": ^7.0.0 || ^8.0.0
-    "@storybook/instrumenter": ^7.0.0 || ^8.0.0
-    storybook: ^7.0.0 || ^8.0.0
+    storybook: ^6.4.0 || ^7.0.0 || ^8.0.0
   languageName: unknown
   linkType: soft
 
@@ -3230,6 +3229,15 @@ __metadata:
   peerDependencies:
     storybook: ^8.3.5
   checksum: 7f97f1b4d9a723d6baae4e68e4e1e0936192b09a5b1ba03a3b3ae8177f30ca6bd92b3686edcd355bd04c82a5029f828d2676377827d6af531812d73739e9db12
+  languageName: node
+  linkType: hard
+
+"@storybook/core-events@npm:^8.4.5":
+  version: 8.4.5
+  resolution: "@storybook/core-events@npm:8.4.5"
+  peerDependencies:
+    storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
+  checksum: d7322c6d8723f98b7a0caf897048f53e4bacfbeb3ebb53a215b42a92222f1f8af4749bede2358af06973bf8e64df874299f342ab30747685c486d1d5d8b8cd28
   languageName: node
   linkType: hard
 
