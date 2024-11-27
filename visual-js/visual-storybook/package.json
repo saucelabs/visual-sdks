@@ -7,7 +7,8 @@
   "types": "build/index.d.ts",
   "license": "MIT",
   "files": [
-    "build"
+    "build",
+    "play.*"
   ],
   "type": "module",
   "engines": {
@@ -33,6 +34,10 @@
       "require": "./build/config/global-teardown.cjs",
       "import": "./build/config/global-teardown.js"
     },
+    "./play": {
+      "require": "./play.cjs",
+      "import": "./play.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -50,16 +55,18 @@
   },
   "peerDependencies": {
     "@storybook/core": "^7.0.0 || ^8.0.0",
+    "@storybook/instrumenter": "^7.0.0 || ^8.0.0",
     "storybook": "^7.0.0 || ^8.0.0"
   },
   "tsup": {
-    "entry": [
-      "./src/index.ts",
-      "./src/config/global-setup.ts",
-      "./src/config/global-teardown.ts"
-    ],
+    "entry": {
+      "build/index": "./src/index.ts",
+      "build/config/global-setup": "./src/config/global-setup.ts",
+      "build/config/global-teardown": "./src/config/global-teardown.ts",
+      "play": "./src/play.ts"
+    },
     "dts": true,
-    "outDir": "./build",
+    "outDir": "./",
     "format": [
       "cjs",
       "esm"
@@ -67,11 +74,13 @@
     "external": [
       "@saucelabs/visual-storybook"
     ],
-    "noExternal": []
+    "noExternal": [],
+    "splitting": false
   },
   "devDependencies": {
     "@jest/globals": "^28.0.0 || ^29.0.0",
-    "@storybook/types": "^8.0.2",
+    "@storybook/instrumenter": "^8.4.5",
+    "@storybook/types": "^8.4.5",
     "@tsconfig/node18": "^2.0.0",
     "@types/node": "^18.13.0",
     "@types/node-fetch": "^2.6.4",

@@ -1,5 +1,5 @@
-import { SauceRegion } from '@saucelabs/visual';
-import { SauceVisualParams as PlaywrightParams } from '@saucelabs/visual-playwright';
+import type { SauceRegion } from '@saucelabs/visual';
+import type { SauceVisualParams as PlaywrightParams } from '@saucelabs/visual-playwright';
 
 export interface VisualOpts extends PlaywrightParams {
   user: string | undefined;
