@@ -1,11 +1,13 @@
 import type { TestContext } from '@storybook/test-runner';
 import { getStoryContext } from '@storybook/test-runner';
 import type { Page } from 'playwright-core';
-import { internals } from '@saucelabs/visual-playwright';
-import { SauceVisualParams, StoryContext, StoryVariation } from './types';
+import {
+  internals,
+  SauceVisualParams as PlaywrightParams,
+} from '@saucelabs/visual-playwright';
+import type { SauceVisualParams, StoryContext, StoryVariation } from './types';
+import type { Channel } from '@storybook/core/channels';
 import events from '@storybook/core/core-events';
-
-import type EventEmitter from 'node:events';
 
 const { VisualPlaywright } = internals;
 
@@ -97,7 +99,7 @@ export const postVisit = async (page: Page, context: TestContext) => {
       await page.evaluate(
         ({ variation, events, storyId }) => {
           // @ts-expect-error Global managed by Storybook.
-          const channel: EventEmitter = globalThis.__STORYBOOK_ADDONS_CHANNEL__;
+          const channel: Channel = globalThis.__STORYBOOK_ADDONS_CHANNEL__;
           if (!channel) {
             throw new Error(
               'The test runner could not access the Storybook channel. Are you sure the Storybook is running correctly in that URL?',
@@ -143,3 +145,39 @@ export const postVisit = async (page: Page, context: TestContext) => {
  * `postVisit` exported from this package instead.
  */
 export const postRender = postVisit;
+
+/**
+ * Playwright throws an exception if attempting to expose the same binding twice and does not
+ * expose a way for us to see if something has already been bound. Since we're only given access
+ * to the Page object during postVisit (not during setup) we can't ensure that it's only added once.
+ * This is just a simple check to see if the current instance has already been bound and skip
+ * double binding if so.
+ */
+let hasExposed = false;
+
+/**
+ * Used in Storybook's test runner config file (test-runner.js/ts) for the `preVisit` hook. Preps
+ * the binding for taking visual snapshots during and after render / execution.
+ */
+export const preVisit = async (page: Page, context: TestContext) => {
+  if (hasExposed) {
+    return;
+  }
+
+  await page.exposeBinding(
+    'takeVisualSnapshot',
+    async (source, ...args: [string, PlaywrightParams | undefined]) => {
+      const [name, params] = args;
+
+      const storyContext = await getStoryContext(source.page, context);
+
+      await takeScreenshot(
+        augmentStoryName(storyContext, {
+          name,
+        }),
+        params,
+      );
+    },
+  );
+  hasExposed = true;
+};
