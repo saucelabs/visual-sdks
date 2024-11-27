@@ -5,9 +5,13 @@ import static android.util.Base64.DEFAULT;
 import android.app.UiAutomation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
@@ -94,14 +98,36 @@ public class SnapshotHelper {
         }
 
         Document doc = Jsoup.parse(dom, Parser.xmlParser());
-        String query = String.format("[resource-id=\"%s\"]",
-                clipElement.getResources().getResourceName(clipElement.getId()));
+        String query = buildQuery(clipElement);
         Element element = doc.selectFirst(query);
         if (element != null) {
             return wrapDom(element.outerHtml()).getBytes(StandardCharsets.UTF_8);
         } else {
             throw new VisualApiException("Failed to clip DOM. No element matched:" + query);
         }
+    }
+
+    /**
+     * Uses resource id, text and index of the view (if available) to locate the view inside DOM
+     * Can be extended further to include more fields
+     * @param view View to be queried
+     * @return Jsoup parseable query to locate the view
+     */
+    private String buildQuery(View view) {
+        String resourceId = view.getResources().getResourceName(view.getId());
+        String text = view instanceof TextView ? ((TextView) view).getText().toString() : "";
+        ViewParent parent = view.getParent();
+        Integer index = parent instanceof ViewGroup ? ((ViewGroup) parent).indexOfChild(view) : null;
+
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append(String.format("[resource-id=\"%s\"]", resourceId));
+        if (!TextUtils.isEmpty(text)) {
+            queryBuilder.append(String.format("[text=\"%s\"]", text));
+        }
+        if (index != null) {
+            queryBuilder.append(String.format("[index=\"%s\"]", index));
+        }
+        return queryBuilder.toString();
     }
 
     private String wrapDom(String originalDom) {
