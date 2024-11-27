@@ -22,6 +22,23 @@ public class FullPageScreenshotConfig {
       List<String> hideAfterFirstScroll,
       Boolean hideScrollBars,
       int scrollLimit,
+      String scrollElement) {
+    this(
+        delayAfterScrollMs,
+        disableCSSAnimation,
+        hideAfterFirstScroll,
+        hideScrollBars,
+        scrollLimit,
+        scrollElement,
+        null);
+  }
+
+  public FullPageScreenshotConfig(
+      int delayAfterScrollMs,
+      Boolean disableCSSAnimation,
+      List<String> hideAfterFirstScroll,
+      Boolean hideScrollBars,
+      int scrollLimit,
       String scrollElement,
       SelectorIn nativeClipSelector) {
     this.delayAfterScrollMs = delayAfterScrollMs;

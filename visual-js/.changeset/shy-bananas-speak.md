@@ -1,5 +1,5 @@
 ---
-"@saucelabs/nightwatch-sauce-visual-service": patch
+"@saucelabs/nightwatch-sauce-visual-service": minor
 ---
 
-ignore selectors
+add support for ignore selectors in visual check

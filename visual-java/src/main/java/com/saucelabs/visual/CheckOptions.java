@@ -32,6 +32,33 @@ public class CheckOptions {
       Boolean captureDom,
       String clipSelector,
       WebElement clipElement,
+      FullPageScreenshotConfig fullPageScreenshotConfig) {
+    this(
+        ignoreElements,
+        ignoreRegions,
+        regions,
+        testName,
+        suiteName,
+        diffingMethod,
+        diffingOptions,
+        captureDom,
+        clipSelector,
+        clipElement,
+        fullPageScreenshotConfig,
+        new ArrayList<>());
+  }
+
+  public CheckOptions(
+      List<WebElement> ignoreElements,
+      List<IgnoreRegion> ignoreRegions,
+      List<VisualRegion> regions,
+      String testName,
+      String suiteName,
+      DiffingMethod diffingMethod,
+      DiffingOptionsIn diffingOptions,
+      Boolean captureDom,
+      String clipSelector,
+      WebElement clipElement,
       FullPageScreenshotConfig fullPageScreenshotConfig,
       List<IgnoreSelectorIn> ignoreSelectors) {
     this.ignoreElements = ignoreElements;

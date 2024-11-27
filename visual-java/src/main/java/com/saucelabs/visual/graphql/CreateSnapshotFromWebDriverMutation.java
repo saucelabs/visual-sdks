@@ -63,6 +63,29 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
         String jobId,
         String name,
         String sessionId,
+        String sessionMetadata) {
+      this(
+          buildUuid,
+          diffingMethod,
+          diffingOptions,
+          ignoreRegions,
+          ignoreElements,
+          jobId,
+          name,
+          sessionId,
+          sessionMetadata,
+          new ArrayList<>());
+    }
+
+    public CreateSnapshotFromWebDriverIn(
+        String buildUuid,
+        DiffingMethod diffingMethod,
+        Optional<DiffingOptionsIn> diffingOptions,
+        List<RegionIn> ignoreRegions,
+        List<ElementIn> ignoreElements,
+        String jobId,
+        String name,
+        String sessionId,
         String sessionMetadata,
         List<IgnoreSelectorIn> ignoreSelectors) {
       this.buildUuid = buildUuid;
