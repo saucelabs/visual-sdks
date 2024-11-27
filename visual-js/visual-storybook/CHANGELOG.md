@@ -1,5 +1,12 @@
 # @saucelabs/visual-storybook
 
+## 0.9.0
+
+### Minor Changes
+
+- 2036ba4: add play interaction snapshot testing
+  re-add storybook 6 support
+
 ## 0.8.1
 
 ### Patch Changes
