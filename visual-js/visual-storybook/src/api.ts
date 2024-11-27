@@ -146,6 +146,13 @@ export const postVisit = async (page: Page, context: TestContext) => {
  */
 export const postRender = postVisit;
 
+/**
+ * Playwright throws an exception if attempting to expose the same binding twice and does not
+ * expose a way for us to see if something has already been bound. Since we're only given access
+ * to the Page object during postVisit (not during setup) we can't ensure that it's only added once.
+ * This is just a simple check to see if the current instance has already been bound and skip
+ * double binding if so.
+ */
 let hasExposed = false;
 
 /**
