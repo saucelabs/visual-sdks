@@ -1,7 +1,7 @@
 package com.saucelabs.visual;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
-import com.saucelabs.visual.graphql.type.SelectorIn;
+import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
 import com.saucelabs.visual.model.DiffingFlag;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;

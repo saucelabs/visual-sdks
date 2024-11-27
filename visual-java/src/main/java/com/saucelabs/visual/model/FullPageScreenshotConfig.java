@@ -1,8 +1,8 @@
 package com.saucelabs.visual.model;
 
+import com.saucelabs.visual.graphql.type.SelectorIn;
 import java.util.Arrays;
 import java.util.List;
-import com.saucelabs.visual.graphql.type.SelectorIn;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebElement;
 
