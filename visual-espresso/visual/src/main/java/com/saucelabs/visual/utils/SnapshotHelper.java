@@ -105,7 +105,7 @@ public class SnapshotHelper {
     }
 
     private String wrapDom(String originalDom) {
-        Document doc = Jsoup.parse(originalDom, "", Parser.xmlParser());
+        Document doc = Jsoup.parse(originalDom, Parser.xmlParser());
         doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
         return "<!DOCTYPE android-page-source>" +
                 "<?xml version=\"1.0\"?>" +
