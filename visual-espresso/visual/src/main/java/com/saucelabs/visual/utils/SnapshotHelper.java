@@ -130,13 +130,16 @@ public class SnapshotHelper {
         return queryBuilder.toString();
     }
 
-    private String wrapDom(String originalDom) {
-        Document doc = Jsoup.parse(originalDom, Parser.xmlParser());
+    private String wrapDom(String dom) {
+        Document doc = Jsoup.parse(dom, Parser.xmlParser());
         doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+        // Empty <hierarchy> root means DOM is already clipped
+        String hierarchyRoot = doc.select("hierarchy").outerHtml();
+        String domXml = !TextUtils.isEmpty(hierarchyRoot) ? hierarchyRoot : dom;
         return "<!DOCTYPE android-page-source>" +
                 "<?xml version=\"1.0\"?>" +
                 "<android-page-source>" +
-                doc.select("hierarchy").outerHtml() +
+                domXml +
                 "</android-page-source>";
     }
 
