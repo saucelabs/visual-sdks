@@ -45,7 +45,7 @@ public class CheckOptions {
         clipSelector,
         clipElement,
         fullPageScreenshotConfig,
-        new ArrayList<>());
+        null);
   }
 
   public CheckOptions(

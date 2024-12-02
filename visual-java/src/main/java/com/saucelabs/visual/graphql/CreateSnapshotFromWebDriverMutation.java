@@ -71,7 +71,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
           name,
           sessionId,
           sessionMetadata,
-          new ArrayList<>());
+          null);
     }
 
     public CreateSnapshotFromWebDriverIn(
