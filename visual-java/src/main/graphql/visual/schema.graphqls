@@ -1,3 +1,8 @@
+schema {
+  mutation: Mutation
+  query: Query
+}
+
 input AddCommentIn {
   action: CommentAction
   comment: String!
