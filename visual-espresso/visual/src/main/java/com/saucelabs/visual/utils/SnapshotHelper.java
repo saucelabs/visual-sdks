@@ -108,7 +108,7 @@ public class SnapshotHelper {
     }
 
     /**
-     * Uses resource id, text and index of the view (if available) to locate the view inside DOM
+     * Uses resource id and text of the view (if available) to locate the view inside DOM
      * Can be extended further to include more fields
      * @param view View to be queried
      * @return Jsoup parseable query to locate the view
@@ -116,16 +116,11 @@ public class SnapshotHelper {
     private String buildQuery(View view) {
         String resourceId = view.getResources().getResourceName(view.getId());
         String text = view instanceof TextView ? ((TextView) view).getText().toString() : "";
-        ViewParent parent = view.getParent();
-        Integer index = parent instanceof ViewGroup ? ((ViewGroup) parent).indexOfChild(view) : null;
 
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append(String.format("[resource-id=\"%s\"]", resourceId));
         if (!TextUtils.isEmpty(text)) {
             queryBuilder.append(String.format("[text=\"%s\"]", text));
-        }
-        if (index != null) {
-            queryBuilder.append(String.format("[index=\"%s\"]", index));
         }
         return queryBuilder.toString();
     }
