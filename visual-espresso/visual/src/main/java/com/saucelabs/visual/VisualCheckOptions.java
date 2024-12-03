@@ -90,7 +90,7 @@ public class VisualCheckOptions {
         }
 
         /**
-         * Specify a set of {@link Region}s to be ignored by Sauce Visual
+         * Specify {@link Region}s to be ignored by Sauce Visual
          *
          * @param regions Regions to be ignored
          * @return Builder instance
@@ -106,7 +106,7 @@ public class VisualCheckOptions {
         }
 
         /**
-         * Specify a set of {@link Matcher}s that resolve to {@link View}s to be ignored by Sauce Visual
+         * Specify {@link Matcher}s that resolve to {@link View}s to be ignored by Sauce Visual
          *
          * @param viewMatchers View matchers to be ignored
          * @return Builder instance
@@ -125,12 +125,30 @@ public class VisualCheckOptions {
         }
 
         /**
-         * Specify a set of {@link View}s to be ignored by Sauce Visual
+         * Specify {@link View}s to be ignored by Sauce Visual
          *
          * @param views Views to be ignored
          * @return Builder instance
          */
         public Builder ignore(View... views) {
+            List<RegionIn> result = new ArrayList<>();
+            for (View view : views) {
+                RegionIn region = scrollView != null
+                        ? RegionInFactory.fromView(view, scrollView)
+                        : RegionInFactory.fromView(view);
+                result.add(region);
+            }
+            this.ignoreRegions.addAll(result);
+            return this;
+        }
+
+        /**
+         * Specify a list of {@link View}s to be ignored by Sauce Visual
+         *
+         * @param views Views to be ignored
+         * @return Builder instance
+         */
+        public Builder ignore(List<View> views) {
             List<RegionIn> result = new ArrayList<>();
             for (View view : views) {
                 RegionIn region = scrollView != null

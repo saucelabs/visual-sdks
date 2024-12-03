@@ -1,5 +1,7 @@
 package com.saucelabs.visual;
 
+import android.text.TextUtils;
+
 import com.saucelabs.visual.exception.VisualApiException;
 
 public enum DataCenter {
@@ -15,7 +17,7 @@ public enum DataCenter {
     }
 
     public static DataCenter fromSauceRegion(String sauceRegion) {
-        if (sauceRegion == null) {
+        if (TextUtils.isEmpty(sauceRegion.trim())) {
             return US_WEST_1;
         }
         switch (sauceRegion) {
