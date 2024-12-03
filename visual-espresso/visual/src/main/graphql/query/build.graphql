@@ -1,0 +1,11 @@
+query build($input: UUID!) {
+    result: build(id: $input) {
+        id
+        name
+        project
+        branch
+        defaultBranch
+        url
+        mode
+    }
+}
