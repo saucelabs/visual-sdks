@@ -388,7 +388,8 @@ public class VisualApi {
             this.jobId,
             snapshotName,
             this.sessionId,
-            this.sessionMetadataBlob);
+            this.sessionMetadataBlob,
+            options.getIgnoreSelectors());
 
     if (options.getTestName() != null) {
       input.setTestName(options.getTestName());

@@ -6,12 +6,10 @@ import com.saucelabs.visual.graphql.type.DiffingMethod;
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
 import com.saucelabs.visual.graphql.type.ElementIn;
+import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebElement;
 
@@ -28,6 +26,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     public final List<RegionIn> ignoreRegions;
 
     public final List<ElementIn> ignoreElements;
+
+    public final List<IgnoreSelectorIn> ignoreSelectors;
 
     public final String jobId;
 
@@ -61,11 +61,36 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
         String name,
         String sessionId,
         String sessionMetadata) {
+      this(
+          buildUuid,
+          diffingMethod,
+          diffingOptions,
+          ignoreRegions,
+          ignoreElements,
+          jobId,
+          name,
+          sessionId,
+          sessionMetadata,
+          null);
+    }
+
+    public CreateSnapshotFromWebDriverIn(
+        String buildUuid,
+        DiffingMethod diffingMethod,
+        Optional<DiffingOptionsIn> diffingOptions,
+        List<RegionIn> ignoreRegions,
+        List<ElementIn> ignoreElements,
+        String jobId,
+        String name,
+        String sessionId,
+        String sessionMetadata,
+        List<IgnoreSelectorIn> ignoreSelectors) {
       this.buildUuid = buildUuid;
       this.diffingMethod = diffingMethod;
       this.diffingOptions = diffingOptions;
       this.ignoreRegions = ignoreRegions;
       this.ignoreElements = ignoreElements;
+      this.ignoreSelectors = ignoreSelectors;
       this.jobId = jobId;
       this.name = name;
       this.sessionId = sessionId;

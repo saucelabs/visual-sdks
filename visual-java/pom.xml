@@ -199,6 +199,11 @@
                   <javaType>java.lang.String</javaType>
                   <graphQLScalarTypeStaticField>graphql.scalars.ExtendedScalars.Object</graphQLScalarTypeStaticField>
                 </customScalar>
+                <customScalar>
+                  <graphQLTypeName>Void</graphQLTypeName>
+                  <javaType>java.lang.Void</javaType>
+                  <graphQLScalarTypeStaticField>graphql.scalars.ExtendedScalars.Object</graphQLScalarTypeStaticField>
+                </customScalar>
               </customScalars>
             </configuration>
           </execution>

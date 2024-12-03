@@ -15,14 +15,18 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.SessionId;
 
 class VisualApiTest {
 
   @Test
   void sauceVisualResultsTest() throws IllegalAccessException {
+    RemoteWebDriver driver = mock(RemoteWebDriver.class);
+    when(driver.getSessionId()).thenReturn(new SessionId(""));
     VisualApi api =
         new VisualApi(
-            "", null, new VisualBuild(null, null, null, null, null, null), "", "", "u", "k");
+            "", driver, new VisualBuild(null, null, null, null, null, null), "", "", "u", "k");
     GraphQLClient mockGraphQLClient = mock(GraphQLClient.class);
     when(mockGraphQLClient.execute(any(), any()))
         .thenReturn(
