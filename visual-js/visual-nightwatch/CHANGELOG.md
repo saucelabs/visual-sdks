@@ -1,5 +1,11 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.9.0
+
+### Minor Changes
+
+- 9070705: add support for ignore selectors in visual check
+
 ## 0.8.1
 
 ### Patch Changes
