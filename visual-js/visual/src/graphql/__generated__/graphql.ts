@@ -24,8 +24,15 @@ export type Scalars = {
   JSON: any;
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
   UUID: string;
+  Void: any;
   WebdriverElementID: string;
   WebdriverSessionBlob: string;
+};
+
+export type AddCommentIn = {
+  action?: InputMaybe<CommentAction>;
+  comment: Scalars['String'];
+  diffId: Scalars['UUID'];
 };
 
 export type ApplicationSummary = {
@@ -206,6 +213,8 @@ export enum BaselinesOrderBy {
 
 export type Branch = Node & {
   __typename?: 'Branch';
+  /** Returns the differents values availables for attributes. */
+  distinctAttributeValues: DistinctAttributeValues;
   id: Scalars['String'];
   lastUsed: Scalars['Datetime'];
   name: Maybe<Scalars['String']>;
@@ -257,6 +266,7 @@ export enum Browser {
 export type Build = Node & {
   __typename?: 'Build';
   branch: Maybe<Scalars['String']>;
+  commentCount: Maybe<Scalars['Int']>;
   createdAt: Scalars['Datetime'];
   createdByOrgId: Scalars['UUID'];
   createdByUser: User;
@@ -287,6 +297,8 @@ export type Build = Node & {
   diffCountExtended: Scalars['Int'];
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  /** Returns the differents values availables for attributes. */
+  distinctAttributeValues: DistinctAttributeValues;
   /**
    * If not null, it indicates that the build encountered an error.
    *
@@ -506,6 +518,84 @@ export enum BuildsOrderBy {
   StatusDesc = 'STATUS_DESC'
 }
 
+export type Comment = Node & {
+  __typename?: 'Comment';
+  action: Maybe<CommentAction>;
+  comment: Scalars['String'];
+  createdAt: Scalars['Datetime'];
+  createdByOrgId: Scalars['UUID'];
+  createdByUser: User;
+  createdByUserId: Scalars['UUID'];
+  /** Reads a single `Diff` that is related to this `Comment`. */
+  diff: Maybe<Diff>;
+  diffId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID'];
+};
+
+export enum CommentAction {
+  Approved = 'APPROVED',
+  Rejected = 'REJECTED',
+  Unapproved = 'UNAPPROVED',
+  Unrejected = 'UNREJECTED'
+}
+
+/** A condition to be used against `Comment` object types. All fields are tested for equality and combined with a logical ‘and.’ */
+export type CommentCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']>;
+  /** Checks for equality with the object’s `diffId` field. */
+  diffId?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+/** A filter to be used against `Comment` object types. All fields are combined with a logical ‘and.’ */
+export type CommentFilter = {
+  /** Filter by the object’s `createdAt` field. */
+  createdAt?: InputMaybe<DatetimeFilter>;
+  /** Filter by the object’s `diffId` field. */
+  diffId?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `id` field. */
+  id?: InputMaybe<UuidFilter>;
+};
+
+/** A connection to a list of `Comment` values. */
+export type CommentsConnection = {
+  __typename?: 'CommentsConnection';
+  /** A list of edges which contains the `Comment` and cursor to aid in pagination. */
+  edges: Array<CommentsEdge>;
+  /** A list of `Comment` objects. */
+  nodes: Array<Comment>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `Comment` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `Comment` edge in the connection. */
+export type CommentsEdge = {
+  __typename?: 'CommentsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `Comment` at the end of the edge. */
+  node: Comment;
+};
+
+/** Methods to use when ordering `Comment`. */
+export enum CommentsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  DiffIdAsc = 'DIFF_ID_ASC',
+  DiffIdDesc = 'DIFF_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
 export type CreateDerivedBaselinesIn = {
   baselineIds: Array<Scalars['UUID']>;
   onlyApplyIfIsLatest?: InputMaybe<Scalars['Boolean']>;
@@ -562,6 +652,10 @@ export type DatetimeFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']>;
 };
 
+export type DeleteCommentIn = {
+  id: Scalars['UUID'];
+};
+
 /**
  * The result of diffing a `Baseline` with a `Snapshot`.
  *
@@ -577,6 +671,8 @@ export type Diff = Node & {
   /** Reads a single `Build` that is related to this `Diff`. */
   build: Maybe<Build>;
   buildId: Scalars['UUID'];
+  /** Reads and enables pagination through a set of `Comment`. */
+  comments: CommentsConnection;
   createdAt: Scalars['Datetime'];
   diffBounds: Maybe<Rect>;
   diffClusters: Array<Maybe<Rect>>;
@@ -603,6 +699,23 @@ export type Diff = Node & {
   /** User id of user that last updated the diff. If no user updated the status yet, it is set to `created_by`. */
   updatedBy: Scalars['UUID'];
   updatedByUser: User;
+};
+
+
+/**
+ * The result of diffing a `Baseline` with a `Snapshot`.
+ *
+ * See the documentation for `Baseline` for details how a `Snapshot` is matched to `Baseline`.
+ */
+export type DiffCommentsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<CommentCondition>;
+  filter: InputMaybe<CommentFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<CommentsOrderBy>>;
 };
 
 
@@ -769,6 +882,17 @@ export enum DiffsOrderBy {
   StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
 }
 
+export type DistinctAttributeValues = {
+  __typename?: 'DistinctAttributeValues';
+  browser: Array<Maybe<Scalars['String']>>;
+  device: Array<Maybe<Scalars['String']>>;
+  operatingSystem: Array<OperatingSystemAttribute>;
+  storybookDepth1: Array<Maybe<Scalars['String']>>;
+  storybookDepth2: Array<Maybe<Scalars['String']>>;
+  suiteName: Array<Maybe<Scalars['String']>>;
+  testName: Array<Maybe<Scalars['String']>>;
+};
+
 export enum DomFormat {
   AndroidAppium = 'ANDROID_APPIUM',
   Browser = 'BROWSER',
@@ -812,6 +936,10 @@ export type FullPageConfigIn = {
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
   /** Hide all scrollbars in the app. */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
+  /** Selector of an element that we should crop the screenshot to. Available only on native apps. */
+  nativeClipSelector?: InputMaybe<SelectorIn>;
+  /** Change scroll behaviour before and after taking full page screenshot */
+  nativeScrollOptions?: InputMaybe<ScrollOption>;
   /** @experimental Element used for scrolling (available only in native apps) */
   scrollElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /**
@@ -863,6 +991,7 @@ export type MergeBaselinesPayload = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type Mutation = {
   __typename?: 'Mutation';
+  addComment: Comment;
   approveBuild: Build;
   createBuild: Build;
   /**
@@ -873,10 +1002,17 @@ export type Mutation = {
   createSnapshot: Snapshot;
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
+  deleteComment: Maybe<Scalars['Void']>;
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
   updateDiff: Diff;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAddCommentArgs = {
+  input: AddCommentIn;
 };
 
 
@@ -917,6 +1053,12 @@ export type MutationCreateSnapshotUploadArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCommentArgs = {
+  input: DeleteCommentIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
 };
@@ -952,6 +1094,12 @@ export enum OperatingSystem {
   Macos = 'MACOS',
   Windows = 'WINDOWS'
 }
+
+export type OperatingSystemAttribute = {
+  __typename?: 'OperatingSystemAttribute';
+  name: Maybe<OperatingSystem>;
+  version: Maybe<Scalars['String']>;
+};
 
 export type Org = {
   __typename?: 'Org';
@@ -1158,6 +1306,11 @@ export type Query = Node & {
   buildByNodeId: Maybe<Build>;
   /** Reads and enables pagination through a set of `Build`. */
   builds: Maybe<BuildsConnection>;
+  comment: Maybe<Comment>;
+  /** Reads a single `Comment` using its globally unique `ID`. */
+  commentByNodeId: Maybe<Comment>;
+  /** Reads and enables pagination through a set of `Comment`. */
+  comments: Maybe<CommentsConnection>;
   diff: Maybe<Diff>;
   /** Reads a single `Diff` using its globally unique `ID`. */
   diffByNodeId: Maybe<Diff>;
@@ -1301,6 +1454,31 @@ export type QueryBuildsArgs = {
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Array<BuildsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentArgs = {
+  id: Scalars['UUID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentByNodeIdArgs = {
+  nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<CommentCondition>;
+  filter: InputMaybe<CommentFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<CommentsOrderBy>>;
 };
 
 
@@ -1452,6 +1630,15 @@ export type RegionIn = {
   x: Scalars['Int'];
   y: Scalars['Int'];
 };
+
+/**
+ * TOP - scroll before and after to top of the scrollElement
+ * CONTINUE - no scroll before and after
+ */
+export enum ScrollOption {
+  Continue = 'CONTINUE',
+  Top = 'TOP'
+}
 
 export type SelectorIn = {
   type: SelectorType;
