@@ -1685,6 +1685,15 @@ export type RegionIn = {
   y: Scalars['Int'];
 };
 
+/**
+ * TOP - scroll before and after to top of the scrollElement
+ * CONTINUE - no scroll before and after
+ */
+export enum ScrollOption {
+  Continue = 'CONTINUE',
+  Top = 'TOP'
+}
+
 export type SelectorIn = {
   type: SelectorType;
   value: Scalars['String'];

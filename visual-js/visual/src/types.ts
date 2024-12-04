@@ -1,4 +1,8 @@
-import { RegionIn, SelectorIn } from './graphql/__generated__/graphql';
+import {
+  RegionIn,
+  ScrollOption,
+  SelectorIn,
+} from './graphql/__generated__/graphql';
 import { SelectiveRegionOptions } from './common/selective-region';
 import { SauceRegion } from './common/regions';
 
@@ -34,6 +38,10 @@ export type FullPageScreenshotOptions<T> =
        * Selector of an element that we should crop the screenshot to. Available only on native apps.
        */
       nativeClipSelector?: SelectorIn;
+      /**
+       * Change scroll behaviour before and after taking full page screenshot. Available only on native apps.
+       */
+      nativeScrollOptions?: ScrollOption;
     };
 
 export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;
