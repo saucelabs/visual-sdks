@@ -14,7 +14,7 @@ from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
     DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride
 
-PKG_VERSION = '0.2.1'
+PKG_VERSION = '0.3.0'
 
 
 class SauceLabsVisual:
