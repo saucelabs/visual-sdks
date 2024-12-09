@@ -24,8 +24,15 @@ export type Scalars = {
   JSON: any;
   /** A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122). */
   UUID: string;
+  Void: any;
   WebdriverElementID: string;
   WebdriverSessionBlob: string;
+};
+
+export type AddCommentIn = {
+  action?: InputMaybe<CommentAction>;
+  comment: Scalars['String'];
+  diffId: Scalars['UUID'];
 };
 
 export type ApplicationSummary = {
@@ -36,9 +43,9 @@ export type ApplicationSummary = {
 };
 
 export type ApproveBuildIn = {
-  /** @deprecated Use `uuid`. This field will be removed in a future update. */
-  id?: InputMaybe<Scalars['ID']>;
+  id?: InputMaybe<Scalars['UUID']>;
   onlyNew?: InputMaybe<Scalars['Boolean']>;
+  /** @deprecated Use `id`. This field will be removed in a future update. */
   uuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -206,6 +213,9 @@ export enum BaselinesOrderBy {
 
 export type Branch = Node & {
   __typename?: 'Branch';
+  baselines: BaselinesConnection;
+  /** Returns the differents values availables for attributes. */
+  distinctAttributeValues: DistinctAttributeValues;
   id: Scalars['String'];
   lastUsed: Scalars['Datetime'];
   name: Maybe<Scalars['String']>;
@@ -214,6 +224,19 @@ export type Branch = Node & {
   /** Reads a single `Project` that is related to this `Branch`. */
   project: Maybe<Project>;
   projectId: Scalars['String'];
+};
+
+
+export type BranchBaselinesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<BaselineCondition>;
+  filter: InputMaybe<BaselineFilter>;
+  filters: InputMaybe<SnapshotFiltersIn>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
 
 /** A connection to a list of `Branch` values. */
@@ -249,6 +272,7 @@ export enum Browser {
   Chrome = 'CHROME',
   Edge = 'EDGE',
   Firefox = 'FIREFOX',
+  None = 'NONE',
   PlaywrightWebkit = 'PLAYWRIGHT_WEBKIT',
   Safari = 'SAFARI'
 }
@@ -257,6 +281,7 @@ export enum Browser {
 export type Build = Node & {
   __typename?: 'Build';
   branch: Maybe<Scalars['String']>;
+  commentCount: Maybe<Scalars['Int']>;
   createdAt: Scalars['Datetime'];
   createdByOrgId: Scalars['UUID'];
   createdByUser: User;
@@ -287,6 +312,9 @@ export type Build = Node & {
   diffCountExtended: Scalars['Int'];
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  diffsPaginated: DiffsConnection;
+  /** Returns the differents values availables for attributes. */
+  distinctAttributeValues: DistinctAttributeValues;
   /**
    * If not null, it indicates that the build encountered an error.
    *
@@ -335,6 +363,20 @@ export type BuildDiffsArgs = {
   before: InputMaybe<Scalars['Cursor']>;
   condition: InputMaybe<DiffCondition>;
   filter: InputMaybe<DiffFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<DiffsOrderBy>>;
+};
+
+
+/** The result of diffing a `Baseline` with a `Snapshot`. */
+export type BuildDiffsPaginatedArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<DiffCondition>;
+  filter: InputMaybe<DiffFilter>;
+  filters: InputMaybe<DiffFiltersIn>;
   first: InputMaybe<Scalars['Int']>;
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
@@ -506,6 +548,85 @@ export enum BuildsOrderBy {
   StatusDesc = 'STATUS_DESC'
 }
 
+export type Comment = Node & {
+  __typename?: 'Comment';
+  action: Maybe<CommentAction>;
+  comment: Scalars['String'];
+  createdAt: Scalars['Datetime'];
+  createdByOrgId: Scalars['UUID'];
+  createdByUser: User;
+  createdByUserId: Scalars['UUID'];
+  /** Reads a single `Diff` that is related to this `Comment`. */
+  diff: Maybe<Diff>;
+  diffId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID'];
+  updatedAt: Maybe<Scalars['Datetime']>;
+};
+
+export enum CommentAction {
+  Approved = 'APPROVED',
+  Rejected = 'REJECTED',
+  Unapproved = 'UNAPPROVED',
+  Unrejected = 'UNREJECTED'
+}
+
+/** A condition to be used against `Comment` object types. All fields are tested for equality and combined with a logical ‘and.’ */
+export type CommentCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']>;
+  /** Checks for equality with the object’s `diffId` field. */
+  diffId?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+/** A filter to be used against `Comment` object types. All fields are combined with a logical ‘and.’ */
+export type CommentFilter = {
+  /** Filter by the object’s `createdAt` field. */
+  createdAt?: InputMaybe<DatetimeFilter>;
+  /** Filter by the object’s `diffId` field. */
+  diffId?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `id` field. */
+  id?: InputMaybe<UuidFilter>;
+};
+
+/** A connection to a list of `Comment` values. */
+export type CommentsConnection = {
+  __typename?: 'CommentsConnection';
+  /** A list of edges which contains the `Comment` and cursor to aid in pagination. */
+  edges: Array<CommentsEdge>;
+  /** A list of `Comment` objects. */
+  nodes: Array<Comment>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `Comment` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `Comment` edge in the connection. */
+export type CommentsEdge = {
+  __typename?: 'CommentsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `Comment` at the end of the edge. */
+  node: Comment;
+};
+
+/** Methods to use when ordering `Comment`. */
+export enum CommentsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  DiffIdAsc = 'DIFF_ID_ASC',
+  DiffIdDesc = 'DIFF_ID_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
 export type CreateDerivedBaselinesIn = {
   baselineIds: Array<Scalars['UUID']>;
   onlyApplyIfIsLatest?: InputMaybe<Scalars['Boolean']>;
@@ -518,14 +639,12 @@ export type CreateSnapshotFromWebDriverIn = {
    * visual testing.
    */
   baselineOverride?: InputMaybe<BaselineOverrideIn>;
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
   captureDom?: InputMaybe<Scalars['Boolean']>;
   /** The selenium ID of an element we should clip the screen to. */
   clipElement?: InputMaybe<Scalars['WebdriverElementID']>;
-  /** A querySelector compatible selector of an element that we should crop the screenshot to. */
-  clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /**
@@ -562,6 +681,10 @@ export type DatetimeFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']>;
 };
 
+export type DeleteCommentIn = {
+  id: Scalars['UUID'];
+};
+
 /**
  * The result of diffing a `Baseline` with a `Snapshot`.
  *
@@ -577,6 +700,8 @@ export type Diff = Node & {
   /** Reads a single `Build` that is related to this `Diff`. */
   build: Maybe<Build>;
   buildId: Scalars['UUID'];
+  /** Reads and enables pagination through a set of `Comment`. */
+  comments: CommentsConnection;
   createdAt: Scalars['Datetime'];
   diffBounds: Maybe<Rect>;
   diffClusters: Array<Maybe<Rect>>;
@@ -603,6 +728,23 @@ export type Diff = Node & {
   /** User id of user that last updated the diff. If no user updated the status yet, it is set to `created_by`. */
   updatedBy: Scalars['UUID'];
   updatedByUser: User;
+};
+
+
+/**
+ * The result of diffing a `Baseline` with a `Snapshot`.
+ *
+ * See the documentation for `Baseline` for details how a `Snapshot` is matched to `Baseline`.
+ */
+export type DiffCommentsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<CommentCondition>;
+  filter: InputMaybe<CommentFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<CommentsOrderBy>>;
 };
 
 
@@ -651,6 +793,16 @@ export type DiffFilter = {
   snapshotId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `status` field. */
   status?: InputMaybe<DiffStatusFilter>;
+};
+
+/** Extension of SnapshotFiltersIn. Should contain the same values here in addition to status filters. */
+export type DiffFiltersIn = {
+  browser?: InputMaybe<Array<Browser>>;
+  device?: InputMaybe<Array<Scalars['String']>>;
+  groupBy?: InputMaybe<Array<GroupByOption>>;
+  operatingSystem?: InputMaybe<Array<OperatingSystemFilterIn>>;
+  search?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Array<DiffStatus>>;
 };
 
 export type DiffPreviewIn = {
@@ -769,6 +921,17 @@ export enum DiffsOrderBy {
   StatusIsEqualDesc = 'STATUS_IS_EQUAL_DESC'
 }
 
+export type DistinctAttributeValues = {
+  __typename?: 'DistinctAttributeValues';
+  browser: Array<Maybe<Browser>>;
+  device: Array<Maybe<Scalars['String']>>;
+  operatingSystem: Array<OperatingSystemAttribute>;
+  storybookDepth1: Array<Maybe<Scalars['String']>>;
+  storybookDepth2: Array<Maybe<Scalars['String']>>;
+  suiteName: Array<Maybe<Scalars['String']>>;
+  testName: Array<Maybe<Scalars['String']>>;
+};
+
 export enum DomFormat {
   AndroidAppium = 'ANDROID_APPIUM',
   Browser = 'BROWSER',
@@ -793,12 +956,11 @@ export type FinishBuildIn = {
 };
 
 export type ForceFinishBuildIn = {
-  customId: Scalars['String'];
+  customId?: InputMaybe<Scalars['String']>;
+  uuid?: InputMaybe<Scalars['UUID']>;
 };
 
 export type FullPageConfigIn = {
-  /** @deprecated this field will be removed soon. */
-  addressBarShadowPadding?: InputMaybe<Scalars['Float']>;
   /**
    * Delay in ms after scrolling and before taking screenshots.
    * A slight delay can be helpful if the page is using lazy loading when scrolling
@@ -812,6 +974,8 @@ export type FullPageConfigIn = {
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
   /** Hide all scrollbars in the app. */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
+  /** Selector of an element that we should crop the screenshot to. Available only on native apps. */
+  nativeClipSelector?: InputMaybe<SelectorIn>;
   /** @experimental Element used for scrolling (available only in native apps) */
   scrollElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /**
@@ -819,8 +983,6 @@ export type FullPageConfigIn = {
    * Default and max value is 10
    */
   scrollLimit?: InputMaybe<Scalars['Int']>;
-  /** @deprecated this field will be removed soon. */
-  toolBarShadowPadding?: InputMaybe<Scalars['Int']>;
 };
 
 /** A filter to be used against FullText fields. All fields are combined with a logical ‘and.’ */
@@ -828,6 +990,14 @@ export type FullTextFilter = {
   /** Performs a full text search on the field. */
   matches?: InputMaybe<Scalars['String']>;
 };
+
+export enum GroupByOption {
+  Browser = 'Browser',
+  Device = 'Device',
+  OperatingSystemOperatingSystemVersion = 'OperatingSystem_OperatingSystemVersion',
+  SuiteName = 'SuiteName',
+  TestName = 'TestName'
+}
 
 export type IgnoreSelectorIn = {
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
@@ -863,6 +1033,7 @@ export type MergeBaselinesPayload = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type Mutation = {
   __typename?: 'Mutation';
+  addComment: Comment;
   approveBuild: Build;
   createBuild: Build;
   /**
@@ -873,10 +1044,18 @@ export type Mutation = {
   createSnapshot: Snapshot;
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
+  deleteComment: Maybe<Scalars['Void']>;
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
+  updateComment: Comment;
   updateDiff: Diff;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationAddCommentArgs = {
+  input: AddCommentIn;
 };
 
 
@@ -917,6 +1096,12 @@ export type MutationCreateSnapshotUploadArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteCommentArgs = {
+  input: DeleteCommentIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
 };
@@ -931,6 +1116,12 @@ export type MutationForceFinishBuildArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationMergeBaselinesArgs = {
   input: MergeBaselinesInput;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCommentArgs = {
+  input: UpdateCommentIn;
 };
 
 
@@ -952,6 +1143,17 @@ export enum OperatingSystem {
   Macos = 'MACOS',
   Windows = 'WINDOWS'
 }
+
+export type OperatingSystemAttribute = {
+  __typename?: 'OperatingSystemAttribute';
+  name: Maybe<OperatingSystem>;
+  version: Maybe<Scalars['String']>;
+};
+
+export type OperatingSystemFilterIn = {
+  name: OperatingSystem;
+  version: Scalars['String'];
+};
 
 export type Org = {
   __typename?: 'Org';
@@ -1158,6 +1360,11 @@ export type Query = Node & {
   buildByNodeId: Maybe<Build>;
   /** Reads and enables pagination through a set of `Build`. */
   builds: Maybe<BuildsConnection>;
+  comment: Maybe<Comment>;
+  /** Reads a single `Comment` using its globally unique `ID`. */
+  commentByNodeId: Maybe<Comment>;
+  /** Reads and enables pagination through a set of `Comment`. */
+  comments: Maybe<CommentsConnection>;
   diff: Maybe<Diff>;
   /** Reads a single `Diff` using its globally unique `ID`. */
   diffByNodeId: Maybe<Diff>;
@@ -1301,6 +1508,31 @@ export type QueryBuildsArgs = {
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<Array<BuildsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentArgs = {
+  id: Scalars['UUID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentByNodeIdArgs = {
+  nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryCommentsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<CommentCondition>;
+  filter: InputMaybe<CommentFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<CommentsOrderBy>>;
 };
 
 
@@ -1481,7 +1713,6 @@ export type Snapshot = Node & {
   devicePixelRatio: Scalars['Float'];
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
-  domDiffUrl: Maybe<Scalars['String']>;
   domFormat: DomFormat;
   /**
    * If not null, it indicates that the snapshot is invalid.
@@ -1576,6 +1807,14 @@ export type SnapshotFilter = {
   uploadId?: InputMaybe<StringFilter>;
 };
 
+export type SnapshotFiltersIn = {
+  browser?: InputMaybe<Array<Browser>>;
+  device?: InputMaybe<Array<Scalars['String']>>;
+  groupBy?: InputMaybe<Array<GroupByOption>>;
+  operatingSystem?: InputMaybe<Array<OperatingSystemFilterIn>>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
 export type SnapshotIn = {
   appId?: InputMaybe<Scalars['String']>;
   appName?: InputMaybe<Scalars['String']>;
@@ -1587,8 +1826,8 @@ export type SnapshotIn = {
   baselineOverride?: InputMaybe<BaselineOverrideIn>;
   browser?: InputMaybe<Browser>;
   browserVersion?: InputMaybe<Scalars['String']>;
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
   device?: InputMaybe<Scalars['String']>;
   devicePixelRatio?: InputMaybe<Scalars['Float']>;
@@ -1602,8 +1841,8 @@ export type SnapshotIn = {
   operatingSystemVersion?: InputMaybe<Scalars['String']>;
   suiteName?: InputMaybe<Scalars['String']>;
   testName?: InputMaybe<Scalars['String']>;
-  /** @deprecated Use `uploadUuid`. This field will be removed in a future update. */
-  uploadId?: InputMaybe<Scalars['ID']>;
+  uploadId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `uploadId`. This field will be removed in a future update. */
   uploadUuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -1613,13 +1852,11 @@ export type SnapshotUpload = {
   domUploadUrl: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   imageUploadUrl: Maybe<Scalars['String']>;
-  /** @deprecated Use imageUploadUrl. */
-  uploadUrl: Scalars['String'];
 };
 
 export type SnapshotUploadIn = {
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -1692,10 +1929,15 @@ export type UuidFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['UUID']>;
 };
 
+export type UpdateCommentIn = {
+  comment: Scalars['String'];
+  id: Scalars['UUID'];
+};
+
 export type UpdateDiffIn = {
-  /** @deprecated Use `uuid`. This field will be removed in a future update. */
-  id?: InputMaybe<Scalars['ID']>;
+  id?: InputMaybe<Scalars['UUID']>;
   status: UpdateDiffStatus;
+  /** @deprecated Use `id`. This field will be removed in a future update. */
   uuid?: InputMaybe<Scalars['UUID']>;
 };
 

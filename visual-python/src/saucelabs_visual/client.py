@@ -255,7 +255,6 @@ class SauceLabsVisual:
                 $testName: String,
                 $suiteName: String,
                 $captureDom: Boolean,
-                $clipSelector: String,
                 $clipElement: WebdriverElementID,
                 $ignoreRegions: [RegionIn!],
                 $ignoreElements: [ElementIn!],
@@ -272,7 +271,6 @@ class SauceLabsVisual:
                     testName: $testName,
                     suiteName: $suiteName,
                     captureDom: $captureDom,
-                    clipSelector: $clipSelector,
                     clipElement: $clipElement,
                     ignoreRegions: $ignoreRegions,
                     ignoreElements: $ignoreElements,
@@ -299,7 +297,6 @@ class SauceLabsVisual:
             "testName": test_name,
             "suiteName": suite_name,
             "captureDom": capture_dom if capture_dom is not None else self.capture_dom,
-            "clipSelector": clip_selector,
             "clipElement": clip_element.id if clip_element is not None else None,
             "ignoreRegions": [
                 asdict(region) for region in ignore_regions

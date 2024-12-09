@@ -16,9 +16,10 @@ type ApplicationSummary {
 }
 
 input ApproveBuildIn {
-  """@deprecated Use `uuid`. This field will be removed in a future update."""
-  id: ID
+  id: UUID
   onlyNew: Boolean
+
+  """@deprecated Use `id`. This field will be removed in a future update."""
   uuid: UUID
 }
 
@@ -223,6 +224,40 @@ enum BaselinesOrderBy {
 }
 
 type Branch implements Node {
+  baselines(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BaselineCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: BaselineFilter
+    filters: SnapshotFiltersIn
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Baseline`."""
+    orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BaselinesConnection!
+
   """Returns the differents values availables for attributes."""
   distinctAttributeValues: DistinctAttributeValues!
   id: String!
@@ -276,6 +311,7 @@ enum Browser {
   CHROME
   EDGE
   FIREFOX
+  NONE
   PLAYWRIGHT_WEBKIT
   SAFARI
 }
@@ -331,6 +367,39 @@ type Build implements Node {
     A filter to be used in determining which values should be returned by the collection.
     """
     filter: DiffFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Diff`."""
+    orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): DiffsConnection!
+  diffsPaginated(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: DiffCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: DiffFilter
+    filters: DiffFiltersIn
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -619,6 +688,7 @@ type Comment implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
+  updatedAt: Datetime
 }
 
 enum CommentAction {
@@ -707,21 +777,16 @@ input CreateSnapshotFromWebDriverIn {
   visual testing.
   """
   baselineOverride: BaselineOverrideIn
+  buildId: UUID
 
   """
-  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  @deprecated Use `buildId`. This field will be removed in a future update.
   """
-  buildId: ID
   buildUuid: UUID
   captureDom: Boolean
 
   """The selenium ID of an element we should clip the screen to."""
   clipElement: WebdriverElementID
-
-  """
-  A querySelector compatible selector of an element that we should crop the screenshot to.
-  """
-  clipSelector: String
   diffingMethod: DiffingMethod
   diffingOptions: DiffingOptionsIn
 
@@ -922,6 +987,18 @@ input DiffFilter {
   status: DiffStatusFilter
 }
 
+"""
+Extension of SnapshotFiltersIn. Should contain the same values here in addition to status filters.
+"""
+input DiffFiltersIn {
+  browser: [Browser!]
+  device: [String!]
+  groupBy: [GroupByOption!]
+  operatingSystem: [OperatingSystemFilterIn!]
+  search: String
+  status: [DiffStatus!]
+}
+
 input DiffPreviewIn {
   ignoreRegions: [RegionIn!]!
 }
@@ -1051,7 +1128,7 @@ enum DiffsOrderBy {
 }
 
 type DistinctAttributeValues {
-  browser: [String]!
+  browser: [Browser]!
   device: [String]!
   operatingSystem: [OperatingSystemAttribute!]!
   storybookDepth1: [String]!
@@ -1089,13 +1166,11 @@ input FinishBuildIn {
 }
 
 input ForceFinishBuildIn {
-  customId: String!
+  customId: String
+  uuid: UUID
 }
 
 input FullPageConfigIn {
-  """@deprecated this field will be removed soon."""
-  addressBarShadowPadding: Float
-
   """
   Delay in ms after scrolling and before taking screenshots.
   A slight delay can be helpful if the page is using lazy loading when scrolling
@@ -1131,9 +1206,6 @@ input FullPageConfigIn {
   Default and max value is 10
   """
   scrollLimit: Int
-
-  """@deprecated this field will be removed soon."""
-  toolBarShadowPadding: Int
 }
 
 scalar FullText
@@ -1144,6 +1216,14 @@ A filter to be used against FullText fields. All fields are combined with a logi
 input FullTextFilter {
   """Performs a full text search on the field."""
   matches: String
+}
+
+enum GroupByOption {
+  Browser
+  Device
+  OperatingSystem_OperatingSystemVersion
+  SuiteName
+  TestName
 }
 
 input IgnoreSelectorIn {
@@ -1260,6 +1340,12 @@ type Mutation {
     """
     input: MergeBaselinesInput!
   ): MergeBaselinesPayload!
+  updateComment(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateCommentIn!
+  ): Comment!
   updateDiff(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1287,6 +1373,11 @@ enum OperatingSystem {
 type OperatingSystemAttribute {
   name: OperatingSystem
   version: String
+}
+
+input OperatingSystemFilterIn {
+  name: OperatingSystem!
+  version: String!
 }
 
 type Org {
@@ -2004,7 +2095,6 @@ type Snapshot implements Node {
     """The method to use when ordering `Diff`."""
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
-  domDiffUrl: String
   domFormat: DomFormat!
 
   """
@@ -2096,6 +2186,14 @@ input SnapshotFilter {
   uploadId: StringFilter
 }
 
+input SnapshotFiltersIn {
+  browser: [Browser!]
+  device: [String!]
+  groupBy: [GroupByOption!]
+  operatingSystem: [OperatingSystemFilterIn!]
+  search: String
+}
+
 input SnapshotIn {
   appId: String
   appName: String
@@ -2108,11 +2206,11 @@ input SnapshotIn {
   baselineOverride: BaselineOverrideIn
   browser: Browser
   browserVersion: String
+  buildId: UUID
 
   """
-  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  @deprecated Use `buildId`. This field will be removed in a future update.
   """
-  buildId: ID
   buildUuid: UUID
   device: String
   devicePixelRatio: Float
@@ -2126,11 +2224,11 @@ input SnapshotIn {
   operatingSystemVersion: String
   suiteName: String
   testName: String
+  uploadId: UUID
 
   """
-  @deprecated Use `uploadUuid`. This field will be removed in a future update.
+  @deprecated Use `uploadId`. This field will be removed in a future update.
   """
-  uploadId: ID
   uploadUuid: UUID
 }
 
@@ -2139,14 +2237,14 @@ type SnapshotUpload {
   domUploadUrl: String
   id: UUID!
   imageUploadUrl: String
-  uploadUrl: String! @deprecated(reason: "Use imageUploadUrl.")
 }
 
 input SnapshotUploadIn {
+  buildId: UUID
+
   """
-  @deprecated Use `buildUuid`. This field will be removed in a future update.
+  @deprecated Use `buildId`. This field will be removed in a future update.
   """
-  buildId: ID
   buildUuid: UUID
 }
 
@@ -2246,10 +2344,16 @@ input UUIDFilter {
   lessThanOrEqualTo: UUID
 }
 
+input UpdateCommentIn {
+  comment: String!
+  id: UUID!
+}
+
 input UpdateDiffIn {
-  """@deprecated Use `uuid`. This field will be removed in a future update."""
-  id: ID
+  id: UUID
   status: UpdateDiffStatus!
+
+  """@deprecated Use `id`. This field will be removed in a future update."""
   uuid: UUID
 }
 
