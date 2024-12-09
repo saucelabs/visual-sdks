@@ -3027,7 +3027,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@saucelabs/visual-playwright@^0.2.0, @saucelabs/visual-playwright@workspace:visual-playwright":
+"@saucelabs/visual-playwright@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@saucelabs/visual-playwright@npm:0.2.0"
+  dependencies:
+    "@saucelabs/visual": ^0.10.0
+    exponential-backoff: ^3.1.1
+  peerDependencies:
+    "@playwright/test": ^1.42.1
+  checksum: 85e9fb083a0872b5105f5f7c2e61ea0cbd41dad42e3d23a234017a88ffca575602b542431224b2908b1398320d1e4bb9ab2662bd2295577e4fda395368769f87
+  languageName: node
+  linkType: hard
+
+"@saucelabs/visual-playwright@workspace:visual-playwright":
   version: 0.0.0-use.local
   resolution: "@saucelabs/visual-playwright@workspace:visual-playwright"
   dependencies:
@@ -3096,7 +3108,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@saucelabs/visual@^0.10.0, @saucelabs/visual@^0.10.1, @saucelabs/visual@workspace:visual":
+"@saucelabs/visual@npm:^0.10.0, @saucelabs/visual@npm:^0.10.1":
+  version: 0.10.2
+  resolution: "@saucelabs/visual@npm:0.10.2"
+  dependencies:
+    "@apollo/client": ^3.7.14
+    "@graphql-typed-document-node/core": 3.2.0
+    arktype: ^1.0.29-alpha
+    axios: ^1.7.4
+    chalk: ^4.0.0
+    cli-table3: ^0.6.3
+    commander: ^12.0.0
+    exponential-backoff: ^3.1.1
+    proxy-agent: ^6.3.1
+  bin:
+    visual: build/cli.js
+  checksum: a540340c254361cc1648c25b822ab3f6281dace1433b9bb0e6f1a0a339f39cea1a6de763bcd3ac20646d681cd9ff2fbc2c0a11aa74ee789447bb964abd930191
+  languageName: node
+  linkType: hard
+
+"@saucelabs/visual@workspace:visual":
   version: 0.0.0-use.local
   resolution: "@saucelabs/visual@workspace:visual"
   dependencies:
