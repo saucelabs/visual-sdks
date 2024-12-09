@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'visual-js/**'
+      - 'visual-js/.changeset/**'
 
 defaults:
   run:
