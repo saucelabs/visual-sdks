@@ -1,5 +1,17 @@
 # @saucelabs/visual-storybook
 
+## 0.10.0
+
+### Minor Changes
+
+- 0bd1fac: Removed deprecated functionality.
+
+### Patch Changes
+
+- Updated dependencies [0bd1fac]
+  - @saucelabs/visual@0.11.0
+  - @saucelabs/visual-playwright@0.3.0
+
 ## 0.9.0
 
 ### Minor Changes

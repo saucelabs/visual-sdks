@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.9.0
+
+### Minor Changes
+
+- 0bd1fac: Removed deprecated functionality.
+
+### Patch Changes
+
+- Updated dependencies [0bd1fac]
+  - @saucelabs/visual@0.11.0
+
 ## 0.8.2
 
 ### Patch Changes

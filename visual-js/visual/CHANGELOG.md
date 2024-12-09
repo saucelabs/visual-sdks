@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.11.0
+
+### Minor Changes
+
+- 0bd1fac: Removed deprecated functionality.
+
 ## 0.10.2
 
 ### Patch Changes
