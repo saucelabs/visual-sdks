@@ -31,8 +31,6 @@ namespace SauceLabs.Visual.GraphQL
         public bool? CaptureDom { get; set; }
         [JsonProperty("baselineOverride")]
         public BaselineOverrideIn? BaselineOverride { get; set; }
-        [JsonProperty("clipSelector")]
-        public string? ClipSelector { get; set; }
         [JsonProperty("clipElement")]
         public string? ClipElement { get; set; }
         [JsonProperty("fullPageConfig")]
@@ -47,7 +45,6 @@ namespace SauceLabs.Visual.GraphQL
             DiffingMethod diffingMethod,
             RegionIn[] regions,
             bool captureDom,
-            string? clipSelector,
             string? clipElement,
             string? suiteName,
             string? testName,
@@ -66,7 +63,6 @@ namespace SauceLabs.Visual.GraphQL
             SessionMetadata = sessionMetadata;
             SessionId = sessionId;
             CaptureDom = captureDom;
-            ClipSelector = clipSelector;
             ClipElement = clipElement;
             SuiteName = suiteName;
             TestName = testName;
