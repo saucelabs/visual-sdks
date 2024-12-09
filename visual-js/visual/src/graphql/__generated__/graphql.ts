@@ -983,6 +983,8 @@ export type FullPageConfigIn = {
    * Default and max value is 10
    */
   scrollLimit?: InputMaybe<Scalars['Int']>;
+  /** Change scroll behaviour before and after taking full page screenshot. Available only on native apps. */
+  scrollOptions?: InputMaybe<ScrollOption>;
 };
 
 /** A filter to be used against FullText fields. All fields are combined with a logical ‘and.’ */
