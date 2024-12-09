@@ -43,9 +43,9 @@ export type ApplicationSummary = {
 };
 
 export type ApproveBuildIn = {
-  /** @deprecated Use `uuid`. This field will be removed in a future update. */
-  id?: InputMaybe<Scalars['ID']>;
+  id?: InputMaybe<Scalars['UUID']>;
   onlyNew?: InputMaybe<Scalars['Boolean']>;
+  /** @deprecated Use `id`. This field will be removed in a future update. */
   uuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -213,6 +213,7 @@ export enum BaselinesOrderBy {
 
 export type Branch = Node & {
   __typename?: 'Branch';
+  baselines: BaselinesConnection;
   /** Returns the differents values availables for attributes. */
   distinctAttributeValues: DistinctAttributeValues;
   id: Scalars['String'];
@@ -223,6 +224,19 @@ export type Branch = Node & {
   /** Reads a single `Project` that is related to this `Branch`. */
   project: Maybe<Project>;
   projectId: Scalars['String'];
+};
+
+
+export type BranchBaselinesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<BaselineCondition>;
+  filter: InputMaybe<BaselineFilter>;
+  filters: InputMaybe<SnapshotFiltersIn>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
 
 /** A connection to a list of `Branch` values. */
@@ -258,6 +272,7 @@ export enum Browser {
   Chrome = 'CHROME',
   Edge = 'EDGE',
   Firefox = 'FIREFOX',
+  None = 'NONE',
   PlaywrightWebkit = 'PLAYWRIGHT_WEBKIT',
   Safari = 'SAFARI'
 }
@@ -297,6 +312,7 @@ export type Build = Node & {
   diffCountExtended: Scalars['Int'];
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
+  diffsPaginated: DiffsConnection;
   /** Returns the differents values availables for attributes. */
   distinctAttributeValues: DistinctAttributeValues;
   /**
@@ -347,6 +363,20 @@ export type BuildDiffsArgs = {
   before: InputMaybe<Scalars['Cursor']>;
   condition: InputMaybe<DiffCondition>;
   filter: InputMaybe<DiffFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<DiffsOrderBy>>;
+};
+
+
+/** The result of diffing a `Baseline` with a `Snapshot`. */
+export type BuildDiffsPaginatedArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<DiffCondition>;
+  filter: InputMaybe<DiffFilter>;
+  filters: InputMaybe<DiffFiltersIn>;
   first: InputMaybe<Scalars['Int']>;
   last: InputMaybe<Scalars['Int']>;
   offset: InputMaybe<Scalars['Int']>;
@@ -532,6 +562,7 @@ export type Comment = Node & {
   id: Scalars['UUID'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
+  updatedAt: Maybe<Scalars['Datetime']>;
 };
 
 export enum CommentAction {
@@ -608,14 +639,12 @@ export type CreateSnapshotFromWebDriverIn = {
    * visual testing.
    */
   baselineOverride?: InputMaybe<BaselineOverrideIn>;
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
   captureDom?: InputMaybe<Scalars['Boolean']>;
   /** The selenium ID of an element we should clip the screen to. */
   clipElement?: InputMaybe<Scalars['WebdriverElementID']>;
-  /** A querySelector compatible selector of an element that we should crop the screenshot to. */
-  clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /**
@@ -766,6 +795,16 @@ export type DiffFilter = {
   status?: InputMaybe<DiffStatusFilter>;
 };
 
+/** Extension of SnapshotFiltersIn. Should contain the same values here in addition to status filters. */
+export type DiffFiltersIn = {
+  browser?: InputMaybe<Array<Browser>>;
+  device?: InputMaybe<Array<Scalars['String']>>;
+  groupBy?: InputMaybe<Array<GroupByOption>>;
+  operatingSystem?: InputMaybe<Array<OperatingSystemFilterIn>>;
+  search?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Array<DiffStatus>>;
+};
+
 export type DiffPreviewIn = {
   ignoreRegions: Array<RegionIn>;
 };
@@ -884,7 +923,7 @@ export enum DiffsOrderBy {
 
 export type DistinctAttributeValues = {
   __typename?: 'DistinctAttributeValues';
-  browser: Array<Maybe<Scalars['String']>>;
+  browser: Array<Maybe<Browser>>;
   device: Array<Maybe<Scalars['String']>>;
   operatingSystem: Array<OperatingSystemAttribute>;
   storybookDepth1: Array<Maybe<Scalars['String']>>;
@@ -917,12 +956,11 @@ export type FinishBuildIn = {
 };
 
 export type ForceFinishBuildIn = {
-  customId: Scalars['String'];
+  customId?: InputMaybe<Scalars['String']>;
+  uuid?: InputMaybe<Scalars['UUID']>;
 };
 
 export type FullPageConfigIn = {
-  /** @deprecated this field will be removed soon. */
-  addressBarShadowPadding?: InputMaybe<Scalars['Float']>;
   /**
    * Delay in ms after scrolling and before taking screenshots.
    * A slight delay can be helpful if the page is using lazy loading when scrolling
@@ -938,8 +976,6 @@ export type FullPageConfigIn = {
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
   /** Selector of an element that we should crop the screenshot to. Available only on native apps. */
   nativeClipSelector?: InputMaybe<SelectorIn>;
-  /** Change scroll behaviour before and after taking full page screenshot */
-  nativeScrollOptions?: InputMaybe<ScrollOption>;
   /** @experimental Element used for scrolling (available only in native apps) */
   scrollElement?: InputMaybe<Scalars['WebdriverElementID']>;
   /**
@@ -947,8 +983,8 @@ export type FullPageConfigIn = {
    * Default and max value is 10
    */
   scrollLimit?: InputMaybe<Scalars['Int']>;
-  /** @deprecated this field will be removed soon. */
-  toolBarShadowPadding?: InputMaybe<Scalars['Int']>;
+  /** Change scroll behaviour before and after taking full page screenshot. Available only on native apps. */
+  scrollOptions?: InputMaybe<ScrollOption>;
 };
 
 /** A filter to be used against FullText fields. All fields are combined with a logical ‘and.’ */
@@ -956,6 +992,14 @@ export type FullTextFilter = {
   /** Performs a full text search on the field. */
   matches?: InputMaybe<Scalars['String']>;
 };
+
+export enum GroupByOption {
+  Browser = 'Browser',
+  Device = 'Device',
+  OperatingSystemOperatingSystemVersion = 'OperatingSystem_OperatingSystemVersion',
+  SuiteName = 'SuiteName',
+  TestName = 'TestName'
+}
 
 export type IgnoreSelectorIn = {
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
@@ -1006,6 +1050,7 @@ export type Mutation = {
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
+  updateComment: Comment;
   updateDiff: Diff;
 };
 
@@ -1077,6 +1122,12 @@ export type MutationMergeBaselinesArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationUpdateCommentArgs = {
+  input: UpdateCommentIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateDiffArgs = {
   input: UpdateDiffIn;
 };
@@ -1099,6 +1150,11 @@ export type OperatingSystemAttribute = {
   __typename?: 'OperatingSystemAttribute';
   name: Maybe<OperatingSystem>;
   version: Maybe<Scalars['String']>;
+};
+
+export type OperatingSystemFilterIn = {
+  name: OperatingSystem;
+  version: Scalars['String'];
 };
 
 export type Org = {
@@ -1668,7 +1724,6 @@ export type Snapshot = Node & {
   devicePixelRatio: Scalars['Float'];
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
-  domDiffUrl: Maybe<Scalars['String']>;
   domFormat: DomFormat;
   /**
    * If not null, it indicates that the snapshot is invalid.
@@ -1763,6 +1818,14 @@ export type SnapshotFilter = {
   uploadId?: InputMaybe<StringFilter>;
 };
 
+export type SnapshotFiltersIn = {
+  browser?: InputMaybe<Array<Browser>>;
+  device?: InputMaybe<Array<Scalars['String']>>;
+  groupBy?: InputMaybe<Array<GroupByOption>>;
+  operatingSystem?: InputMaybe<Array<OperatingSystemFilterIn>>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
 export type SnapshotIn = {
   appId?: InputMaybe<Scalars['String']>;
   appName?: InputMaybe<Scalars['String']>;
@@ -1774,8 +1837,8 @@ export type SnapshotIn = {
   baselineOverride?: InputMaybe<BaselineOverrideIn>;
   browser?: InputMaybe<Browser>;
   browserVersion?: InputMaybe<Scalars['String']>;
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
   device?: InputMaybe<Scalars['String']>;
   devicePixelRatio?: InputMaybe<Scalars['Float']>;
@@ -1789,8 +1852,8 @@ export type SnapshotIn = {
   operatingSystemVersion?: InputMaybe<Scalars['String']>;
   suiteName?: InputMaybe<Scalars['String']>;
   testName?: InputMaybe<Scalars['String']>;
-  /** @deprecated Use `uploadUuid`. This field will be removed in a future update. */
-  uploadId?: InputMaybe<Scalars['ID']>;
+  uploadId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `uploadId`. This field will be removed in a future update. */
   uploadUuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -1800,13 +1863,11 @@ export type SnapshotUpload = {
   domUploadUrl: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   imageUploadUrl: Maybe<Scalars['String']>;
-  /** @deprecated Use imageUploadUrl. */
-  uploadUrl: Scalars['String'];
 };
 
 export type SnapshotUploadIn = {
-  /** @deprecated Use `buildUuid`. This field will be removed in a future update. */
-  buildId?: InputMaybe<Scalars['ID']>;
+  buildId?: InputMaybe<Scalars['UUID']>;
+  /** @deprecated Use `buildId`. This field will be removed in a future update. */
   buildUuid?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -1879,10 +1940,15 @@ export type UuidFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['UUID']>;
 };
 
+export type UpdateCommentIn = {
+  comment: Scalars['String'];
+  id: Scalars['UUID'];
+};
+
 export type UpdateDiffIn = {
-  /** @deprecated Use `uuid`. This field will be removed in a future update. */
-  id?: InputMaybe<Scalars['ID']>;
+  id?: InputMaybe<Scalars['UUID']>;
   status: UpdateDiffStatus;
+  /** @deprecated Use `id`. This field will be removed in a future update. */
   uuid?: InputMaybe<Scalars['UUID']>;
 };
 
