@@ -6,10 +6,6 @@ export type FullPageScreenshotOptions<T> =
   | boolean
   | {
       /**
-       * @deprecated this field will be removed soon
-       */
-      addressBarShadowPadding?: number;
-      /**
        * Delay in ms after scrolling and before taking screenshots.
        * A slight delay can be helpful if the page is using lazy loading when scrolling
        */
@@ -26,10 +22,6 @@ export type FullPageScreenshotOptions<T> =
        * Hide all scrollbars in the app.
        */
       hideScrollBars?: boolean;
-      /**
-       * @deprecated this field will be removed soon
-       */
-      toolBarShadowPadding?: number;
       /**
        * Limit the number of screenshots taken for scrolling and stitching.
        */

@@ -43,8 +43,6 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<Boolean> captureDom = Optional.empty();
 
-    public Optional<String> clipSelector = Optional.empty();
-
     public Optional<String> clipElement = Optional.empty();
 
     public Optional<FullPageScreenshotConfig> fullPageConfig = Optional.empty();
@@ -107,10 +105,6 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setCaptureDom(Boolean captureDom) {
       this.captureDom = Optional.of(captureDom);
-    }
-
-    public void setClipSelector(String clipSelector) {
-      this.clipSelector = Optional.of(clipSelector);
     }
 
     public void setClipElement(WebElement clipElement) {
