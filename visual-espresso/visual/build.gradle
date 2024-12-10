@@ -1,6 +1,7 @@
 plugins {
     alias libs.plugins.android.library
     alias libs.plugins.apollographql
+    alias libs.plugins.gradle.nexus.publish
     id 'maven-publish'
     id 'signing'
 }
