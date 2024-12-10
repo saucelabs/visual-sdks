@@ -120,6 +120,14 @@ apollo {
     }
 }
 
+signing {
+    useInMemoryPgpKeys(
+        project.findProperty("signingKey") ?: System.getenv("GPG_PRIVATE_KEY"),
+        project.findProperty("signingPassword") ?: System.getenv("GPG_PASSPHRASE")
+    )
+    sign publishing.publications
+}
+
 tasks.register('bumpVersion') {
     doLast {
         def releaseType = project.hasProperty("releaseType") ? project.releaseType : null
