@@ -68,7 +68,7 @@ jobs:
             exit 0
           fi
 
-          tag_name="espresso-${{ steps.upgrade.outputs.version }}"
+          tag_name="espresso-$trimmed_version"
           git add ./build.gradle
           git commit -m "[release] $tag_name"
           git tag $tag_name
