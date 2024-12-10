@@ -1,6 +1,7 @@
 plugins {
     alias libs.plugins.android.library
     alias libs.plugins.apollographql
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id 'maven-publish'
 }
 
@@ -109,6 +110,7 @@ publishing {
     }
     repositories {
         mavenLocal()
+        
     }
 }
 
