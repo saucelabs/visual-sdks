@@ -12,6 +12,10 @@ on:
           - 'minor'
           - 'patch'
 
+  pull_request:
+    branches:
+      - main
+
 defaults:
   run:
     working-directory: visual-espresso
@@ -28,8 +32,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           server-id: ossrh
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-private-key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Set up Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -43,7 +47,7 @@ jobs:
       - name: Bump version
         id: upgrade
         run: |
-          ./gradlew -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }}
+          ./gradlew -q bumpVersion -PreleaseType=patch
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
       - name: Publish to Sonatype OSSRH (staging)
@@ -51,12 +55,16 @@ jobs:
         env:
           OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Close and release the repository
         run: ./gradlew nexusStagingRelease
         env:
           OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Push new version to Git
         id: push_to_git
