@@ -29,7 +29,7 @@ tasks.register('bumpVersion') {
         def newVersion = calculateNewVersion(version, releaseType)
         persistNewVersion(newVersion)
 
-        println "$newVersion"
+        print "$newVersion"
     }
 }
 

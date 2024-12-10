@@ -61,8 +61,12 @@ jobs:
       - name: Push new version to Git
         id: push_to_git
         run: |
+          if [[ -z "${{ steps.upgrade.outputs.version }}" ]]; then
+            echo "Version is empty, skipping push to Git."
+            exit 1
+          fi
           tag_name="espresso-${{ steps.upgrade.outputs.version }}"
-          git add ./visual/build.gradle
+          git add ./build.gradle
           git commit -m "[release] $tag_name"
           git tag $tag_name
           git push
