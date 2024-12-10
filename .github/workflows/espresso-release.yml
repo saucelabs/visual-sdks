@@ -6,7 +6,7 @@ on:
       releaseType:
         description: 'Release type - major, minor or patch'
         required: true
-        default: 'minor'
+        default: 'patch'
         options:
           - 'major'
           - 'minor'
@@ -50,16 +50,8 @@ jobs:
           ./gradlew -q bumpVersion -PreleaseType=patch
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
-      - name: Publish to Sonatype OSSRH (staging)
-        run: ./gradlew publish
-        env:
-          OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
-
-      - name: Close and release the repository
-        run: ./gradlew nexusStagingRelease
+      - name: Publish artifact
+        run: ./gradlew publishToSonatype closeSonatypeStagingRepository
         env:
           OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
