@@ -111,7 +111,17 @@ publishing {
     }
     repositories {
         mavenLocal()
-        
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            snapshotRepositoryUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            username = project.findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+            password = project.findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+        }
     }
 }
 

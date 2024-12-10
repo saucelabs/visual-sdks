@@ -43,11 +43,17 @@ jobs:
       - name: Bump version
         id: upgrade
         run: |
-          ./gradlew --no-daemon -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }}
+          ./gradlew -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }}
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
-      - name: Publish artifacts
+      - name: Publish to Sonatype OSSRH (staging)
         run: ./gradlew publish
+        env:
+          OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+
+      - name: Close and release the repository
+        run: ./gradlew nexusStagingRelease
         env:
           OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
