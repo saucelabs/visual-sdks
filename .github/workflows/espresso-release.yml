@@ -47,7 +47,7 @@ jobs:
       - name: Bump version
         id: upgrade
         run: |
-          new_version=(./gradlew -q bumpVersion -PreleaseType=patch)
+          new_version=$(./gradlew -q bumpVersion -PreleaseType=patch)
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
       #- name: Publish artifact
