@@ -17,7 +17,7 @@ nexusPublishing {
 }
 
 group = "com.saucelabs.visual.visual-espresso"
-version = "0.0.0"
+version = "0.0.1"
 
 tasks.register('bumpVersion') {
     doLast {
