@@ -6,7 +6,7 @@ on:
       releaseType:
         description: 'Release type - major, minor or patch'
         required: true
-        default: 'minor'
+        default: 'patch'
         options:
           - 'major'
           - 'minor'
@@ -28,8 +28,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           server-id: ossrh
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set up Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -43,20 +41,16 @@ jobs:
       - name: Bump version
         id: upgrade
         run: |
-          ./gradlew -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }}
+          new_version=$(./gradlew -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }})
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
-      - name: Publish to Sonatype OSSRH (staging)
-        run: ./gradlew publish
+      - name: Build, publish and release artifact
+        run: ./gradlew build publishAndReleaseToMavenCentral --no-configuration-cache
         env:
-          OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
-
-      - name: Close and release the repository
-        run: ./gradlew nexusStagingRelease
-        env:
-          OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MVN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Push new version to Git
         id: push_to_git
@@ -75,5 +69,5 @@ jobs:
         with:
           fail_on_unmatched_files: true
           tag_name: ${{ steps.push_to_git.outputs.tag_name }}
-          files: visual-espresso/target/visual-release.aar
+          files: visual-espresso/visual/build/outputs/aar/visual-release.aar
           generate_release_notes: true
