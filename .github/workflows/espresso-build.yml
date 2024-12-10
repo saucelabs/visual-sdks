@@ -1,0 +1,35 @@
+name: Espresso (build)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-espresso/**'
+      - .github/workflows/espresso-build.yml
+  pull_request:
+    paths:
+      - 'visual-espresso/**'
+      - .github/workflows/espresso-build.yml
+
+defaults:
+  run:
+    working-directory: visual-espresso
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build SampleApplication
+        run: ./gradlew --no-daemon build

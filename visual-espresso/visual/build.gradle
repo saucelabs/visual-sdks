@@ -11,13 +11,22 @@ android {
     defaultConfig {
         minSdk 21
         versionCode 1
-        versionName "0.0.1"
+        versionName "0.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField "String", "SAUCE_USERNAME", "\"${getProperty("SAUCE_USERNAME", "")}\""
         buildConfigField "String", "SAUCE_ACCESS_KEY", "\"${getProperty("SAUCE_ACCESS_KEY", "")}\""
         buildConfigField "String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\""
+
+        def releaseType = project.hasProperty("releaseType") ? project.releaseType : null
+        def currentVersionName = android.defaultConfig.versionName
+        if (releaseType) {
+            def newVersionName = calculateNewVersion(currentVersionName, releaseType)
+            println "Updating versionName from $currentVersionName to $newVersionName"
+            android.defaultConfig.versionName = newVersionName
+            persistVersionName(newVersionName)
+        }
     }
 
     buildTypes {
@@ -118,4 +127,39 @@ apollo {
         generateKotlinModels.set(false)
         warnOnDeprecatedUsages.set(false)
     }
+}
+
+// Helper function to calculate the new version
+static def calculateNewVersion(currentVersion, releaseType) {
+    def versionParts = currentVersion.split('\\.').collect { it.toInteger() }
+    if (versionParts.size() != 3) {
+        throw new GradleException("Invalid versionName format: $currentVersion. Expected format: MAJOR.MINOR.PATCH")
+    }
+
+    def (major, minor, patch) = versionParts
+    switch (releaseType) {
+        case "major":
+            major++
+            minor = 0
+            patch = 0
+            break
+        case "minor":
+            minor++
+            patch = 0
+            break
+        case "patch":
+            patch++
+            break
+        default:
+            throw new GradleException("Unknown release type: $releaseType. Use 'major', 'minor', or 'patch'.")
+    }
+
+    return "$major.$minor.$patch"
+}
+
+// Helper function to persist the updated versionName back to build.gradle
+def persistVersionName(newVersionName) {
+    def buildFile = file("build.gradle")
+    def buildFileContent = buildFile.text.replaceAll(/versionName\s+"[^"]+"/, "versionName \"$newVersionName\"")
+    buildFile.text = buildFileContent
 }
