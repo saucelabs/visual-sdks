@@ -72,6 +72,9 @@ jobs:
 
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
+      - name: Build
+        run: ./gradlew --no-daemon build
+
       - name: Github Release
         uses: softprops/action-gh-release@v2
         with:
