@@ -52,33 +52,30 @@ jobs:
           new_version=$(./gradlew -q bumpVersion -PreleaseType=patch)
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
-      #- name: Publish artifact
-      #  run: ./gradlew publishToSonatype closeSonatypeStagingRepository
-      #  env:
-      #    OSSRH_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
-      #    OSSRH_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
-      #    GPG_PRIVATE_KEY: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
-      #    GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
+      - name: Publish artifact
+        run: ./gradlew publishToMavenCentral --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MVN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
-      - name: Push new version to Git
-        id: push_to_git
-        run: |
-          tag_name="espresso-${{ steps.upgrade.outputs.version }}"
-          git add ./build.gradle
-          git commit -m "[release] $tag_name"
-          git tag $tag_name
-          git push
-          git push origin $tag_name
+      #- name: Push new version to Git
+      #  id: push_to_git
+      #  run: |
+      #    tag_name="espresso-${{ steps.upgrade.outputs.version }}"
+      #    git add ./build.gradle
+      #    git commit -m "[release] $tag_name"
+      #    git tag $tag_name
+      #    git push
+      #    git push origin $tag_name
 
-          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+      #    echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
-      - name: Build
-        run: ./gradlew --no-daemon build
-
-      - name: Github Release
-        uses: softprops/action-gh-release@v2
-        with:
-          fail_on_unmatched_files: true
-          tag_name: ${{ steps.push_to_git.outputs.tag_name }}
-          files: visual-espresso/visual/build/outputs/aar/visual-release.aar
-          generate_release_notes: true
+      #- name: Github Release
+      #  uses: softprops/action-gh-release@v2
+      #  with:
+      #    fail_on_unmatched_files: true
+      #    tag_name: ${{ steps.push_to_git.outputs.tag_name }}
+      #    files: visual-espresso/visual/build/outputs/aar/visual-release.aar
+      #    generate_release_notes: true
