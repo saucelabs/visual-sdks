@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: espresso-release
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -61,14 +63,7 @@ jobs:
       - name: Push new version to Git
         id: push_to_git
         run: |
-          version="${{ steps.upgrade.outputs.version }}"
-          trimmed_version=$(echo "$version" | xargs)
-          if [[ -z "$trimmed_version" ]]; then
-            echo "Version is empty or only whitespace, exiting"
-            exit 0
-          fi
-
-          tag_name="espresso-$trimmed_version"
+          tag_name="espresso-${{ steps.upgrade.outputs.version }}"
           git add ./build.gradle
           git commit -m "[release] $tag_name"
           git tag $tag_name
