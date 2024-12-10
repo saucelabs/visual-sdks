@@ -12,6 +12,10 @@ on:
           - 'minor'
           - 'patch'
 
+  pull_request:
+    branches:
+      - main
+
 defaults:
   run:
     working-directory: visual-espresso
