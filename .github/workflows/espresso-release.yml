@@ -58,22 +58,22 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
-      - name: Push new version to Git
-        id: push_to_git
-        run: |
-          tag_name="espresso-${{ steps.upgrade.outputs.version }}"
-          git add ./visual/build.gradle
-          git commit -m "[release] $tag_name"
-          git tag $tag_name
-          git push
-          git push origin $tag_name
+      #- name: Push new version to Git
+      #  id: push_to_git
+      #  run: |
+      #    tag_name="espresso-${{ steps.upgrade.outputs.version }}"
+      #    git add ./visual/build.gradle
+      #    git commit -m "[release] $tag_name"
+      #    git tag $tag_name
+      #    git push
+      #    git push origin $tag_name
 
-          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+      #    echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
-      - name: Github Release
-        uses: softprops/action-gh-release@v2
-        with:
-          fail_on_unmatched_files: true
-          tag_name: ${{ steps.push_to_git.outputs.tag_name }}
-          files: visual-espresso/target/visual-release.aar
-          generate_release_notes: true
+      #- name: Github Release
+      #  uses: softprops/action-gh-release@v2
+      #  with:
+      #    fail_on_unmatched_files: true
+      #    tag_name: ${{ steps.push_to_git.outputs.tag_name }}
+      #    files: visual-espresso/target/visual-release.aar
+      #    generate_release_notes: true
