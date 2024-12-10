@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace rootProject.group
+    namespace 'com.saucelabs.visual'
     compileSdk 34
 
     defaultConfig {
