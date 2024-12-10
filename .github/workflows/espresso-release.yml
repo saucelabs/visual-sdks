@@ -37,13 +37,16 @@ jobs:
           git config --global user.name "sauce-visual-bot"
           git config --global user.email "visual@saucelabs.com"
 
-      - name: Upgrade & Build new version
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build
+        run: ./gradlew --no-daemon build
+
+      - name: Bump version
         id: upgrade
         run: |
-          current_version=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          new_version=$(./scripts/bump_version.sh -c $current_version -r ${{ github.event.inputs.releaseType }})
-          mvn -q versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version
-
+          ./gradlew --no-daemon -q bumpVersion -PreleaseType=${{ github.event.inputs.releaseType }}
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
       - name: Import GPG
@@ -64,7 +67,7 @@ jobs:
         id: push_to_git
         run: |
           tag_name="espresso-${{ steps.upgrade.outputs.version }}"
-          git add ./pom.xml
+          git add ./visual/build.gradle
           git commit -m "[release] $tag_name"
           git tag $tag_name
           git push
@@ -77,5 +80,5 @@ jobs:
         with:
           fail_on_unmatched_files: true
           tag_name: ${{ steps.push_to_git.outputs.tag_name }}
-          files: visual-espresso/target/java-client-${{ steps.upgrade.outputs.version }}.jar
+          files: visual-espresso/target/visual-release.aar
           generate_release_notes: true
