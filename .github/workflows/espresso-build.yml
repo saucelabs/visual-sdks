@@ -31,5 +31,5 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build SampleApplication
+      - name: Build
         run: ./gradlew --no-daemon build
