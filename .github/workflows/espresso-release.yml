@@ -56,7 +56,7 @@ jobs:
         id: push_to_git
         run: |
           tag_name="espresso-${{ steps.upgrade.outputs.version }}"
-          git add ./build.gradle
+          git add ./visual/build.gradle
           git commit -m "[release] $tag_name"
           git tag $tag_name
           git push
