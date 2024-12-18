@@ -4,4 +4,4 @@
 "@saucelabs/wdio-sauce-visual-service": minor
 ---
 
-Add scroll to top before and after native full page screenshot
+Added control over scrolling to the top before and after capturing a native full-page screenshot.
