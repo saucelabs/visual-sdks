@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.12.0
+
+### Minor Changes
+
+- d6f02a8: Added control over scrolling to the top before and after capturing a native full-page screenshot.
+
 ## 0.10.2
 
 ### Patch Changes

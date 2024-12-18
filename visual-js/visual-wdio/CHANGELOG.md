@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.10.0
+
+### Minor Changes
+
+- d6f02a8: Added control over scrolling to the top before and after capturing a native full-page screenshot.
+
+### Patch Changes
+
+- Updated dependencies [d6f02a8]
+  - @saucelabs/visual@0.12.0
+
 ## 0.8.2
 
 ### Patch Changes

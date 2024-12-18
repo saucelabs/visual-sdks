@@ -1,5 +1,12 @@
 # @saucelabs/visual-playwright
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [d6f02a8]
+  - @saucelabs/visual@0.12.0
+
 ## 0.2.0
 
 ### Minor Changes
