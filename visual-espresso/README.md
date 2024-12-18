@@ -8,7 +8,7 @@ View installation and usage instructions on the [Sauce Docs website](https://doc
 
 ## Building
 
-Sauce Visual Java SDK uses [Gradle](https://gradle.org/).
+Sauce Visual Espresso SDK uses [Gradle](https://gradle.org/).
 
 `gradlew` binary, that is included in the source, can be used as a replacement if you don't have Gradle.
 
