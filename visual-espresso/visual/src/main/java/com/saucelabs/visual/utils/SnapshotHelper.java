@@ -8,12 +8,11 @@ import android.graphics.Canvas;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.CustomAccessibilityNodeInfoDumper;
 import androidx.test.uiautomator.UiDevice;
 
 import com.saucelabs.visual.exception.VisualApiException;
@@ -88,7 +87,7 @@ public class SnapshotHelper {
         String dom;
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            device.dumpWindowHierarchy(os);
+            CustomAccessibilityNodeInfoDumper.dumpWindowHierarchy(device, os);
             dom = os.toString("UTF-8");
         } catch (IOException e) {
             throw new VisualApiException(e.getLocalizedMessage());
@@ -110,6 +109,7 @@ public class SnapshotHelper {
     /**
      * Uses resource id and text of the view (if available) to locate the view inside DOM
      * Can be extended further to include more fields
+     *
      * @param view View to be queried
      * @return Jsoup parseable query to locate the view
      */

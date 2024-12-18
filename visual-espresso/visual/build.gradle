@@ -1,5 +1,4 @@
 import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
-import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     alias libs.plugins.android.library
@@ -14,7 +13,7 @@ android {
     defaultConfig {
         minSdk 21
         versionCode 1
-        versionName "0.0.1"
+        versionName "0.0.2-SNAPSHOT"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
@@ -73,8 +72,8 @@ ext {
 
 mavenPublishing {
     configure(new AndroidSingleVariantLibrary("release", true, true))
-    publishToMavenCentral(SonatypeHost.DEFAULT)
-    signAllPublications()
+    //publishToMavenCentral(SonatypeHost.DEFAULT)
+    //signAllPublications()
     coordinates(android.namespace, "${artifactName}", android.defaultConfig.versionName)
 
     pom {
