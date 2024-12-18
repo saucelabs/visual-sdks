@@ -10,11 +10,13 @@ View installation and usage instructions on the [Sauce Docs website](https://doc
 
 Sauce Visual Java SDK uses [Gradle](https://gradle.org/).
 
-`gradlew` binary, that is included in the source, can be used as a replacement if you don't have Maven.
+`gradlew` binary, that is included in the source, can be used as a replacement if you don't have Gradle.
 
 You'll also need [Android command line tools](https://developer.android.com/tools/).
 
-It can be setup either using [Android Studio](https://developer.android.com/studio) or using [homebrew](https://formulae.brew.sh/cask/android-commandlinetools).
+It can be installed either using [Android Studio](https://developer.android.com/studio) or using [homebrew](https://formulae.brew.sh/cask/android-commandlinetools).
+
+Finally, the library can be built using the following command:
 
 ```sh
 ./gradlew build
@@ -24,10 +26,12 @@ It can be setup either using [Android Studio](https://developer.android.com/stud
 
 To run the smoke test you'll need a running Android Emulator.
 
-You can either start an emulator from Android Studio or using [command line](https://developer.android.com/studio/run/emulator-commandline).
+You can start an emulator either from Android Studio or using [command line](https://developer.android.com/studio/run/emulator-commandline).
 
-Then you can run the smoke test using the following command. Make sure that SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables
+Make sure that SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables
 are in place before running the test.
+
+The smoke test can be run using the following command: 
 
 ```sh
 ./gradlew connectedAndroidTest

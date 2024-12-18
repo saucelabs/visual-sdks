@@ -45,7 +45,14 @@ public class VisualApi {
         CreateSnapshotUploadMutation.Data data = graphQLClient.executeMutation(m);
 
         if (captureDom) {
-            byte[] dom = SnapshotHelper.getInstance().captureDom(clipElement);
+            byte[] dom;
+            if (clipElement != null) {
+                dom = SnapshotHelper.getInstance().captureDom(clipElement);
+            } else if (scrollView != null) {
+                dom = SnapshotHelper.getInstance().captureDom(scrollView);
+            } else {
+                dom = SnapshotHelper.getInstance().captureDom(null);
+            }
             SnapshotHelper.getInstance().uploadDom(data.result.domUploadUrl, dom);
         }
 
