@@ -33,7 +33,7 @@ type Baseline implements Node {
   appName: String
   appVersion: String
   branch: String
-  browser: Browser
+  browser: Browser!
   browserVersion: String
   createdAt: Datetime!
   createdByOrgId: UUID!
@@ -90,10 +90,12 @@ type Baseline implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
-  operatingSystem: OperatingSystem
+  operatingSystem: OperatingSystem!
   operatingSystemVersion: String
   parentId: UUID
   project: String
+  smartSuiteName: String!
+  smartTestName: String!
 
   """Reads a single `Snapshot` that is related to this `Baseline`."""
   snapshot: Snapshot
@@ -787,6 +789,9 @@ input CreateSnapshotFromWebDriverIn {
 
   """The selenium ID of an element we should clip the screen to."""
   clipElement: WebdriverElementID
+
+  """@deprecated(reason: "clipElement should be used instead.")"""
+  clipSelector: String
   diffingMethod: DiffingMethod
   diffingOptions: DiffingOptionsIn
 
@@ -904,6 +909,7 @@ type Diff implements Node {
 
   """snapshot { uploadId } should be requested at the same moment"""
   domDiffUrl: String
+  feedback: DiffFeedback!
   hasDom: Boolean!
   id: UUID!
 
@@ -962,6 +968,42 @@ input DiffCountIn {
 
   """Set to true to only count diffs that have a baseline."""
   withBaseline: Boolean
+}
+
+type DiffFeedback {
+  hasIrrelevantChanges: Boolean!
+  isBroken: Boolean!
+}
+
+"""A connection to a list of `DiffFeedback` values."""
+type DiffFeedbacksConnection {
+  """
+  A list of edges which contains the `DiffFeedback` and cursor to aid in pagination.
+  """
+  edges: [DiffFeedbacksEdge!]!
+
+  """A list of `DiffFeedback` objects."""
+  nodes: [DiffFeedback!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `DiffFeedback` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `DiffFeedback` edge in the connection."""
+type DiffFeedbacksEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `DiffFeedback` at the end of the edge."""
+  node: DiffFeedback!
+}
+
+"""Methods to use when ordering `DiffFeedback`."""
+enum DiffFeedbacksOrderBy {
+  NATURAL
 }
 
 """
@@ -1206,6 +1248,11 @@ input FullPageConfigIn {
   Default and max value is 10
   """
   scrollLimit: Int
+
+  """
+  Change scroll behaviour before and after taking full page screenshot. Available only on native apps.
+  """
+  scrollOption: ScrollOption
 }
 
 scalar FullText
@@ -1222,6 +1269,8 @@ enum GroupByOption {
   Browser
   Device
   OperatingSystem_OperatingSystemVersion
+  SmartSuiteName
+  SmartTestName
   SuiteName
   TestName
 }
@@ -1280,7 +1329,7 @@ type Mutation {
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
     input: ApproveBuildIn!
-  ): Build!
+  ): Build! @deprecated(reason: "Use setDiffStatus")
   createBuild(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1340,6 +1389,18 @@ type Mutation {
     """
     input: MergeBaselinesInput!
   ): MergeBaselinesPayload!
+  setDiffFeedback(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetDiffFeedbackIn!
+  ): Diff!
+  setDiffStatus(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetDiffStatusIn!
+  ): [Diff!]!
   updateComment(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1351,7 +1412,7 @@ type Mutation {
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
     input: UpdateDiffIn!
-  ): Diff!
+  ): Diff! @deprecated(reason: "Use setDiffStatus")
 }
 
 """An object with a globally unique `ID`."""
@@ -1367,6 +1428,7 @@ enum OperatingSystem {
   IOS
   LINUX
   MACOS
+  UNKNOWN
   WINDOWS
 }
 
@@ -1804,6 +1866,30 @@ type Query implements Node {
     nodeId: ID!
   ): Diff
 
+  """Reads and enables pagination through a set of `DiffFeedback`."""
+  diffFeedbacks(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `DiffFeedback`."""
+    orderBy: [DiffFeedbacksOrderBy!] = [NATURAL]
+  ): DiffFeedbacksConnection
+
   """Reads and enables pagination through a set of `Diff`."""
   diffs(
     """Read all values in the set after (below) this cursor."""
@@ -2003,6 +2089,15 @@ input RegionIn {
   y: Int!
 }
 
+"""
+START_FROM_TOP - scroll before and after to top of the scrollElement
+START_FROM_CURRENT_LOCATION - no scroll before and after
+"""
+enum ScrollOption {
+  START_FROM_CURRENT_LOCATION
+  START_FROM_TOP
+}
+
 input SelectorIn {
   type: SelectorType!
   value: String!
@@ -2010,6 +2105,17 @@ input SelectorIn {
 
 enum SelectorType {
   XPATH
+}
+
+input SetDiffFeedbackIn {
+  diffId: UUID!
+  hasIrrelevantChanges: Boolean!
+  isBroken: Boolean!
+}
+
+input SetDiffStatusIn {
+  diffIds: [UUID!]!
+  status: UpdateDiffStatus!
 }
 
 type Snapshot implements Node {
@@ -2051,7 +2157,7 @@ type Snapshot implements Node {
     orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
   ): BaselinesConnection!
   branch: String
-  browser: Browser
+  browser: Browser!
   browserVersion: String
 
   """Reads a single `Build` that is related to this `Snapshot`."""
@@ -2134,8 +2240,10 @@ type Snapshot implements Node {
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
   nodeId: ID!
-  operatingSystem: OperatingSystem
+  operatingSystem: OperatingSystem!
   operatingSystemVersion: String
+  smartSuiteName: String!
+  smartTestName: String!
   suiteName: String
   testName: String
   thumbnailUrl: String!
