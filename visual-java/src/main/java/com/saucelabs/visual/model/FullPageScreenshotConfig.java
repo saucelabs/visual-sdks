@@ -37,22 +37,22 @@ public class FullPageScreenshotConfig {
   }
 
   public FullPageScreenshotConfig(
-          int delayAfterScrollMs,
-          Boolean disableCSSAnimation,
-          List<String> hideAfterFirstScroll,
-          Boolean hideScrollBars,
-          int scrollLimit,
-          String scrollElement,
-          SelectorIn nativeClipSelector) {
+      int delayAfterScrollMs,
+      Boolean disableCSSAnimation,
+      List<String> hideAfterFirstScroll,
+      Boolean hideScrollBars,
+      int scrollLimit,
+      String scrollElement,
+      SelectorIn nativeClipSelector) {
     this(
-            delayAfterScrollMs,
-            disableCSSAnimation,
-            hideAfterFirstScroll,
-            hideScrollBars,
-            scrollLimit,
-            scrollElement,
-            nativeClipSelector,
-            null);
+        delayAfterScrollMs,
+        disableCSSAnimation,
+        hideAfterFirstScroll,
+        hideScrollBars,
+        scrollLimit,
+        scrollElement,
+        nativeClipSelector,
+        null);
   }
 
   private FullPageScreenshotConfig(
@@ -134,7 +134,8 @@ public class FullPageScreenshotConfig {
     /**
      * Only effective for native app testing
      *
-     * @param scrollOption ScrollOption to select which scroll behavior Full-Page screenshot should have.
+     * @param scrollOption ScrollOption to select which scroll behavior Full-Page screenshot should
+     *     have.
      * @return Builder instance
      */
     public Builder withScrollOption(ScrollOption scrollOption) {
