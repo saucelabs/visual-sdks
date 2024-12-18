@@ -41,7 +41,7 @@ export type FullPageScreenshotOptions<T> =
       /**
        * Change scroll behaviour before and after taking full page screenshot. Available only on native apps.
        */
-      scrollOptions?: ScrollOption;
+      scrollOption?: ScrollOption;
     };
 
 export type Ignorable<T> = T | T[] | Promise<T> | Promise<T[]> | RegionIn;
