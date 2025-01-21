@@ -116,6 +116,9 @@ export const buildCreate = async (_: unknown, cmd: Command) => {
     defaultBranch: options.defaultBranch,
   });
   console.info(`Build ${build.id} created`);
+  if (options.url === true) {
+    console.info(`URL: ${build.url}`);
+  }
 };
 
 /**
@@ -126,6 +129,7 @@ type BuildCreateCommandOptions = {
   name: string;
   branch?: string;
   customId?: string;
+  url?: boolean;
   project?: string;
   defaultBranch?: string;
 };
@@ -139,6 +143,7 @@ const buildCreateCommand = () =>
     .option('--branch <branch>')
     .option('--default-branch <defaultBranch>')
     .option('-p, --project <project>')
+    .option('-u, --url')
     .action(buildCreate);
 
 /**
