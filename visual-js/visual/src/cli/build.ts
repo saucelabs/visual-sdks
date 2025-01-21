@@ -143,7 +143,7 @@ const buildCreateCommand = () =>
     .option('--branch <branch>')
     .option('--default-branch <defaultBranch>')
     .option('-p, --project <project>')
-    .option('-u, --url')
+    .option('-u, --url', 'display build URL after creation')
     .action(buildCreate);
 
 /**
