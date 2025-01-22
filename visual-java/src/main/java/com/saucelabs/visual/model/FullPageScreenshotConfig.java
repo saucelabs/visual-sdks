@@ -1,5 +1,6 @@
 package com.saucelabs.visual.model;
 
+import com.saucelabs.visual.graphql.type.ScrollOption;
 import com.saucelabs.visual.graphql.type.SelectorIn;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ public class FullPageScreenshotConfig {
   private int scrollLimit;
   private String scrollElement;
   private SelectorIn nativeClipSelector;
+  private ScrollOption scrollOption;
 
   public FullPageScreenshotConfig(
       int delayAfterScrollMs,
@@ -30,6 +32,7 @@ public class FullPageScreenshotConfig {
         hideScrollBars,
         scrollLimit,
         scrollElement,
+        null,
         null);
   }
 
@@ -41,6 +44,26 @@ public class FullPageScreenshotConfig {
       int scrollLimit,
       String scrollElement,
       SelectorIn nativeClipSelector) {
+    this(
+        delayAfterScrollMs,
+        disableCSSAnimation,
+        hideAfterFirstScroll,
+        hideScrollBars,
+        scrollLimit,
+        scrollElement,
+        nativeClipSelector,
+        null);
+  }
+
+  private FullPageScreenshotConfig(
+      int delayAfterScrollMs,
+      Boolean disableCSSAnimation,
+      List<String> hideAfterFirstScroll,
+      Boolean hideScrollBars,
+      int scrollLimit,
+      String scrollElement,
+      SelectorIn nativeClipSelector,
+      ScrollOption scrollOption) {
     this.delayAfterScrollMs = delayAfterScrollMs;
     this.disableCSSAnimation = disableCSSAnimation;
     this.hideAfterFirstScroll = hideAfterFirstScroll;
@@ -48,6 +71,7 @@ public class FullPageScreenshotConfig {
     this.scrollLimit = scrollLimit;
     this.scrollElement = scrollElement;
     this.nativeClipSelector = nativeClipSelector;
+    this.scrollOption = scrollOption;
   }
 
   public static class Builder {
@@ -58,6 +82,7 @@ public class FullPageScreenshotConfig {
     private int scrollLimit;
     private String scrollElement;
     private SelectorIn nativeClipSelector;
+    private ScrollOption scrollOption;
 
     public Builder withDelayAfterScrollMs(int delayAfterScrollMs) {
       this.delayAfterScrollMs = delayAfterScrollMs;
@@ -106,6 +131,18 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+     * Only effective for native app testing
+     *
+     * @param scrollOption ScrollOption to select which scroll behavior Full-Page screenshot should
+     *     have.
+     * @return Builder instance
+     */
+    public Builder withScrollOption(ScrollOption scrollOption) {
+      this.scrollOption = scrollOption;
+      return this;
+    }
+
     public FullPageScreenshotConfig build() {
       return new FullPageScreenshotConfig(
           delayAfterScrollMs,
@@ -114,7 +151,8 @@ public class FullPageScreenshotConfig {
           hideScrollBars,
           scrollLimit,
           scrollElement,
-          nativeClipSelector);
+          nativeClipSelector,
+          scrollOption);
     }
   }
 
@@ -182,5 +220,18 @@ public class FullPageScreenshotConfig {
    */
   public void setNativeClipSelector(SelectorIn nativeClipSelector) {
     this.nativeClipSelector = nativeClipSelector;
+  }
+
+  public ScrollOption getScrollOption() {
+    return scrollOption;
+  }
+
+  /**
+   * Only effective for native app testing
+   *
+   * @param scrollOption ScrollOption to use
+   */
+  public void setScrollOption(ScrollOption scrollOption) {
+    this.scrollOption = scrollOption;
   }
 }

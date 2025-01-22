@@ -1,0 +1,159 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.SonatypeHost
+
+plugins {
+    alias libs.plugins.android.library
+    alias libs.plugins.apollographql
+    alias libs.plugins.vanniktech.maven.publish
+}
+
+android {
+    namespace 'com.saucelabs.visual'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        versionCode 1
+        versionName "0.0.2"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "String", "SAUCE_USERNAME", "\"${getProperty("SAUCE_USERNAME", "")}\""
+        buildConfigField "String", "SAUCE_ACCESS_KEY", "\"${getProperty("SAUCE_ACCESS_KEY", "")}\""
+        buildConfigField "String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+String getProperty(String name, String defaultValue) {
+    if (rootProject.file("./local.properties").exists()) {
+        def properties = new Properties()
+        properties.load(rootProject.file("./local.properties").newDataInputStream())
+        if (properties.containsKey(name)) {
+            return properties[name]
+        }
+    }
+    if (System.getenv(name) != null && !System.getenv(name).isBlank()) {
+        return System.getenv(name)
+    }
+    return defaultValue
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.junit
+    implementation libs.apollo.runtime
+    implementation libs.apollo.rx3.support
+    implementation libs.espresso.core
+    implementation libs.uiautomator
+    implementation libs.jsoup
+    androidTestImplementation libs.ext.junit
+}
+
+ext {
+    scmUrl = 'git@github.com:saucelabs/visual-sdks.git'
+    artifactName = 'visual-espresso'
+}
+
+mavenPublishing {
+    configure(new AndroidSingleVariantLibrary("release", true, true))
+    publishToMavenCentral(SonatypeHost.DEFAULT)
+    signAllPublications()
+    coordinates(android.namespace, "${artifactName}", android.defaultConfig.versionName)
+
+    pom {
+        name = "${artifactName}"
+        description = 'Sauce Visual Espresso SDK'
+        url = 'https://github.com/saucelabs/visual-sdks'
+        scm {
+            connection = "scm:git:${scmUrl}"
+            developerConnection = "scm:git:${scmUrl}"
+            url = "${scmUrl}"
+        }
+        licenses {
+            license {
+                name = 'Apache-2.0'
+                url = 'https://github.com/saucelabs/visual-sdks/blob/main/LICENSE'
+            }
+        }
+        developers {
+            developer {
+                name = 'Sauce Labs Visual Team'
+                email = 'visual.team@saucelabs.com'
+                organization = 'Sauce Labs'
+                organizationUrl = 'https://saucelabs.com/'
+            }
+        }
+    }
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.saucelabs.visual.graphql")
+        generateKotlinModels.set(false)
+        warnOnDeprecatedUsages.set(false)
+    }
+}
+
+tasks.register('bumpVersion') {
+    doLast {
+        def releaseType = project.hasProperty("releaseType") ? project.releaseType : null
+        if (!releaseType) {
+            throw new GradleException("Please provide a release type using -PreleaseType=<major|minor|patch>")
+        }
+
+        def newVersion = calculateNewVersion(android.defaultConfig.versionName, releaseType)
+        persistNewVersion(newVersion)
+
+        print "$newVersion"
+    }
+}
+
+static def calculateNewVersion(currentVersion, releaseType) {
+    def versionParts = currentVersion.split('\\.').collect { it.toInteger() }
+    if (versionParts.size() != 3) {
+        throw new GradleException("Invalid versionName format: $currentVersion. Expected format: MAJOR.MINOR.PATCH")
+    }
+
+    def (major, minor, patch) = versionParts
+    switch (releaseType) {
+        case "major":
+            major++
+            minor = 0
+            patch = 0
+            break
+        case "minor":
+            minor++
+            patch = 0
+            break
+        case "patch":
+            patch++
+            break
+        default:
+            throw new GradleException("Unknown release type: $releaseType. Use 'major', 'minor', or 'patch'.")
+    }
+
+    return "$major.$minor.$patch"
+}
+
+def persistNewVersion(newVersion) {
+    def buildFile = file("build.gradle")
+    def buildFileContent = buildFile.text.replaceAll(/versionName\s+"[^"]+"/, "versionName \"$newVersion\"")
+    buildFile.text = buildFileContent
+}

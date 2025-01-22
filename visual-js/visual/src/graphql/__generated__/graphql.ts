@@ -60,8 +60,10 @@ export type Baseline = Node & {
   appName: Maybe<Scalars['String']>;
   appVersion: Maybe<Scalars['String']>;
   branch: Maybe<Scalars['String']>;
-  browser: Maybe<Browser>;
+  browser: Browser;
   browserVersion: Maybe<Scalars['String']>;
+  /** Reads and enables pagination through a set of `Baseline`. */
+  childBaselines: BaselinesConnection;
   createdAt: Scalars['Datetime'];
   createdByOrgId: Scalars['UUID'];
   createdByUser: User;
@@ -82,10 +84,14 @@ export type Baseline = Node & {
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
-  operatingSystem: Maybe<OperatingSystem>;
+  operatingSystem: OperatingSystem;
   operatingSystemVersion: Maybe<Scalars['String']>;
+  /** Reads a single `Baseline` that is related to this `Baseline`. */
+  parent: Maybe<Baseline>;
   parentId: Maybe<Scalars['UUID']>;
   project: Maybe<Scalars['String']>;
+  smartSuiteName: Scalars['String'];
+  smartTestName: Scalars['String'];
   /** Reads a single `Snapshot` that is related to this `Baseline`. */
   snapshot: Maybe<Snapshot>;
   snapshotId: Maybe<Scalars['UUID']>;
@@ -98,6 +104,23 @@ export type Baseline = Node & {
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   width: Maybe<Scalars['Int']>;
+};
+
+
+/**
+ * A `Baseline` is what a `Snapshot` is compared to.
+ *
+ * For details see https://docs.saucelabs.com/visual-testing/sauce-visual/index.html#baseline-matching
+ */
+export type BaselineChildBaselinesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<BaselineCondition>;
+  filter: InputMaybe<BaselineFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
 
 
@@ -132,6 +155,8 @@ export type BaselineCondition = {
   createdByUserId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `parentId` field. */
+  parentId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `project` field. */
   project?: InputMaybe<Scalars['String']>;
   /** Checks for equality with the object’s `snapshotId` field. */
@@ -150,6 +175,8 @@ export type BaselineFilter = {
   createdByUserId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `parentId` field. */
+  parentId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `project` field. */
   project?: InputMaybe<StringFilter>;
   /** Filter by the object’s `snapshotId` field. */
@@ -203,6 +230,8 @@ export enum BaselinesOrderBy {
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
+  ParentIdAsc = 'PARENT_ID_ASC',
+  ParentIdDesc = 'PARENT_ID_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
   ProjectAsc = 'PROJECT_ASC',
@@ -645,6 +674,8 @@ export type CreateSnapshotFromWebDriverIn = {
   captureDom?: InputMaybe<Scalars['Boolean']>;
   /** The selenium ID of an element we should clip the screen to. */
   clipElement?: InputMaybe<Scalars['WebdriverElementID']>;
+  /** @deprecated(reason: "clipElement should be used instead.") */
+  clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /**
@@ -708,6 +739,7 @@ export type Diff = Node & {
   diffingMethod: DiffingMethod;
   /** snapshot { uploadId } should be requested at the same moment */
   domDiffUrl: Maybe<Scalars['String']>;
+  feedback: DiffFeedback;
   hasDom: Scalars['Boolean'];
   id: Scalars['UUID'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
@@ -778,6 +810,39 @@ export type DiffCountIn = {
   /** Set to true to only count diffs that have a baseline. */
   withBaseline?: InputMaybe<Scalars['Boolean']>;
 };
+
+export type DiffFeedback = {
+  __typename?: 'DiffFeedback';
+  hasIrrelevantChanges: Scalars['Boolean'];
+  isBroken: Scalars['Boolean'];
+};
+
+/** A connection to a list of `DiffFeedback` values. */
+export type DiffFeedbacksConnection = {
+  __typename?: 'DiffFeedbacksConnection';
+  /** A list of edges which contains the `DiffFeedback` and cursor to aid in pagination. */
+  edges: Array<DiffFeedbacksEdge>;
+  /** A list of `DiffFeedback` objects. */
+  nodes: Array<DiffFeedback>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `DiffFeedback` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `DiffFeedback` edge in the connection. */
+export type DiffFeedbacksEdge = {
+  __typename?: 'DiffFeedbacksEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `DiffFeedback` at the end of the edge. */
+  node: DiffFeedback;
+};
+
+/** Methods to use when ordering `DiffFeedback`. */
+export enum DiffFeedbacksOrderBy {
+  Natural = 'NATURAL'
+}
 
 /** A filter to be used against `Diff` object types. All fields are combined with a logical ‘and.’ */
 export type DiffFilter = {
@@ -983,6 +1048,8 @@ export type FullPageConfigIn = {
    * Default and max value is 10
    */
   scrollLimit?: InputMaybe<Scalars['Int']>;
+  /** Change scroll behaviour before and after taking full page screenshot. Available only on native apps. */
+  scrollOption?: InputMaybe<ScrollOption>;
 };
 
 /** A filter to be used against FullText fields. All fields are combined with a logical ‘and.’ */
@@ -995,6 +1062,8 @@ export enum GroupByOption {
   Browser = 'Browser',
   Device = 'Device',
   OperatingSystemOperatingSystemVersion = 'OperatingSystem_OperatingSystemVersion',
+  SmartSuiteName = 'SmartSuiteName',
+  SmartTestName = 'SmartTestName',
   SuiteName = 'SuiteName',
   TestName = 'TestName'
 }
@@ -1034,6 +1103,7 @@ export type MergeBaselinesPayload = {
 export type Mutation = {
   __typename?: 'Mutation';
   addComment: Comment;
+  /** @deprecated Use setDiffStatus */
   approveBuild: Build;
   createBuild: Build;
   /**
@@ -1048,7 +1118,10 @@ export type Mutation = {
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
+  setDiffFeedback: Diff;
+  setDiffStatus: Array<Diff>;
   updateComment: Comment;
+  /** @deprecated Use setDiffStatus */
   updateDiff: Diff;
 };
 
@@ -1120,6 +1193,18 @@ export type MutationMergeBaselinesArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetDiffFeedbackArgs = {
+  input: SetDiffFeedbackIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetDiffStatusArgs = {
+  input: SetDiffStatusIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationUpdateCommentArgs = {
   input: UpdateCommentIn;
 };
@@ -1141,6 +1226,7 @@ export enum OperatingSystem {
   Ios = 'IOS',
   Linux = 'LINUX',
   Macos = 'MACOS',
+  Unknown = 'UNKNOWN',
   Windows = 'WINDOWS'
 }
 
@@ -1368,6 +1454,8 @@ export type Query = Node & {
   diff: Maybe<Diff>;
   /** Reads a single `Diff` using its globally unique `ID`. */
   diffByNodeId: Maybe<Diff>;
+  /** Reads and enables pagination through a set of `DiffFeedback`. */
+  diffFeedbacks: Maybe<DiffFeedbacksConnection>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: Maybe<DiffsConnection>;
   /**
@@ -1549,6 +1637,17 @@ export type QueryDiffByNodeIdArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryDiffFeedbacksArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<DiffFeedbacksOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryDiffsArgs = {
   after: InputMaybe<Scalars['Cursor']>;
   before: InputMaybe<Scalars['Cursor']>;
@@ -1685,6 +1784,15 @@ export type RegionIn = {
   y: Scalars['Int'];
 };
 
+/**
+ * START_FROM_TOP - scroll before and after to top of the scrollElement
+ * START_FROM_CURRENT_LOCATION - no scroll before and after
+ */
+export enum ScrollOption {
+  StartFromCurrentLocation = 'START_FROM_CURRENT_LOCATION',
+  StartFromTop = 'START_FROM_TOP'
+}
+
 export type SelectorIn = {
   type: SelectorType;
   value: Scalars['String'];
@@ -1694,6 +1802,17 @@ export enum SelectorType {
   Xpath = 'XPATH'
 }
 
+export type SetDiffFeedbackIn = {
+  diffId: Scalars['UUID'];
+  hasIrrelevantChanges: Scalars['Boolean'];
+  isBroken: Scalars['Boolean'];
+};
+
+export type SetDiffStatusIn = {
+  diffIds: Array<Scalars['UUID']>;
+  status: UpdateDiffStatus;
+};
+
 export type Snapshot = Node & {
   __typename?: 'Snapshot';
   appId: Maybe<Scalars['String']>;
@@ -1702,7 +1821,7 @@ export type Snapshot = Node & {
   /** Reads and enables pagination through a set of `Baseline`. */
   baselines: BaselinesConnection;
   branch: Maybe<Scalars['String']>;
-  browser: Maybe<Browser>;
+  browser: Browser;
   browserVersion: Maybe<Scalars['String']>;
   /** Reads a single `Build` that is related to this `Snapshot`. */
   build: Maybe<Build>;
@@ -1742,8 +1861,10 @@ export type Snapshot = Node & {
   name: Scalars['String'];
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
-  operatingSystem: Maybe<OperatingSystem>;
+  operatingSystem: OperatingSystem;
   operatingSystemVersion: Maybe<Scalars['String']>;
+  smartSuiteName: Scalars['String'];
+  smartTestName: Scalars['String'];
   suiteName: Maybe<Scalars['String']>;
   testName: Maybe<Scalars['String']>;
   thumbnailUrl: Scalars['String'];

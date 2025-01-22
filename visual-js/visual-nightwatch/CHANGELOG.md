@@ -1,5 +1,23 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [2d4c4ca]
+  - @saucelabs/visual@0.13.0
+
+## 0.11.0
+
+### Minor Changes
+
+- d6f02a8: Added control over scrolling to the top before and after capturing a native full-page screenshot.
+
+### Patch Changes
+
+- Updated dependencies [d6f02a8]
+  - @saucelabs/visual@0.12.0
+
 ## 0.9.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @saucelabs/visual
 
+## 0.13.0
+
+### Minor Changes
+
+- 2d4c4ca: Expose URL when creating a build from CLI
+
+## 0.12.0
+
+### Minor Changes
+
+- d6f02a8: Added control over scrolling to the top before and after capturing a native full-page screenshot.
+
 ## 0.10.2
 
 ### Patch Changes
