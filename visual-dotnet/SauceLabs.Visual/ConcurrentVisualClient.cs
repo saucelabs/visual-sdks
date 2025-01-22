@@ -13,6 +13,7 @@ namespace SauceLabs.Visual
     /// <summary>
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
+    [Obsolete("This is an unstable API. It may change in the future.")]
     public class ConcurrentVisualClient : IDisposable
     {
         // Stores VisualClientV2, indexed by region
