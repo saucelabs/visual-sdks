@@ -1,5 +1,12 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [2d4c4ca]
+  - @saucelabs/visual@0.13.0
+
 ## 0.10.0
 
 ### Minor Changes

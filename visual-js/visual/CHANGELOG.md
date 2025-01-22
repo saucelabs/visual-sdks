@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.13.0
+
+### Minor Changes
+
+- 2d4c4ca: Expose URL when creating a build from CLI
+
 ## 0.12.0
 
 ### Minor Changes
