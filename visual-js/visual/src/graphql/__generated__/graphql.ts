@@ -62,6 +62,8 @@ export type Baseline = Node & {
   branch: Maybe<Scalars['String']>;
   browser: Browser;
   browserVersion: Maybe<Scalars['String']>;
+  /** Reads and enables pagination through a set of `Baseline`. */
+  childBaselines: BaselinesConnection;
   createdAt: Scalars['Datetime'];
   createdByOrgId: Scalars['UUID'];
   createdByUser: User;
@@ -84,6 +86,8 @@ export type Baseline = Node & {
   nodeId: Scalars['ID'];
   operatingSystem: OperatingSystem;
   operatingSystemVersion: Maybe<Scalars['String']>;
+  /** Reads a single `Baseline` that is related to this `Baseline`. */
+  parent: Maybe<Baseline>;
   parentId: Maybe<Scalars['UUID']>;
   project: Maybe<Scalars['String']>;
   smartSuiteName: Scalars['String'];
@@ -100,6 +104,23 @@ export type Baseline = Node & {
   viewportHeight: Maybe<Scalars['Int']>;
   viewportWidth: Maybe<Scalars['Int']>;
   width: Maybe<Scalars['Int']>;
+};
+
+
+/**
+ * A `Baseline` is what a `Snapshot` is compared to.
+ *
+ * For details see https://docs.saucelabs.com/visual-testing/sauce-visual/index.html#baseline-matching
+ */
+export type BaselineChildBaselinesArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<BaselineCondition>;
+  filter: InputMaybe<BaselineFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<BaselinesOrderBy>>;
 };
 
 
@@ -134,6 +155,8 @@ export type BaselineCondition = {
   createdByUserId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `parentId` field. */
+  parentId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `project` field. */
   project?: InputMaybe<Scalars['String']>;
   /** Checks for equality with the object’s `snapshotId` field. */
@@ -152,6 +175,8 @@ export type BaselineFilter = {
   createdByUserId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `parentId` field. */
+  parentId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `project` field. */
   project?: InputMaybe<StringFilter>;
   /** Filter by the object’s `snapshotId` field. */
@@ -205,6 +230,8 @@ export enum BaselinesOrderBy {
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
+  ParentIdAsc = 'PARENT_ID_ASC',
+  ParentIdDesc = 'PARENT_ID_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
   PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
   ProjectAsc = 'PROJECT_ASC',
