@@ -20,7 +20,6 @@ namespace SauceLabs.Visual
         // Stores session metadata, indexed by sessionId
         private readonly ConcurrentDictionary<string, WebDriverSessionInfo> _sessionsMetadata = new ConcurrentDictionary<string, WebDriverSessionInfo>();
 
-        private readonly VisualApi _api;
         private VisualBuild Build { get; set; }
 
         private string? _previousSuiteName;
@@ -46,7 +45,7 @@ namespace SauceLabs.Visual
             var client = await Instances.GetOrAddAsync(region, async (key) =>
             {
                 var client = new ConcurrentVisualClient(key, creds);
-                client.Build = await BuildFactory.Get(client._api, buildOptions);
+                client.Build = await BuildFactory.Get(client.Api, buildOptions);
                 return client;
             });
             return client;
@@ -65,14 +64,9 @@ namespace SauceLabs.Visual
             {
                 Instances.TryRemove(key, out var client);
 
-                await client._api.FinishBuild(client.Build.Id);
+                await client.Api.FinishBuild(client.Build.Id);
                 client.Dispose();
             }
-        }
-
-        public void Dispose()
-        {
-            _api.Dispose();
         }
 
         /// <summary>
@@ -80,14 +74,12 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="creds">the Sauce Labs credentials</param>
-        private ConcurrentVisualClient(Region region, VisualCredential creds)
+        private ConcurrentVisualClient(Region region, VisualCredential creds) : base(region, creds.Username, creds.AccessKey)
         {
             if (StringUtils.IsNullOrEmpty(creds.Username) || StringUtils.IsNullOrEmpty(creds.AccessKey))
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
-
-            _api = new VisualApi(region, creds.Username, creds.AccessKey);
         }
 
         /// <summary>
@@ -121,11 +113,11 @@ namespace SauceLabs.Visual
 
             var sessionMetadata = await _sessionsMetadata.GetOrAddAsync(sessionId, async (_) =>
             {
-                var res = await _api.WebDriverSessionInfo(sessionId, jobId);
+                var res = await Api.WebDriverSessionInfo(sessionId, jobId);
                 return res.EnsureValidResponse().Result;
             });
 
-            return await VisualCheckBaseAsync(_api, Build, name, options, jobId, sessionId, sessionMetadata.Blob);
+            return await VisualCheckBaseAsync(Api, Build, name, options, jobId, sessionId, sessionMetadata.Blob);
         }
     }
 }

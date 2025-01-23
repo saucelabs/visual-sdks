@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,11 +8,17 @@ using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
 {
-    public abstract class AbstractVisualClient
+    public abstract class AbstractVisualClient : IDisposable
     {
         protected readonly List<string> ScreenshotIds = new List<string>();
+        internal readonly VisualApi Api;
         public bool CaptureDom { get; set; } = false;
         public BaselineOverride? BaselineOverride { get; set; }
+
+        internal AbstractVisualClient(Region region, string username, string accessKey)
+        {
+            Api = new VisualApi(region, username, accessKey);
+        }
 
         internal async Task<string> VisualCheckBaseAsync(VisualApi api, VisualBuild build, string name,
             VisualCheckOptions options, string jobId, string sessionId, string? sessionMetadataBlob)
@@ -44,6 +51,11 @@ namespace SauceLabs.Visual
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => ScreenshotIds.Add(d.Id));
             return result.Result.Id;
+        }
+
+        public void Dispose()
+        {
+            Api.Dispose();
         }
     }
 }

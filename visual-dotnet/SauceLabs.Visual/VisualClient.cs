@@ -15,13 +15,11 @@ namespace SauceLabs.Visual
     /// <summary>
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
-    public class VisualClient : AbstractVisualClient, IDisposable
+    public class VisualClient : AbstractVisualClient
     {
-        internal readonly VisualApi Api;
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
-        private readonly List<string> _screenshotIds = new List<string>();
         public VisualBuild Build { get; private set; }
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -110,14 +108,13 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        private VisualClient(WebDriver wd, Region region, string username, string accessKey)
+        private VisualClient(WebDriver wd, Region region, string username, string accessKey) : base(region, username, accessKey)
         {
             if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
             {
                 throw new VisualClientException("Username or Access Key not set");
             }
 
-            Api = new VisualApi(region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
@@ -178,11 +175,6 @@ namespace SauceLabs.Visual
             await BuildFactory.CloseBuilds();
         }
 
-        public void Dispose()
-        {
-            Api.Dispose();
-        }
-
         /// <summary>
         /// <c>VisualResults</c> returns the results of screenshot comparison.
         /// </summary>
@@ -206,7 +198,7 @@ namespace SauceLabs.Visual
 
             var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
             result.Result.Nodes
-                .Where(n => _screenshotIds.Contains(n.Id))
+                .Where(n => ScreenshotIds.Contains(n.Id))
                 .Aggregate(dict, (counts, node) =>
                 {
                     counts[node.Status] += 1;
