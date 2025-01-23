@@ -17,6 +17,8 @@ namespace SauceLabs.Visual
         public bool CaptureDom { get; set; } = false;
         public BaselineOverride? BaselineOverride { get; set; }
 
+        protected string? PreviousSuiteName = null;
+
         internal AbstractVisualClient(Region region, string username, string accessKey)
         {
             Api = new VisualApi(region, username, accessKey);

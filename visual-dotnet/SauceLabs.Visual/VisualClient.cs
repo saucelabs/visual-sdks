@@ -21,8 +21,6 @@ namespace SauceLabs.Visual
         private string? _sessionMetadataBlob;
         private readonly ResiliencePipeline _retryPipeline;
 
-        private string? _previousSuiteName = null;
-
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
         /// </summary>
@@ -147,8 +145,8 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            options.EnsureTestContextIsPopulated(callerMemberName, _previousSuiteName);
-            _previousSuiteName = options.SuiteName;
+            options.EnsureTestContextIsPopulated(callerMemberName, PreviousSuiteName);
+            PreviousSuiteName = options.SuiteName;
             return VisualCheckAsync(name, options);
         }
 

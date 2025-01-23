@@ -20,8 +20,6 @@ namespace SauceLabs.Visual
         // Stores session metadata, indexed by sessionId
         private readonly ConcurrentDictionary<string, WebDriverSessionInfo> _sessionsMetadata = new ConcurrentDictionary<string, WebDriverSessionInfo>();
 
-        private string? _previousSuiteName;
-
         /// <summary>
         /// Get the instance of <c>VisualClient</c> for <c>region</c>. Credentials are fetched from Environment.
         /// </summary>
@@ -95,8 +93,8 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            options.EnsureTestContextIsPopulated(callerMemberName, _previousSuiteName);
-            _previousSuiteName = options.SuiteName;
+            options.EnsureTestContextIsPopulated(callerMemberName, PreviousSuiteName);
+            PreviousSuiteName = options.SuiteName;
             return VisualCheckAsync(wd, name, options);
         }
 
