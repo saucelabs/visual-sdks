@@ -72,10 +72,6 @@ namespace SauceLabs.Visual
         /// <param name="creds">the Sauce Labs credentials</param>
         private ConcurrentVisualClient(Region region, VisualCredential creds) : base(region, creds.Username, creds.AccessKey)
         {
-            if (StringUtils.IsNullOrEmpty(creds.Username) || StringUtils.IsNullOrEmpty(creds.AccessKey))
-            {
-                throw new VisualClientException("Username or Access Key not set");
-            }
         }
 
         /// <summary>

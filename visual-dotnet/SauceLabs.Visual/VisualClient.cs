@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using Polly;
-using Polly.Retry;
-using SauceLabs.Visual.Models;
 using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
@@ -19,7 +13,6 @@ namespace SauceLabs.Visual
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
-        private readonly ResiliencePipeline _retryPipeline;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -106,23 +99,9 @@ namespace SauceLabs.Visual
         /// <param name="accessKey">the Sauce Labs access key</param>
         private VisualClient(WebDriver wd, Region region, string username, string accessKey) : base(region, username, accessKey)
         {
-            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
-            {
-                throw new VisualClientException("Username or Access Key not set");
-            }
-
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
-            _retryPipeline = new ResiliencePipelineBuilder()
-                .AddRetry(new RetryStrategyOptions()
-                {
-                    Name = "VisualRetryPolicy",
-                    Delay = TimeSpan.FromSeconds(1),
-                    MaxRetryAttempts = 10
-                })
-                .AddTimeout(TimeSpan.FromSeconds(15))
-                .Build();
         }
 
         /// <summary>
@@ -169,44 +148,6 @@ namespace SauceLabs.Visual
         public static async Task Finish()
         {
             await BuildFactory.CloseBuilds();
-        }
-
-        /// <summary>
-        /// <c>VisualResults</c> returns the results of screenshot comparison.
-        /// </summary>
-        /// <returns>a dictionary containing <c>DiffStatus</c> and the number of screenshot in that status.</returns>
-        /// <exception cref="VisualClientException"></exception>
-        public async Task<Dictionary<DiffStatus, int>> VisualResults()
-        {
-            return await _retryPipeline.ExecuteAsync(async token => await FetchVisualResults(Build.Id));
-        }
-
-        private async Task<Dictionary<DiffStatus, int>> FetchVisualResults(string buildId)
-        {
-            var dict = new Dictionary<DiffStatus, int>() {
-                { DiffStatus.Approved, 0 },
-                { DiffStatus.Equal, 0 },
-                { DiffStatus.Unapproved, 0 },
-                { DiffStatus.Errored, 0 },
-                { DiffStatus.Queued, 0 },
-                { DiffStatus.Rejected, 0 }
-            };
-
-            var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
-            result.Result.Nodes
-                .Where(n => ScreenshotIds.Contains(n.Id))
-                .Aggregate(dict, (counts, node) =>
-                {
-                    counts[node.Status] += 1;
-                    return counts;
-                });
-
-            if (dict[DiffStatus.Queued] > 0)
-            {
-                throw new VisualClientException("Some diffs are not ready");
-            }
-
-            return dict;
         }
     }
 }
