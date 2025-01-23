@@ -16,7 +16,14 @@ namespace SauceLabs.Visual
         internal readonly VisualApi Api;
         public VisualBuild Build { get; internal set; }
 
+        /// <summary>
+        /// <c>CaptureDom</c> defines if DOM should be captured when a screenshot is captured.
+        /// </summary>
         public bool CaptureDom { get; set; } = false;
+
+        /// <summary>
+        /// <c>BaselineOverride</c> allows to override specifics field for baseline matching.
+        /// </summary>
         public BaselineOverride? BaselineOverride { get; set; }
 
         protected string? PreviousSuiteName = null;
