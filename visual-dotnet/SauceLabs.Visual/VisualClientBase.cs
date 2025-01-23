@@ -12,7 +12,7 @@ namespace SauceLabs.Visual
 {
     public abstract class VisualClientBase : IDisposable
     {
-        protected readonly List<string> ScreenshotIds = new List<string>();
+        private readonly List<string> _screenshotIds = new List<string>();
         internal readonly VisualApi Api;
         public VisualBuild Build { get; internal set; }
 
@@ -71,7 +71,7 @@ namespace SauceLabs.Visual
                 diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
                 baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn()
             ))).EnsureValidResponse();
-            result.Result.Diffs.Nodes.ToList().ForEach(d => ScreenshotIds.Add(d.Id));
+            result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;
         }
 
@@ -104,7 +104,7 @@ namespace SauceLabs.Visual
 
             var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
             result.Result.Nodes
-                .Where(n => ScreenshotIds.Contains(n.Id))
+                .Where(n => _screenshotIds.Contains(n.Id))
                 .Aggregate(dict, (counts, node) =>
                 {
                     counts[node.Status] += 1;
