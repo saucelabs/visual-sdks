@@ -14,7 +14,7 @@ namespace SauceLabs.Visual
     [Obsolete("This is an unstable API. It may change in the future.")]
     public class ConcurrentVisualClient : AbstractVisualClient, IDisposable
     {
-        // Stores VisualClientV2, indexed by region
+        // Stores ConcurrentVisualClient, indexed by region
         private static readonly ConcurrentDictionary<Region, ConcurrentVisualClient> Instances = new ConcurrentDictionary<Region, ConcurrentVisualClient>();
 
         // Stores session metadata, indexed by sessionId
@@ -26,22 +26,22 @@ namespace SauceLabs.Visual
         private string? _previousSuiteName;
 
         /// <summary>
-        /// Get the instance of <c>VisualClient</c> for <c>region</c>
+        /// Get the instance of <c>VisualClient</c> for <c>region</c>. Credentials are fetched from Environment.
         /// </summary>
-        /// <param name="region">target region</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public static async Task<ConcurrentVisualClient> Get(CreateBuildOptions buildOptions, Region region)
+        /// <param name="region">target region</param>
+        public static async Task<ConcurrentVisualClient> Get(Region region, CreateBuildOptions buildOptions)
         {
-            return await Get(buildOptions, region, VisualCredential.CreateFromEnvironment());
+            return await Get(region, VisualCredential.CreateFromEnvironment(), buildOptions);
         }
 
         /// <summary>
         /// Get the instance of <c>VisualClient</c> for <c>region</c>
         /// </summary>
+        /// <param name="buildOptions">the options of the build creation</param>
         /// <param name="region">target region</param>
         /// <param name="creds">Credentials to be used</param>
-        /// <param name="buildOptions">the options of the build creation</param>
-        public static async Task<ConcurrentVisualClient> Get(CreateBuildOptions buildOptions, Region region, VisualCredential creds)
+        public static async Task<ConcurrentVisualClient> Get(Region region, VisualCredential creds, CreateBuildOptions buildOptions)
         {
             var client = await Instances.GetOrAddAsync(region, async (key) =>
             {
@@ -52,16 +52,18 @@ namespace SauceLabs.Visual
             return client;
         }
 
-        /**
-         * When should be deleted all the instances ?
-         */
+        /// <summary>
+        /// Close currently open build in all regions.
+        ///
+        /// This should be invoked after all your test have processed.
+        /// <c>Finish</c> should be invoked within <c>[OneTimeTearDown]</c>
+        /// </summary>
         public static async Task Finish()
         {
             var keys = Instances.Keys;
             foreach (var key in keys)
             {
-                ConcurrentVisualClient client;
-                Instances.TryRemove(key, out client);
+                Instances.TryRemove(key, out var client);
 
                 await client._api.FinishBuild(client.Build.Id);
                 client.Dispose();
