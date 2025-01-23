@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using SauceLabs.Visual.GraphQL;
-using SauceLabs.Visual.Models;
 using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
@@ -14,16 +12,16 @@ namespace SauceLabs.Visual
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
     [Obsolete("This is an unstable API. It may change in the future.")]
-    public class ConcurrentVisualClient : IDisposable
+    public class ConcurrentVisualClient : AbstractVisualClient, IDisposable
     {
         // Stores VisualClientV2, indexed by region
         private static readonly ConcurrentDictionary<Region, ConcurrentVisualClient> Instances = new ConcurrentDictionary<Region, ConcurrentVisualClient>();
 
         // Stores session metadata, indexed by sessionId
-        private readonly Dictionary<string, WebDriverSessionInfo> _sessionsMetadata = new Dictionary<string, WebDriverSessionInfo>();
+        private readonly ConcurrentDictionary<string, WebDriverSessionInfo> _sessionsMetadata = new ConcurrentDictionary<string, WebDriverSessionInfo>();
 
         private readonly VisualApi _api;
-        private VisualBuild _build;
+        private VisualBuild Build { get; set; }
 
         private string? _previousSuiteName;
 
@@ -31,14 +29,24 @@ namespace SauceLabs.Visual
         /// Get the instance of <c>VisualClient</c> for <c>region</c>
         /// </summary>
         /// <param name="region">target region</param>
+        /// <param name="buildOptions">the options of the build creation</param>
+        public static async Task<ConcurrentVisualClient> Get(CreateBuildOptions buildOptions, Region region)
+        {
+            return await Get(buildOptions, region, VisualCredential.CreateFromEnvironment());
+        }
+
+        /// <summary>
+        /// Get the instance of <c>VisualClient</c> for <c>region</c>
+        /// </summary>
+        /// <param name="region">target region</param>
         /// <param name="creds">Credentials to be used</param>
         /// <param name="buildOptions">the options of the build creation</param>
-        public static async Task<ConcurrentVisualClient> Get(Region region, VisualCredential creds, CreateBuildOptions buildOptions)
+        public static async Task<ConcurrentVisualClient> Get(CreateBuildOptions buildOptions, Region region, VisualCredential creds)
         {
-            var client = await Instances.GetOrAdd(region, async (key) =>
+            var client = await Instances.GetOrAddAsync(region, async (key) =>
             {
                 var client = new ConcurrentVisualClient(key, creds);
-                client._build = await BuildFactory.Get(client._api, buildOptions);
+                client.Build = await BuildFactory.Get(client._api, buildOptions);
                 return client;
             });
             return client;
@@ -55,7 +63,7 @@ namespace SauceLabs.Visual
                 ConcurrentVisualClient client;
                 Instances.TryRemove(key, out client);
 
-                await client._api.FinishBuild(client._build.Id);
+                await client._api.FinishBuild(client.Build.Id);
                 client.Dispose();
             }
         }
@@ -109,41 +117,13 @@ namespace SauceLabs.Visual
             var sessionId = wd.SessionId.ToString();
             var jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : sessionId;
 
-            var sessionMetadata = await _sessionsMetadata.GetOrAdd(sessionId, async (_) =>
+            var sessionMetadata = await _sessionsMetadata.GetOrAddAsync(sessionId, async (_) =>
             {
                 var res = await _api.WebDriverSessionInfo(sessionId, jobId);
                 return res.EnsureValidResponse().Result;
             });
 
-            var ignoredRegions = IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
-
-            FullPageConfigIn? fullPageConfigIn = null;
-            if (options.FullPage == true)
-            {
-                fullPageConfigIn = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
-            }
-
-            var result = (await _api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
-                buildUuid: _build.Id,
-                name: name,
-                jobId: jobId,
-                diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,
-                regions: ignoredRegions.RegionsIn,
-                ignoredElements: ignoredRegions.ElementsIn,
-                sessionId: sessionId,
-                sessionMetadata: sessionMetadata.Blob ?? "",
-                // FIXME: Restore Class wide setting
-                captureDom: options.CaptureDom ?? false,
-                clipElement: options.ClipElement?.GetElementId(),
-                suiteName: options.SuiteName,
-                testName: options.TestName,
-                fullPageConfig: fullPageConfigIn,
-                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
-                // FIXME: Restore Class wide setting
-                baselineOverride: options.BaselineOverride?.ToBaselineOverrideIn()
-            ))).EnsureValidResponse();
-            // result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
-            return result.Result.Id;
+            return await VisualCheckBaseAsync(_api, Build, name, options, jobId, sessionId, sessionMetadata.Blob);
         }
     }
 }

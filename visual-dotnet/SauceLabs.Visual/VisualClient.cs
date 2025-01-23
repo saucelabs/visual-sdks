@@ -15,7 +15,7 @@ namespace SauceLabs.Visual
     /// <summary>
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
-    public class VisualClient : IDisposable
+    public class VisualClient : AbstractVisualClient, IDisposable
     {
         internal readonly VisualApi Api;
         private readonly string _sessionId;
@@ -23,8 +23,6 @@ namespace SauceLabs.Visual
         private string? _sessionMetadataBlob;
         private readonly List<string> _screenshotIds = new List<string>();
         public VisualBuild Build { get; private set; }
-        public bool CaptureDom { get; set; } = false;
-        public BaselineOverride? BaselineOverride { get; set; }
         private readonly ResiliencePipeline _retryPipeline;
 
         private string? _previousSuiteName = null;
@@ -161,33 +159,7 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            var ignoredRegions = IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
-
-            FullPageConfigIn? fullPageConfigIn = null;
-            if (options.FullPage == true)
-            {
-                fullPageConfigIn = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
-            }
-
-            var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
-                buildUuid: Build.Id,
-                name: name,
-                jobId: _jobId,
-                diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,
-                regions: ignoredRegions.RegionsIn,
-                ignoredElements: ignoredRegions.ElementsIn,
-                sessionId: _sessionId,
-                sessionMetadata: _sessionMetadataBlob ?? "",
-                captureDom: options.CaptureDom ?? CaptureDom,
-                clipElement: options.ClipElement?.GetElementId(),
-                suiteName: options.SuiteName,
-                testName: options.TestName,
-                fullPageConfig: fullPageConfigIn,
-                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
-                baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn()
-            ))).EnsureValidResponse();
-            result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
-            return result.Result.Id;
+            return await VisualCheckBaseAsync(Api, Build, name, options, _jobId, _sessionId, _sessionMetadataBlob);
         }
 
         /// <summary>
