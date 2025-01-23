@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using Polly;
-using Polly.Retry;
-using SauceLabs.Visual.GraphQL;
-using SauceLabs.Visual.Models;
 using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
@@ -15,19 +8,11 @@ namespace SauceLabs.Visual
     /// <summary>
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
-    public class VisualClient : IDisposable
+    public class VisualClient : VisualClientBase
     {
-        internal readonly VisualApi Api;
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
-        private readonly List<string> _screenshotIds = new List<string>();
-        public VisualBuild Build { get; private set; }
-        public bool CaptureDom { get; set; } = false;
-        public BaselineOverride? BaselineOverride { get; set; }
-        private readonly ResiliencePipeline _retryPipeline;
-
-        private string? _previousSuiteName = null;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -112,26 +97,11 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        private VisualClient(WebDriver wd, Region region, string username, string accessKey)
+        private VisualClient(WebDriver wd, Region region, string username, string accessKey) : base(region, username, accessKey)
         {
-            if (StringUtils.IsNullOrEmpty(username) || StringUtils.IsNullOrEmpty(accessKey))
-            {
-                throw new VisualClientException("Username or Access Key not set");
-            }
-
-            Api = new VisualApi(region, username, accessKey);
             _sessionId = wd.SessionId.ToString();
             _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
 
-            _retryPipeline = new ResiliencePipelineBuilder()
-                .AddRetry(new RetryStrategyOptions()
-                {
-                    Name = "VisualRetryPolicy",
-                    Delay = TimeSpan.FromSeconds(1),
-                    MaxRetryAttempts = 10
-                })
-                .AddTimeout(TimeSpan.FromSeconds(15))
-                .Build();
         }
 
         /// <summary>
@@ -154,40 +124,14 @@ namespace SauceLabs.Visual
             [CallerMemberName] string callerMemberName = "")
         {
             options ??= new VisualCheckOptions();
-            options.EnsureTestContextIsPopulated(callerMemberName, _previousSuiteName);
-            _previousSuiteName = options.SuiteName;
+            options.EnsureTestContextIsPopulated(callerMemberName, PreviousSuiteName);
+            PreviousSuiteName = options.SuiteName;
             return VisualCheckAsync(name, options);
         }
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            var ignoredRegions = IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
-
-            FullPageConfigIn? fullPageConfigIn = null;
-            if (options.FullPage == true)
-            {
-                fullPageConfigIn = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
-            }
-
-            var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
-                buildUuid: Build.Id,
-                name: name,
-                jobId: _jobId,
-                diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,
-                regions: ignoredRegions.RegionsIn,
-                ignoredElements: ignoredRegions.ElementsIn,
-                sessionId: _sessionId,
-                sessionMetadata: _sessionMetadataBlob ?? "",
-                captureDom: options.CaptureDom ?? CaptureDom,
-                clipElement: options.ClipElement?.GetElementId(),
-                suiteName: options.SuiteName,
-                testName: options.TestName,
-                fullPageConfig: fullPageConfigIn,
-                diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
-                baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn()
-            ))).EnsureValidResponse();
-            result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
-            return result.Result.Id;
+            return await VisualCheckBaseAsync(name, options, _jobId, _sessionId, _sessionMetadataBlob);
         }
 
         /// <summary>
@@ -204,49 +148,6 @@ namespace SauceLabs.Visual
         public static async Task Finish()
         {
             await BuildFactory.CloseBuilds();
-        }
-
-        public void Dispose()
-        {
-            Api.Dispose();
-        }
-
-        /// <summary>
-        /// <c>VisualResults</c> returns the results of screenshot comparison.
-        /// </summary>
-        /// <returns>a dictionary containing <c>DiffStatus</c> and the number of screenshot in that status.</returns>
-        /// <exception cref="VisualClientException"></exception>
-        public async Task<Dictionary<DiffStatus, int>> VisualResults()
-        {
-            return await _retryPipeline.ExecuteAsync(async token => await FetchVisualResults(Build.Id));
-        }
-
-        private async Task<Dictionary<DiffStatus, int>> FetchVisualResults(string buildId)
-        {
-            var dict = new Dictionary<DiffStatus, int>() {
-                { DiffStatus.Approved, 0 },
-                { DiffStatus.Equal, 0 },
-                { DiffStatus.Unapproved, 0 },
-                { DiffStatus.Errored, 0 },
-                { DiffStatus.Queued, 0 },
-                { DiffStatus.Rejected, 0 }
-            };
-
-            var result = (await Api.DiffForTestResult(buildId)).EnsureValidResponse();
-            result.Result.Nodes
-                .Where(n => _screenshotIds.Contains(n.Id))
-                .Aggregate(dict, (counts, node) =>
-                {
-                    counts[node.Status] += 1;
-                    return counts;
-                });
-
-            if (dict[DiffStatus.Queued] > 0)
-            {
-                throw new VisualClientException("Some diffs are not ready");
-            }
-
-            return dict;
         }
     }
 }

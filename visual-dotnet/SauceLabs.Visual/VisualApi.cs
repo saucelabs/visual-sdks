@@ -34,8 +34,11 @@ namespace SauceLabs.Visual
 
             httpClient ??= new HttpClient();
 
-            var serializerOptions = new JsonSerializerSettings();
-            serializerOptions.Converters.Add(new ConstantCaseEnumConverter());
+            var serializerOptions = new JsonSerializerSettings()
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                Converters = { new ConstantCaseEnumConverter() }
+            };
 
             var currentAssembly = Assembly.GetExecutingAssembly().GetName();
             _graphQlClient = new GraphQLHttpClient(
