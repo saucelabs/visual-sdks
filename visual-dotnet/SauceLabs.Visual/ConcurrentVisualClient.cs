@@ -12,7 +12,7 @@ namespace SauceLabs.Visual
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
     [Obsolete("This is an unstable API. It may change in the future.")]
-    public class ConcurrentVisualClient : AbstractVisualClient
+    public class ConcurrentVisualClient : VisualClientBase
     {
         // Stores ConcurrentVisualClient, indexed by region
         private static readonly ConcurrentDictionary<Region, ConcurrentVisualClient> Instances = new ConcurrentDictionary<Region, ConcurrentVisualClient>();

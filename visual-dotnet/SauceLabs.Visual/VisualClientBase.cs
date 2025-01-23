@@ -8,7 +8,7 @@ using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
 {
-    public abstract class AbstractVisualClient : IDisposable
+    public abstract class VisualClientBase : IDisposable
     {
         protected readonly List<string> ScreenshotIds = new List<string>();
         internal readonly VisualApi Api;
@@ -19,7 +19,7 @@ namespace SauceLabs.Visual
 
         protected string? PreviousSuiteName = null;
 
-        internal AbstractVisualClient(Region region, string username, string accessKey)
+        internal VisualClientBase(Region region, string username, string accessKey)
         {
             Api = new VisualApi(region, username, accessKey);
         }

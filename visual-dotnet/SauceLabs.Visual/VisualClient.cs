@@ -14,7 +14,7 @@ namespace SauceLabs.Visual
     /// <summary>
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
-    public class VisualClient : AbstractVisualClient
+    public class VisualClient : VisualClientBase
     {
         private readonly string _sessionId;
         private readonly string _jobId;
