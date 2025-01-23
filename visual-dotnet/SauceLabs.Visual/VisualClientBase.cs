@@ -14,7 +14,10 @@ namespace SauceLabs.Visual
     {
         private readonly List<string> _screenshotIds = new List<string>();
         internal readonly VisualApi Api;
+
+        #nullable disable
         public VisualBuild Build { get; internal set; }
+        #nullable restore
 
         /// <summary>
         /// <c>CaptureDom</c> defines if DOM should be captured when a screenshot is captured.
