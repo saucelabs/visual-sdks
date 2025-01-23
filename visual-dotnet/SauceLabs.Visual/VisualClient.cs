@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using Polly;
 using Polly.Retry;
-using SauceLabs.Visual.GraphQL;
 using SauceLabs.Visual.Models;
 using SauceLabs.Visual.Utils;
 
@@ -20,7 +19,6 @@ namespace SauceLabs.Visual
         private readonly string _sessionId;
         private readonly string _jobId;
         private string? _sessionMetadataBlob;
-        public VisualBuild Build { get; private set; }
         private readonly ResiliencePipeline _retryPipeline;
 
         private string? _previousSuiteName = null;
@@ -156,7 +154,7 @@ namespace SauceLabs.Visual
 
         private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
         {
-            return await VisualCheckBaseAsync(Api, Build, name, options, _jobId, _sessionId, _sessionMetadataBlob);
+            return await VisualCheckBaseAsync(name, options, _jobId, _sessionId, _sessionMetadataBlob);
         }
 
         /// <summary>

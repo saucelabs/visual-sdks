@@ -12,6 +12,8 @@ namespace SauceLabs.Visual
     {
         protected readonly List<string> ScreenshotIds = new List<string>();
         internal readonly VisualApi Api;
+        public VisualBuild Build { get; internal set; }
+
         public bool CaptureDom { get; set; } = false;
         public BaselineOverride? BaselineOverride { get; set; }
 
@@ -20,7 +22,7 @@ namespace SauceLabs.Visual
             Api = new VisualApi(region, username, accessKey);
         }
 
-        internal async Task<string> VisualCheckBaseAsync(VisualApi api, VisualBuild build, string name,
+        internal async Task<string> VisualCheckBaseAsync(string name,
             VisualCheckOptions options, string jobId, string sessionId, string? sessionMetadataBlob)
         {
             var ignoredRegions =
@@ -32,8 +34,8 @@ namespace SauceLabs.Visual
                 fullPageConfigIn = (options.FullPageConfig ?? new FullPageConfig()).ToFullPageConfigIn();
             }
 
-            var result = (await api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
-                buildUuid: build.Id,
+            var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
+                buildUuid: Build.Id,
                 name: name,
                 jobId: jobId,
                 diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,

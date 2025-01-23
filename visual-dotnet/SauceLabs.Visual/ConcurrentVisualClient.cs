@@ -12,15 +12,13 @@ namespace SauceLabs.Visual
     /// <c>VisualClient</c> provides an access to Sauce Labs Visual services.
     /// </summary>
     [Obsolete("This is an unstable API. It may change in the future.")]
-    public class ConcurrentVisualClient : AbstractVisualClient, IDisposable
+    public class ConcurrentVisualClient : AbstractVisualClient
     {
         // Stores ConcurrentVisualClient, indexed by region
         private static readonly ConcurrentDictionary<Region, ConcurrentVisualClient> Instances = new ConcurrentDictionary<Region, ConcurrentVisualClient>();
 
         // Stores session metadata, indexed by sessionId
         private readonly ConcurrentDictionary<string, WebDriverSessionInfo> _sessionsMetadata = new ConcurrentDictionary<string, WebDriverSessionInfo>();
-
-        private VisualBuild Build { get; set; }
 
         private string? _previousSuiteName;
 
@@ -117,7 +115,7 @@ namespace SauceLabs.Visual
                 return res.EnsureValidResponse().Result;
             });
 
-            return await VisualCheckBaseAsync(Api, Build, name, options, jobId, sessionId, sessionMetadata.Blob);
+            return await VisualCheckBaseAsync(name, options, jobId, sessionId, sessionMetadata.Blob);
         }
     }
 }
