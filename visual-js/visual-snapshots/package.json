@@ -1,0 +1,65 @@
+{
+  "name": "@saucelabs/visual-snapshots",
+  "description": "CLI which generates Visual snapshots for a specified document",
+  "version": "0.13.0",
+  "main": "build/index.cjs",
+  "module": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "files": [
+    "build",
+    "README.md"
+  ],
+  "type": "module",
+  "engines": {
+    "node": "^16.13 || >=18"
+  },
+  "typeScriptVersion": "3.8.3",
+  "keywords": [
+    "saucelabs",
+    "visual",
+    "snapshots",
+    "pdf"
+  ],
+  "exports": {
+    ".": {
+      "require": "./build/index.cjs",
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "watch": "tsc-watch --declaration -p .",
+    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "lint-fix": "eslint \"{src,test}/**/*.ts\" --fix"
+  },
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "tsup": {
+    "entry": [
+      "./src/index.ts"
+    ],
+    "dts": true,
+    "outDir": "./build",
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "noExternal": [
+      "@apollo/client"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.14",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "5.0.0",
+    "globals": "15.15.0",
+    "ts-jest": "29.2.5",
+    "typescript": "^5.0.4",
+    "typescript-eslint": "8.24.0"
+  }
+}
