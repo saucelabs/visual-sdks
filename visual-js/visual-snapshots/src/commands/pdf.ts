@@ -10,6 +10,8 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
+import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api.js";
+import { SauceRegion } from "@saucelabs/visual";
 
 export const pdfCommand = () => {
   return new Command()
@@ -26,8 +28,28 @@ export const pdfCommand = () => {
     .addOption(buildIdOption)
     .addOption(customIdOption)
     .action((pdfFilePath: string, options: Record<string, string>) => {
-      console.info(
-        `Create snapshots of a pdf file: '${pdfFilePath}' with options: ${Object.entries(options)}`,
+      const visualSnapshots = new VisualSnapshots(
+        options["username"],
+        options["accessKey"],
+        options["region"] as SauceRegion,
       );
+
+      const params = {
+        path: pdfFilePath,
+        branch: options["branch"],
+        buildName: options["buildName"],
+        defaultBranch: options["defaultBranch"],
+        project: options["project"],
+        customId: options["customId"],
+      } as CreateVisualSnapshotsParams;
+
+      visualSnapshots
+        .generateAndSendPdfFilSnapshotse(params)
+        .then(() => {
+          console.log("Successfully created snapshots");
+        })
+        .catch((err) => {
+          console.error(`An error occured when creating snapshots: ${err}`);
+        });
     });
 };
