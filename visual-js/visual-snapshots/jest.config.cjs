@@ -16,5 +16,4 @@ module.exports = {
       },
     ],
   },
-  setupFiles: ['<rootDir>/setEnvVars.ts'],
 }

@@ -15,6 +15,10 @@ const OPTIONS = {
 };
 
 describe("getParam", () => {
+  beforeAll(async () => {
+    process.env.EXISTING_ENV_VARIABLE = 'existing-env-variable-value';
+  });
+
   test("retuns option value when option exists", () => {
     expect(
       getParam(
