@@ -19,7 +19,7 @@ npm run build
 Execute:
 
 ```sh
-node build/index.js [command] [params] 
+node lib/index.js [command] [params] 
 ```
 
 Run tests:

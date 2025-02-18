@@ -1,4 +1,4 @@
-import { getParam } from "./params";
+import { getParam } from "./params.js";
 
 const EXISTING_OPTION_NAME = "existing-option-name";
 const EXISTING_OPTION_VALUE = "option-value";
@@ -16,7 +16,7 @@ const OPTIONS = {
 
 describe("getParam", () => {
   beforeAll(async () => {
-    process.env.EXISTING_ENV_VARIABLE = 'existing-env-variable-value';
+    process.env.EXISTING_ENV_VARIABLE = "existing-env-variable-value";
   });
 
   test("retuns option value when option exists", () => {

@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import { Command } from "commander";
-import { pdfCommand } from "./commands/pdf";
+import { pdfCommand } from "./commands/pdf.js";
 
 const program = new Command();
 

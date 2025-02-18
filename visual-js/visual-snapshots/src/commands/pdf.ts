@@ -9,7 +9,7 @@ import {
   projectOption,
   regionOption,
   usernameOption,
-} from "./options";
+} from "./options.js";
 
 export const pdfCommand = () => {
   return new Command()
