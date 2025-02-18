@@ -1,5 +1,5 @@
 export const getParam = (
-  options: { [key: string]: string },
+  options: Record<string, string>,
   optionName: string,
   envVariableName: string,
   defaultValue: string | undefined = undefined,

@@ -25,7 +25,7 @@ export const pdfCommand = () => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .action((pdfFilePath: string, options: { [key: string]: string }) => {
+    .action((pdfFilePath: string, options: Record<string, string>) => {
       console.info(
         `Create snapshots of a pdf file: '${pdfFilePath}' with options: ${Object.entries(options)}`,
       );
