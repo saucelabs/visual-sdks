@@ -1,6 +1,6 @@
-# Sauce Labs Visual client library
+# Sauce Labs Visual Snapshot CLI
 
-This package provides a client and a CLI tool to interact with Sauce Labs Visual API.
+This package provides a CLI tool to create Visual snapshots of a provided PDF document.
 
 ## Installation
 
@@ -25,5 +25,5 @@ node build/index.js [command] [params]
 Run tests:
 
 ```sh
-npx jest
+jest
 ```
