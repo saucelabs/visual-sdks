@@ -193,6 +193,12 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
             const clientDims = clipElement.getBoundingClientRect();
             let { x, y, height, width } = clientDims;
 
+            // Add scroll offset to coordinates in case page is scrolled prior to capture
+            ({ x, y } = {
+              x: x + window.scrollX,
+              y: y + window.scrollY,
+            });
+
             // corrected coordinates
             const cX = x < 0 ? Math.abs(x) : 0;
             const cY = y < 0 ? Math.abs(y) : 0;
@@ -243,8 +249,8 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
 
                 selectorRegions.push({
                   name: selector,
-                  x: Math.round(rect.x),
-                  y: Math.round(rect.y),
+                  x: Math.round(rect.x + window.scrollX),
+                  y: Math.round(rect.y + window.scrollY),
                   height: Math.round(rect.height),
                   width: Math.round(rect.width),
                 });
