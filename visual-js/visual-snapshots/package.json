@@ -33,7 +33,8 @@
     "build": "tsc",
     "watch": "tsc-watch --declaration -p .",
     "lint": "eslint \"{src,test}/**/*.ts\"",
-    "lint-fix": "eslint \"{src,test}/**/*.ts\" --fix"
+    "lint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
+    "test": "jest"
   },
   "dependencies": {
     "commander": "^12.0.0"

@@ -25,5 +25,5 @@ node lib/index.js [command] [params]
 Run tests:
 
 ```sh
-jest
+npm run test
 ```
