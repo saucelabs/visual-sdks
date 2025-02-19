@@ -26,7 +26,7 @@ export const regionOption = new Option(
     "If not provided, SAUCE_REGION environment variable will be used.",
 )
   .env("SAUCE_REGION")
-  .defaultValue("us-west-1");
+  .default("us-west-1");
 
 export const buildNameOption = new Option(
   "-n, --build-name <build-name>",
