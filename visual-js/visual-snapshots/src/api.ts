@@ -4,6 +4,7 @@ import {
   SauceRegion,
   VisualApi,
 } from "@saucelabs/visual";
+import { pdf } from "pdf-to-img";
 
 export interface CreateVisualSnapshotsParams {
   path: string;
@@ -44,10 +45,12 @@ export class VisualSnapshots {
     const buildName = params.buildName as string;
     console.log(`Build ${buildName} (${buildId}) creatted.`);
 
-    const snapshots: Array<Buffer> = this.generatePdfFileSnapshots();
-    snapshots.forEach((snapshot) =>
-      this.uploadAndCreateSnapshot(snapshot, buildId, buildName),
-    );
+    let counter = 1;
+    const document = await pdf(params.path);
+    for await (const image of document) {
+      await this.uploadAndCreateSnapshot(image, buildId, buildName, counter);
+      counter++;
+    }
 
     await this.api.finishBuild({
       uuid: build.id,
@@ -55,14 +58,11 @@ export class VisualSnapshots {
     console.log(`Build ${build.name} (${buildId}) finished.`);
   }
 
-  private generatePdfFileSnapshots(): Array<Buffer> {
-    return [];
-  }
-
   private async uploadAndCreateSnapshot(
     snapshot: Buffer,
     buildId: string,
     buildName: string,
+    index: number,
   ) {
     const uploadId = await this.api.uploadSnapshot({
       buildId,
@@ -74,7 +74,7 @@ export class VisualSnapshots {
     const snapshotMetadata = {
       diffingMethod: DiffingMethod.Balanced,
       buildUuid: buildId,
-      name: buildName,
+      name: `${buildName}-${index}`,
     };
 
     await this.api.createSnapshot({
