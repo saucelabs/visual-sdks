@@ -6,6 +6,12 @@ import {
 } from "@saucelabs/visual";
 import { pdf } from "pdf-to-img";
 
+export interface VisualSnapshotsParams {
+  username: string;
+  accessKey: string;
+  region: SauceRegion;
+}
+
 export interface CreateVisualSnapshotsParams {
   path: string;
   branch: string;
@@ -13,17 +19,18 @@ export interface CreateVisualSnapshotsParams {
   defaultBranch: string;
   project: string;
   customId: string;
+  buildId: string;
 }
 
 export class VisualSnapshots {
   private api: VisualApi;
 
-  constructor(username: string, accessKey: string, region: SauceRegion) {
+  constructor(params: VisualSnapshotsParams) {
     this.api = getApi(
       {
-        user: username,
-        key: accessKey,
-        region,
+        user: params.username,
+        key: params.accessKey,
+        region: params.region,
       },
       {
         userAgent: "visual-snapshots",
@@ -32,8 +39,24 @@ export class VisualSnapshots {
   }
 
   public async generateAndSendPdfFilSnapshotse(
+    pdfFilePath: string,
     params: CreateVisualSnapshotsParams,
   ) {
+    const buildId = await this.createBuild(params);
+
+    let pageNumber = 1;
+    const document = await pdf(pdfFilePath);
+    for await (const image of document) {
+      await this.uploadImageAndCreateSnapshot(image, buildId, pageNumber);
+      pageNumber++;
+    }
+
+    await this.finishBuild(buildId);
+  }
+
+  private async createBuild(
+    params: CreateVisualSnapshotsParams,
+  ): Promise<string> {
     const build = await this.api.createBuild({
       name: params.buildName,
       branch: params.branch,
@@ -41,28 +64,14 @@ export class VisualSnapshots {
       project: params.project,
       customId: params.customId,
     });
-    const buildId = build.id as string;
-    const buildName = params.buildName as string;
-    console.log(`Build ${buildName} (${buildId}) creatted.`);
-
-    let counter = 1;
-    const document = await pdf(params.path);
-    for await (const image of document) {
-      await this.uploadAndCreateSnapshot(image, buildId, buildName, counter);
-      counter++;
-    }
-
-    await this.api.finishBuild({
-      uuid: build.id,
-    });
-    console.log(`Build ${build.name} (${buildId}) finished.`);
+    console.log(`Build ${build.id} created.`);
+    return build.id;
   }
 
-  private async uploadAndCreateSnapshot(
+  private async uploadImageAndCreateSnapshot(
     snapshot: Buffer,
     buildId: string,
-    buildName: string,
-    index: number,
+    snapshotId: number,
   ) {
     const uploadId = await this.api.uploadSnapshot({
       buildId,
@@ -71,10 +80,11 @@ export class VisualSnapshots {
 
     console.log(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
 
+    const snapshotName = `page-${snapshotId}`;
     const snapshotMetadata = {
       diffingMethod: DiffingMethod.Balanced,
       buildUuid: buildId,
-      name: `${buildName}-${index}`,
+      name: snapshotName,
     };
 
     await this.api.createSnapshot({
@@ -83,6 +93,13 @@ export class VisualSnapshots {
       uploadUuid: uploadId,
     });
 
-    console.log(`Created a snapshot.`);
+    console.log(`Created a snapshot ${snapshotName} for build ${buildId}.`);
+  }
+
+  private async finishBuild(buildId: string) {
+    await this.api.finishBuild({
+      uuid: buildId,
+    });
+    console.log(`Build ${buildId} finished.`);
   }
 }

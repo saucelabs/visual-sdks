@@ -10,8 +10,15 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
-import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api.js";
-import { SauceRegion } from "@saucelabs/visual";
+import {
+  CreateVisualSnapshotsParams,
+  VisualSnapshots,
+  VisualSnapshotsParams,
+} from "../api.js";
+
+interface VisualSnapshotsOptions
+  extends VisualSnapshotsParams,
+    CreateVisualSnapshotsParams {}
 
 export const pdfCommand = () => {
   return new Command()
@@ -27,24 +34,15 @@ export const pdfCommand = () => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .action((pdfFilePath: string, options: Record<string, string>) => {
+    .action((pdfFilePath: string, options: VisualSnapshotsOptions) => {
       const visualSnapshots = new VisualSnapshots(
-        options["username"],
-        options["accessKey"],
-        options["region"] as SauceRegion,
+        options as VisualSnapshotsParams,
       );
-
-      const params = {
-        path: pdfFilePath,
-        branch: options["branch"],
-        buildName: options["buildName"],
-        defaultBranch: options["defaultBranch"],
-        project: options["project"],
-        customId: options["customId"],
-      } as CreateVisualSnapshotsParams;
-
       visualSnapshots
-        .generateAndSendPdfFilSnapshotse(params)
+        .generateAndSendPdfFilSnapshotse(
+          pdfFilePath,
+          options as CreateVisualSnapshotsParams,
+        )
         .then(() => {
           console.log("Successfully created snapshots");
         })
