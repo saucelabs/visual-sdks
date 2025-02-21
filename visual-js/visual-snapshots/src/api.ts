@@ -1,19 +1,7 @@
-import {
-  DiffingMethod,
-  getApi,
-  SauceRegion,
-  VisualApi,
-} from "@saucelabs/visual";
+import { DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { pdf } from "pdf-to-img";
 
-export interface VisualSnapshotsParams {
-  username: string;
-  accessKey: string;
-  region: SauceRegion;
-}
-
 export interface CreateVisualSnapshotsParams {
-  path: string;
   branch: string;
   buildName: string;
   defaultBranch: string;
@@ -25,20 +13,11 @@ export interface CreateVisualSnapshotsParams {
 export class VisualSnapshots {
   private api: VisualApi;
 
-  constructor(params: VisualSnapshotsParams) {
-    this.api = getApi(
-      {
-        user: params.username,
-        key: params.accessKey,
-        region: params.region,
-      },
-      {
-        userAgent: "visual-snapshots",
-      },
-    );
+  constructor(api: VisualApi) {
+    this.api = api;
   }
 
-  public async generateAndSendPdfFilSnapshotse(
+  public async generateAndSendPdfFilSnapshots(
     pdfFilePath: string,
     params: CreateVisualSnapshotsParams,
   ) {
@@ -64,7 +43,7 @@ export class VisualSnapshots {
       project: params.project,
       customId: params.customId,
     });
-    console.log(`Build ${build.id} created.`);
+    console.info(`Build ${build.id} created.`);
     return build.id;
   }
 
@@ -78,7 +57,7 @@ export class VisualSnapshots {
       image: { data: snapshot },
     });
 
-    console.log(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
+    console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
 
     const snapshotName = `page-${snapshotId}`;
     const snapshotMetadata = {
@@ -93,13 +72,13 @@ export class VisualSnapshots {
       uploadUuid: uploadId,
     });
 
-    console.log(`Created a snapshot ${snapshotName} for build ${buildId}.`);
+    console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
   }
 
   private async finishBuild(buildId: string) {
     await this.api.finishBuild({
       uuid: buildId,
     });
-    console.log(`Build ${buildId} finished.`);
+    console.info(`Build ${buildId} finished.`);
   }
 }

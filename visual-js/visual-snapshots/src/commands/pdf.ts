@@ -10,14 +10,11 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
-import {
-  CreateVisualSnapshotsParams,
-  VisualSnapshots,
-  VisualSnapshotsParams,
-} from "../api.js";
+import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api.js";
+import { initializeVisualApi, VisualApiParams } from "../client.js";
 
 interface VisualSnapshotsOptions
-  extends VisualSnapshotsParams,
+  extends VisualApiParams,
     CreateVisualSnapshotsParams {}
 
 export const pdfCommand = () => {
@@ -35,11 +32,10 @@ export const pdfCommand = () => {
     .addOption(buildIdOption)
     .addOption(customIdOption)
     .action((pdfFilePath: string, options: VisualSnapshotsOptions) => {
-      const visualSnapshots = new VisualSnapshots(
-        options as VisualSnapshotsParams,
-      );
+      const visualApi = initializeVisualApi(options as VisualApiParams);
+      const visualSnapshots = new VisualSnapshots(visualApi);
       visualSnapshots
-        .generateAndSendPdfFilSnapshotse(
+        .generateAndSendPdfFilSnapshots(
           pdfFilePath,
           options as CreateVisualSnapshotsParams,
         )
