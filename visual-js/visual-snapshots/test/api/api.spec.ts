@@ -1,5 +1,5 @@
 import { DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { CreateVisualSnapshotsParams, VisualSnapshots } from "../src/api.js";
+import { CreateVisualSnapshotsParams, VisualSnapshots } from "../../src/api/api.js";
 
 jest.mock("pdf-to-img", () => {
   const asyncIterable = {

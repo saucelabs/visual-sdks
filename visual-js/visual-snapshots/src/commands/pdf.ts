@@ -10,8 +10,8 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
-import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api.js";
-import { initializeVisualApi, VisualApiParams } from "../client.js";
+import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api/api.js";
+import { initializeVisualApi, VisualApiParams } from "../api/client.js";
 
 interface VisualSnapshotsOptions
   extends VisualApiParams,
