@@ -16,7 +16,7 @@ export class PdfCommandHandler {
     const pdfConverter = new PdfConverter();
 
     const pdfPageImages = await pdfConverter.convertPagesToImages(pdfFilePath);
-    await visualSnapshots.generateAndSendPdfFilSnapshots(
+    await visualSnapshots.generateAndSendPdfFileSnapshots(
       pdfPageImages,
       params as CreateVisualSnapshotsParams,
     );

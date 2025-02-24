@@ -16,7 +16,7 @@ export class VisualSnapshotsApi {
     this.api = api;
   }
 
-  public async generateAndSendPdfFilSnapshots(
+  public async generateAndSendPdfFileSnapshots(
     pdfFilePages: AsyncGenerator<Buffer>,
     params: CreateVisualSnapshotsParams,
   ) {

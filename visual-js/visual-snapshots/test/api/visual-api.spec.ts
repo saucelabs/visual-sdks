@@ -11,7 +11,7 @@ async function* pdfPagesGenerator(): AsyncGenerator<Buffer> {
 }
 
 describe("VisualSnapshots", () => {
-  describe("generateAndSendPdfFilSnapshots", () => {
+  describe("generateAndSendPdfFileSnapshots", () => {
     const consoleInfoSpy = jest
       .spyOn(console, "info")
       .mockImplementation(() => {});
@@ -113,14 +113,14 @@ describe("VisualSnapshots", () => {
         customId: "fake-custom-id",
         buildId: "fake-build-id",
       } as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfPages, params);
+      await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
 
       assertSuccessfulPdfSnapshotsGeneration(params);
     });
 
     test("without params", async () => {
       const params = {} as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfPages, params);
+      await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
 
       assertSuccessfulPdfSnapshotsGeneration(params);
     });
