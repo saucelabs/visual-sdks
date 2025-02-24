@@ -1,26 +1,14 @@
 import { PdfConverter } from "../../src/app/pdf-converter.js";
 
 jest.mock("pdf-to-img", () => {
-  const asyncIterable = {
-    [Symbol.asyncIterator]() {
-      return {
-        i: 0,
-        next() {
-          if (this.i < 2) {
-            return Promise.resolve({
-              value: `fake-image-buffer-${this.i++}`,
-              done: false,
-            });
-          }
-
-          return Promise.resolve({ done: true });
-        },
-      };
-    },
-  };
+  async function* asyncIterable() {
+    for (let i = 0; i < 2; i++) {
+      yield `fake-image-buffer-${i}`;
+    }
+  }
 
   return {
-    pdf: jest.fn().mockReturnValue(asyncIterable),
+    pdf: asyncIterable,
   };
 });
 
