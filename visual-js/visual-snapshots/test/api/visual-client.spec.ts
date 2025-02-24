@@ -19,7 +19,7 @@ describe("visual api client", () => {
       accessKey: "fake-access-key",
       region: "us-west-1",
     } as VisualApiParams;
-    await initializeVisualApi(params);
+    initializeVisualApi(params);
 
     expect(getApiSpy).toHaveBeenCalledWith(
       {
