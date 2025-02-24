@@ -1,4 +1,7 @@
-import { initializeVisualApi, VisualApiParams } from "../../src/api/client.js";
+import {
+  initializeVisualApi,
+  VisualApiParams,
+} from "../../src/api/visual-client.js";
 import * as sauceVisual from "@saucelabs/visual";
 
 jest.mock("@saucelabs/visual", () => {

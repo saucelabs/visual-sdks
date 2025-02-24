@@ -9,7 +9,7 @@ export interface CreateVisualSnapshotsParams {
   buildId: string;
 }
 
-export class VisualSnapshots {
+export class VisualSnapshotsApi {
   private api: VisualApi;
 
   constructor(api: VisualApi) {

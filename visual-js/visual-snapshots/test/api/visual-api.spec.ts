@@ -1,8 +1,8 @@
 import { DiffingMethod, VisualApi } from "@saucelabs/visual";
 import {
   CreateVisualSnapshotsParams,
-  VisualSnapshots,
-} from "../../src/api/api.js";
+  VisualSnapshotsApi,
+} from "../../src/api/visual-snapshots-api.js";
 
 async function* pdfPagesGenerator(): AsyncGenerator<Buffer> {
   for (let i = 0; i < 2; ++i) {
@@ -29,7 +29,7 @@ describe("VisualSnapshots", () => {
       createSnapshot: createSnapshotMock,
       finishBuild: finishBuildMock,
     };
-    const visualSnapshots = new VisualSnapshots(visualApiMock);
+    const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
 
     beforeEach(() => {
       createBuildMock.mockReset();
