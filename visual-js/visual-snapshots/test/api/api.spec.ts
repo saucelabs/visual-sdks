@@ -1,29 +1,14 @@
 import { DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { CreateVisualSnapshotsParams, VisualSnapshots } from "../../src/api/api.js";
+import {
+  CreateVisualSnapshotsParams,
+  VisualSnapshots,
+} from "../../src/api/api.js";
 
-jest.mock("pdf-to-img", () => {
-  const asyncIterable = {
-    [Symbol.asyncIterator]() {
-      return {
-        i: 0,
-        next() {
-          if (this.i < 2) {
-            return Promise.resolve({
-              value: `fake-image-${this.i++}`,
-              done: false,
-            });
-          }
-
-          return Promise.resolve({ done: true });
-        },
-      };
-    },
-  };
-
-  return {
-    pdf: jest.fn().mockReturnValue(asyncIterable),
-  };
-});
+async function* pdfPagesGenerator(): AsyncGenerator<Buffer> {
+  for (let i = 0; i < 2; ++i) {
+    yield Promise.resolve(Buffer.from(`fake-image-buffer-${i}`));
+  }
+}
 
 describe("VisualSnapshots", () => {
   describe("generateAndSendPdfFilSnapshots", () => {
@@ -31,7 +16,7 @@ describe("VisualSnapshots", () => {
       .spyOn(console, "info")
       .mockImplementation(() => {});
 
-    const pdfFilePath = "./fake-pdf-file-path.pdf";
+    let pdfPages: AsyncGenerator<Buffer>;
 
     const createBuildMock = jest.fn();
     const uploadSnapshotMock = jest.fn();
@@ -56,6 +41,8 @@ describe("VisualSnapshots", () => {
       createSnapshotMock.mockReset();
       finishBuildMock.mockReset();
       consoleInfoSpy.mockReset();
+
+      pdfPages = pdfPagesGenerator();
     });
 
     const assertSuccessfulPdfSnapshotsGeneration = (
@@ -73,13 +60,13 @@ describe("VisualSnapshots", () => {
         [
           {
             buildId: "build-id",
-            image: { data: "fake-image-0" },
+            image: { data: Buffer.from("fake-image-buffer-0") },
           },
         ],
         [
           {
             buildId: "build-id",
-            image: { data: "fake-image-1" },
+            image: { data: Buffer.from("fake-image-buffer-1") },
           },
         ],
       ]);
@@ -126,14 +113,14 @@ describe("VisualSnapshots", () => {
         customId: "fake-custom-id",
         buildId: "fake-build-id",
       } as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfFilePath, params);
+      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfPages, params);
 
       assertSuccessfulPdfSnapshotsGeneration(params);
     });
 
     test("without params", async () => {
       const params = {} as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfFilePath, params);
+      await visualSnapshots.generateAndSendPdfFilSnapshots(pdfPages, params);
 
       assertSuccessfulPdfSnapshotsGeneration(params);
     });

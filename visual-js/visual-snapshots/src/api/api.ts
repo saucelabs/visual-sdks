@@ -1,5 +1,4 @@
 import { DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { pdf } from "pdf-to-img";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -18,15 +17,18 @@ export class VisualSnapshots {
   }
 
   public async generateAndSendPdfFilSnapshots(
-    pdfFilePath: string,
+    pdfFilePages: AsyncGenerator<Buffer>,
     params: CreateVisualSnapshotsParams,
   ) {
     const buildId = await this.createBuild(params);
 
     let pageNumber = 1;
-    const document = await pdf(pdfFilePath);
-    for await (const image of document) {
-      await this.uploadImageAndCreateSnapshot(image, buildId, pageNumber);
+    for await (const pdfPageImage of pdfFilePages) {
+      await this.uploadImageAndCreateSnapshot(
+        pdfPageImage,
+        buildId,
+        pageNumber,
+      );
       pageNumber++;
     }
 

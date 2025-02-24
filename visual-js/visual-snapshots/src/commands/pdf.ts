@@ -10,12 +10,7 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
-import { CreateVisualSnapshotsParams, VisualSnapshots } from "../api/api.js";
-import { initializeVisualApi, VisualApiParams } from "../api/client.js";
-
-interface VisualSnapshotsOptions
-  extends VisualApiParams,
-    CreateVisualSnapshotsParams {}
+import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
 
 export const pdfCommand = () => {
   return new Command()
@@ -31,19 +26,14 @@ export const pdfCommand = () => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .action((pdfFilePath: string, options: VisualSnapshotsOptions) => {
-      const visualApi = initializeVisualApi(options as VisualApiParams);
-      const visualSnapshots = new VisualSnapshots(visualApi);
-      visualSnapshots
-        .generateAndSendPdfFilSnapshots(
-          pdfFilePath,
-          options as CreateVisualSnapshotsParams,
-        )
+    .action((pdfFilePath: string, params: PdfCommandParams) => {
+      new PdfCommandHandler()
+        .handle(pdfFilePath, params)
         .then(() => {
-          console.log("Successfully created snapshots");
+          console.log("Successfully created PDF snapshots");
         })
         .catch((err) => {
-          console.error(`An error occured when creating snapshots: ${err}`);
+          console.error(`An error occured when creating PDF snapshots: ${err}`);
         });
     });
 };
