@@ -24,7 +24,8 @@
     "watch": "tsc-watch --declaration -p .",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "lint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "jest --collect-coverage"
+    "test": "jest",
+    "test-with-coverage": "jest --collect-coverage"
   },
   "dependencies": {
     "@saucelabs/visual": "0.13.0",
