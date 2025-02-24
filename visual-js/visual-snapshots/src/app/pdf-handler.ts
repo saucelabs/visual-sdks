@@ -19,7 +19,7 @@ export class PdfCommandHandler {
     const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
     await visualSnapshots.generateAndSendPdfFileSnapshots(
       pdfPageImages,
-      params,
+      params
     );
   }
 }
