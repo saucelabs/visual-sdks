@@ -94,14 +94,7 @@ describe("VisualSnapshots", () => {
         uuid: "build-id",
       });
 
-      expect(consoleInfoSpy.mock.calls).toEqual([
-        ["Build build-id created."],
-        ["Uploaded image to build build-id: upload id=upload-id-0."],
-        ["Created a snapshot page-1 for build build-id."],
-        ["Uploaded image to build build-id: upload id=upload-id-1."],
-        ["Created a snapshot page-2 for build build-id."],
-        ["Build build-id finished."],
-      ]);
+      expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
     };
 
     test("with params", async () => {
