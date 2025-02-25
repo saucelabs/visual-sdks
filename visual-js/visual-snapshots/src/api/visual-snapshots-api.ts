@@ -62,18 +62,12 @@ export class VisualSnapshotsApi {
     console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
 
     const snapshotName = `page-${snapshotId}`;
-    const snapshotMetadata = {
-      diffingMethod: DiffingMethod.Balanced,
-      buildUuid: buildId,
-      name: snapshotName,
-    };
-
     await this.api.createSnapshot({
-      ...snapshotMetadata,
-      buildUuid: buildId,
-      uploadUuid: uploadId,
+      diffingMethod: DiffingMethod.Balanced,
+      buildId,
+      uploadId,
+      name: snapshotName,
     });
-
     console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
   }
 
