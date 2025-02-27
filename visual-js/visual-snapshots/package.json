@@ -29,9 +29,9 @@
     "test-with-coverage": "jest --collect-coverage"
   },
   "dependencies": {
-    "@saucelabs/visual": "0.13.0",
+    "@saucelabs/visual": "^0.13.0",
     "commander": "^12.0.0",
-    "pdf-to-img": "4.4.0"
+    "pdf-to-img": "~4.4.0"
   },
   "devDependencies": {
     "@types/jest": "29.5.14",
