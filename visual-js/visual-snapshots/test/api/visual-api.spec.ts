@@ -79,17 +79,17 @@ describe("VisualSnapshots", () => {
         [
           {
             diffingMethod: DiffingMethod.Balanced,
-            buildUuid: "build-id",
+            buildId: "build-id",
             name: "page-1",
-            uploadUuid: "upload-id-0",
+            uploadId: "upload-id-0",
           },
         ],
         [
           {
             diffingMethod: DiffingMethod.Balanced,
-            buildUuid: "build-id",
+            buildId: "build-id",
             name: "page-2",
-            uploadUuid: "upload-id-1",
+            uploadId: "upload-id-1",
           },
         ],
       ]);

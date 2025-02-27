@@ -27,7 +27,7 @@ export class VisualSnapshotsApi {
       await this.uploadImageAndCreateSnapshot(
         pdfPageImage,
         buildId,
-        pageNumber,
+        `page-${pageNumber}`,
       );
       pageNumber++;
     }
@@ -52,7 +52,7 @@ export class VisualSnapshotsApi {
   private async uploadImageAndCreateSnapshot(
     snapshot: Buffer,
     buildId: string,
-    snapshotId: number,
+    snapshotName: string,
   ) {
     const uploadId = await this.api.uploadSnapshot({
       buildId,
@@ -61,17 +61,11 @@ export class VisualSnapshotsApi {
 
     console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
 
-    const snapshotName = `page-${snapshotId}`;
-    const snapshotMetadata = {
-      diffingMethod: DiffingMethod.Balanced,
-      buildUuid: buildId,
-      name: snapshotName,
-    };
-
     await this.api.createSnapshot({
-      ...snapshotMetadata,
-      buildUuid: buildId,
-      uploadUuid: uploadId,
+      buildId,
+      uploadId,
+      name: snapshotName,
+      diffingMethod: DiffingMethod.Balanced,
     });
 
     console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
