@@ -2,6 +2,12 @@
 
 This package provides a CLI tool to create Visual snapshots of a provided PDF document.
 
+## Requirements
+
+```sh
+node >= 18
+```
+
 ## Installation
 
 ```sh
@@ -27,3 +33,8 @@ Run tests:
 ```sh
 npm run test
 ```
+
+## Reusing pdf conversion code
+
+While it is possible to use `VisualSnapshotsApi` outside this package, please bear in mind it can only be used with ESM modules. 
+CommonJS modules are not supported.
