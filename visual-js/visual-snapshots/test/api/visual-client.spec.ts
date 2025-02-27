@@ -19,7 +19,7 @@ describe("visual api client", () => {
     initializeVisualApi(params);
 
     expect(getApiSpy).toHaveBeenCalledWith(params, {
-      userAgent: "visual-snapshots",
+      userAgent: "visual-snapshots/PKG_VERSION",
     });
   });
 });
