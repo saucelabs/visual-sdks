@@ -1,4 +1,4 @@
-import { DiffingMethod, VisualApi } from "@saucelabs/visual";
+import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import {
   CreateVisualSnapshotsParams,
   VisualSnapshotsApi,
@@ -22,24 +22,28 @@ describe("VisualSnapshots", () => {
     const uploadSnapshotMock = jest.fn();
     const createSnapshotMock = jest.fn();
     const finishBuildMock = jest.fn();
+    const buildStatusMock = jest.fn();
     const visualApiMock: VisualApi = {
       ...jest.requireActual<VisualApi>("@saucelabs/visual"),
       createBuild: createBuildMock,
       uploadSnapshot: uploadSnapshotMock,
       createSnapshot: createSnapshotMock,
       finishBuild: finishBuildMock,
+      buildStatus: buildStatusMock,
     };
     const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
-
     beforeEach(() => {
       createBuildMock.mockReset();
-      createBuildMock.mockReturnValueOnce(Promise.resolve({ id: "build-id", url: "http://build-url/build-id" }));
+      createBuildMock.mockReturnValueOnce(
+        Promise.resolve({ id: "build-id", url: "http://build-url/build-id" }),
+      );
       uploadSnapshotMock.mockReset();
       uploadSnapshotMock
         .mockReturnValueOnce(Promise.resolve("upload-id-0"))
         .mockReturnValueOnce(Promise.resolve("upload-id-1"));
       createSnapshotMock.mockReset();
       finishBuildMock.mockReset();
+      buildStatusMock.mockReset();
       consoleInfoSpy.mockReset();
 
       pdfPages = pdfPagesGenerator();
@@ -94,10 +98,12 @@ describe("VisualSnapshots", () => {
         uuid: "build-id",
       });
 
+      expect(buildStatusMock).toHaveBeenCalledWith("build-id");
+
       expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
     };
 
-    test("with params", async () => {
+    describe("with params", () => {
       const params = {
         branch: "fake-branch",
         buildName: "fake-build-name",
@@ -106,12 +112,45 @@ describe("VisualSnapshots", () => {
         customId: "fake-custom-id",
         buildId: "fake-build-id",
       } as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
 
-      assertSuccessfulPdfSnapshotsGeneration(params);
+      test("difffing unfinished", async () => {
+        buildStatusMock.mockReturnValueOnce(
+          Promise.resolve({
+            status: BuildStatus.Running,
+            unapprovedCount: 2,
+            errorCount: 0,
+          }),
+        );
+
+        await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
+
+        assertSuccessfulPdfSnapshotsGeneration(params);
+      });
+
+      test("difffing finished", async () => {
+        buildStatusMock.mockReturnValueOnce(
+          Promise.resolve({
+            status: BuildStatus.Approved,
+            unapprovedCount: 0,
+            errorCount: 0,
+          }),
+        );
+
+        await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
+
+        assertSuccessfulPdfSnapshotsGeneration(params);
+      });
     });
 
     test("without params", async () => {
+      buildStatusMock.mockReturnValueOnce(
+        Promise.resolve({
+          status: BuildStatus.Unapproved,
+          unapprovedCount: 2,
+          errorCount: 0,
+        }),
+      );
+
       const params = {} as CreateVisualSnapshotsParams;
       await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
 

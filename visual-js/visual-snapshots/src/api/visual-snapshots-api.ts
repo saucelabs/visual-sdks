@@ -1,4 +1,4 @@
-import { DiffingMethod, VisualApi } from "@saucelabs/visual";
+import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -82,5 +82,18 @@ export class VisualSnapshotsApi {
       uuid: buildId,
     });
     console.info(`Build ${buildId} finished.`);
+
+    const buildStatus = (await this.api.buildStatus(buildId))!;
+    if (
+      [BuildStatus.Running, BuildStatus.Queued].includes(buildStatus.status)
+    ) {
+      console.info(
+        `Build ${buildId} finished but snapshots haven't been compared yet. Check the build status in a few moments.`,
+      );
+    } else {
+      console.info(
+        `Build ${buildId} finished (status=${buildStatus.status}, unapprovedCount=${buildStatus.unapprovedCount}, errorCount=${buildStatus.errorCount}).`,
+      );
+    }
   }
 }
