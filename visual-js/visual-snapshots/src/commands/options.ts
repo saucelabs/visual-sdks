@@ -2,7 +2,7 @@ import { Option } from "commander";
 import { EOL } from "os";
 
 export const usernameOption = new Option(
-  "-u, --username <username>",
+  "-u, --user <user>",
   "Your Sauce Labs username. You can get this from the header of app.saucelabs.com." +
     EOL +
     "If not provided, SAUCE_USERNAME environment variable will be used.",
@@ -11,7 +11,7 @@ export const usernameOption = new Option(
   .makeOptionMandatory(true);
 
 export const accessKeyOption = new Option(
-  "-k, --access-key <access-key>",
+  "-k, --key <key>",
   "Your Sauce Labs access key. You can get this from the header of app.saucelabs.com" +
     EOL +
     "If not provided, SAUCE_ACCESS_KEY environment variable will be used.",

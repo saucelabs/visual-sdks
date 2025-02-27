@@ -10,6 +10,7 @@ import {
   regionOption,
   usernameOption,
 } from "./options.js";
+import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
 
 export const pdfCommand = () => {
   return new Command()
@@ -25,9 +26,14 @@ export const pdfCommand = () => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
-    .action((pdfFilePath: string, options: Record<string, string>) => {
-      console.info(
-        `Create snapshots of a pdf file: '${pdfFilePath}' with options: ${Object.entries(options)}`,
-      );
+    .action((pdfFilePath: string, params: PdfCommandParams) => {
+      new PdfCommandHandler()
+        .handle(pdfFilePath, params)
+        .then(() => {
+          console.log("Successfully created PDF snapshots");
+        })
+        .catch((err) => {
+          console.error(`An error occured when creating PDF snapshots: ${err}`);
+        });
     });
 };
