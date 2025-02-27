@@ -33,7 +33,7 @@ describe("VisualSnapshots", () => {
 
     beforeEach(() => {
       createBuildMock.mockReset();
-      createBuildMock.mockReturnValueOnce(Promise.resolve({ id: "build-id" }));
+      createBuildMock.mockReturnValueOnce(Promise.resolve({ id: "build-id", url: "http://build-url/build-id" }));
       uploadSnapshotMock.mockReset();
       uploadSnapshotMock
         .mockReturnValueOnce(Promise.resolve("upload-id-0"))

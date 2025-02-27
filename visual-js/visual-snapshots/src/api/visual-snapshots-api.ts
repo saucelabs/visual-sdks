@@ -45,7 +45,7 @@ export class VisualSnapshotsApi {
       project: params.project,
       customId: params.customId,
     });
-    console.info(`Build ${build.id} created.`);
+    console.info(`Build ${build.id} created: ${build.url}`);
     return build.id;
   }
 
