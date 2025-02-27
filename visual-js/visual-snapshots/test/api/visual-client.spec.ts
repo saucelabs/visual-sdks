@@ -1,7 +1,4 @@
-import {
-  initializeVisualApi,
-  VisualApiParams,
-} from "../../src/api/visual-client.js";
+import { initializeVisualApi } from "../../src/api/visual-client.js";
 import * as sauceVisual from "@saucelabs/visual";
 
 jest.mock("@saucelabs/visual", () => {
@@ -15,21 +12,14 @@ describe("visual api client", () => {
     const getApiSpy = sauceVisual.getApi;
 
     const params = {
-      username: "fake-username",
-      accessKey: "fake-access-key",
+      user: "fake-username",
+      key: "fake-access-key",
       region: "us-west-1",
-    } as VisualApiParams;
+    } as sauceVisual.VisualConfig;
     initializeVisualApi(params);
 
-    expect(getApiSpy).toHaveBeenCalledWith(
-      {
-        user: params.username,
-        key: params.accessKey,
-        region: params.region,
-      },
-      {
-        userAgent: "visual-snapshots",
-      },
-    );
+    expect(getApiSpy).toHaveBeenCalledWith(params, {
+      userAgent: "visual-snapshots",
+    });
   });
 });

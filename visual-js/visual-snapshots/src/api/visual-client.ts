@@ -1,19 +1,6 @@
-import { getApi, SauceRegion } from "@saucelabs/visual";
+import { getApi, VisualConfig } from "@saucelabs/visual";
 
-export interface VisualApiParams {
-  username: string;
-  accessKey: string;
-  region: SauceRegion;
-}
-
-export const initializeVisualApi = (params: VisualApiParams) =>
-  getApi(
-    {
-      user: params.username,
-      key: params.accessKey,
-      region: params.region,
-    },
-    {
-      userAgent: "visual-snapshots",
-    },
-  );
+export const initializeVisualApi = (params: VisualConfig) =>
+  getApi(params, {
+    userAgent: "visual-snapshots",
+  });

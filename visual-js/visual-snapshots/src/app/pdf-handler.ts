@@ -2,11 +2,12 @@ import {
   CreateVisualSnapshotsParams,
   VisualSnapshotsApi,
 } from "../api/visual-snapshots-api.js";
-import { initializeVisualApi, VisualApiParams } from "../api/visual-client.js";
+import { initializeVisualApi } from "../api/visual-client.js";
 import { PdfConverter } from "./pdf-converter.js";
+import { VisualConfig } from "@saucelabs/visual";
 
 export interface PdfCommandParams
-  extends VisualApiParams,
+  extends VisualConfig,
     CreateVisualSnapshotsParams {}
 
 export class PdfCommandHandler {
