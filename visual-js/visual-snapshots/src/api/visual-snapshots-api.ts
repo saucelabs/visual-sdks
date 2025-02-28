@@ -18,7 +18,7 @@ export class VisualSnapshotsApi {
 
   public async generateAndSendPdfFileSnapshots(
     pdfFilePages: AsyncGenerator<Buffer>,
-    params: CreateVisualSnapshotsParams,
+    params: CreateVisualSnapshotsParams
   ) {
     const buildId = await this.createBuild(params);
 
@@ -27,7 +27,7 @@ export class VisualSnapshotsApi {
       await this.uploadImageAndCreateSnapshot(
         pdfPageImage,
         buildId,
-        `page-${pageNumber}`,
+        `page-${pageNumber}`
       );
       pageNumber++;
     }
@@ -36,7 +36,7 @@ export class VisualSnapshotsApi {
   }
 
   private async createBuild(
-    params: CreateVisualSnapshotsParams,
+    params: CreateVisualSnapshotsParams
   ): Promise<string> {
     const build = await this.api.createBuild({
       name: params.buildName,
@@ -52,7 +52,7 @@ export class VisualSnapshotsApi {
   private async uploadImageAndCreateSnapshot(
     snapshot: Buffer,
     buildId: string,
-    snapshotName: string,
+    snapshotName: string
   ) {
     const uploadId = await this.api.uploadSnapshot({
       buildId,
@@ -82,11 +82,11 @@ export class VisualSnapshotsApi {
       [BuildStatus.Running, BuildStatus.Queued].includes(buildStatus.status)
     ) {
       console.info(
-        `Build ${buildId} finished but snapshots haven't been compared yet. Check the build status in a few moments.`,
+        `Build ${buildId} finished but snapshots haven't been compared yet. Check the build status in a few moments.`
       );
     } else {
       console.info(
-        `Build ${buildId} finished (status=${buildStatus.status}, unapprovedCount=${buildStatus.unapprovedCount}, errorCount=${buildStatus.errorCount}).`,
+        `Build ${buildId} finished (status=${buildStatus.status}, unapprovedCount=${buildStatus.unapprovedCount}, errorCount=${buildStatus.errorCount}).`
       );
     }
   }

@@ -11,15 +11,21 @@ export interface PdfCommandParams
     CreateVisualSnapshotsParams {}
 
 export class PdfCommandHandler {
+  private clientVersion: string;
+
+  constructor(clientVersion: string) {
+    this.clientVersion = clientVersion;
+  }
+
   public async handle(pdfFilePath: string, params: PdfCommandParams) {
-    const visualApi = initializeVisualApi(params);
+    const visualApi = initializeVisualApi(params, this.clientVersion);
     const visualSnapshots = new VisualSnapshotsApi(visualApi);
     const pdfConverter = new PdfConverter();
 
     const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
     await visualSnapshots.generateAndSendPdfFileSnapshots(
       pdfPageImages,
-      params,
+      params
     );
   }
 }

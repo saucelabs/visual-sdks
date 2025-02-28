@@ -14,7 +14,7 @@ describe("VisualSnapshots", () => {
   describe("generateAndSendPdfFileSnapshots", () => {
     const consoleInfoSpy = jest
       .spyOn(console, "info")
-      .mockImplementation(() => {});
+      .mockImplementation(() => undefined);
 
     let pdfPages: AsyncGenerator<Buffer>;
 
@@ -35,7 +35,7 @@ describe("VisualSnapshots", () => {
     beforeEach(() => {
       createBuildMock.mockReset();
       createBuildMock.mockReturnValueOnce(
-        Promise.resolve({ id: "build-id", url: "http://build-url/build-id" }),
+        Promise.resolve({ id: "build-id", url: "http://build-url/build-id" })
       );
       uploadSnapshotMock.mockReset();
       uploadSnapshotMock
@@ -50,7 +50,7 @@ describe("VisualSnapshots", () => {
     });
 
     const assertSuccessfulPdfSnapshotsGeneration = (
-      params: CreateVisualSnapshotsParams,
+      params: CreateVisualSnapshotsParams
     ) => {
       expect(createBuildMock).toHaveBeenCalledWith({
         name: params.buildName,
@@ -119,7 +119,7 @@ describe("VisualSnapshots", () => {
             status: BuildStatus.Running,
             unapprovedCount: 2,
             errorCount: 0,
-          }),
+          })
         );
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
@@ -133,7 +133,7 @@ describe("VisualSnapshots", () => {
             status: BuildStatus.Approved,
             unapprovedCount: 0,
             errorCount: 0,
-          }),
+          })
         );
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
@@ -148,7 +148,7 @@ describe("VisualSnapshots", () => {
           status: BuildStatus.Unapproved,
           unapprovedCount: 2,
           errorCount: 0,
-        }),
+        })
       );
 
       const params = {} as CreateVisualSnapshotsParams;
