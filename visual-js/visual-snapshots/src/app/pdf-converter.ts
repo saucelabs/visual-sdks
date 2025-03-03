@@ -2,7 +2,7 @@ import { pdf } from "pdf-to-img";
 
 export class PdfConverter {
   public async *convertPagesToImages(
-    pdfFilePath: string,
+    pdfFilePath: string
   ): AsyncGenerator<Buffer> {
     for await (const pdfPageImage of await pdf(pdfFilePath, { scale: 1 })) {
       yield pdfPageImage;

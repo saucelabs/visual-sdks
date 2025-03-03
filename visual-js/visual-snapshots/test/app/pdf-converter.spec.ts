@@ -16,8 +16,9 @@ describe("PdfConverter", () => {
   test("convertPagesToImages", async () => {
     const pdfFilePath = "./fake-pdf-file-path.pdf";
     const pdfConverter = new PdfConverter();
-    const pdfPageImagesGenerator =
-      await pdfConverter.convertPagesToImages(pdfFilePath);
+    const pdfPageImagesGenerator = await pdfConverter.convertPagesToImages(
+      pdfFilePath
+    );
 
     for (let i = 0; i < 2; ++i) {
       const pdfPageImage = await pdfPageImagesGenerator.next();
