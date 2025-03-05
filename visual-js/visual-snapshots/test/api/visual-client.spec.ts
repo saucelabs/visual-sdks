@@ -11,15 +11,16 @@ describe("visual api client", () => {
   test("initializeVisualApi", async () => {
     const getApiSpy = sauceVisual.getApi;
 
+    const pkgVersion = "0.1.0";
     const params = {
       user: "fake-username",
       key: "fake-access-key",
       region: "us-west-1",
     } as sauceVisual.VisualConfig;
-    initializeVisualApi(params);
+    initializeVisualApi(params, pkgVersion);
 
     expect(getApiSpy).toHaveBeenCalledWith(params, {
-      userAgent: "visual-snapshots/PKG_VERSION",
+      userAgent: `visual-snapshots/${pkgVersion}`,
     });
   });
 });

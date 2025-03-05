@@ -12,7 +12,7 @@ import {
 } from "./options.js";
 import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
 
-export const pdfCommand = () => {
+export const pdfCommand = (clientVersion: string) => {
   return new Command()
     .name("pdf")
     .description("Create visual snapshots for each page of a PDF file")
@@ -27,7 +27,7 @@ export const pdfCommand = () => {
     .addOption(buildIdOption)
     .addOption(customIdOption)
     .action((pdfFilePath: string, params: PdfCommandParams) => {
-      new PdfCommandHandler()
+      new PdfCommandHandler(clientVersion)
         .handle(pdfFilePath, params)
         .then(() => {
           console.log("Successfully created PDF snapshots");
