@@ -110,8 +110,7 @@ describe("VisualSnapshots", () => {
         defaultBranch: "fake-default-branch",
         project: "fake-project",
         customId: "fake-custom-id",
-        buildId: "fake-build-id",
-      } as CreateVisualSnapshotsParams;
+      } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
         buildStatusMock.mockReturnValueOnce(

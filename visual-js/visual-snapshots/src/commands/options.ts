@@ -1,5 +1,6 @@
 import { Option } from "commander";
 import { EOL } from "os";
+import { parseUuid } from "./validate.js";
 
 export const usernameOption = new Option(
   "-u, --user <user>",
@@ -63,7 +64,9 @@ export const buildIdOption = new Option(
     "By default, this is not set and we create / finish a build during setup / teardown." +
     EOL +
     "If not provided, SAUCE_VISUAL_BUILD_ID environment variable will be used."
-).env("SAUCE_VISUAL_BUILD_ID");
+)
+  .env("SAUCE_VISUAL_BUILD_ID")
+  .argParser(parseUuid);
 
 export const customIdOption = new Option(
   "--custom-id <custom-id>",

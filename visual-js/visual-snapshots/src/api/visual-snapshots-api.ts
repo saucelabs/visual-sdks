@@ -6,7 +6,7 @@ export interface CreateVisualSnapshotsParams {
   defaultBranch: string;
   project: string;
   customId: string;
-  buildId: string;
+  buildId?: string;
 }
 
 export class VisualSnapshotsApi {
