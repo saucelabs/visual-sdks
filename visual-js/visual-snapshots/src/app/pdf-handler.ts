@@ -5,6 +5,7 @@ import {
 import { initializeVisualApi } from "../api/visual-client.js";
 import { PdfConverter } from "./pdf-converter.js";
 import { VisualConfig } from "@saucelabs/visual";
+import path from "path";
 
 export interface PdfCommandParams
   extends VisualConfig,
@@ -24,6 +25,7 @@ export class PdfCommandHandler {
 
     const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
     await visualSnapshots.generateAndSendPdfFileSnapshots(
+      path.basename(pdfFilePath),
       pdfPageImages,
       params
     );

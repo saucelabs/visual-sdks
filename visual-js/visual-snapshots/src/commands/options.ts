@@ -74,3 +74,8 @@ export const customIdOption = new Option(
     EOL +
     "If not provided, SAUCE_VISUAL_CUSTOM_ID environment variable will be used."
 ).env("SAUCE_VISUAL_CUSTOM_ID");
+
+export const suiteNameOption = new Option(
+  "--suite-name <suite-name>",
+  "The name of the suite you would like to appear in the Sauce Visual dashboard."
+);

@@ -121,7 +121,11 @@ describe("VisualSnapshots", () => {
           })
         );
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
+        await visualSnapshots.generateAndSendPdfFileSnapshots(
+          "filename.pdf",
+          pdfPages,
+          params
+        );
 
         assertSuccessfulPdfSnapshotsGeneration(params);
       });
@@ -135,7 +139,11 @@ describe("VisualSnapshots", () => {
           })
         );
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
+        await visualSnapshots.generateAndSendPdfFileSnapshots(
+          "filename.pdf",
+          pdfPages,
+          params
+        );
 
         assertSuccessfulPdfSnapshotsGeneration(params);
       });
@@ -151,7 +159,11 @@ describe("VisualSnapshots", () => {
       );
 
       const params = {} as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFileSnapshots(pdfPages, params);
+      await visualSnapshots.generateAndSendPdfFileSnapshots(
+        "filename.pdf",
+        pdfPages,
+        params
+      );
 
       assertSuccessfulPdfSnapshotsGeneration(params);
     });
