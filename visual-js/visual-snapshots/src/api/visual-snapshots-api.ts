@@ -20,7 +20,7 @@ export class VisualSnapshotsApi {
     pdfFilePages: AsyncGenerator<Buffer>,
     params: CreateVisualSnapshotsParams
   ) {
-    const buildId = await this.createBuild(params);
+    const buildId = params.buildId ?? (await this.createBuild(params));
 
     let pageNumber = 1;
     for await (const pdfPageImage of pdfFilePages) {
