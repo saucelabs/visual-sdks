@@ -3,6 +3,7 @@ import {
   CreateVisualSnapshotsParams,
   VisualSnapshotsApi,
 } from "../../src/api/visual-snapshots-api.js";
+import { formatString } from "../../src/utils/format.js";
 
 async function* pdfPagesGenerator(): AsyncGenerator<Buffer> {
   for (let i = 0; i < 2; ++i) {
@@ -50,26 +51,29 @@ describe("VisualSnapshots", () => {
     });
 
     const assertSuccessfulPdfSnapshotsGeneration = (
+      filename: string,
       params: CreateVisualSnapshotsParams
     ) => {
-      expect(createBuildMock).toHaveBeenCalledWith({
-        name: params.buildName,
-        branch: params.branch,
-        defaultBranch: params.defaultBranch,
-        project: params.project,
-        customId: params.customId,
-      });
+      if (!params.buildId) {
+        expect(createBuildMock).toHaveBeenCalledWith({
+          name: params.buildName,
+          branch: params.branch,
+          defaultBranch: params.defaultBranch,
+          project: params.project,
+          customId: params.customId,
+        });
+      }
 
       expect(uploadSnapshotMock.mock.calls).toEqual([
         [
           {
-            buildId: "build-id",
+            buildId: params.buildId ?? "build-id",
             image: { data: Buffer.from("fake-image-buffer-0") },
           },
         ],
         [
           {
-            buildId: "build-id",
+            buildId: params.buildId ?? "build-id",
             image: { data: Buffer.from("fake-image-buffer-1") },
           },
         ],
@@ -79,37 +83,61 @@ describe("VisualSnapshots", () => {
         [
           {
             diffingMethod: DiffingMethod.Balanced,
-            buildId: "build-id",
-            name: "page-1",
+            buildId: params.buildId ?? "build-id",
+            name: formatString(params.snapshotName ?? "page-{page}", {
+              filename,
+              page: 1,
+            }),
             uploadId: "upload-id-0",
+            suiteName: params.suiteName,
+            testName: params.testName
+              ? formatString(params.testName, {
+                  filename,
+                })
+              : undefined,
           },
         ],
         [
           {
             diffingMethod: DiffingMethod.Balanced,
-            buildId: "build-id",
-            name: "page-2",
+            buildId: params.buildId ?? "build-id",
+            name: formatString(params.snapshotName ?? "page-{page}", {
+              filename,
+              page: 2,
+            }),
             uploadId: "upload-id-1",
+            suiteName: params.suiteName,
+            testName: params.testName
+              ? formatString(params.testName, {
+                  filename,
+                })
+              : undefined,
           },
         ],
       ]);
 
       expect(finishBuildMock).toHaveBeenCalledWith({
-        uuid: "build-id",
+        uuid: params.buildId ?? "build-id",
       });
 
-      expect(buildStatusMock).toHaveBeenCalledWith("build-id");
+      expect(buildStatusMock).toHaveBeenCalledWith(
+        params.buildId ?? "build-id"
+      );
 
       expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
     };
 
     describe("with params", () => {
+      const filename = "filename.pdf";
       const params = {
         branch: "fake-branch",
         buildName: "fake-build-name",
         defaultBranch: "fake-default-branch",
         project: "fake-project",
         customId: "fake-custom-id",
+        snapshotName: "custom-snapshot-name-{filename}-{page}",
+        suiteName: "custom-suite-name",
+        testName: "custom-test-name-{filename}",
       } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
@@ -122,12 +150,12 @@ describe("VisualSnapshots", () => {
         );
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
-          "filename.pdf",
+          filename,
           pdfPages,
           params
         );
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertSuccessfulPdfSnapshotsGeneration(filename, params);
       });
 
       test("difffing finished", async () => {
@@ -140,16 +168,69 @@ describe("VisualSnapshots", () => {
         );
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
-          "filename.pdf",
+          filename,
           pdfPages,
           params
         );
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+      });
+    });
+
+    describe("with params and build-id", () => {
+      const filename = "filename.pdf";
+      const params = {
+        branch: "fake-branch",
+        buildName: "fake-build-name",
+        defaultBranch: "fake-default-branch",
+        project: "fake-project",
+        customId: "fake-custom-id",
+        buildId: "custom-build-id",
+        snapshotName: "custom-snapshot-name-{filename}-{page}",
+        suiteName: "custom-suite-name",
+        testName: "custom-test-name-{filename}",
+      } satisfies CreateVisualSnapshotsParams;
+
+      test("difffing unfinished", async () => {
+        buildStatusMock.mockReturnValueOnce(
+          Promise.resolve({
+            status: BuildStatus.Running,
+            unapprovedCount: 2,
+            errorCount: 0,
+          })
+        );
+
+        await visualSnapshots.generateAndSendPdfFileSnapshots(
+          filename,
+          pdfPages,
+          params
+        );
+
+        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+      });
+
+      test("difffing finished", async () => {
+        buildStatusMock.mockReturnValueOnce(
+          Promise.resolve({
+            status: BuildStatus.Approved,
+            unapprovedCount: 0,
+            errorCount: 0,
+          })
+        );
+
+        await visualSnapshots.generateAndSendPdfFileSnapshots(
+          filename,
+          pdfPages,
+          params
+        );
+
+        assertSuccessfulPdfSnapshotsGeneration(filename, params);
       });
     });
 
     test("without params", async () => {
+      const filename = "filename.pdf";
+
       buildStatusMock.mockReturnValueOnce(
         Promise.resolve({
           status: BuildStatus.Unapproved,
@@ -160,12 +241,12 @@ describe("VisualSnapshots", () => {
 
       const params = {} as CreateVisualSnapshotsParams;
       await visualSnapshots.generateAndSendPdfFileSnapshots(
-        "filename.pdf",
+        filename,
         pdfPages,
         params
       );
 
-      assertSuccessfulPdfSnapshotsGeneration(params);
+      assertSuccessfulPdfSnapshotsGeneration(filename, params);
     });
   });
 });
