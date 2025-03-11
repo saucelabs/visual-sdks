@@ -27,7 +27,6 @@ jobs:
           node-version: 18.x
       - name: Build
         run: |
-          corepack enable
           npm install
           npm run lint --workspaces --if-present
           npm run build --workspaces --if-present

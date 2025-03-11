@@ -28,7 +28,6 @@ jobs:
           git config --global user.email "visual@saucelabs.com"
       - name: Build
         run: |
-          corepack enable
           npm install
           npx changeset status --output=changeset.json
           ./replace_pkg_version.sh changeset.json
