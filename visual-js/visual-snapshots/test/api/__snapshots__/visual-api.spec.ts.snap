@@ -1,5 +1,51 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing finished 1`] = `
+[
+  [
+    "Uploaded image to build custom-build-id: upload id=upload-id-0.",
+  ],
+  [
+    "Created a snapshot custom-snapshot-name-filename.pdf-1 for build custom-build-id.",
+  ],
+  [
+    "Uploaded image to build custom-build-id: upload id=upload-id-1.",
+  ],
+  [
+    "Created a snapshot custom-snapshot-name-filename.pdf-2 for build custom-build-id.",
+  ],
+  [
+    "Build custom-build-id finished.",
+  ],
+  [
+    "Build custom-build-id finished (status=APPROVED, unapprovedCount=0, errorCount=0).",
+  ],
+]
+`;
+
+exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing unfinished 1`] = `
+[
+  [
+    "Uploaded image to build custom-build-id: upload id=upload-id-0.",
+  ],
+  [
+    "Created a snapshot custom-snapshot-name-filename.pdf-1 for build custom-build-id.",
+  ],
+  [
+    "Uploaded image to build custom-build-id: upload id=upload-id-1.",
+  ],
+  [
+    "Created a snapshot custom-snapshot-name-filename.pdf-2 for build custom-build-id.",
+  ],
+  [
+    "Build custom-build-id finished.",
+  ],
+  [
+    "Build custom-build-id finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  ],
+]
+`;
+
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing finished 1`] = `
 [
   [
@@ -9,13 +55,13 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing fi
     "Uploaded image to build build-id: upload id=upload-id-0.",
   ],
   [
-    "Created a snapshot page-1 for build build-id.",
+    "Created a snapshot custom-snapshot-name-filename.pdf-1 for build build-id.",
   ],
   [
     "Uploaded image to build build-id: upload id=upload-id-1.",
   ],
   [
-    "Created a snapshot page-2 for build build-id.",
+    "Created a snapshot custom-snapshot-name-filename.pdf-2 for build build-id.",
   ],
   [
     "Build build-id finished.",
@@ -35,13 +81,13 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing un
     "Uploaded image to build build-id: upload id=upload-id-0.",
   ],
   [
-    "Created a snapshot page-1 for build build-id.",
+    "Created a snapshot custom-snapshot-name-filename.pdf-1 for build build-id.",
   ],
   [
     "Uploaded image to build build-id: upload id=upload-id-1.",
   ],
   [
-    "Created a snapshot page-2 for build build-id.",
+    "Created a snapshot custom-snapshot-name-filename.pdf-2 for build build-id.",
   ],
   [
     "Build build-id finished.",

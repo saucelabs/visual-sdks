@@ -1,4 +1,5 @@
 import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
+import { formatString } from "../utils/format.js";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -6,7 +7,10 @@ export interface CreateVisualSnapshotsParams {
   defaultBranch: string;
   project: string;
   customId: string;
-  buildId: string;
+  buildId?: string;
+  suiteName?: string;
+  testName?: string;
+  snapshotName?: string;
 }
 
 export class VisualSnapshotsApi {
@@ -17,17 +21,30 @@ export class VisualSnapshotsApi {
   }
 
   public async generateAndSendPdfFileSnapshots(
+    filename: string,
     pdfFilePages: AsyncGenerator<Buffer>,
     params: CreateVisualSnapshotsParams
   ) {
-    const buildId = await this.createBuild(params);
+    const buildId = params.buildId ?? (await this.createBuild(params));
+    const testName = params.testName
+      ? formatString(params.testName, { filename })
+      : undefined;
+
+    const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
 
     let pageNumber = 1;
     for await (const pdfPageImage of pdfFilePages) {
+      const snapshotName = formatString(snapshotFormat, {
+        filename,
+        page: pageNumber,
+      });
+
       await this.uploadImageAndCreateSnapshot(
         pdfPageImage,
         buildId,
-        `page-${pageNumber}`
+        snapshotName,
+        testName,
+        params.suiteName
       );
       pageNumber++;
     }
@@ -52,7 +69,9 @@ export class VisualSnapshotsApi {
   private async uploadImageAndCreateSnapshot(
     snapshot: Buffer,
     buildId: string,
-    snapshotName: string
+    snapshotName: string,
+    testName?: string,
+    suiteName?: string
   ) {
     const uploadId = await this.api.uploadSnapshot({
       buildId,
@@ -66,6 +85,8 @@ export class VisualSnapshotsApi {
       uploadId,
       name: snapshotName,
       diffingMethod: DiffingMethod.Balanced,
+      testName,
+      suiteName,
     });
 
     console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
@@ -89,5 +110,18 @@ export class VisualSnapshotsApi {
         `Build ${buildId} finished (status=${buildStatus.status}, unapprovedCount=${buildStatus.unapprovedCount}, errorCount=${buildStatus.errorCount}).`
       );
     }
+  }
+
+  private getSnapshotFormat(format: string | undefined) {
+    if (!format) {
+      return `page-{page}`;
+    }
+
+    // Page number is always required to make the snapshot names unique
+    if (!format.includes("{page}")) {
+      format = format += "-{page}";
+    }
+
+    return format;
   }
 }

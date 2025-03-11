@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import {
   accessKeyOption,
   branchOption,
@@ -8,9 +8,25 @@ import {
   defaultBranchOption,
   projectOption,
   regionOption,
+  suiteNameOption,
   usernameOption,
 } from "./options.js";
 import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
+import { EOL } from "os";
+
+export const testNameOption = new Option(
+  "--test-name <test-name>",
+  "The name of the test you would like to appear in the Sauce Visual dashboard." +
+    EOL +
+    "Supports the following parameters: {filename}"
+);
+
+export const snapshotNameOption = new Option(
+  "--snapshot-name <snapshot-name>",
+  "The name of the snapshot you would like to appear in the Sauce Visual dashboard." +
+    EOL +
+    " Supports the following parameters: {filename}, {page}"
+);
 
 export const pdfCommand = (clientVersion: string) => {
   return new Command()
@@ -26,6 +42,9 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
+    .addOption(suiteNameOption)
+    .addOption(testNameOption)
+    .addOption(snapshotNameOption)
     .action((pdfFilePath: string, params: PdfCommandParams) => {
       new PdfCommandHandler(clientVersion)
         .handle(pdfFilePath, params)
