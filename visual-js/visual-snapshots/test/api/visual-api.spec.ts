@@ -35,13 +35,14 @@ describe("VisualSnapshots", () => {
     const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
     beforeEach(() => {
       createBuildMock.mockReset();
-      createBuildMock.mockReturnValueOnce(
-        Promise.resolve({ id: "build-id", url: "http://build-url/build-id" })
-      );
+      createBuildMock.mockResolvedValueOnce({
+        id: "build-id",
+        url: "http://build-url/build-id",
+      });
       uploadSnapshotMock.mockReset();
       uploadSnapshotMock
-        .mockReturnValueOnce(Promise.resolve("upload-id-0"))
-        .mockReturnValueOnce(Promise.resolve("upload-id-1"));
+        .mockResolvedValueOnce("upload-id-0")
+        .mockResolvedValueOnce("upload-id-1");
       createSnapshotMock.mockReset();
       finishBuildMock.mockReset();
       buildStatusMock.mockReset();
@@ -141,13 +142,11 @@ describe("VisualSnapshots", () => {
       } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
-        buildStatusMock.mockReturnValueOnce(
-          Promise.resolve({
-            status: BuildStatus.Running,
-            unapprovedCount: 2,
-            errorCount: 0,
-          })
-        );
+        buildStatusMock.mockResolvedValueOnce({
+          status: BuildStatus.Running,
+          unapprovedCount: 2,
+          errorCount: 0,
+        });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
           filename,
@@ -159,13 +158,11 @@ describe("VisualSnapshots", () => {
       });
 
       test("difffing finished", async () => {
-        buildStatusMock.mockReturnValueOnce(
-          Promise.resolve({
-            status: BuildStatus.Approved,
-            unapprovedCount: 0,
-            errorCount: 0,
-          })
-        );
+        buildStatusMock.mockResolvedValueOnce({
+          status: BuildStatus.Approved,
+          unapprovedCount: 0,
+          errorCount: 0,
+        });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
           filename,
@@ -192,13 +189,11 @@ describe("VisualSnapshots", () => {
       } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
-        buildStatusMock.mockReturnValueOnce(
-          Promise.resolve({
-            status: BuildStatus.Running,
-            unapprovedCount: 2,
-            errorCount: 0,
-          })
-        );
+        buildStatusMock.mockResolvedValueOnce({
+          status: BuildStatus.Running,
+          unapprovedCount: 2,
+          errorCount: 0,
+        });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
           filename,
@@ -210,13 +205,11 @@ describe("VisualSnapshots", () => {
       });
 
       test("difffing finished", async () => {
-        buildStatusMock.mockReturnValueOnce(
-          Promise.resolve({
-            status: BuildStatus.Approved,
-            unapprovedCount: 0,
-            errorCount: 0,
-          })
-        );
+        buildStatusMock.mockResolvedValueOnce({
+          status: BuildStatus.Approved,
+          unapprovedCount: 0,
+          errorCount: 0,
+        });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(
           filename,
@@ -231,13 +224,11 @@ describe("VisualSnapshots", () => {
     test("without params", async () => {
       const filename = "filename.pdf";
 
-      buildStatusMock.mockReturnValueOnce(
-        Promise.resolve({
-          status: BuildStatus.Unapproved,
-          unapprovedCount: 2,
-          errorCount: 0,
-        })
-      );
+      buildStatusMock.mockResolvedValueOnce({
+        status: BuildStatus.Unapproved,
+        unapprovedCount: 2,
+        errorCount: 0,
+      });
 
       const params = {} as CreateVisualSnapshotsParams;
       await visualSnapshots.generateAndSendPdfFileSnapshots(
