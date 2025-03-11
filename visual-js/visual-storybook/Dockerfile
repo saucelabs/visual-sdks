@@ -6,7 +6,7 @@ RUN corepack enable
 
 COPY . ./
 
-RUN yarn install && npm run build --workspaces --if-present
+RUN npm install && npm run build --workspaces --if-present
 
 COPY ./visual-storybook/integration-tests/ ./integration-tests/
 

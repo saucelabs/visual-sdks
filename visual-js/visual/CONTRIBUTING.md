@@ -5,19 +5,19 @@
 ## Installation
 
 ```sh
-yarn install
+npm install
 ```
 
 ## Regenerate bindings
 
 ```sh
-yarn copy-schema
-yarn gen
-yarn build
+npm run copy-schema
+npm run gen
+npm run build
 ```
 
 ## Test
 
 ```sh
-yarn test
+npm run test
 ```

@@ -6,7 +6,7 @@ RUN corepack enable
 
 COPY . ./
 
-RUN yarn install && npm run build --workspaces --if-present
+RUN npm install && npm run build --workspaces --if-present
 
 WORKDIR ./visual-playwright/integration-tests
 
