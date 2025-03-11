@@ -30,13 +30,7 @@ export class PdfCommandHandler {
       params.recursive ? "**/*.pdf" : "*.pdf"
     );
 
-    for (const pdfFilePath of pdfFilePaths) {
-      const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
-      await visualSnapshots.generateAndSendPdfFileSnapshots(
-        pdfFilePath,
-        pdfPageImages,
-        params
-      );
-    }
+    const pdfFiles = pdfFilePaths.map((p) => pdfConverter.createPdfFile(p));
+    await visualSnapshots.generateAndSendPdfFileSnapshots(pdfFiles, params);
   }
 }
