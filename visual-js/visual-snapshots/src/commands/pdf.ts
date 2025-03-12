@@ -33,8 +33,8 @@ export const pdfCommand = (clientVersion: string) => {
     .name("pdf")
     .description("Create visual snapshots for each page of a PDF file")
     .argument(
-      "<globs or dirs...>",
-      "Paths to PDF files. Can be a glob pattern, or a path to a directory containing PDF files."
+      "<paths, globs, dirs...>",
+      "Paths to PDF files, glob patterns, or paths to directories containing PDF files."
     )
     .addOption(usernameOption)
     .addOption(accessKeyOption)
