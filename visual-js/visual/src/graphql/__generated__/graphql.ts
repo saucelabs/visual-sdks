@@ -676,11 +676,10 @@ export type CreateSnapshotFromWebDriverIn = {
   clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
-  /**
-   * Enable full page screenshot using scroll-and-stitch strategy.
-   * Limitation: Currently, this feature is supported only on desktop browsers.
-   */
+  /** Enable full page screenshot using scroll-and-stitch strategy. */
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
+  /** Hide all scrollbars in the app. */
+  hideScrollBars?: InputMaybe<Scalars['Boolean']>;
   ignoreElements?: InputMaybe<Array<ElementIn>>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   ignoreSelectors?: InputMaybe<Array<IgnoreSelectorIn>>;
@@ -1033,7 +1032,7 @@ export type FullPageConfigIn = {
   hideAfterFirstScroll?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   /** Hide elements on the page after first scroll using their server-assigned ID from webdriver. */
   hideElementsAfterFirstScroll?: InputMaybe<Array<Scalars['WebdriverElementID']>>;
-  /** Hide all scrollbars in the app. */
+  /** @deprecated(reason: "use hideScrollBars in CreateSnapshotFromWebDriverIn instead.") */
   hideScrollBars?: InputMaybe<Scalars['Boolean']>;
   /** Selector of an element that we should crop the screenshot to. Available only on native apps. */
   nativeClipSelector?: InputMaybe<SelectorIn>;
