@@ -93,6 +93,7 @@ export type SauceVisualServiceOptions = {
   region?: SauceRegion;
   fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
+  hideScrollBars?: boolean;
 };
 
 // This type is derived from what provides Cucumber as framework
@@ -134,6 +135,10 @@ export type CheckOptions = {
   disable?: (keyof DiffingOptionsIn)[];
   fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
+  /**
+   * Hide all scrollbars in the web app. Default value is `true`.
+   */
+  hideScrollBars?: boolean;
 };
 
 export let uploadedDiffIds: string[] = [];
@@ -169,6 +174,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   fullPage?: FullPageScreenshotWdioOptions;
   apiClient: VisualApi;
   baselineOverride?: BaselineOverrideIn;
+  hideScrollBars?: boolean;
 
   constructor(
     public options: SauceVisualServiceOptions,
@@ -181,6 +187,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
     this.clipElement = options.clipElement;
     this.fullPage = options.fullPage;
     this.baselineOverride = options.baselineOverride;
+    this.hideScrollBars = options.hideScrollBars;
     this.apiClient = getApi(
       {
         ...this.config,
@@ -429,6 +436,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
         testName: this.test?.title,
         fullPageConfig,
         baselineOverride: options.baselineOverride || this.baselineOverride,
+        hideScrollBars: options.hideScrollBars ?? this.hideScrollBars,
       });
       uploadedDiffIds.push(...result.diffs.nodes.flatMap((diff) => diff.id));
       log.info('Check result', result);

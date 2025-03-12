@@ -44,10 +44,17 @@ export interface CheckOptions {
    * A NightwatchElement that we should crop the screenshot to. Takes priority over a clipSelector
    */
   clipElement?: ScopedElement;
+  /**
+   * Hide all scrollbars in the web app. Default value is `true`.
+   */
+  hideScrollBars?: boolean;
 }
 
 export interface SauceVisualServiceOptions
-  extends Pick<CheckOptions, 'fullPage' | 'captureDom' | 'clipSelector'> {
+  extends Pick<
+    CheckOptions,
+    'fullPage' | 'captureDom' | 'clipSelector' | 'hideScrollBars'
+  > {
   buildName?: string;
   project?: string;
   branch?: string;
