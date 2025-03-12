@@ -8,10 +8,15 @@ This package provides a CLI tool to create Visual snapshots of a provided PDF do
 node >= 18
 ```
 
-## Installation
+## Installation and usage
 
 ```sh
-npm install --save @saucelabs/visual-snapshots
+npm install -g @saucelabs/visual-snapshots <command> [params]
+visual-snapshots
+```
+
+```sh
+npx @saucelabs/visual-snapshots <command> [params]
 ```
 
 ## Development
