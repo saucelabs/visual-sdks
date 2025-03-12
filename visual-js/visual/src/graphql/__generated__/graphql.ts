@@ -90,8 +90,6 @@ export type Baseline = Node & {
   parent: Maybe<Baseline>;
   parentId: Maybe<Scalars['UUID']>;
   project: Maybe<Scalars['String']>;
-  smartSuiteName: Scalars['String'];
-  smartTestName: Scalars['String'];
   /** Reads a single `Snapshot` that is related to this `Baseline`. */
   snapshot: Maybe<Snapshot>;
   snapshotId: Maybe<Scalars['UUID']>;
@@ -991,8 +989,6 @@ export type DistinctAttributeValues = {
   browser: Array<Maybe<Browser>>;
   device: Array<Maybe<Scalars['String']>>;
   operatingSystem: Array<OperatingSystemAttribute>;
-  storybookDepth1: Array<Maybe<Scalars['String']>>;
-  storybookDepth2: Array<Maybe<Scalars['String']>>;
   suiteName: Array<Maybe<Scalars['String']>>;
   testName: Array<Maybe<Scalars['String']>>;
 };
@@ -1062,8 +1058,6 @@ export enum GroupByOption {
   Browser = 'Browser',
   Device = 'Device',
   OperatingSystemOperatingSystemVersion = 'OperatingSystem_OperatingSystemVersion',
-  SmartSuiteName = 'SmartSuiteName',
-  SmartTestName = 'SmartTestName',
   SuiteName = 'SuiteName',
   TestName = 'TestName'
 }
@@ -1863,8 +1857,6 @@ export type Snapshot = Node & {
   nodeId: Scalars['ID'];
   operatingSystem: OperatingSystem;
   operatingSystemVersion: Maybe<Scalars['String']>;
-  smartSuiteName: Scalars['String'];
-  smartTestName: Scalars['String'];
   suiteName: Maybe<Scalars['String']>;
   testName: Maybe<Scalars['String']>;
   thumbnailUrl: Scalars['String'];

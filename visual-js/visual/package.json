@@ -38,7 +38,7 @@
     "gen": "npm run gen:graphql",
     "gen:graphql": "graphql-codegen --config codegen.ts",
     "pretest": "npm run gen",
-    "test": "node --experimental-vm-modules $(yarn bin jest) --collect-coverage"
+    "test": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --collect-coverage"
   },
   "dependencies": {
     "@apollo/client": "^3.7.14",
@@ -77,6 +77,7 @@
     "@types/selenium-webdriver": "^4.1.15",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",

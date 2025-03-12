@@ -2,4 +2,3 @@ node_modules/
 .work
 build/
 coverage/
-yarn.lock
