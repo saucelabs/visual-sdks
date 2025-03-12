@@ -9,9 +9,7 @@ import { getFiles } from "../utils/glob.js";
 
 export interface PdfCommandParams
   extends VisualConfig,
-    CreateVisualSnapshotsParams {
-  readonly recursive?: boolean;
-}
+    CreateVisualSnapshotsParams {}
 
 export class PdfCommandHandler {
   private clientVersion: string;
@@ -25,10 +23,7 @@ export class PdfCommandHandler {
     const visualSnapshots = new VisualSnapshotsApi(visualApi);
     const pdfConverter = new PdfConverter();
 
-    const pdfFilePaths = await getFiles(
-      globsOrDirs,
-      params.recursive ? "**/*.pdf" : "*.pdf"
-    );
+    const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
 
     const pdfFiles = pdfFilePaths.map((p) => pdfConverter.createPdfFile(p));
     await visualSnapshots.generateAndSendPdfFileSnapshots(pdfFiles, params);

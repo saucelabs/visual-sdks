@@ -28,11 +28,6 @@ export const snapshotNameOption = new Option(
     " Supports the following parameters: {filename}, {page}"
 );
 
-export const recursiveOption = new Option(
-  "--recursive",
-  "If specified, will search recursively for PDF files in passed directories."
-).default(false);
-
 export const pdfCommand = (clientVersion: string) => {
   return new Command()
     .name("pdf")
@@ -53,7 +48,6 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(suiteNameOption)
     .addOption(testNameOption)
     .addOption(snapshotNameOption)
-    .addOption(recursiveOption)
     .action((globsOrDirs: string[], params: PdfCommandParams) => {
       new PdfCommandHandler(clientVersion)
         .handle(globsOrDirs, params)
