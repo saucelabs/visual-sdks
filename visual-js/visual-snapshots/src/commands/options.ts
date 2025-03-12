@@ -1,5 +1,5 @@
 import { Option } from "commander";
-import { EOL } from "os";
+import { EOL, cpus } from "os";
 import { parseUuid } from "./validate.js";
 
 export const usernameOption = new Option(
@@ -79,3 +79,8 @@ export const suiteNameOption = new Option(
   "--suite-name <suite-name>",
   "The name of the suite you would like to appear in the Sauce Visual dashboard."
 );
+
+export const concurrencyOption = new Option(
+  "-j, --concurrency <number>",
+  "Maximum count of simultaneous uploads."
+).default(cpus().length);

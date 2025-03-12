@@ -24,6 +24,7 @@ export class PdfCommandHandler {
     const pdfConverter = new PdfConverter();
 
     const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
+    console.log(pdfFilePaths);
 
     const pdfFiles = pdfFilePaths.map((p) => pdfConverter.createPdfFile(p));
     await visualSnapshots.generateAndSendPdfFileSnapshots(pdfFiles, params);
