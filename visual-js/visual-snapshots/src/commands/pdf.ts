@@ -32,7 +32,10 @@ export const pdfCommand = (clientVersion: string) => {
   return new Command()
     .name("pdf")
     .description("Create visual snapshots for each page of a PDF file")
-    .argument("<pdf-file-path>", "A path to a PDF file")
+    .argument(
+      "<paths, globs, dirs...>",
+      "Paths to PDF files, glob patterns, or paths to directories containing PDF files."
+    )
     .addOption(usernameOption)
     .addOption(accessKeyOption)
     .addOption(regionOption)
@@ -45,9 +48,9 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(suiteNameOption)
     .addOption(testNameOption)
     .addOption(snapshotNameOption)
-    .action((pdfFilePath: string, params: PdfCommandParams) => {
+    .action((globsOrDirs: string[], params: PdfCommandParams) => {
       new PdfCommandHandler(clientVersion)
-        .handle(pdfFilePath, params)
+        .handle(globsOrDirs, params)
         .then(() => {
           console.log("Successfully created PDF snapshots");
         })
