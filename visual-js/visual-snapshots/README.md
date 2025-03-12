@@ -8,10 +8,15 @@ This package provides a CLI tool to create Visual snapshots of a provided PDF do
 node >= 18
 ```
 
-## Installation
+## Installation and usage
 
 ```sh
-yarn install --save @saucelabs/visual-snapshots
+npm install -g @saucelabs/visual-snapshots <command> [params]
+visual-snapshots
+```
+
+```sh
+npx --package @saucelabs/visual-snapshots visual-snapshots <command> [params]
 ```
 
 ## Development
@@ -19,7 +24,7 @@ yarn install --save @saucelabs/visual-snapshots
 Build:
 
 ```sh
-yarn run build
+npm run build
 ```
 
 Execute:
@@ -31,7 +36,7 @@ node lib/index.js pdf [params]
 Run tests:
 
 ```sh
-yarn run test
+npm run test
 ```
 
 ## Reusing pdf conversion code
