@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "main": "./lib/index.js",
   "license": "MIT",
-  "bin": "./lib/index.js",
+  "bin": {
+    "visual-snapshots": "./lib/index.js"
+  },
   "files": [
     "lib",
     "README.md"
