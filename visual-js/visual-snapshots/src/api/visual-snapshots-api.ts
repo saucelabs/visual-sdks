@@ -1,5 +1,7 @@
 import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { formatString } from "../utils/format.js";
+import path from "path";
+import { PdfFile } from "../app/pdf-file.js";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -21,32 +23,37 @@ export class VisualSnapshotsApi {
   }
 
   public async generateAndSendPdfFileSnapshots(
-    filename: string,
-    pdfFilePages: AsyncGenerator<Buffer>,
+    pdfFiles: PdfFile[],
     params: CreateVisualSnapshotsParams
   ) {
     const buildId = params.buildId ?? (await this.createBuild(params));
-    const testName = params.testName
-      ? formatString(params.testName, { filename })
-      : undefined;
 
-    const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
+    for (const pdfFile of pdfFiles) {
+      console.info(`Processing file: ${pdfFile.path}`);
 
-    let pageNumber = 1;
-    for await (const pdfPageImage of pdfFilePages) {
-      const snapshotName = formatString(snapshotFormat, {
-        filename,
-        page: pageNumber,
-      });
+      const filename = path.basename(pdfFile.path);
+      const testName = params.testName
+        ? formatString(params.testName, { filename })
+        : undefined;
 
-      await this.uploadImageAndCreateSnapshot(
-        pdfPageImage,
-        buildId,
-        snapshotName,
-        testName,
-        params.suiteName
-      );
-      pageNumber++;
+      const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
+
+      let pageNumber = 1;
+      for await (const pdfPageImage of pdfFile.convertPagesToImages()) {
+        const snapshotName = formatString(snapshotFormat, {
+          filename,
+          page: pageNumber,
+        });
+
+        await this.uploadImageAndCreateSnapshot(
+          pdfPageImage,
+          buildId,
+          snapshotName,
+          testName,
+          params.suiteName
+        );
+        pageNumber++;
+      }
     }
 
     await this.finishBuild(buildId);

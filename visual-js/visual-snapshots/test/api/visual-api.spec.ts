@@ -4,10 +4,16 @@ import {
   VisualSnapshotsApi,
 } from "../../src/api/visual-snapshots-api.js";
 import { formatString } from "../../src/utils/format.js";
+import { PdfFile } from "../../src/app/pdf-file.js";
+import path from "path";
 
-async function* pdfPagesGenerator(): AsyncGenerator<Buffer> {
-  for (let i = 0; i < 2; ++i) {
-    yield Promise.resolve(Buffer.from(`fake-image-buffer-${i}`));
+class TestPdfFile implements PdfFile {
+  constructor(public readonly path: string) {}
+
+  public async *convertPagesToImages(): AsyncGenerator<Buffer> {
+    for (let i = 0; i < 2; ++i) {
+      yield Buffer.from(`fake-image-buffer-${i}`);
+    }
   }
 }
 
@@ -16,8 +22,6 @@ describe("VisualSnapshots", () => {
     const consoleInfoSpy = jest
       .spyOn(console, "info")
       .mockImplementation(() => undefined);
-
-    let pdfPages: AsyncGenerator<Buffer>;
 
     const createBuildMock = jest.fn();
     const uploadSnapshotMock = jest.fn();
@@ -33,26 +37,28 @@ describe("VisualSnapshots", () => {
       buildStatus: buildStatusMock,
     };
     const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
+    const files = [new TestPdfFile("file1.pdf"), new TestPdfFile("file2.pdf")];
+
     beforeEach(() => {
       createBuildMock.mockReset();
-      createBuildMock.mockResolvedValueOnce({
+      createBuildMock.mockResolvedValue({
         id: "build-id",
         url: "http://build-url/build-id",
       });
+
+      let uploadId = 0;
       uploadSnapshotMock.mockReset();
-      uploadSnapshotMock
-        .mockResolvedValueOnce("upload-id-0")
-        .mockResolvedValueOnce("upload-id-1");
+      uploadSnapshotMock.mockImplementation(() =>
+        Promise.resolve(`upload-id-${uploadId++}`)
+      );
+
       createSnapshotMock.mockReset();
       finishBuildMock.mockReset();
       buildStatusMock.mockReset();
       consoleInfoSpy.mockReset();
-
-      pdfPages = pdfPagesGenerator();
     });
 
     const assertSuccessfulPdfSnapshotsGeneration = (
-      filename: string,
       params: CreateVisualSnapshotsParams
     ) => {
       if (!params.buildId) {
@@ -78,6 +84,18 @@ describe("VisualSnapshots", () => {
             image: { data: Buffer.from("fake-image-buffer-1") },
           },
         ],
+        [
+          {
+            buildId: params.buildId ?? "build-id",
+            image: { data: Buffer.from("fake-image-buffer-0") },
+          },
+        ],
+        [
+          {
+            buildId: params.buildId ?? "build-id",
+            image: { data: Buffer.from("fake-image-buffer-1") },
+          },
+        ],
       ]);
 
       expect(createSnapshotMock.mock.calls).toEqual([
@@ -86,14 +104,14 @@ describe("VisualSnapshots", () => {
             diffingMethod: DiffingMethod.Balanced,
             buildId: params.buildId ?? "build-id",
             name: formatString(params.snapshotName ?? "page-{page}", {
-              filename,
+              filename: path.basename(files[0].path),
               page: 1,
             }),
             uploadId: "upload-id-0",
             suiteName: params.suiteName,
             testName: params.testName
               ? formatString(params.testName, {
-                  filename,
+                  filename: path.basename(files[0].path),
                 })
               : undefined,
           },
@@ -103,14 +121,48 @@ describe("VisualSnapshots", () => {
             diffingMethod: DiffingMethod.Balanced,
             buildId: params.buildId ?? "build-id",
             name: formatString(params.snapshotName ?? "page-{page}", {
-              filename,
+              filename: path.basename(files[0].path),
               page: 2,
             }),
             uploadId: "upload-id-1",
             suiteName: params.suiteName,
             testName: params.testName
               ? formatString(params.testName, {
-                  filename,
+                  filename: path.basename(files[0].path),
+                })
+              : undefined,
+          },
+        ],
+        [
+          {
+            diffingMethod: DiffingMethod.Balanced,
+            buildId: params.buildId ?? "build-id",
+            name: formatString(params.snapshotName ?? "page-{page}", {
+              filename: path.basename(files[1].path),
+              page: 1,
+            }),
+            uploadId: "upload-id-2",
+            suiteName: params.suiteName,
+            testName: params.testName
+              ? formatString(params.testName, {
+                  filename: path.basename(files[1].path),
+                })
+              : undefined,
+          },
+        ],
+        [
+          {
+            diffingMethod: DiffingMethod.Balanced,
+            buildId: params.buildId ?? "build-id",
+            name: formatString(params.snapshotName ?? "page-{page}", {
+              filename: path.basename(files[1].path),
+              page: 2,
+            }),
+            uploadId: "upload-id-3",
+            suiteName: params.suiteName,
+            testName: params.testName
+              ? formatString(params.testName, {
+                  filename: path.basename(files[1].path),
                 })
               : undefined,
           },
@@ -129,7 +181,6 @@ describe("VisualSnapshots", () => {
     };
 
     describe("with params", () => {
-      const filename = "filename.pdf";
       const params = {
         branch: "fake-branch",
         buildName: "fake-build-name",
@@ -148,13 +199,9 @@ describe("VisualSnapshots", () => {
           errorCount: 0,
         });
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(
-          filename,
-          pdfPages,
-          params
-        );
+        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+        assertSuccessfulPdfSnapshotsGeneration(params);
       });
 
       test("difffing finished", async () => {
@@ -164,18 +211,13 @@ describe("VisualSnapshots", () => {
           errorCount: 0,
         });
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(
-          filename,
-          pdfPages,
-          params
-        );
+        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+        assertSuccessfulPdfSnapshotsGeneration(params);
       });
     });
 
     describe("with params and build-id", () => {
-      const filename = "filename.pdf";
       const params = {
         branch: "fake-branch",
         buildName: "fake-build-name",
@@ -195,13 +237,9 @@ describe("VisualSnapshots", () => {
           errorCount: 0,
         });
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(
-          filename,
-          pdfPages,
-          params
-        );
+        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+        assertSuccessfulPdfSnapshotsGeneration(params);
       });
 
       test("difffing finished", async () => {
@@ -211,19 +249,13 @@ describe("VisualSnapshots", () => {
           errorCount: 0,
         });
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(
-          filename,
-          pdfPages,
-          params
-        );
+        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(filename, params);
+        assertSuccessfulPdfSnapshotsGeneration(params);
       });
     });
 
     test("without params", async () => {
-      const filename = "filename.pdf";
-
       buildStatusMock.mockResolvedValueOnce({
         status: BuildStatus.Unapproved,
         unapprovedCount: 2,
@@ -231,13 +263,9 @@ describe("VisualSnapshots", () => {
       });
 
       const params = {} as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFileSnapshots(
-        filename,
-        pdfPages,
-        params
-      );
+      await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-      assertSuccessfulPdfSnapshotsGeneration(filename, params);
+      assertSuccessfulPdfSnapshotsGeneration(params);
     });
   });
 });
