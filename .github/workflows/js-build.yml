@@ -27,8 +27,7 @@ jobs:
           node-version: 18.x
       - name: Build
         run: |
-          corepack enable
-          yarn install
+          npm install
           npm run lint --workspaces --if-present
           npm run build --workspaces --if-present
           npm run test --workspaces --if-present

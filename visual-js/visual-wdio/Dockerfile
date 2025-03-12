@@ -2,11 +2,9 @@ FROM node:18 AS runner
 
 WORKDIR app
 
-RUN corepack enable
-
 COPY . ./
 
-RUN yarn install && npm run build --workspaces --if-present
+RUN npm install && npm run build --workspaces --if-present
 
 WORKDIR ./visual-wdio/integration-tests
 

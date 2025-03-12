@@ -12,10 +12,9 @@
   ],
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
-      "yarn lint"
+      "npm run lint"
     ]
   },
-  "packageManager": "yarn@3.5.1",
   "dependencies": {
     "@changesets/cli": "^2.27.1"
   }

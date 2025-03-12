@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.3.3
+
+### Patch Changes
+
+- 559164d: Correct clipping and ignore regions when page is pre-scrolled
+
 ## 0.3.2
 
 ### Patch Changes
