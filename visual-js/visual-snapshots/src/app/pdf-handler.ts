@@ -5,11 +5,13 @@ import {
 import { initializeVisualApi } from "../api/visual-client.js";
 import { PdfConverter } from "./pdf-converter.js";
 import { VisualConfig } from "@saucelabs/visual";
-import path from "path";
+import { getFiles } from "../utils/glob.js";
 
 export interface PdfCommandParams
   extends VisualConfig,
-    CreateVisualSnapshotsParams {}
+    CreateVisualSnapshotsParams {
+  readonly recursive?: boolean;
+}
 
 export class PdfCommandHandler {
   private clientVersion: string;
@@ -18,16 +20,23 @@ export class PdfCommandHandler {
     this.clientVersion = clientVersion;
   }
 
-  public async handle(pdfFilePath: string, params: PdfCommandParams) {
+  public async handle(globsOrDirs: string[], params: PdfCommandParams) {
     const visualApi = initializeVisualApi(params, this.clientVersion);
     const visualSnapshots = new VisualSnapshotsApi(visualApi);
     const pdfConverter = new PdfConverter();
 
-    const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
-    await visualSnapshots.generateAndSendPdfFileSnapshots(
-      path.basename(pdfFilePath),
-      pdfPageImages,
-      params
+    const pdfFilePaths = await getFiles(
+      globsOrDirs,
+      params.recursive ? "**/*.pdf" : "*.pdf"
     );
+
+    for (const pdfFilePath of pdfFilePaths) {
+      const pdfPageImages = pdfConverter.convertPagesToImages(pdfFilePath);
+      await visualSnapshots.generateAndSendPdfFileSnapshots(
+        pdfFilePath,
+        pdfPageImages,
+        params
+      );
+    }
   }
 }

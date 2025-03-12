@@ -28,11 +28,16 @@ export const snapshotNameOption = new Option(
     " Supports the following parameters: {filename}, {page}"
 );
 
+export const recursiveOption = new Option(
+  "--recursive",
+  "If specified, will search recursively for PDF files in passed directories."
+).default(false);
+
 export const pdfCommand = (clientVersion: string) => {
   return new Command()
     .name("pdf")
     .description("Create visual snapshots for each page of a PDF file")
-    .argument("<pdf-file-path>", "A path to a PDF file")
+    .argument("<globs or dirs...>", "A path to a PDF file")
     .addOption(usernameOption)
     .addOption(accessKeyOption)
     .addOption(regionOption)
@@ -45,9 +50,10 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(suiteNameOption)
     .addOption(testNameOption)
     .addOption(snapshotNameOption)
-    .action((pdfFilePath: string, params: PdfCommandParams) => {
+    .addOption(recursiveOption)
+    .action((globsOrDirs: string[], params: PdfCommandParams) => {
       new PdfCommandHandler(clientVersion)
-        .handle(pdfFilePath, params)
+        .handle(globsOrDirs, params)
         .then(() => {
           console.log("Successfully created PDF snapshots");
         })

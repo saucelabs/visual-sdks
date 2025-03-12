@@ -3,6 +3,9 @@
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing finished 1`] = `
 [
   [
+    "Processing file: filename.pdf",
+  ],
+  [
     "Uploaded image to build custom-build-id: upload id=upload-id-0.",
   ],
   [
@@ -26,6 +29,9 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-i
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing unfinished 1`] = `
 [
   [
+    "Processing file: filename.pdf",
+  ],
+  [
     "Uploaded image to build custom-build-id: upload id=upload-id-0.",
   ],
   [
@@ -48,6 +54,9 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-i
 
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing finished 1`] = `
 [
+  [
+    "Processing file: filename.pdf",
+  ],
   [
     "Build build-id created: http://build-url/build-id",
   ],
@@ -75,6 +84,9 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing fi
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing unfinished 1`] = `
 [
   [
+    "Processing file: filename.pdf",
+  ],
+  [
     "Build build-id created: http://build-url/build-id",
   ],
   [
@@ -100,6 +112,9 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing un
 
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots without params 1`] = `
 [
+  [
+    "Processing file: filename.pdf",
+  ],
   [
     "Build build-id created: http://build-url/build-id",
   ],

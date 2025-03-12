@@ -1,5 +1,6 @@
 import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { formatString } from "../utils/format.js";
+import path from "path";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -21,10 +22,13 @@ export class VisualSnapshotsApi {
   }
 
   public async generateAndSendPdfFileSnapshots(
-    filename: string,
+    pdfFilePath: string,
     pdfFilePages: AsyncGenerator<Buffer>,
     params: CreateVisualSnapshotsParams
   ) {
+    console.info(`Processing file: ${pdfFilePath}`);
+
+    const filename = path.basename(pdfFilePath);
     const buildId = params.buildId ?? (await this.createBuild(params));
     const testName = params.testName
       ? formatString(params.testName, { filename })
