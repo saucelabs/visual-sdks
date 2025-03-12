@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "experimentalDecorators": true,                      /* Enable experimental support for legacy experimental decorators. */
+    "emitDecoratorMetadata": true,                       /* Emit design-type metadata for decorated declarations in source files. */
+    "module": "NodeNext",                                /* Specify what module code is generated. */
+    "moduleResolution": "nodenext",                      /* Specify how TypeScript looks up a file from a given module specifier. */
+    "sourceMap": true,                                   /* Create source map files for emitted JavaScript files. */
+    "outDir": "./lib",                                   /* Specify an output folder for all emitted files. */
+    "removeComments": true,                              /* Disable emitting comments. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "strictNullChecks": true,                            /* When type checking, take into account 'null' and 'undefined'. */
+    "noUnusedLocals": true,                              /* Enable error reporting when local variables aren't read. */
+    "noUnusedParameters": true,                          /* Raise an error when a function parameter isn't read. */
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */,
+    "tsBuildInfoFile": "./tsconfig.src.tsbuildinfo"
+  },
+  "include": ["./src"]
+}
