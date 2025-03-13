@@ -38,7 +38,7 @@ export class VisualSnapshotsApi {
     });
 
     for (const pdfFile of pdfFiles) {
-      queue.push(() => this.processFile(buildId, pdfFile, params));
+      queue.push(() => this.processFile(queue, buildId, pdfFile, params));
     }
 
     await waitForEmptyQueue(queue);
@@ -47,6 +47,7 @@ export class VisualSnapshotsApi {
   }
 
   private async processFile(
+    queue: Queue,
     buildId: string,
     pdfFile: PdfFile,
     params: CreateVisualSnapshotsParams
@@ -67,12 +68,14 @@ export class VisualSnapshotsApi {
         page: pageNumber,
       });
 
-      await this.uploadImageAndCreateSnapshot(
-        pdfPageImage,
-        buildId,
-        snapshotName,
-        testName,
-        params.suiteName
+      queue.push(() =>
+        this.uploadImageAndCreateSnapshot(
+          pdfPageImage,
+          buildId,
+          snapshotName,
+          testName,
+          params.suiteName
+        )
       );
       pageNumber++;
     }
