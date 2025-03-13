@@ -1,23 +1,24 @@
-import Queue from "queue";
+import Queue, { QueueEvent, QueueWorker } from "queue";
 
 export function waitForEmptyQueue(queue: Queue) {
   return new Promise<void>((resolve, reject) => {
-    const onError = (err: unknown) => {
+    const onEvent = (evt: QueueEvent<any, { error?: Error | undefined }>) => {
       cleanup();
-      reject(err);
-    };
-
-    const onSuccess = () => {
-      cleanup();
-      resolve();
+      !evt.detail.error ? resolve() : reject(evt.detail.error);
     };
 
     const cleanup = () => {
-      queue.removeEventListener("end", onSuccess);
-      queue.removeEventListener("error", onError);
+      queue.removeEventListener("end", onEvent);
+      queue.removeEventListener("error", onEvent);
     };
 
-    queue.addEventListener("end", onSuccess, { once: true });
-    queue.addEventListener("error", onError, { once: true });
+    queue.addEventListener("end", onEvent, { once: true });
+    queue.addEventListener("error", onEvent, { once: true });
   });
+}
+
+export function queueJob(promise: Promise<unknown>): QueueWorker {
+  return (cb) => {
+    promise.then((res) => cb?.(undefined, res as never)).catch(cb);
+  };
 }
