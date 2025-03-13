@@ -8,13 +8,21 @@ import { PdfFile } from "../../src/app/pdf-file.js";
 import path from "path";
 
 class TestPdfFile implements PdfFile {
-  constructor(public readonly path: string) {}
+  constructor(public readonly path: string, public readonly pages: number) {}
 
   public async *convertPagesToImages(): AsyncGenerator<Buffer> {
-    for (let i = 0; i < 2; ++i) {
-      yield Buffer.from(`fake-image-buffer-${i}`);
+    for (let i = 0; i < this.pages; ++i) {
+      yield Buffer.from(createFakeBuffer(this.path, i + 1));
     }
   }
+}
+
+function createFakeBuffer(path: string, page: number) {
+  return `path:${path};page:${page}`;
+}
+
+function createUploadId(content: string) {
+  return `upload-id:${content}`;
 }
 
 describe("VisualSnapshots", () => {
@@ -23,11 +31,26 @@ describe("VisualSnapshots", () => {
       .spyOn(console, "info")
       .mockImplementation(() => undefined);
 
-    const createBuildMock = jest.fn();
-    const uploadSnapshotMock = jest.fn();
-    const createSnapshotMock = jest.fn();
-    const finishBuildMock = jest.fn();
-    const buildStatusMock = jest.fn();
+    const createBuildMock = jest.fn<
+      ReturnType<VisualApi["createBuild"]>,
+      Parameters<VisualApi["createBuild"]>
+    >();
+    const uploadSnapshotMock = jest.fn<
+      ReturnType<VisualApi["uploadSnapshot"]>,
+      Parameters<VisualApi["uploadSnapshot"]>
+    >();
+    const createSnapshotMock = jest.fn<
+      ReturnType<VisualApi["createSnapshot"]>,
+      Parameters<VisualApi["createSnapshot"]>
+    >();
+    const finishBuildMock = jest.fn<
+      ReturnType<VisualApi["finishBuild"]>,
+      Parameters<VisualApi["finishBuild"]>
+    >();
+    const buildStatusMock = jest.fn<
+      ReturnType<VisualApi["buildStatus"]>,
+      Parameters<VisualApi["buildStatus"]>
+    >();
     const visualApiMock = {
       createBuild: createBuildMock,
       uploadSnapshot: uploadSnapshotMock,
@@ -37,19 +60,23 @@ describe("VisualSnapshots", () => {
     } as never as VisualApi;
 
     const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
-    const files = [new TestPdfFile("file1.pdf"), new TestPdfFile("file2.pdf")];
+    const files = [
+      new TestPdfFile("file1.pdf", 2),
+      new TestPdfFile("file2.pdf", 3),
+    ];
 
     beforeEach(() => {
       createBuildMock.mockReset();
       createBuildMock.mockResolvedValue({
         id: "build-id",
         url: "http://build-url/build-id",
-      });
+      } as never);
 
-      let uploadId = 0;
       uploadSnapshotMock.mockReset();
-      uploadSnapshotMock.mockImplementation(() =>
-        Promise.resolve(`upload-id-${uploadId++}`)
+      uploadSnapshotMock.mockImplementation(({ image }) =>
+        image && "data" in image
+          ? Promise.resolve(createUploadId(image.data.toString("utf-8")))
+          : Promise.reject(new Error("image data is missing"))
       );
 
       createSnapshotMock.mockReset();
@@ -58,9 +85,7 @@ describe("VisualSnapshots", () => {
       consoleInfoSpy.mockReset();
     });
 
-    const assertSuccessfulPdfSnapshotsGeneration = (
-      params: CreateVisualSnapshotsParams
-    ) => {
+    function assertBuild(params: CreateVisualSnapshotsParams) {
       if (!params.buildId) {
         expect(createBuildMock).toHaveBeenCalledWith({
           name: params.buildName,
@@ -69,105 +94,9 @@ describe("VisualSnapshots", () => {
           project: params.project,
           customId: params.customId,
         });
+      } else {
+        expect(createBuildMock).not.toHaveBeenCalled();
       }
-
-      expect(uploadSnapshotMock.mock.calls).toEqual([
-        [
-          {
-            buildId: params.buildId ?? "build-id",
-            image: { data: Buffer.from("fake-image-buffer-0") },
-          },
-        ],
-        [
-          {
-            buildId: params.buildId ?? "build-id",
-            image: { data: Buffer.from("fake-image-buffer-1") },
-          },
-        ],
-        [
-          {
-            buildId: params.buildId ?? "build-id",
-            image: { data: Buffer.from("fake-image-buffer-0") },
-          },
-        ],
-        [
-          {
-            buildId: params.buildId ?? "build-id",
-            image: { data: Buffer.from("fake-image-buffer-1") },
-          },
-        ],
-      ]);
-
-      expect(createSnapshotMock.mock.calls).toEqual([
-        [
-          {
-            diffingMethod: DiffingMethod.Balanced,
-            buildId: params.buildId ?? "build-id",
-            name: formatString(params.snapshotName ?? "page-{page}", {
-              filename: path.basename(files[0].path),
-              page: 1,
-            }),
-            uploadId: "upload-id-0",
-            suiteName: params.suiteName,
-            testName: params.testName
-              ? formatString(params.testName, {
-                  filename: path.basename(files[0].path),
-                })
-              : undefined,
-          },
-        ],
-        [
-          {
-            diffingMethod: DiffingMethod.Balanced,
-            buildId: params.buildId ?? "build-id",
-            name: formatString(params.snapshotName ?? "page-{page}", {
-              filename: path.basename(files[0].path),
-              page: 2,
-            }),
-            uploadId: "upload-id-1",
-            suiteName: params.suiteName,
-            testName: params.testName
-              ? formatString(params.testName, {
-                  filename: path.basename(files[0].path),
-                })
-              : undefined,
-          },
-        ],
-        [
-          {
-            diffingMethod: DiffingMethod.Balanced,
-            buildId: params.buildId ?? "build-id",
-            name: formatString(params.snapshotName ?? "page-{page}", {
-              filename: path.basename(files[1].path),
-              page: 1,
-            }),
-            uploadId: "upload-id-2",
-            suiteName: params.suiteName,
-            testName: params.testName
-              ? formatString(params.testName, {
-                  filename: path.basename(files[1].path),
-                })
-              : undefined,
-          },
-        ],
-        [
-          {
-            diffingMethod: DiffingMethod.Balanced,
-            buildId: params.buildId ?? "build-id",
-            name: formatString(params.snapshotName ?? "page-{page}", {
-              filename: path.basename(files[1].path),
-              page: 2,
-            }),
-            uploadId: "upload-id-3",
-            suiteName: params.suiteName,
-            testName: params.testName
-              ? formatString(params.testName, {
-                  filename: path.basename(files[1].path),
-                })
-              : undefined,
-          },
-        ],
-      ]);
 
       expect(finishBuildMock).toHaveBeenCalledWith({
         uuid: params.buildId ?? "build-id",
@@ -176,9 +105,41 @@ describe("VisualSnapshots", () => {
       expect(buildStatusMock).toHaveBeenCalledWith(
         params.buildId ?? "build-id"
       );
+    }
 
-      expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
-    };
+    async function assertSnapshot(
+      files: TestPdfFile[],
+      params: CreateVisualSnapshotsParams
+    ) {
+      for (const file of files) {
+        let i = 0;
+        for await (const page of file.convertPagesToImages()) {
+          const pageNumber = i + 1;
+          expect(uploadSnapshotMock).toHaveBeenCalledWith({
+            buildId: params.buildId ?? "build-id",
+            image: { data: page },
+          });
+
+          expect(createSnapshotMock).toHaveBeenCalledWith({
+            diffingMethod: DiffingMethod.Balanced,
+            buildId: params.buildId ?? "build-id",
+            name: formatString(params.snapshotName ?? "page-{page}", {
+              filename: path.basename(file.path),
+              page: pageNumber,
+            }),
+            uploadId: createUploadId(createFakeBuffer(file.path, pageNumber)),
+            suiteName: params.suiteName,
+            testName: params.testName
+              ? formatString(params.testName, {
+                  filename: path.basename(file.path),
+                })
+              : undefined,
+          });
+
+          i++;
+        }
+      }
+    }
 
     describe("with params", () => {
       const params = {
@@ -197,11 +158,15 @@ describe("VisualSnapshots", () => {
           status: BuildStatus.Running,
           unapprovedCount: 2,
           errorCount: 0,
+          url: "",
         });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertBuild(params);
+        await assertSnapshot(files, params);
+
+        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
       });
 
       test("difffing finished", async () => {
@@ -209,11 +174,15 @@ describe("VisualSnapshots", () => {
           status: BuildStatus.Approved,
           unapprovedCount: 0,
           errorCount: 0,
+          url: "",
         });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertBuild(params);
+        await assertSnapshot(files, params);
+
+        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
       });
     });
 
@@ -235,11 +204,15 @@ describe("VisualSnapshots", () => {
           status: BuildStatus.Running,
           unapprovedCount: 2,
           errorCount: 0,
+          url: "",
         });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertBuild(params);
+        await assertSnapshot(files, params);
+
+        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
       });
 
       test("difffing finished", async () => {
@@ -247,11 +220,15 @@ describe("VisualSnapshots", () => {
           status: BuildStatus.Approved,
           unapprovedCount: 0,
           errorCount: 0,
+          url: "",
         });
 
         await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-        assertSuccessfulPdfSnapshotsGeneration(params);
+        assertBuild(params);
+        await assertSnapshot(files, params);
+
+        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
       });
     });
 
@@ -260,12 +237,16 @@ describe("VisualSnapshots", () => {
         status: BuildStatus.Unapproved,
         unapprovedCount: 2,
         errorCount: 0,
+        url: "",
       });
 
       const params = {} as CreateVisualSnapshotsParams;
       await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
 
-      assertSuccessfulPdfSnapshotsGeneration(params);
+      assertBuild(params);
+      await assertSnapshot(files, params);
+
+      expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
     });
   });
 });
