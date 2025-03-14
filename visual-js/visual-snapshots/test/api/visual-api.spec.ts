@@ -28,14 +28,14 @@ describe("VisualSnapshots", () => {
     const createSnapshotMock = jest.fn();
     const finishBuildMock = jest.fn();
     const buildStatusMock = jest.fn();
-    const visualApiMock: VisualApi = {
-      ...jest.requireActual<VisualApi>("@saucelabs/visual"),
+    const visualApiMock = {
       createBuild: createBuildMock,
       uploadSnapshot: uploadSnapshotMock,
       createSnapshot: createSnapshotMock,
       finishBuild: finishBuildMock,
       buildStatus: buildStatusMock,
-    };
+    } as never as VisualApi;
+
     const visualSnapshots = new VisualSnapshotsApi(visualApiMock);
     const files = [new TestPdfFile("file1.pdf"), new TestPdfFile("file2.pdf")];
 

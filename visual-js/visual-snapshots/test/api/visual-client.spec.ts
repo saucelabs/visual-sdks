@@ -1,4 +1,4 @@
-import { initializeVisualApi } from "../../src/api/visual-client.js";
+import { visualApiInitializer } from "../../src/api/visual-client.js";
 import * as sauceVisual from "@saucelabs/visual";
 
 jest.mock("@saucelabs/visual", () => {
@@ -8,8 +8,9 @@ jest.mock("@saucelabs/visual", () => {
 });
 
 describe("visual api client", () => {
-  test("initializeVisualApi", async () => {
-    const getApiSpy = sauceVisual.getApi;
+  test("visualApiInitializer", async () => {
+    const getApiSpy = jest.fn();
+    const initializeVisualApi = visualApiInitializer(getApiSpy);
 
     const pkgVersion = "0.1.0";
     const params = {
