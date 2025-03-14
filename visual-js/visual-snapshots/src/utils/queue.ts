@@ -2,6 +2,10 @@ import Queue, { QueueEvent, QueueWorker } from "queue";
 import AsyncLock from "async-lock";
 
 export function waitForEmptyQueue(queue: Queue) {
+  if (!queue.length) {
+    return Promise.resolve();
+  }
+
   return new Promise<void>((resolve, reject) => {
     const onEvent = (evt: QueueEvent<any, { error?: Error | undefined }>) => {
       cleanup();
