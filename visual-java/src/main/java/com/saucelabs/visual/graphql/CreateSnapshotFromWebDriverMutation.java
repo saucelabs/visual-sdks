@@ -49,6 +49,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<DiffingOptionsIn> diffingOptions = Optional.empty();
 
+    public Optional<Boolean> hideScrollBars = Optional.empty();
+
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
         DiffingMethod diffingMethod,
@@ -117,6 +119,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setDiffingOptions(DiffingOptionsIn diffingOptions) {
       this.diffingOptions = Optional.of(diffingOptions);
+    }
+
+    public void setHideScrollBars(Boolean hideScrollBars) {
+      this.hideScrollBars = Optional.of(hideScrollBars);
     }
   }
 
