@@ -97,7 +97,7 @@ class FullPageConfig:
     """
     hideScrollBars: Union[bool, None] = None
     """
-    Hide all scrollbars for the site under test.
+    Deprecated: Use hideScrollBars in SauceLabsVisual client instead
     """
     scrollLimit: Union[int, None] = None
     """

@@ -231,6 +231,10 @@ class SauceLabsVisual:
     def visual_set_diffing_method(self, diffing_method: Union[DiffingMethod, None]):
         self.client.diffing_method = diffing_method
 
+    @keyword(name="Visual Set Global HideScrollBars")
+    def visual_set_hide_scroll_bars(self, hide_scroll_bars: Union[bool, None]):
+        self.client.hide_scroll_bars = hide_scroll_bars
+
     @keyword(name="Visual Set Global FullPageConfig")
     def visual_set_full_page_config(self, full_page_config: Union[FullPageConfig, None]):
         self.client.full_page_config = full_page_config
@@ -291,6 +295,7 @@ class SauceLabsVisual:
             diffing_method: Union[DiffingMethod, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
             baseline_override: Union[BaselineOverride, None] = None,
+            hide_scroll_bars: Union[bool, None] = None,
     ):
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
@@ -316,6 +321,7 @@ class SauceLabsVisual:
             diffing_method=diffing_method,
             diffing_options=diffing_options,
             baseline_override=baseline_override,
+            hide_scroll_bars=hide_scroll_bars,
         )
 
     @keyword(name="Visual Build Status")

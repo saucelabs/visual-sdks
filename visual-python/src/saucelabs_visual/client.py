@@ -42,6 +42,7 @@ class SauceLabsVisual:
     capture_dom: Union[bool, None] = None
     diffing_method: Union[DiffingMethod, None] = None
     baseline_override: Union[BaselineOverride, None] = None
+    hide_scroll_bars: Union[bool, None] = None
     full_page_config: Union[FullPageConfig, None] = None
 
     @property
@@ -223,6 +224,7 @@ class SauceLabsVisual:
             diffing_method: Union[DiffingMethod, None] = None,
             diffing_options: Union[DiffingOptions, None] = None,
             baseline_override: Union[BaselineOverride, None] = None,
+            hide_scroll_bars: Union[bool, None] = None,
     ):
         """
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
@@ -242,6 +244,7 @@ class SauceLabsVisual:
             diffing method.
         :param baseline_override: One or more keys we should use as an override when matching
             a baseline.
+        :param hide_scroll_bars: Hide all scrollbars in the web app. Default value is `true`.
         :return:
         """
         query = gql(
@@ -262,6 +265,7 @@ class SauceLabsVisual:
                 $diffingMethod: DiffingMethod,
                 $diffingOptions: DiffingOptionsIn,
                 $baselineOverride: BaselineOverrideIn,
+                $hideScrollBars: Boolean,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -278,6 +282,7 @@ class SauceLabsVisual:
                     diffingMethod: $diffingMethod,
                     diffingOptions: $diffingOptions,
                     baselineOverride: $baselineOverride,
+                    hideScrollBars: hideScrollBars,
                 }){
                     id
                 }
@@ -312,6 +317,7 @@ class SauceLabsVisual:
             "baselineOverride": {
                 key: value for key, value in asdict(baseline_override).items() if value is not None
             } if baseline_override is not None else None,
+            "hideScrollBars": hide_scroll_bars if hide_scroll_bars is not None else self.hide_scroll_bars
         }
         return self.client.execute(query, variable_values=values)
 
