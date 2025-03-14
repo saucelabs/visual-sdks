@@ -4,6 +4,7 @@ import {
   branchOption,
   buildIdOption,
   buildNameOption,
+  concurrencyOption,
   customIdOption,
   defaultBranchOption,
   projectOption,
@@ -48,6 +49,7 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(suiteNameOption)
     .addOption(testNameOption)
     .addOption(snapshotNameOption)
+    .addOption(concurrencyOption)
     .action((globsOrDirs: string[], params: PdfCommandParams) => {
       new PdfCommandHandler(clientVersion)
         .handle(globsOrDirs, params)

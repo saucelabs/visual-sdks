@@ -2,6 +2,8 @@ import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { formatString } from "../utils/format.js";
 import path from "path";
 import { PdfFile } from "../app/pdf-file.js";
+import { enqueueFromIterator, waitForEmptyQueue } from "../utils/queue.js";
+import Queue from "queue";
 
 export interface CreateVisualSnapshotsParams {
   branch: string;
@@ -13,6 +15,7 @@ export interface CreateVisualSnapshotsParams {
   suiteName?: string;
   testName?: string;
   snapshotName?: string;
+  concurrency: number;
 }
 
 export class VisualSnapshotsApi {
@@ -28,35 +31,70 @@ export class VisualSnapshotsApi {
   ) {
     const buildId = params.buildId ?? (await this.createBuild(params));
 
-    for (const pdfFile of pdfFiles) {
-      console.info(`Processing file: ${pdfFile.path}`);
+    const queue = new Queue({
+      concurrency: params.concurrency,
+    });
 
-      const filename = path.basename(pdfFile.path);
-      const testName = params.testName
-        ? formatString(params.testName, { filename })
-        : undefined;
+    const pageIterator = this.iterateOverPages(pdfFiles);
+    await enqueueFromIterator(
+      queue,
+      pageIterator,
+      ({ file, page, pageNumber }) =>
+        () =>
+          this.processPage(
+            buildId,
+            file,
+            page,
+            pageNumber,
+            params.suiteName,
+            params.testName,
+            params.snapshotName
+          )
+    );
 
-      const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
-
-      let pageNumber = 1;
-      for await (const pdfPageImage of pdfFile.convertPagesToImages()) {
-        const snapshotName = formatString(snapshotFormat, {
-          filename,
-          page: pageNumber,
-        });
-
-        await this.uploadImageAndCreateSnapshot(
-          pdfPageImage,
-          buildId,
-          snapshotName,
-          testName,
-          params.suiteName
-        );
-        pageNumber++;
-      }
-    }
+    await waitForEmptyQueue(queue);
 
     await this.finishBuild(buildId);
+  }
+
+  private async *iterateOverPages(files: PdfFile[]) {
+    for (const file of files) {
+      let pageNumber = 1;
+      for await (const page of file.convertPagesToImages()) {
+        yield { file, page, pageNumber: pageNumber++ } as const;
+      }
+    }
+  }
+
+  private async processPage(
+    buildId: string,
+    pdfFile: PdfFile,
+    page: Buffer,
+    pageNumber: number,
+    suiteName: string | undefined,
+    testNameFormat: string | undefined,
+    snapshotNameFormat: string | undefined
+  ) {
+    const filename = path.basename(pdfFile.path);
+    const testName = testNameFormat
+      ? formatString(testNameFormat, { filename })
+      : undefined;
+
+    const snapshotFormat = this.getSnapshotFormat(snapshotNameFormat);
+    const snapshotName = formatString(snapshotFormat, {
+      filename,
+      page: pageNumber,
+    });
+
+    await this.uploadImageAndCreateSnapshot(
+      filename,
+      pageNumber,
+      page,
+      buildId,
+      snapshotName,
+      testName,
+      suiteName
+    );
   }
 
   private async createBuild(
@@ -74,6 +112,8 @@ export class VisualSnapshotsApi {
   }
 
   private async uploadImageAndCreateSnapshot(
+    file: string,
+    pageNumber: number,
     snapshot: Buffer,
     buildId: string,
     snapshotName: string,
@@ -85,7 +125,9 @@ export class VisualSnapshotsApi {
       image: { data: snapshot },
     });
 
-    console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
+    console.info(
+      `[${file}:${pageNumber}] Uploaded image to build ${buildId}: upload id=${uploadId}.`
+    );
 
     await this.api.createSnapshot({
       buildId,
@@ -96,7 +138,9 @@ export class VisualSnapshotsApi {
       suiteName,
     });
 
-    console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
+    console.info(
+      `[${file}:${pageNumber}] Created a snapshot ${snapshotName} for build ${buildId}.`
+    );
   }
 
   private async finishBuild(buildId: string) {
