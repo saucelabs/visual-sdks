@@ -17,6 +17,7 @@ namespace SauceLabs.Visual
         public bool? CaptureDom { get; set; }
         public bool? FullPage { get; set; }
         public FullPageConfig? FullPageConfig { get; set; }
+        public bool? HideScrollBars { get; set; }
         public IWebElement? ClipElement { get; set; }
 
         /// <summary>

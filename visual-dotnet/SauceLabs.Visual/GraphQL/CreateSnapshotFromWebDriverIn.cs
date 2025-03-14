@@ -35,6 +35,8 @@ namespace SauceLabs.Visual.GraphQL
         public string? ClipElement { get; set; }
         [JsonProperty("fullPageConfig")]
         public FullPageConfigIn? FullPageConfig { get; set; }
+        [JsonProperty("hideScrollBars")]
+        public bool? HideScrollBars { get; set; }
 
         public CreateSnapshotFromWebDriverIn(
             string buildUuid,
@@ -51,7 +53,8 @@ namespace SauceLabs.Visual.GraphQL
             ElementIn[]? ignoredElements,
             FullPageConfigIn? fullPageConfig,
             DiffingOptionsIn? diffingOptions,
-            BaselineOverrideIn? baselineOverride
+            BaselineOverrideIn? baselineOverride,
+            bool? hideScrollBars
         )
         {
             BuildUuid = buildUuid;
@@ -69,6 +72,7 @@ namespace SauceLabs.Visual.GraphQL
             FullPageConfig = fullPageConfig;
             DiffingOptions = diffingOptions;
             BaselineOverride = baselineOverride;
+            HideScrollBars = hideScrollBars;
         }
     }
 }
