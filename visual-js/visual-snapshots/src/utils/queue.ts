@@ -1,4 +1,4 @@
-import Queue, { QueueEvent, QueueWorker } from "queue";
+import Queue, { QueueEvent } from "queue";
 
 export function waitForEmptyQueue(queue: Queue) {
   return new Promise<void>((resolve, reject) => {
@@ -15,10 +15,4 @@ export function waitForEmptyQueue(queue: Queue) {
     queue.addEventListener("end", onEvent, { once: true });
     queue.addEventListener("error", onEvent, { once: true });
   });
-}
-
-export function queueJob(promise: Promise<unknown>): QueueWorker {
-  return (cb) => {
-    promise.then((res) => cb?.(undefined, res as never)).catch(cb);
-  };
 }

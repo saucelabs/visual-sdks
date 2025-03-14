@@ -15,7 +15,6 @@ export interface CreateVisualSnapshotsParams {
   suiteName?: string;
   testName?: string;
   snapshotName?: string;
-
   concurrency?: number;
 }
 
@@ -38,7 +37,16 @@ export class VisualSnapshotsApi {
     });
 
     for (const pdfFile of pdfFiles) {
-      queue.push(() => this.processFile(queue, buildId, pdfFile, params));
+      queue.push(() =>
+        this.processFile(
+          queue,
+          buildId,
+          pdfFile,
+          params.suiteName,
+          params.testName,
+          params.snapshotName
+        )
+      );
     }
 
     await waitForEmptyQueue(queue);
@@ -50,16 +58,18 @@ export class VisualSnapshotsApi {
     queue: Queue,
     buildId: string,
     pdfFile: PdfFile,
-    params: CreateVisualSnapshotsParams
+    suiteName: string | undefined,
+    testNameFormat: string | undefined,
+    snapshotNameFormat: string | undefined
   ) {
     console.info(`Processing file: ${pdfFile.path}`);
 
     const filename = path.basename(pdfFile.path);
-    const testName = params.testName
-      ? formatString(params.testName, { filename })
+    const testName = testNameFormat
+      ? formatString(testNameFormat, { filename })
       : undefined;
 
-    const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
+    const snapshotFormat = this.getSnapshotFormat(snapshotNameFormat);
 
     let pageNumber = 1;
     for await (const pdfPageImage of pdfFile.convertPagesToImages()) {
@@ -74,7 +84,7 @@ export class VisualSnapshotsApi {
           buildId,
           snapshotName,
           testName,
-          params.suiteName
+          suiteName
         )
       );
       pageNumber++;
