@@ -25,8 +25,6 @@ describe("waitForEmptyQueue", () => {
       autostart: true,
     });
 
-    const waiter = waitForEmptyQueue(queue);
-
     let result = 0;
     const workers = 5;
     for (let i = 0; i < workers; i++) {
@@ -37,7 +35,7 @@ describe("waitForEmptyQueue", () => {
       );
     }
 
-    await waiter;
+    await waitForEmptyQueue(queue);
     expect(result).toEqual(5);
   });
 
@@ -45,8 +43,6 @@ describe("waitForEmptyQueue", () => {
     const queue = new Queue({
       autostart: true,
     });
-
-    const waiter = waitForEmptyQueue(queue);
 
     const error = new Error("test");
 
@@ -61,7 +57,7 @@ describe("waitForEmptyQueue", () => {
       );
     }
 
-    expect(waiter).rejects.toThrow(error);
+    expect(waitForEmptyQueue(queue)).rejects.toThrow(error);
   });
 });
 

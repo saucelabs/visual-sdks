@@ -59,7 +59,7 @@ export class VisualSnapshotsApi {
 
   private async *iterateOverPages(files: PdfFile[]) {
     for (const file of files) {
-      let pageNumber = 0;
+      let pageNumber = 1;
       for await (const page of file.convertPagesToImages()) {
         yield { file, page, pageNumber: pageNumber++ } as const;
       }
@@ -87,6 +87,8 @@ export class VisualSnapshotsApi {
     });
 
     await this.uploadImageAndCreateSnapshot(
+      filename,
+      pageNumber,
       page,
       buildId,
       snapshotName,
@@ -110,6 +112,8 @@ export class VisualSnapshotsApi {
   }
 
   private async uploadImageAndCreateSnapshot(
+    file: string,
+    pageNumber: number,
     snapshot: Buffer,
     buildId: string,
     snapshotName: string,
@@ -121,7 +125,9 @@ export class VisualSnapshotsApi {
       image: { data: snapshot },
     });
 
-    console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
+    console.info(
+      `[${file}:${pageNumber}] Uploaded image to build ${buildId}: upload id=${uploadId}.`
+    );
 
     await this.api.createSnapshot({
       buildId,
@@ -132,7 +138,9 @@ export class VisualSnapshotsApi {
       suiteName,
     });
 
-    console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
+    console.info(
+      `[${file}:${pageNumber}] Created a snapshot ${snapshotName} for build ${buildId}.`
+    );
   }
 
   private async finishBuild(buildId: string) {
