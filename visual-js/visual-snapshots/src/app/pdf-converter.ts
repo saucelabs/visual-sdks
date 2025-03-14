@@ -7,7 +7,11 @@ export class PdfConverter {
   public async *convertPagesToImages(
     pdfFilePath: string
   ): AsyncGenerator<Buffer> {
-    return await this._pdf(pdfFilePath, { scale: 1 });
+    for await (const pdfPageImage of await this._pdf(pdfFilePath, {
+      scale: 1,
+    })) {
+      yield pdfPageImage;
+    }
   }
 
   public createPdfFile(pdfFilePath: string): PdfFile {
