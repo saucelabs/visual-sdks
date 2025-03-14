@@ -4,6 +4,9 @@ import {
   waitForEmptyQueue,
 } from "../../src/utils/queue.js";
 
+/**
+ * Uses `setImmediate` to defer function resolution to end of the event loop.
+ */
 function immediateWorker<T>(fn: () => T) {
   return new Promise<T>((resolve, reject) => {
     setImmediate(() => {
