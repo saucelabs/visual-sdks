@@ -151,6 +151,7 @@ describe("VisualSnapshots", () => {
         snapshotName: "custom-snapshot-name-{filename}-{page}",
         suiteName: "custom-suite-name",
         testName: "custom-test-name-{filename}",
+        concurrency: 1,
       } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
@@ -197,6 +198,7 @@ describe("VisualSnapshots", () => {
         snapshotName: "custom-snapshot-name-{filename}-{page}",
         suiteName: "custom-suite-name",
         testName: "custom-test-name-{filename}",
+        concurrency: 1,
       } satisfies CreateVisualSnapshotsParams;
 
       test("difffing unfinished", async () => {
