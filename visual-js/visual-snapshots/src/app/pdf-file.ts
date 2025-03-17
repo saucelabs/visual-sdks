@@ -1,4 +1,5 @@
-export interface PdfFile {
+export interface LoadedPdfFile {
   readonly path: string;
-  convertPagesToImages(): AsyncGenerator<Buffer>;
+  readonly pages: number;
+  getPage(page: number): Promise<Buffer>;
 }

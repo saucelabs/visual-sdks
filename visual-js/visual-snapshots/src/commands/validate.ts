@@ -23,3 +23,11 @@ export function parseUuid(input: string) {
     "Expected UUID in form of xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx or 32 hexadecimal characters."
   );
 }
+
+export function parseInteger(input: string) {
+  const number = parseInt(input);
+  if (isNaN(number)) {
+    throw new InvalidArgumentError("Expected an integer.");
+  }
+  return number;
+}

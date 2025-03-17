@@ -3,36 +3,6 @@
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing finished 1`] = `
 [
   [
-    "[file1.pdf:1] Uploaded image to build custom-build-id: upload id=upload-id:path:file1.pdf;page:1.",
-  ],
-  [
-    "[file1.pdf:1] Created a snapshot custom-snapshot-name-file1.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "[file1.pdf:2] Uploaded image to build custom-build-id: upload id=upload-id:path:file1.pdf;page:2.",
-  ],
-  [
-    "[file1.pdf:2] Created a snapshot custom-snapshot-name-file1.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:1] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:1.",
-  ],
-  [
-    "[file2.pdf:1] Created a snapshot custom-snapshot-name-file2.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:2] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:2] Created a snapshot custom-snapshot-name-file2.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:3] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:3.",
-  ],
-  [
-    "[file2.pdf:3] Created a snapshot custom-snapshot-name-file2.pdf-3 for build custom-build-id.",
-  ],
-  [
     "Build custom-build-id finished.",
   ],
   [
@@ -43,36 +13,6 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-i
 
 exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing unfinished 1`] = `
 [
-  [
-    "[file1.pdf:1] Uploaded image to build custom-build-id: upload id=upload-id:path:file1.pdf;page:1.",
-  ],
-  [
-    "[file1.pdf:1] Created a snapshot custom-snapshot-name-file1.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "[file1.pdf:2] Uploaded image to build custom-build-id: upload id=upload-id:path:file1.pdf;page:2.",
-  ],
-  [
-    "[file1.pdf:2] Created a snapshot custom-snapshot-name-file1.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:1] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:1.",
-  ],
-  [
-    "[file2.pdf:1] Created a snapshot custom-snapshot-name-file2.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:2] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:2] Created a snapshot custom-snapshot-name-file2.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "[file2.pdf:3] Uploaded image to build custom-build-id: upload id=upload-id:path:file2.pdf;page:3.",
-  ],
-  [
-    "[file2.pdf:3] Created a snapshot custom-snapshot-name-file2.pdf-3 for build custom-build-id.",
-  ],
   [
     "Build custom-build-id finished.",
   ],
@@ -86,36 +26,6 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing fi
 [
   [
     "Build build-id created: http://build-url/build-id",
-  ],
-  [
-    "[file1.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:1.",
-  ],
-  [
-    "[file1.pdf:1] Created a snapshot custom-snapshot-name-file1.pdf-1 for build build-id.",
-  ],
-  [
-    "[file1.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:2.",
-  ],
-  [
-    "[file1.pdf:2] Created a snapshot custom-snapshot-name-file1.pdf-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:1.",
-  ],
-  [
-    "[file2.pdf:1] Created a snapshot custom-snapshot-name-file2.pdf-1 for build build-id.",
-  ],
-  [
-    "[file2.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:2] Created a snapshot custom-snapshot-name-file2.pdf-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:3] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:3.",
-  ],
-  [
-    "[file2.pdf:3] Created a snapshot custom-snapshot-name-file2.pdf-3 for build build-id.",
   ],
   [
     "Build build-id finished.",
@@ -132,36 +42,6 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing un
     "Build build-id created: http://build-url/build-id",
   ],
   [
-    "[file1.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:1.",
-  ],
-  [
-    "[file1.pdf:1] Created a snapshot custom-snapshot-name-file1.pdf-1 for build build-id.",
-  ],
-  [
-    "[file1.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:2.",
-  ],
-  [
-    "[file1.pdf:2] Created a snapshot custom-snapshot-name-file1.pdf-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:1.",
-  ],
-  [
-    "[file2.pdf:1] Created a snapshot custom-snapshot-name-file2.pdf-1 for build build-id.",
-  ],
-  [
-    "[file2.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:2] Created a snapshot custom-snapshot-name-file2.pdf-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:3] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:3.",
-  ],
-  [
-    "[file2.pdf:3] Created a snapshot custom-snapshot-name-file2.pdf-3 for build build-id.",
-  ],
-  [
     "Build build-id finished.",
   ],
   [
@@ -174,36 +54,6 @@ exports[`VisualSnapshots generateAndSendPdfFileSnapshots without params 1`] = `
 [
   [
     "Build build-id created: http://build-url/build-id",
-  ],
-  [
-    "[file1.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:1.",
-  ],
-  [
-    "[file1.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file1.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:1] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:1.",
-  ],
-  [
-    "[file2.pdf:2] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:2.",
-  ],
-  [
-    "[file2.pdf:3] Uploaded image to build build-id: upload id=upload-id:path:file2.pdf;page:3.",
-  ],
-  [
-    "[file1.pdf:1] Created a snapshot page-1 for build build-id.",
-  ],
-  [
-    "[file1.pdf:2] Created a snapshot page-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:1] Created a snapshot page-1 for build build-id.",
-  ],
-  [
-    "[file2.pdf:2] Created a snapshot page-2 for build build-id.",
-  ],
-  [
-    "[file2.pdf:3] Created a snapshot page-3 for build build-id.",
   ],
   [
     "Build build-id finished.",

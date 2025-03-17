@@ -1,6 +1,6 @@
 import { Option } from "commander";
 import { EOL, cpus } from "os";
-import { parseUuid } from "./validate.js";
+import { parseInteger, parseUuid } from "./validate.js";
 
 export const usernameOption = new Option(
   "-u, --user <user>",
@@ -83,4 +83,6 @@ export const suiteNameOption = new Option(
 export const concurrencyOption = new Option(
   "-j, --concurrency <number>",
   "Maximum count of simultaneous uploads."
-).default(cpus().length);
+)
+  .default(cpus().length)
+  .argParser(parseInteger);
