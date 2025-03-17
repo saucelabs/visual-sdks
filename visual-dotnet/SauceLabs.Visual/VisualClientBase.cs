@@ -33,7 +33,7 @@ namespace SauceLabs.Visual
         /// <c>HideScrollBars</c> hide all scrollbars in the web app.
         /// The default value is <c>true</c>.
         /// </summary>
-        public bool HideScrollBars { get; set; }
+        public bool? HideScrollBars { get; set; }
 
         protected string? PreviousSuiteName = null;
         private readonly ResiliencePipeline _retryPipeline;
