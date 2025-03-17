@@ -282,7 +282,7 @@ class SauceLabsVisual:
                     diffingMethod: $diffingMethod,
                     diffingOptions: $diffingOptions,
                     baselineOverride: $baselineOverride,
-                    hideScrollBars: hideScrollBars,
+                    hideScrollBars: $hideScrollBars,
                 }){
                     id
                 }
