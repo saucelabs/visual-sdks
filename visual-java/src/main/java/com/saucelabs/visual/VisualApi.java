@@ -440,7 +440,8 @@ public class VisualApi {
       input.setFullPageConfig(fullPageScreenshotConfig);
     }
 
-    Boolean hideScrollBars = Optional.ofNullable(options.getHideScrollBars()).orElse(this.hideScrollBars);
+    Boolean hideScrollBars =
+        Optional.ofNullable(options.getHideScrollBars()).orElse(this.hideScrollBars);
     if (hideScrollBars != null) {
       input.setHideScrollBars(hideScrollBars);
     }

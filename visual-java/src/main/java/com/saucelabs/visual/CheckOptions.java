@@ -50,33 +50,33 @@ public class CheckOptions {
   }
 
   public CheckOptions(
-        List<WebElement> ignoreElements,
-        List<IgnoreRegion> ignoreRegions,
-        List<VisualRegion> regions,
-        String testName,
-        String suiteName,
-        DiffingMethod diffingMethod,
-        DiffingOptionsIn diffingOptions,
-        Boolean captureDom,
-        String clipSelector,
-        WebElement clipElement,
-        FullPageScreenshotConfig fullPageScreenshotConfig,
-        List<IgnoreSelectorIn> ignoreSelectors) {
-      this(
-          ignoreElements,
-          ignoreRegions,
-          regions,
-          testName,
-          suiteName,
-          diffingMethod,
-          diffingOptions,
-          captureDom,
-          clipSelector,
-          clipElement,
-          fullPageScreenshotConfig,
-          ignoreSelectors,
-          null);
-    }
+      List<WebElement> ignoreElements,
+      List<IgnoreRegion> ignoreRegions,
+      List<VisualRegion> regions,
+      String testName,
+      String suiteName,
+      DiffingMethod diffingMethod,
+      DiffingOptionsIn diffingOptions,
+      Boolean captureDom,
+      String clipSelector,
+      WebElement clipElement,
+      FullPageScreenshotConfig fullPageScreenshotConfig,
+      List<IgnoreSelectorIn> ignoreSelectors) {
+    this(
+        ignoreElements,
+        ignoreRegions,
+        regions,
+        testName,
+        suiteName,
+        diffingMethod,
+        diffingOptions,
+        captureDom,
+        clipSelector,
+        clipElement,
+        fullPageScreenshotConfig,
+        ignoreSelectors,
+        null);
+  }
 
   public CheckOptions(
       List<WebElement> ignoreElements,
