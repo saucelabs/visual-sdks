@@ -99,6 +99,9 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+    * @deprecated Use withHideScrollBars from CheckOptions instead
+    */
     public Builder withHideScrollBars(Boolean hideScrollBars) {
       this.hideScrollBars = hideScrollBars;
       return this;
@@ -180,10 +183,16 @@ public class FullPageScreenshotConfig {
     this.hideAfterFirstScroll = Arrays.asList(hideAfterFirstScroll);
   }
 
+  /**
+  * @deprecated Use getHideScrollBars from CheckOptions instead
+  */
   public Boolean getHideScrollBars() {
     return hideScrollBars;
   }
 
+  /**
+   * @deprecated Use setHideScrollBars from CheckOptions instead
+   */
   public void setHideScrollBars(Boolean hideScrollBars) {
     this.hideScrollBars = hideScrollBars;
   }

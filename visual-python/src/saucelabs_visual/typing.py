@@ -97,7 +97,7 @@ class FullPageConfig:
     """
     hideScrollBars: Union[bool, None] = None
     """
-    Deprecated: Use hideScrollBars in SauceLabsVisual client instead
+    Deprecated: Use hide_scroll_bars from create_snapshot_from_webdriver instead
     """
     scrollLimit: Union[int, None] = None
     """

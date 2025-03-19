@@ -9,6 +9,7 @@ namespace SauceLabs.Visual
         public int? DelayAfterScrollMs { get; set; }
         public bool? DisableCSSAnimation { get; set; }
         public IEnumerable<string>? HideAfterFirstScroll { get; set; }
+        [Obsolete("Use HideScrollBars from VisualCheckOptions instead")]
         public bool? HideScrollBars { get; set; }
         public int? ScrollLimit { get; set; }
 
