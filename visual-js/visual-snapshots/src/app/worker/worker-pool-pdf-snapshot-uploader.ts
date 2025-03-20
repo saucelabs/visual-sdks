@@ -39,10 +39,12 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   }
 
   private createPool() {
-    return workerpool.pool(
-      path.join(import.meta.dirname, "./worker.js"),
-      this.poolOptions
-    );
+    return workerpool.pool(path.join(import.meta.dirname, "./worker.js"), {
+      workerThreadOpts: {
+        argv: process.argv,
+      },
+      ...this.poolOptions,
+    });
   }
 
   private async *processPageCalls(
