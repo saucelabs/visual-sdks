@@ -14,6 +14,10 @@ import {
 } from "./options.js";
 import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
 import { EOL } from "os";
+import { VisualSnapshotsApi } from "../api/visual-snapshots-api.js";
+import { initializeVisualApi } from "../api/visual-client.js";
+import { WorkerPoolPdfSnapshotUploader } from "../app/worker/worker-pool-pdf-snapshot-uploader.js";
+import { LibPdfFileLoader } from "../app/pdf-file-loader.js";
 
 export const testNameOption = new Option(
   "--test-name <test-name>",
@@ -51,7 +55,17 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(snapshotNameOption)
     .addOption(concurrencyOption)
     .action((globsOrDirs: string[], params: PdfCommandParams) => {
-      new PdfCommandHandler(clientVersion)
+      const visualSnapshotsApi = new VisualSnapshotsApi(
+        initializeVisualApi(params, clientVersion)
+      );
+      const pdfSnapshotUploader = new WorkerPoolPdfSnapshotUploader(
+        new LibPdfFileLoader(),
+        {
+          maxWorkers: params.concurrency,
+        }
+      );
+
+      new PdfCommandHandler(visualSnapshotsApi, pdfSnapshotUploader)
         .handle(globsOrDirs, params)
         .then(() => {
           console.log("Successfully created PDF snapshots");

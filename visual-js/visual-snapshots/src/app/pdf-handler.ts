@@ -2,11 +2,9 @@ import {
   CreateVisualSnapshotsParams,
   VisualSnapshotsApi,
 } from "../api/visual-snapshots-api.js";
-import { initializeVisualApi } from "../api/visual-client.js";
-import { LibPdfFileLoader } from "./pdf-file-loader.js";
 import { VisualConfig } from "@saucelabs/visual";
 import { getFiles } from "../utils/glob.js";
-import { WorkerPoolPdfSnapshotUploader } from "./worker/worker-pool-pdf-snapshot-uploader.js";
+import { PdfSnapshotUploader } from "./pdf-files-snapshot-uploader.js";
 
 export interface PdfCommandParams
   extends VisualConfig,
@@ -15,24 +13,18 @@ export interface PdfCommandParams
 }
 
 export class PdfCommandHandler {
-  constructor(private readonly clientVersion: string) {}
+  constructor(
+    private readonly visualSnapshotsApi: VisualSnapshotsApi,
+    private readonly pdfSnapshotUploader: PdfSnapshotUploader
+  ) {}
 
   public async handle(globsOrDirs: string[], params: PdfCommandParams) {
-    const visualApi = initializeVisualApi(params, this.clientVersion);
-    const visualSnapshots = new VisualSnapshotsApi(visualApi);
-    const pdfSnapshotUploader = new WorkerPoolPdfSnapshotUploader(
-      new LibPdfFileLoader(),
-      {
-        maxWorkers: params.concurrency,
-      }
-    );
-
     const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
 
     const buildId =
-      params.buildId ?? (await visualSnapshots.createBuild(params));
+      params.buildId ?? (await this.visualSnapshotsApi.createBuild(params));
 
-    await pdfSnapshotUploader.uploadSnapshots({
+    await this.pdfSnapshotUploader.uploadSnapshots({
       buildId,
       pdfFilePaths,
       suiteName: params.suiteName,
@@ -41,7 +33,7 @@ export class PdfCommandHandler {
     });
 
     if (!params.buildId) {
-      await visualSnapshots.finishBuild(buildId);
+      await this.visualSnapshotsApi.finishBuild(buildId);
     }
   }
 }

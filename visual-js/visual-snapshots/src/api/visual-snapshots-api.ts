@@ -2,11 +2,11 @@ import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { __dirname } from "../utils/helpers.js";
 
 export interface CreateVisualSnapshotsParams {
-  branch: string;
-  buildName: string;
-  defaultBranch: string;
-  project: string;
-  customId: string;
+  branch?: string;
+  buildName?: string;
+  defaultBranch?: string;
+  project?: string;
+  customId?: string;
   buildId?: string;
   suiteName?: string;
   testName?: string;
