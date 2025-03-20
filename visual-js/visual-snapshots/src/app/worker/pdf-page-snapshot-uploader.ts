@@ -41,14 +41,6 @@ export class PdfPageSnapshotUploader {
       }
     );
 
-    console.info(
-      `[${pdfFilePath}:${pageNumber}] Uploaded image to build ${buildId}: upload id=${uploadId}.`
-    );
-
-    console.info(
-      `[${pdfFilePath}:${pageNumber}] Created a snapshot ${snapshotName} for build ${buildId}.`
-    );
-
     return uploadId;
   }
 
