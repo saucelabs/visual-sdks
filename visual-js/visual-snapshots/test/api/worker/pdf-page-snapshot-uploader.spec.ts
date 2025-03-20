@@ -1,8 +1,7 @@
-import { DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { PdfPageSnapshotUploader } from "../../../src/api/worker/pdf-page-snapshot-uploader.js";
+import { PdfPageSnapshotUploader } from "../../../src/app/worker/pdf-page-snapshot-uploader.js";
 import { LoadedPdfFile } from "../../../src/app/pdf-file.js";
 import { PdfFileLoader } from "../../../src/app/pdf-file-loader.js";
-import path from "path";
+import { VisualSnapshotsApi } from "../../../src/api/visual-snapshots-api.js";
 
 class TestLoadedPdfFile implements LoadedPdfFile {
   constructor(public readonly path: string, public readonly pages: number) {}
@@ -22,19 +21,14 @@ describe("PdfPageSnapshotUploader", () => {
       .spyOn(console, "info")
       .mockImplementation(() => undefined);
 
-    const uploadSnapshotMock = jest.fn<
-      ReturnType<VisualApi["uploadSnapshot"]>,
-      Parameters<VisualApi["uploadSnapshot"]>
-    >();
-    const createSnapshotMock = jest.fn<
-      ReturnType<VisualApi["createSnapshot"]>,
-      Parameters<VisualApi["createSnapshot"]>
+    const uploadImageAndCreateSnapshot = jest.fn<
+      ReturnType<VisualSnapshotsApi["uploadImageAndCreateSnapshot"]>,
+      Parameters<VisualSnapshotsApi["uploadImageAndCreateSnapshot"]>
     >();
 
     const visualApiMock = {
-      uploadSnapshot: uploadSnapshotMock,
-      createSnapshot: createSnapshotMock,
-    } as never as VisualApi;
+      uploadImageAndCreateSnapshot,
+    } as never as VisualSnapshotsApi;
 
     const files = [
       new TestLoadedPdfFile("file1.pdf", 4),
@@ -61,18 +55,15 @@ describe("PdfPageSnapshotUploader", () => {
     const uploader = new PdfPageSnapshotUploader(visualApiMock, pdfLoaderMock);
 
     beforeEach(() => {
-      uploadSnapshotMock.mockReset();
-      uploadSnapshotMock.mockImplementation(({ image }) =>
-        image && "data" in image
-          ? Promise.resolve(createUploadId(image.data))
-          : Promise.reject(new Error("image data is missing"))
+      uploadImageAndCreateSnapshot.mockReset();
+      uploadImageAndCreateSnapshot.mockImplementation(({ snapshot }) =>
+        Promise.resolve(createUploadId(snapshot))
       );
 
-      createSnapshotMock.mockReset();
       consoleInfoSpy.mockReset();
     });
 
-    it("should call uploadSnapshot visual API", async () => {
+    it("should call uploadImageAndCreateSnapshot", async () => {
       await uploader.uploadPageSnapshot(
         "build-id",
         files[0].path,
@@ -82,43 +73,13 @@ describe("PdfPageSnapshotUploader", () => {
         "snapshotName-{filename}-{page}"
       );
 
-      expect(uploadSnapshotMock).toHaveBeenCalledWith({
+      expect(uploadImageAndCreateSnapshot).toHaveBeenCalledWith({
         buildId: "build-id",
-        image: { data: await files[0].getPage(1) },
-      });
-    });
-
-    it("should call createSnapshot visual API", async () => {
-      await uploader.uploadPageSnapshot(
-        "build-id",
-        files[0].path,
-        1,
-        "suiteName",
-        "testName-{filename}",
-        "snapshotName-{filename}-{page}"
-      );
-
-      expect(createSnapshotMock).toHaveBeenCalledWith({
-        buildId: "build-id",
-        uploadId: createUploadId(await files[0].getPage(1)),
-        name: `snapshotName-${path.basename(files[0].path)}-1`,
+        snapshot: await files[0].getPage(1),
+        snapshotName: `snapshotName-${files[0].path}-1`,
+        testName: `testName-${files[0].path}`,
         suiteName: "suiteName",
-        testName: `testName-${path.basename(files[0].path)}`,
-        diffingMethod: DiffingMethod.Balanced,
       });
-    });
-
-    it("should print output matching snapshot", async () => {
-      await uploader.uploadPageSnapshot(
-        "build-id",
-        files[0].path,
-        1,
-        "suiteName",
-        "testName-{filename}",
-        "snapshotName-{filename}-{page}"
-      );
-
-      expect(consoleInfoSpy).toMatchSnapshot();
     });
   });
 });

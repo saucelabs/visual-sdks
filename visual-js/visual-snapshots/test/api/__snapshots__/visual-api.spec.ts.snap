@@ -1,65 +1,88 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing finished 1`] = `
-[
-  [
-    "Build custom-build-id finished.",
+exports[`VisualSnapshots createBuild log output 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build foo created: undefined",
+    ],
   ],
-  [
-    "Build custom-build-id finished (status=APPROVED, unapprovedCount=0, errorCount=0).",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing unfinished 1`] = `
-[
-  [
-    "Build custom-build-id finished.",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Equal 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished (status=EQUAL, unapprovedCount=2, errorCount=1).",
+    ],
   ],
-  [
-    "Build custom-build-id finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing finished 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Queued 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+    ],
   ],
-  [
-    "Build build-id finished.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Build build-id finished (status=APPROVED, unapprovedCount=0, errorCount=0).",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing unfinished 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Running 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+    ],
   ],
-  [
-    "Build build-id finished.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Build build-id finished but snapshots haven't been compared yet. Check the build status in a few moments.",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots without params 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots uploadImageAndCreateSnapshot log output 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Uploaded image to build testBuildId: upload id=uploadId.",
+    ],
+    [
+      "Created a snapshot testSnapshotName for build testBuildId.",
+    ],
   ],
-  [
-    "Build build-id finished.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Build build-id finished (status=UNAPPROVED, unapprovedCount=2, errorCount=0).",
-  ],
-]
+}
 `;

@@ -1,12 +1,12 @@
 import path from "path";
-import { ProcessPdfPageMethod } from "./worker.js";
 import workerpool, { WorkerPoolOptions } from "workerpool";
 import {
   PdfSnapshotUploader as PdfSnapshotUploader,
   UploadPdfSnapshotsParams,
-} from "../pdf-files-snapshot-uploader.js";
+} from "../../app/pdf-files-snapshot-uploader.js";
 import { execAll } from "../../utils/pool.js";
 import { PdfFileLoader } from "../../app/pdf-file-loader.js";
+import { ProcessPdfPageMethod } from "./worker.js";
 
 export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   constructor(

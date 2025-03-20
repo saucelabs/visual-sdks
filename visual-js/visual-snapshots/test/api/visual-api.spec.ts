@@ -1,209 +1,340 @@
-import { BuildStatus, VisualApi } from "@saucelabs/visual";
+import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import {
-  CreateVisualSnapshotsParams,
+  CreateBuildParams,
+  UploadSnapshotParams,
   VisualSnapshotsApi,
 } from "../../src/api/visual-snapshots-api.js";
-import {
-  PdfSnapshotUploader,
-  UploadPdfSnapshotsParams,
-} from "../../src/api/pdf-files-snapshot-uploader.js";
 
 describe("VisualSnapshots", () => {
-  describe("generateAndSendPdfFileSnapshots", () => {
-    const consoleInfoSpy = jest
-      .spyOn(console, "info")
-      .mockImplementation(() => undefined);
+  const consoleInfoSpy = jest
+    .spyOn(console, "info")
+    .mockImplementation(() => undefined);
 
-    const uploadSnapshotsMock = jest
-      .fn<
-        ReturnType<PdfSnapshotUploader["uploadSnapshots"]>,
-        Parameters<PdfSnapshotUploader["uploadSnapshots"]>
-      >()
-      .mockResolvedValue(Promise.resolve());
+  const createBuildMock = jest.fn<
+    ReturnType<VisualApi["createBuild"]>,
+    Parameters<VisualApi["createBuild"]>
+  >();
+  const finishBuildMock = jest.fn<
+    ReturnType<VisualApi["finishBuild"]>,
+    Parameters<VisualApi["finishBuild"]>
+  >();
+  const buildStatusMock = jest.fn<
+    ReturnType<VisualApi["buildStatus"]>,
+    Parameters<VisualApi["buildStatus"]>
+  >();
+  const uploadSnapshotMock = jest.fn<
+    ReturnType<VisualApi["uploadSnapshot"]>,
+    Parameters<VisualApi["uploadSnapshot"]>
+  >();
+  const createSnapshotMock = jest.fn<
+    ReturnType<VisualApi["createSnapshot"]>,
+    Parameters<VisualApi["createSnapshot"]>
+  >();
+  const visualApi = {
+    createBuild: createBuildMock,
+    finishBuild: finishBuildMock,
+    buildStatus: buildStatusMock,
+    uploadSnapshot: uploadSnapshotMock,
+    createSnapshot: createSnapshotMock,
+  } as never as VisualApi;
 
-    const pdfFilesSnapshotUploaderMock: PdfSnapshotUploader = {
-      uploadSnapshots: uploadSnapshotsMock,
-    };
+  beforeEach(() => {
+    createBuildMock.mockReset();
+    finishBuildMock.mockReset();
+    buildStatusMock.mockReset();
+    consoleInfoSpy.mockReset();
+  });
 
-    const createBuildMock = jest.fn<
-      ReturnType<VisualApi["createBuild"]>,
-      Parameters<VisualApi["createBuild"]>
-    >();
-    const finishBuildMock = jest.fn<
-      ReturnType<VisualApi["finishBuild"]>,
-      Parameters<VisualApi["finishBuild"]>
-    >();
-    const buildStatusMock = jest.fn<
-      ReturnType<VisualApi["buildStatus"]>,
-      Parameters<VisualApi["buildStatus"]>
-    >();
-    const visualApiMock = {
-      createBuild: createBuildMock,
-      finishBuild: finishBuildMock,
-      buildStatus: buildStatusMock,
-    } as never as VisualApi;
+  describe("createBuild", () => {
+    it("should execute createBuild API with passed params", async () => {
+      const buildId = "foo";
 
-    const visualSnapshots = new VisualSnapshotsApi(
-      visualApiMock,
-      pdfFilesSnapshotUploaderMock
-    );
-
-    const files = ["file1.pdf", "file2.pdf"];
-
-    beforeEach(() => {
-      createBuildMock.mockReset();
       createBuildMock.mockResolvedValue({
-        id: "build-id",
-        url: "http://build-url/build-id",
+        id: buildId,
       } as never);
 
-      uploadSnapshotsMock.mockReset();
-      finishBuildMock.mockReset();
-      buildStatusMock.mockReset();
-      consoleInfoSpy.mockReset();
-    });
+      const api = new VisualSnapshotsApi(visualApi);
 
-    function assertBuild(params: CreateVisualSnapshotsParams) {
-      if (!params.buildId) {
-        expect(createBuildMock).toHaveBeenCalledWith({
-          name: params.buildName,
-          branch: params.branch,
-          defaultBranch: params.defaultBranch,
-          project: params.project,
-          customId: params.customId,
-        });
-      } else {
-        expect(createBuildMock).not.toHaveBeenCalled();
-      }
+      const params: CreateBuildParams = {
+        buildName: "testBuildName",
+        branch: "testBranch",
+        defaultBranch: "testDefaultBranch",
+        project: "testProject",
+        customId: "testCustomId",
+      };
 
-      expect(finishBuildMock).toHaveBeenCalledWith({
-        uuid: params.buildId ?? "build-id",
-      });
+      await api.createBuild(params);
 
-      expect(buildStatusMock).toHaveBeenCalledWith(
-        params.buildId ?? "build-id"
-      );
-    }
-
-    async function assertSnapshot(
-      pdfFilePaths: string[],
-      params: CreateVisualSnapshotsParams
-    ) {
-      expect(uploadSnapshotsMock).toHaveBeenCalledWith({
-        buildId: params.buildId ?? "build-id",
-        pdfFilePaths,
-        suiteName: params.suiteName,
-        testNameFormat: params.testName,
-        snapshotNameFormat: params.snapshotName,
-      } satisfies UploadPdfSnapshotsParams);
-    }
-
-    describe("with params", () => {
-      const params = {
-        branch: "fake-branch",
-        buildName: "fake-build-name",
-        defaultBranch: "fake-default-branch",
-        project: "fake-project",
-        customId: "fake-custom-id",
-        snapshotName: "custom-snapshot-name-{filename}-{page}",
-        suiteName: "custom-suite-name",
-        testName: "custom-test-name-{filename}",
-      } satisfies CreateVisualSnapshotsParams;
-
-      test("difffing unfinished", async () => {
-        buildStatusMock.mockResolvedValueOnce({
-          status: BuildStatus.Running,
-          unapprovedCount: 2,
-          errorCount: 0,
-          url: "",
-        });
-
-        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
-
-        assertBuild(params);
-        await assertSnapshot(files, params);
-
-        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
-      });
-
-      test("difffing finished", async () => {
-        buildStatusMock.mockResolvedValueOnce({
-          status: BuildStatus.Approved,
-          unapprovedCount: 0,
-          errorCount: 0,
-          url: "",
-        });
-
-        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
-
-        assertBuild(params);
-        await assertSnapshot(files, params);
-
-        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
+      expect(createBuildMock).toHaveBeenCalledWith({
+        name: params.buildName,
+        branch: params.branch,
+        defaultBranch: params.defaultBranch,
+        project: params.project,
+        customId: params.customId,
       });
     });
 
-    describe("with params and build-id", () => {
-      const params = {
-        branch: "fake-branch",
-        buildName: "fake-build-name",
-        defaultBranch: "fake-default-branch",
-        project: "fake-project",
-        customId: "fake-custom-id",
-        buildId: "custom-build-id",
-        snapshotName: "custom-snapshot-name-{filename}-{page}",
-        suiteName: "custom-suite-name",
-        testName: "custom-test-name-{filename}",
-      } satisfies CreateVisualSnapshotsParams;
+    it("should return build id from createBuild API", async () => {
+      const buildId = "foo";
 
-      test("difffing unfinished", async () => {
-        buildStatusMock.mockResolvedValueOnce({
-          status: BuildStatus.Running,
-          unapprovedCount: 2,
-          errorCount: 0,
-          url: "",
-        });
+      createBuildMock.mockResolvedValue({
+        id: buildId,
+      } as never);
 
-        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
+      const api = new VisualSnapshotsApi(visualApi);
 
-        assertBuild(params);
-        await assertSnapshot(files, params);
+      const actual = await api.createBuild({});
 
-        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
-      });
-
-      test("difffing finished", async () => {
-        buildStatusMock.mockResolvedValueOnce({
-          status: BuildStatus.Approved,
-          unapprovedCount: 0,
-          errorCount: 0,
-          url: "",
-        });
-
-        await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
-
-        assertBuild(params);
-        await assertSnapshot(files, params);
-
-        expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
-      });
+      expect(actual).toEqual(buildId);
     });
 
-    test("without params", async () => {
-      buildStatusMock.mockResolvedValueOnce({
-        status: BuildStatus.Unapproved,
-        unapprovedCount: 2,
+    test("log output", async () => {
+      const buildId = "foo";
+
+      createBuildMock.mockResolvedValue({
+        id: buildId,
+      } as never);
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.createBuild({});
+
+      expect(consoleInfoSpy).toMatchSnapshot();
+    });
+  });
+
+  describe("finishBuild", () => {
+    it("should execute finishBuild API with passed buildId", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Equal,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Equal,
         errorCount: 0,
+        unapprovedCount: 0,
         url: "",
       });
 
-      const params = {} as CreateVisualSnapshotsParams;
-      await visualSnapshots.generateAndSendPdfFileSnapshots(files, params);
+      const api = new VisualSnapshotsApi(visualApi);
 
-      assertBuild(params);
-      await assertSnapshot(files, params);
+      await api.finishBuild(buildId);
 
-      expect(consoleInfoSpy.mock.calls).toMatchSnapshot();
+      expect(finishBuildMock).toHaveBeenCalledWith({
+        uuid: buildId,
+      });
+    });
+
+    it("should call buildStatus API with passed buildId when build status resolves to other than Running or Queued", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Equal,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Equal,
+        errorCount: 0,
+        unapprovedCount: 0,
+        url: "",
+      });
+
+      const visualApi = {
+        finishBuild: finishBuildMock,
+        buildStatus: buildStatusMock,
+      } as unknown as VisualApi;
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(buildStatusMock).toHaveBeenCalledWith(buildId);
+    });
+
+    it("should not call buildStatus API when build status resolves to Running", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Running,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Running,
+        errorCount: 0,
+        unapprovedCount: 0,
+        url: "",
+      });
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(buildStatusMock).not.toHaveBeenCalled();
+    });
+
+    it("should not call buildStatus API when build status resolves to Queued", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Queued,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Queued,
+        errorCount: 0,
+        unapprovedCount: 0,
+        url: "",
+      });
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(buildStatusMock).not.toHaveBeenCalled();
+    });
+
+    test("log output when build status resolves to Equal", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Equal,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Equal,
+        errorCount: 1,
+        unapprovedCount: 2,
+        url: "",
+      });
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(consoleInfoSpy).toMatchSnapshot();
+    });
+
+    test("log output when build status resolves to Running", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Running,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Running,
+        errorCount: 0,
+        unapprovedCount: 0,
+        url: "",
+      });
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(consoleInfoSpy).toMatchSnapshot();
+    });
+
+    test("log output when build status resolves to Queued", async () => {
+      const buildId = "buildId";
+      finishBuildMock.mockResolvedValue({
+        buildId,
+        status: BuildStatus.Queued,
+      } as never);
+      buildStatusMock.mockResolvedValue({
+        status: BuildStatus.Queued,
+        errorCount: 0,
+        unapprovedCount: 0,
+        url: "",
+      });
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      await api.finishBuild(buildId);
+
+      expect(consoleInfoSpy).toMatchSnapshot();
+    });
+  });
+
+  describe("uploadImageAndCreateSnapshot", () => {
+    it("should call uploadSnapshot API", async () => {
+      const uploadId = "uploadId";
+      uploadSnapshotMock.mockResolvedValue(uploadId);
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      const params: UploadSnapshotParams = {
+        buildId: "testBuildId",
+        snapshot: Buffer.from("snapshot"),
+        snapshotName: "testSnapshotName",
+        suiteName: "testSuiteName",
+        testName: "testTestName",
+      };
+
+      await api.uploadImageAndCreateSnapshot(params);
+
+      expect(uploadSnapshotMock).toHaveBeenCalledWith({
+        buildId: params.buildId,
+        image: { data: params.snapshot },
+      });
+    });
+
+    it("should call createSnapshot API", async () => {
+      const uploadId = "uploadId";
+      uploadSnapshotMock.mockResolvedValue(uploadId);
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      const params: UploadSnapshotParams = {
+        buildId: "testBuildId",
+        snapshot: Buffer.from("snapshot"),
+        snapshotName: "testSnapshotName",
+        suiteName: "testSuiteName",
+        testName: "testTestName",
+      };
+
+      await api.uploadImageAndCreateSnapshot(params);
+
+      expect(createSnapshotMock).toHaveBeenCalledWith({
+        buildId: params.buildId,
+        uploadId,
+        name: params.snapshotName,
+        diffingMethod: DiffingMethod.Balanced,
+        testName: params.testName,
+        suiteName: params.suiteName,
+      });
+    });
+
+    it("should return uploadId from uploadSnapshot API", async () => {
+      const uploadId = "uploadId";
+      uploadSnapshotMock.mockResolvedValue(uploadId);
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      const params: UploadSnapshotParams = {
+        buildId: "testBuildId",
+        snapshot: Buffer.from("snapshot"),
+        snapshotName: "testSnapshotName",
+        suiteName: "testSuiteName",
+        testName: "testTestName",
+      };
+
+      const actual = await api.uploadImageAndCreateSnapshot(params);
+      expect(actual).toEqual(uploadId);
+    });
+
+    test("log output", async () => {
+      const uploadId = "uploadId";
+      uploadSnapshotMock.mockResolvedValue(uploadId);
+
+      const api = new VisualSnapshotsApi(visualApi);
+
+      const params: UploadSnapshotParams = {
+        buildId: "testBuildId",
+        snapshot: Buffer.from("snapshot"),
+        snapshotName: "testSnapshotName",
+        suiteName: "testSuiteName",
+        testName: "testTestName",
+      };
+
+      await api.uploadImageAndCreateSnapshot(params);
+
+      expect(consoleInfoSpy).toMatchSnapshot();
     });
   });
 });

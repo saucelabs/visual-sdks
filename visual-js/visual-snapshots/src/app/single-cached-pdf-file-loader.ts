@@ -1,5 +1,5 @@
-import { LoadedPdfFile } from "../../app/pdf-file.js";
-import { PdfFileLoader } from "../../app/pdf-file-loader.js";
+import { LoadedPdfFile } from "./pdf-file.js";
+import { PdfFileLoader } from "./pdf-file-loader.js";
 
 export class SingleCachedPdfFileLoader implements PdfFileLoader {
   private loadedFilePath?: string;

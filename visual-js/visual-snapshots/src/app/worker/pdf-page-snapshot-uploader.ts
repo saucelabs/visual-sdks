@@ -1,11 +1,11 @@
 import path from "path";
 import { formatString } from "../../utils/format.js";
-import { DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { PdfFileLoader } from "../../app/pdf-file-loader.js";
+import { PdfFileLoader } from "../pdf-file-loader.js";
+import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
 
 export class PdfPageSnapshotUploader {
   constructor(
-    private readonly api: VisualApi,
+    private readonly visualSnapshotsApi: VisualSnapshotsApi,
     private readonly pdfFileLoader: PdfFileLoader
   ) {}
 
@@ -31,47 +31,25 @@ export class PdfPageSnapshotUploader {
       page: pageNumber,
     });
 
-    await this.uploadImageAndCreateSnapshot(
-      filename,
-      pageNumber,
-      page,
-      buildId,
-      snapshotName,
-      testName,
-      suiteName
+    const uploadId = await this.visualSnapshotsApi.uploadImageAndCreateSnapshot(
+      {
+        buildId,
+        snapshot: page,
+        snapshotName,
+        suiteName,
+        testName,
+      }
     );
-  }
-
-  private async uploadImageAndCreateSnapshot(
-    file: string,
-    pageNumber: number,
-    snapshot: Buffer,
-    buildId: string,
-    snapshotName: string,
-    testName?: string,
-    suiteName?: string
-  ) {
-    const uploadId = await this.api.uploadSnapshot({
-      buildId,
-      image: { data: snapshot },
-    });
 
     console.info(
-      `[${file}:${pageNumber}] Uploaded image to build ${buildId}: upload id=${uploadId}.`
+      `[${pdfFilePath}:${pageNumber}] Uploaded image to build ${buildId}: upload id=${uploadId}.`
     );
-
-    await this.api.createSnapshot({
-      buildId,
-      uploadId,
-      name: snapshotName,
-      diffingMethod: DiffingMethod.Balanced,
-      testName,
-      suiteName,
-    });
 
     console.info(
-      `[${file}:${pageNumber}] Created a snapshot ${snapshotName} for build ${buildId}.`
+      `[${pdfFilePath}:${pageNumber}] Created a snapshot ${snapshotName} for build ${buildId}.`
     );
+
+    return uploadId;
   }
 
   private getSnapshotFormat(format: string | undefined) {

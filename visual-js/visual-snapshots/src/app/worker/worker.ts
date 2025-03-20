@@ -5,12 +5,13 @@ import {
   accessKeyOption,
   regionOption,
 } from "../../commands/options.js";
-import { initializeVisualApi } from "../visual-client.js";
-import { LibPdfFileLoader } from "../../app/pdf-file-loader.js";
-import { SingleCachedPdfFileLoader } from "./single-cached-pdf-file-loader.js";
+import { initializeVisualApi } from "../../api/visual-client.js";
+import { LibPdfFileLoader } from "../pdf-file-loader.js";
+import { SingleCachedPdfFileLoader } from "../single-cached-pdf-file-loader.js";
 import { PdfPageSnapshotUploader } from "./pdf-page-snapshot-uploader.js";
 import type { WorkerMethod } from "../../utils/pool.js";
 import { clientVersion } from "../../version.js";
+import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
 
 program
   .addOption(usernameOption)
@@ -30,10 +31,12 @@ const api = initializeVisualApi(
   clientVersion
 );
 
-// Use a single caching PDF file loader. The files are processed sequentially,
-// thus a worker will never re-visit a file, so there's no need to cache more files.
-const pdfFileLoader = new SingleCachedPdfFileLoader(new LibPdfFileLoader());
-const pdfWorkerApi = new PdfPageSnapshotUploader(api, pdfFileLoader);
+const pdfWorkerApi = new PdfPageSnapshotUploader(
+  new VisualSnapshotsApi(api),
+  // Use a single caching PDF file loader. The files are processed sequentially,
+  // thus a worker will never re-visit a file, so there's no need to cache more files.
+  new SingleCachedPdfFileLoader(new LibPdfFileLoader())
+);
 
 const functions = {
   processPdfPage: pdfWorkerApi.uploadPageSnapshot.bind(pdfWorkerApi),

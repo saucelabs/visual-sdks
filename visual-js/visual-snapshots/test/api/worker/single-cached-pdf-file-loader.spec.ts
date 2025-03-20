@@ -1,4 +1,4 @@
-import { SingleCachedPdfFileLoader } from "../../../src/api/worker/single-cached-pdf-file-loader.js";
+import { SingleCachedPdfFileLoader } from "../../../src/app/single-cached-pdf-file-loader.js";
 import { PdfFileLoader } from "../../../src/app/pdf-file-loader.js";
 
 describe("SingleCachedPdfFileLoader", () => {
