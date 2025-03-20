@@ -2,8 +2,7 @@
 
 import { Command } from "commander";
 import { pdfCommand } from "./commands/pdf.js";
-
-const clientVersion = "PKG_VERSION";
+import { clientVersion } from "./version.js";
 
 const program = new Command();
 

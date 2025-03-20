@@ -10,8 +10,7 @@ import { LibPdfFileLoader } from "../../app/pdf-file-loader.js";
 import { SingleCachedPdfFileLoader } from "./single-cached-pdf-file-loader.js";
 import { PdfPageSnapshotUploader } from "./pdf-page-snapshot-uploader.js";
 import type { WorkerMethod } from "../../utils/pool.js";
-
-const clientVersion = "PKG_VERSION";
+import { clientVersion } from "../../version.js";
 
 program
   .addOption(usernameOption)
