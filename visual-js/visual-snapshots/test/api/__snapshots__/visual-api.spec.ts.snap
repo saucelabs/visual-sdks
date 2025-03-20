@@ -1,215 +1,88 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing finished 1`] = `
-[
-  [
-    "Processing file: file1.pdf",
+exports[`VisualSnapshots createBuild log output 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build foo created: undefined",
+    ],
   ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-0.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-1.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "Processing file: file2.pdf",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-2.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-3.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "Build custom-build-id finished.",
-  ],
-  [
-    "Build custom-build-id finished (status=APPROVED, unapprovedCount=0, errorCount=0).",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params and build-id difffing unfinished 1`] = `
-[
-  [
-    "Processing file: file1.pdf",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Equal 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished (status=EQUAL, unapprovedCount=2, errorCount=1).",
+    ],
   ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-0.",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-1.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "Processing file: file2.pdf",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-2.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-1 for build custom-build-id.",
-  ],
-  [
-    "Uploaded image to build custom-build-id: upload id=upload-id-3.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-2 for build custom-build-id.",
-  ],
-  [
-    "Build custom-build-id finished.",
-  ],
-  [
-    "Build custom-build-id finished but snapshots haven't been compared yet. Check the build status in a few moments.",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing finished 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Queued 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+    ],
   ],
-  [
-    "Processing file: file1.pdf",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-0.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-1.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-2 for build build-id.",
-  ],
-  [
-    "Processing file: file2.pdf",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-2.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-3.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-2 for build build-id.",
-  ],
-  [
-    "Build build-id finished.",
-  ],
-  [
-    "Build build-id finished (status=APPROVED, unapprovedCount=0, errorCount=0).",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots with params difffing unfinished 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots finishBuild log output when build status resolves to Running 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+    ],
   ],
-  [
-    "Processing file: file1.pdf",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-0.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-1.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file1.pdf-2 for build build-id.",
-  ],
-  [
-    "Processing file: file2.pdf",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-2.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-3.",
-  ],
-  [
-    "Created a snapshot custom-snapshot-name-file2.pdf-2 for build build-id.",
-  ],
-  [
-    "Build build-id finished.",
-  ],
-  [
-    "Build build-id finished but snapshots haven't been compared yet. Check the build status in a few moments.",
-  ],
-]
+}
 `;
 
-exports[`VisualSnapshots generateAndSendPdfFileSnapshots without params 1`] = `
-[
-  [
-    "Build build-id created: http://build-url/build-id",
+exports[`VisualSnapshots uploadImageAndCreateSnapshot log output 1`] = `
+[MockFunction] {
+  "calls": [
+    [
+      "Uploaded image to build testBuildId: upload id=uploadId.",
+    ],
+    [
+      "Created a snapshot testSnapshotName for build testBuildId.",
+    ],
   ],
-  [
-    "Processing file: file1.pdf",
+  "results": [
+    {
+      "type": "return",
+      "value": undefined,
+    },
+    {
+      "type": "return",
+      "value": undefined,
+    },
   ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-0.",
-  ],
-  [
-    "Created a snapshot page-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-1.",
-  ],
-  [
-    "Created a snapshot page-2 for build build-id.",
-  ],
-  [
-    "Processing file: file2.pdf",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-2.",
-  ],
-  [
-    "Created a snapshot page-1 for build build-id.",
-  ],
-  [
-    "Uploaded image to build build-id: upload id=upload-id-3.",
-  ],
-  [
-    "Created a snapshot page-2 for build build-id.",
-  ],
-  [
-    "Build build-id finished.",
-  ],
-  [
-    "Build build-id finished (status=UNAPPROVED, unapprovedCount=2, errorCount=0).",
-  ],
-]
+}
 `;

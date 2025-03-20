@@ -2,30 +2,38 @@ import {
   CreateVisualSnapshotsParams,
   VisualSnapshotsApi,
 } from "../api/visual-snapshots-api.js";
-import { initializeVisualApi } from "../api/visual-client.js";
-import { PdfConverter } from "./pdf-converter.js";
 import { VisualConfig } from "@saucelabs/visual";
 import { getFiles } from "../utils/glob.js";
+import { PdfSnapshotUploader } from "./pdf-files-snapshot-uploader.js";
 
 export interface PdfCommandParams
   extends VisualConfig,
-    CreateVisualSnapshotsParams {}
+    CreateVisualSnapshotsParams {
+  concurrency: number;
+}
 
 export class PdfCommandHandler {
-  private clientVersion: string;
-
-  constructor(clientVersion: string) {
-    this.clientVersion = clientVersion;
-  }
+  constructor(
+    private readonly visualSnapshotsApi: VisualSnapshotsApi,
+    private readonly pdfSnapshotUploader: PdfSnapshotUploader
+  ) {}
 
   public async handle(globsOrDirs: string[], params: PdfCommandParams) {
-    const visualApi = initializeVisualApi(params, this.clientVersion);
-    const visualSnapshots = new VisualSnapshotsApi(visualApi);
-    const pdfConverter = new PdfConverter();
-
     const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
 
-    const pdfFiles = pdfFilePaths.map((p) => pdfConverter.createPdfFile(p));
-    await visualSnapshots.generateAndSendPdfFileSnapshots(pdfFiles, params);
+    const buildId =
+      params.buildId ?? (await this.visualSnapshotsApi.createBuild(params));
+
+    await this.pdfSnapshotUploader.uploadSnapshots({
+      buildId,
+      pdfFilePaths,
+      suiteName: params.suiteName,
+      testNameFormat: params.testName,
+      snapshotNameFormat: params.snapshotName,
+    });
+
+    if (!params.buildId) {
+      await this.visualSnapshotsApi.finishBuild(buildId);
+    }
   }
 }
