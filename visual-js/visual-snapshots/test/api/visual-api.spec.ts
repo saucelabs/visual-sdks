@@ -4,11 +4,10 @@ import {
   UploadSnapshotParams,
   VisualSnapshotsApi,
 } from "../../src/api/visual-snapshots-api.js";
+import { mockLogger } from "../helpers.js";
 
 describe("VisualSnapshots", () => {
-  const consoleInfoSpy = jest
-    .spyOn(console, "info")
-    .mockImplementation(() => undefined);
+  const { logger, logged, reset: resetLogger } = mockLogger();
 
   const createBuildMock = jest.fn<
     ReturnType<VisualApi["createBuild"]>,
@@ -42,7 +41,7 @@ describe("VisualSnapshots", () => {
     createBuildMock.mockReset();
     finishBuildMock.mockReset();
     buildStatusMock.mockReset();
-    consoleInfoSpy.mockReset();
+    resetLogger();
   });
 
   describe("createBuild", () => {
@@ -61,6 +60,7 @@ describe("VisualSnapshots", () => {
         defaultBranch: "testDefaultBranch",
         project: "testProject",
         customId: "testCustomId",
+        logger,
       };
 
       await api.createBuild(params);
@@ -83,7 +83,7 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      const actual = await api.createBuild({});
+      const actual = await api.createBuild({ logger });
 
       expect(actual).toEqual(buildId);
     });
@@ -97,9 +97,9 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.createBuild({});
+      await api.createBuild({ logger });
 
-      expect(consoleInfoSpy).toMatchSnapshot();
+      expect(logged).toMatchSnapshot();
     });
   });
 
@@ -119,7 +119,7 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
       expect(finishBuildMock).toHaveBeenCalledWith({
         uuid: buildId,
@@ -146,7 +146,7 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
       expect(buildStatusMock).toHaveBeenCalledWith(buildId);
     });
@@ -166,7 +166,7 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
       expect(buildStatusMock).not.toHaveBeenCalled();
     });
@@ -185,7 +185,7 @@ describe("VisualSnapshots", () => {
       });
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
       expect(buildStatusMock).not.toHaveBeenCalled();
     });
@@ -205,9 +205,9 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
-      expect(consoleInfoSpy).toMatchSnapshot();
+      expect(logged).toMatchSnapshot();
     });
 
     test("log output when build status resolves to Running", async () => {
@@ -225,9 +225,9 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
-      expect(consoleInfoSpy).toMatchSnapshot();
+      expect(logged).toMatchSnapshot();
     });
 
     test("log output when build status resolves to Queued", async () => {
@@ -245,9 +245,9 @@ describe("VisualSnapshots", () => {
 
       const api = new VisualSnapshotsApi(visualApi);
 
-      await api.finishBuild(buildId);
+      await api.finishBuild({ buildId, logger });
 
-      expect(consoleInfoSpy).toMatchSnapshot();
+      expect(logged).toMatchSnapshot();
     });
   });
 
@@ -264,6 +264,7 @@ describe("VisualSnapshots", () => {
         snapshotName: "testSnapshotName",
         suiteName: "testSuiteName",
         testName: "testTestName",
+        logger,
       };
 
       await api.uploadImageAndCreateSnapshot(params);
@@ -286,6 +287,7 @@ describe("VisualSnapshots", () => {
         snapshotName: "testSnapshotName",
         suiteName: "testSuiteName",
         testName: "testTestName",
+        logger,
       };
 
       await api.uploadImageAndCreateSnapshot(params);
@@ -312,6 +314,7 @@ describe("VisualSnapshots", () => {
         snapshotName: "testSnapshotName",
         suiteName: "testSuiteName",
         testName: "testTestName",
+        logger,
       };
 
       const actual = await api.uploadImageAndCreateSnapshot(params);
@@ -330,11 +333,12 @@ describe("VisualSnapshots", () => {
         snapshotName: "testSnapshotName",
         suiteName: "testSuiteName",
         testName: "testTestName",
+        logger,
       };
 
       await api.uploadImageAndCreateSnapshot(params);
 
-      expect(consoleInfoSpy).toMatchSnapshot();
+      expect(logged).toMatchSnapshot();
     });
   });
 });

@@ -37,7 +37,7 @@ export class PdfCommandHandler {
       });
     } finally {
       if (!params.buildId) {
-        await this.visualSnapshotsApi.finishBuild(buildId);
+        await this.visualSnapshotsApi.finishBuild({ buildId });
       }
     }
   }
