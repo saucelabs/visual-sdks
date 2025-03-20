@@ -1,9 +1,9 @@
 import { PdfPageSnapshotUploader } from "../../../src/app/worker/pdf-page-snapshot-uploader.js";
-import { LoadedPdfFile } from "../../../src/app/pdf-file.js";
+import { PdfFile } from "../../../src/app/pdf-file.js";
 import { PdfFileLoader } from "../../../src/app/pdf-file-loader.js";
 import { VisualSnapshotsApi } from "../../../src/api/visual-snapshots-api.js";
 
-class TestLoadedPdfFile implements LoadedPdfFile {
+class TestPdfFile implements PdfFile {
   constructor(public readonly path: string, public readonly pages: number) {}
 
   public async getPage(page: number): Promise<Buffer> {
@@ -31,8 +31,8 @@ describe("PdfPageSnapshotUploader", () => {
     } as never as VisualSnapshotsApi;
 
     const files = [
-      new TestLoadedPdfFile("file1.pdf", 4),
-      new TestLoadedPdfFile("file2.pdf", 5),
+      new TestPdfFile("file1.pdf", 4),
+      new TestPdfFile("file2.pdf", 5),
     ];
 
     const loadPdfFileMock = jest

@@ -1,13 +1,13 @@
-import { LoadedPdfFile } from "./pdf-file.js";
+import { PdfFile } from "./pdf-file.js";
 import { PdfFileLoader } from "./pdf-file-loader.js";
 
 export class SingleCachedPdfFileLoader implements PdfFileLoader {
   private loadedFilePath?: string;
-  private loadedFile?: LoadedPdfFile;
+  private loadedFile?: PdfFile;
 
   constructor(private readonly pdfConverter: PdfFileLoader) {}
 
-  public async loadPdfFile(path: string): Promise<LoadedPdfFile> {
+  public async loadPdfFile(path: string): Promise<PdfFile> {
     if (this.loadedFile && this.loadedFilePath === path) {
       return this.loadedFile;
     }
