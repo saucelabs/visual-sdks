@@ -1,67 +1,38 @@
 import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
-import { formatString } from "../utils/format.js";
-import path from "path";
-import { PdfFile } from "../app/pdf-file.js";
+import { __dirname } from "../utils/helpers.js";
 
 export interface CreateVisualSnapshotsParams {
-  branch: string;
-  buildName: string;
-  defaultBranch: string;
-  project: string;
-  customId: string;
+  branch?: string;
+  buildName?: string;
+  defaultBranch?: string;
+  project?: string;
+  customId?: string;
   buildId?: string;
   suiteName?: string;
   testName?: string;
   snapshotName?: string;
 }
 
+export interface CreateBuildParams {
+  readonly buildName?: string;
+  readonly branch?: string;
+  readonly defaultBranch?: string;
+  readonly project?: string;
+  readonly customId?: string;
+}
+
+export interface UploadSnapshotParams {
+  readonly buildId: string;
+  readonly snapshot: Buffer;
+  readonly snapshotName: string;
+  readonly suiteName?: string;
+  readonly testName?: string;
+}
+
 export class VisualSnapshotsApi {
-  private api: VisualApi;
+  constructor(private readonly api: VisualApi) {}
 
-  constructor(api: VisualApi) {
-    this.api = api;
-  }
-
-  public async generateAndSendPdfFileSnapshots(
-    pdfFiles: PdfFile[],
-    params: CreateVisualSnapshotsParams
-  ) {
-    const buildId = params.buildId ?? (await this.createBuild(params));
-
-    for (const pdfFile of pdfFiles) {
-      console.info(`Processing file: ${pdfFile.path}`);
-
-      const filename = path.basename(pdfFile.path);
-      const testName = params.testName
-        ? formatString(params.testName, { filename })
-        : undefined;
-
-      const snapshotFormat = this.getSnapshotFormat(params.snapshotName);
-
-      let pageNumber = 1;
-      for await (const pdfPageImage of pdfFile.convertPagesToImages()) {
-        const snapshotName = formatString(snapshotFormat, {
-          filename,
-          page: pageNumber,
-        });
-
-        await this.uploadImageAndCreateSnapshot(
-          pdfPageImage,
-          buildId,
-          snapshotName,
-          testName,
-          params.suiteName
-        );
-        pageNumber++;
-      }
-    }
-
-    await this.finishBuild(buildId);
-  }
-
-  private async createBuild(
-    params: CreateVisualSnapshotsParams
-  ): Promise<string> {
+  public async createBuild(params: CreateBuildParams): Promise<string> {
     const build = await this.api.createBuild({
       name: params.buildName,
       branch: params.branch,
@@ -73,62 +44,48 @@ export class VisualSnapshotsApi {
     return build.id;
   }
 
-  private async uploadImageAndCreateSnapshot(
-    snapshot: Buffer,
-    buildId: string,
-    snapshotName: string,
-    testName?: string,
-    suiteName?: string
-  ) {
-    const uploadId = await this.api.uploadSnapshot({
-      buildId,
-      image: { data: snapshot },
-    });
-
-    console.info(`Uploaded image to build ${buildId}: upload id=${uploadId}.`);
-
-    await this.api.createSnapshot({
-      buildId,
-      uploadId,
-      name: snapshotName,
-      diffingMethod: DiffingMethod.Balanced,
-      testName,
-      suiteName,
-    });
-
-    console.info(`Created a snapshot ${snapshotName} for build ${buildId}.`);
-  }
-
-  private async finishBuild(buildId: string) {
-    await this.api.finishBuild({
+  public async finishBuild(buildId: string) {
+    const { status: buildStatus } = await this.api.finishBuild({
       uuid: buildId,
     });
-    console.info(`Build ${buildId} finished.`);
 
-    const buildStatus = (await this.api.buildStatus(buildId))!;
-    if (
-      [BuildStatus.Running, BuildStatus.Queued].includes(buildStatus.status)
-    ) {
+    if ([BuildStatus.Running, BuildStatus.Queued].includes(buildStatus)) {
       console.info(
         `Build ${buildId} finished but snapshots haven't been compared yet. Check the build status in a few moments.`
       );
     } else {
+      const { unapprovedCount, errorCount } = (await this.api.buildStatus(
+        buildId
+      ))!;
       console.info(
-        `Build ${buildId} finished (status=${buildStatus.status}, unapprovedCount=${buildStatus.unapprovedCount}, errorCount=${buildStatus.errorCount}).`
+        `Build ${buildId} finished (status=${buildStatus}, unapprovedCount=${unapprovedCount}, errorCount=${errorCount}).`
       );
     }
   }
 
-  private getSnapshotFormat(format: string | undefined) {
-    if (!format) {
-      return `page-{page}`;
-    }
+  public async uploadImageAndCreateSnapshot(params: UploadSnapshotParams) {
+    const uploadId = await this.api.uploadSnapshot({
+      buildId: params.buildId,
+      image: { data: params.snapshot },
+    });
 
-    // Page number is always required to make the snapshot names unique
-    if (!format.includes("{page}")) {
-      format = format += "-{page}";
-    }
+    console.info(
+      `Uploaded image to build ${params.buildId}: upload id=${uploadId}.`
+    );
 
-    return format;
+    await this.api.createSnapshot({
+      buildId: params.buildId,
+      uploadId,
+      name: params.snapshotName,
+      diffingMethod: DiffingMethod.Balanced,
+      testName: params.testName,
+      suiteName: params.suiteName,
+    });
+
+    console.info(
+      `Created a snapshot ${params.snapshotName} for build ${params.buildId}.`
+    );
+
+    return uploadId;
   }
 }
