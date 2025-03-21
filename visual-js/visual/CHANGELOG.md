@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.14.0
+
+### Minor Changes
+
+- 5b0f1a5: add hideScrollBars feature for regular snapshots
+
 ## 0.13.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.11.0
+
+### Minor Changes
+
+- 5b0f1a5: add hideScrollBars feature for regular snapshots
+
+### Patch Changes
+
+- Updated dependencies [5b0f1a5]
+  - @saucelabs/visual@0.14.0
+
 ## 0.10.1
 
 ### Patch Changes
