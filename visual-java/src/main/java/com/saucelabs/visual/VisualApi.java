@@ -42,6 +42,7 @@ public class VisualApi {
     private String buildName;
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
+    private Boolean hideScrollBars;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, resolveEndpoint());
@@ -88,6 +89,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withHideScrollBars(Boolean hideScrollBars) {
+      this.hideScrollBars = hideScrollBars;
+      return this;
+    }
+
     public VisualApi build() {
       VisualApi api =
           new VisualApi(
@@ -103,6 +109,9 @@ public class VisualApi {
       if (this.fullPageScreenshotConfig != null) {
         api.enableFullPageScreenshots(this.fullPageScreenshotConfig);
       }
+      if (this.hideScrollBars != null) {
+        api.setHideScrollBars(this.hideScrollBars);
+      }
       return api;
     }
   }
@@ -115,6 +124,7 @@ public class VisualApi {
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
+  private Boolean hideScrollBars;
   private String sessionMetadataBlob;
   private final RemoteWebDriver driver;
 
@@ -231,6 +241,15 @@ public class VisualApi {
    */
   public void enableFullPageScreenshots(FullPageScreenshotConfig fullPageScreenshotConfig) {
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
+  }
+
+  /**
+   * Hide all scrollbars in the web app. Default value is `true`.
+   *
+   * @param hideScrollBars set scroll bars visibility.
+   */
+  public void setHideScrollBars(Boolean hideScrollBars) {
+    this.hideScrollBars = hideScrollBars;
   }
 
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
@@ -419,6 +438,12 @@ public class VisualApi {
             .orElse(this.fullPageScreenshotConfig);
     if (fullPageScreenshotConfig != null) {
       input.setFullPageConfig(fullPageScreenshotConfig);
+    }
+
+    Boolean hideScrollBars =
+        Optional.ofNullable(options.getHideScrollBars()).orElse(this.hideScrollBars);
+    if (hideScrollBars != null) {
+      input.setHideScrollBars(hideScrollBars);
     }
 
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);

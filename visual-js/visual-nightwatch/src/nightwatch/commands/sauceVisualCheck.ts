@@ -114,6 +114,7 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         sauceVisualService: {
           captureDom: globalCaptureDom = false,
           fullPage,
+          hideScrollBars,
         } = {},
       },
     } = nightwatchBrowserObject;
@@ -163,6 +164,7 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
           (await options.clipElement?.getId()) ?? clipElementFromClipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,
         diffingMethod: options.diffingMethod ?? DiffingMethod.Balanced,
+        hideScrollBars: options.hideScrollBars ?? hideScrollBars,
       });
 
       global.uploadedDiffIds.push(

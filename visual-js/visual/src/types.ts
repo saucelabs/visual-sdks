@@ -23,7 +23,7 @@ export type FullPageScreenshotOptions<T> =
        */
       hideAfterFirstScroll?: string[];
       /**
-       * Hide all scrollbars in the app.
+       * @deprecated use `hideScrollBars` in CheckOptions instead.
        */
       hideScrollBars?: boolean;
       /**

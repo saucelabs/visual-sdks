@@ -29,6 +29,12 @@ namespace SauceLabs.Visual
         /// </summary>
         public BaselineOverride? BaselineOverride { get; set; }
 
+        /// <summary>
+        /// <c>HideScrollBars</c> hide all scrollbars in the web app.
+        /// The default value is <c>true</c>.
+        /// </summary>
+        public bool? HideScrollBars { get; set; }
+
         protected string? PreviousSuiteName = null;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -79,7 +85,8 @@ namespace SauceLabs.Visual
                 testName: options.TestName,
                 fullPageConfig: fullPageConfigIn,
                 diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
-                baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn()
+                baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn(),
+                hideScrollBars: options.HideScrollBars ?? HideScrollBars
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;

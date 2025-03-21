@@ -45,6 +45,7 @@ public class CheckOptions {
         clipSelector,
         clipElement,
         fullPageScreenshotConfig,
+        null,
         null);
   }
 
@@ -61,6 +62,36 @@ public class CheckOptions {
       WebElement clipElement,
       FullPageScreenshotConfig fullPageScreenshotConfig,
       List<IgnoreSelectorIn> ignoreSelectors) {
+    this(
+        ignoreElements,
+        ignoreRegions,
+        regions,
+        testName,
+        suiteName,
+        diffingMethod,
+        diffingOptions,
+        captureDom,
+        clipSelector,
+        clipElement,
+        fullPageScreenshotConfig,
+        ignoreSelectors,
+        null);
+  }
+
+  public CheckOptions(
+      List<WebElement> ignoreElements,
+      List<IgnoreRegion> ignoreRegions,
+      List<VisualRegion> regions,
+      String testName,
+      String suiteName,
+      DiffingMethod diffingMethod,
+      DiffingOptionsIn diffingOptions,
+      Boolean captureDom,
+      String clipSelector,
+      WebElement clipElement,
+      FullPageScreenshotConfig fullPageScreenshotConfig,
+      List<IgnoreSelectorIn> ignoreSelectors,
+      Boolean hideScrollBars) {
     this.ignoreElements = ignoreElements;
     this.ignoreRegions = ignoreRegions;
     this.ignoreSelectors = ignoreSelectors;
@@ -73,6 +104,7 @@ public class CheckOptions {
     this.clipElement = clipElement;
     this.fullPageScreenshotConfig = fullPageScreenshotConfig;
     this.diffingOptions = diffingOptions;
+    this.hideScrollBars = hideScrollBars;
   }
 
   private List<WebElement> ignoreElements = new ArrayList<>();
@@ -88,6 +120,7 @@ public class CheckOptions {
   private String clipSelector;
   private WebElement clipElement;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
+  private Boolean hideScrollBars;
 
   public static class Builder {
     private List<WebElement> ignoreElements = new ArrayList<>();
@@ -102,6 +135,7 @@ public class CheckOptions {
     private String clipSelector;
     private WebElement clipElement;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
+    private Boolean hideScrollBars;
 
     public Builder withIgnoreElements(List<WebElement> ignoreElements) {
       this.ignoreElements = ignoreElements;
@@ -179,6 +213,11 @@ public class CheckOptions {
       return this;
     }
 
+    public Builder withHideScrollBars(Boolean hideScrollBars) {
+      this.hideScrollBars = hideScrollBars;
+      return this;
+    }
+
     public CheckOptions build() {
       return new CheckOptions(
           ignoreElements,
@@ -192,7 +231,8 @@ public class CheckOptions {
           clipSelector,
           clipElement,
           fullPageScreenshotConfig,
-          ignoreSelectors);
+          ignoreSelectors,
+          hideScrollBars);
     }
   }
 
@@ -290,5 +330,13 @@ public class CheckOptions {
 
   public void enableFullPageScreenshots() {
     this.fullPageScreenshotConfig = new FullPageScreenshotConfig.Builder().build();
+  }
+
+  public void setHideScrollBars(Boolean hideScrollBars) {
+    this.hideScrollBars = hideScrollBars;
+  }
+
+  public Boolean getHideScrollBars() {
+    return hideScrollBars;
   }
 }
