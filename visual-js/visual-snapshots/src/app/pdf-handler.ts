@@ -12,11 +12,6 @@ export interface PdfCommandParams
   concurrency: number;
 }
 
-export enum PdfCommandStatus {
-  SUCCESS,
-  FAILURE,
-}
-
 export class PdfCommandHandler {
   constructor(
     private readonly visualSnapshotsApi: VisualSnapshotsApi,
@@ -26,13 +21,12 @@ export class PdfCommandHandler {
   public async handle(
     globsOrDirs: string[],
     params: PdfCommandParams
-  ): Promise<PdfCommandStatus> {
+  ): Promise<void> {
     const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
 
     const buildId =
       params.buildId ?? (await this.visualSnapshotsApi.createBuild(params));
 
-    let status: PdfCommandStatus;
     try {
       await this.pdfSnapshotUploader.uploadSnapshots({
         buildId,
@@ -41,14 +35,10 @@ export class PdfCommandHandler {
         testNameFormat: params.testName,
         snapshotNameFormat: params.snapshotName,
       });
-      status = PdfCommandStatus.SUCCESS;
-    } catch (_) {
-      status = PdfCommandStatus.FAILURE;
+    } finally {
+      if (!params.buildId) {
+        await this.visualSnapshotsApi.finishBuild(buildId);
+      }
     }
-
-    if (!params.buildId) {
-      await this.visualSnapshotsApi.finishBuild(buildId);
-    }
-    return status;
   }
 }
