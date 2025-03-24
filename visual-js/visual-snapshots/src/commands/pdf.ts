@@ -12,7 +12,11 @@ import {
   suiteNameOption,
   usernameOption,
 } from "./options.js";
-import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
+import {
+  PdfCommandHandler,
+  PdfCommandParams,
+  PdfCommandStatus,
+} from "../app/pdf-handler.js";
 import { EOL } from "os";
 import { VisualSnapshotsApi } from "../api/visual-snapshots-api.js";
 import { initializeVisualApi } from "../api/visual-client.js";
@@ -67,11 +71,19 @@ export const pdfCommand = (clientVersion: string) => {
 
       new PdfCommandHandler(visualSnapshotsApi, pdfSnapshotUploader)
         .handle(globsOrDirs, params)
-        .then(() => {
-          console.log("Successfully created PDF snapshots");
+        .then((status: PdfCommandStatus) => {
+          if (status == PdfCommandStatus.SUCCESS) {
+            console.info("Successfully created PDF snapshots.");
+          } else {
+            console.error(
+              "At least one PDF snapshot creation failed. Please contact Sauce Labs customer support."
+            );
+          }
         })
         .catch((err) => {
-          console.error(`An error occured when creating PDF snapshots: ${err}`);
+          console.error(
+            `An unexpected error occured when creating PDF snapshots: ${err}. Please contact Sauce Labs customer support.`
+          );
         });
     });
 };
