@@ -11,7 +11,7 @@ node >= 18
 ## Installation
 
 ```sh
-yarn install --save @saucelabs/visual-snapshots
+npm install --save @saucelabs/visual-snapshots
 ```
 
 ## Development
@@ -19,7 +19,7 @@ yarn install --save @saucelabs/visual-snapshots
 Build:
 
 ```sh
-yarn run build
+npm run build
 ```
 
 Execute:
@@ -31,7 +31,7 @@ node lib/index.js pdf [params]
 Run tests:
 
 ```sh
-yarn run test
+npm run test
 ```
 
 ## Reusing pdf conversion code
