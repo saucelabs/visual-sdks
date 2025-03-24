@@ -7,6 +7,7 @@ import {
 import { execAll } from "../../utils/pool.js";
 import { PdfFileLoader } from "../../app/pdf-file-loader.js";
 import { ProcessPdfPageMethod } from "./worker.js";
+import { __dirname } from "../../utils/helpers.js";
 
 export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   constructor(
@@ -39,7 +40,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   }
 
   private createPool() {
-    return workerpool.pool(path.join(import.meta.dirname, "./worker.js"), {
+    return workerpool.pool(path.join(__dirname(import.meta), "./worker.js"), {
       workerThreadOpts: {
         argv: process.argv,
       },
