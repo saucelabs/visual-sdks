@@ -16,7 +16,9 @@ import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
 program
   .addOption(usernameOption)
   .addOption(accessKeyOption)
-  .addOption(regionOption);
+  .addOption(regionOption)
+  .allowUnknownOption(true)
+  .allowExcessArguments(true);
 
 program.parse();
 
