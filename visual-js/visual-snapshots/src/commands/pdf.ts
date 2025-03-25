@@ -68,10 +68,10 @@ export const pdfCommand = (clientVersion: string) => {
       new PdfCommandHandler(visualSnapshotsApi, pdfSnapshotUploader)
         .handle(globsOrDirs, params)
         .then(() => {
-          console.log("Successfully created PDF snapshots");
+          console.info("Successfully created PDF snapshots.");
         })
         .catch((err) => {
-          console.error(`An error occured when creating PDF snapshots: ${err}`);
+          console.error(`At least one PDF snapshot creation failed: ${err}.`);
         });
     });
 };

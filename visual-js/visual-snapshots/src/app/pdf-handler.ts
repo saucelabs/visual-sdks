@@ -18,22 +18,27 @@ export class PdfCommandHandler {
     private readonly pdfSnapshotUploader: PdfSnapshotUploader
   ) {}
 
-  public async handle(globsOrDirs: string[], params: PdfCommandParams) {
+  public async handle(
+    globsOrDirs: string[],
+    params: PdfCommandParams
+  ): Promise<void> {
     const pdfFilePaths = await getFiles(globsOrDirs, "*.pdf");
 
     const buildId =
       params.buildId ?? (await this.visualSnapshotsApi.createBuild(params));
 
-    await this.pdfSnapshotUploader.uploadSnapshots({
-      buildId,
-      pdfFilePaths,
-      suiteName: params.suiteName,
-      testNameFormat: params.testName,
-      snapshotNameFormat: params.snapshotName,
-    });
-
-    if (!params.buildId) {
-      await this.visualSnapshotsApi.finishBuild(buildId);
+    try {
+      await this.pdfSnapshotUploader.uploadSnapshots({
+        buildId,
+        pdfFilePaths,
+        suiteName: params.suiteName,
+        testNameFormat: params.testName,
+        snapshotNameFormat: params.snapshotName,
+      });
+    } finally {
+      if (!params.buildId) {
+        await this.visualSnapshotsApi.finishBuild(buildId);
+      }
     }
   }
 }
