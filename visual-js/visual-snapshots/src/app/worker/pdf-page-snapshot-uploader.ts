@@ -2,6 +2,7 @@ import path from "path";
 import { formatString } from "../../utils/format.js";
 import { PdfFileLoader } from "../pdf-file-loader.js";
 import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
+import { logger as defaultLogger } from "../../logger.js";
 
 export class PdfPageSnapshotUploader {
   constructor(
@@ -31,17 +32,22 @@ export class PdfPageSnapshotUploader {
       page: pageNumber,
     });
 
-    const uploadId = await this.visualSnapshotsApi.uploadImageAndCreateSnapshot(
-      {
-        buildId,
-        snapshot: page,
-        snapshotName,
-        suiteName,
-        testName,
-      }
-    );
+    const logger = defaultLogger.child({
+      filePath: pdfFilePath,
+      pageNumber,
+      snapshotName,
+      suiteName,
+      testName,
+    });
 
-    return uploadId;
+    return await this.visualSnapshotsApi.uploadImageAndCreateSnapshot({
+      buildId,
+      snapshot: page,
+      snapshotName,
+      suiteName,
+      testName,
+      logger,
+    });
   }
 
   private getSnapshotFormat(format: string | undefined) {

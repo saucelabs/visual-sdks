@@ -73,13 +73,15 @@ describe("PdfPageSnapshotUploader", () => {
         "snapshotName-{filename}-{page}"
       );
 
-      expect(uploadImageAndCreateSnapshot).toHaveBeenCalledWith({
-        buildId: "build-id",
-        snapshot: await files[0].getPage(1),
-        snapshotName: `snapshotName-${files[0].path}-1`,
-        testName: `testName-${files[0].path}`,
-        suiteName: "suiteName",
-      });
+      expect(uploadImageAndCreateSnapshot).toHaveBeenCalledWith(
+        expect.objectContaining({
+          buildId: "build-id",
+          snapshot: await files[0].getPage(1),
+          snapshotName: `snapshotName-${files[0].path}-1`,
+          testName: `testName-${files[0].path}`,
+          suiteName: "suiteName",
+        })
+      );
     });
   });
 });

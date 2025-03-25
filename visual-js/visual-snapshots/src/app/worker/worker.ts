@@ -4,6 +4,7 @@ import {
   usernameOption,
   accessKeyOption,
   regionOption,
+  loggerLevel,
 } from "../../commands/options.js";
 import { initializeVisualApi } from "../../api/visual-client.js";
 import { LibPdfFileLoader } from "../pdf-file-loader.js";
@@ -12,13 +13,20 @@ import { PdfPageSnapshotUploader } from "./pdf-page-snapshot-uploader.js";
 import type { WorkerMethod } from "../../utils/pool.js";
 import { clientVersion } from "../../version.js";
 import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
+import pino from "pino";
+import { logger } from "../../logger.js";
 
 program
   .addOption(usernameOption)
   .addOption(accessKeyOption)
   .addOption(regionOption)
+  .addOption(loggerLevel)
   .allowUnknownOption(true)
   .allowExcessArguments(true);
+
+program.on("option:log", (level: pino.Level) => {
+  logger.level = level;
+});
 
 program.parse();
 

@@ -1,88 +1,66 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`VisualSnapshots createBuild log output 1`] = `
-[MockFunction] {
-  "calls": [
-    [
-      "Build foo created: undefined",
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": undefined,
-    },
-  ],
-}
+[
+  {
+    "buildId": "foo",
+    "level": 30,
+    "msg": "Build created.",
+  },
+]
 `;
 
 exports[`VisualSnapshots finishBuild log output when build status resolves to Equal 1`] = `
-[MockFunction] {
-  "calls": [
-    [
-      "Build buildId finished (status=EQUAL, unapprovedCount=2, errorCount=1).",
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": undefined,
-    },
-  ],
-}
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "EQUAL",
+    "errorCount": 1,
+    "level": 30,
+    "msg": "Build finished.",
+    "unapprovedCount": 2,
+  },
+]
 `;
 
 exports[`VisualSnapshots finishBuild log output when build status resolves to Queued 1`] = `
-[MockFunction] {
-  "calls": [
-    [
-      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": undefined,
-    },
-  ],
-}
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "QUEUED",
+    "level": 30,
+    "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  },
+]
 `;
 
 exports[`VisualSnapshots finishBuild log output when build status resolves to Running 1`] = `
-[MockFunction] {
-  "calls": [
-    [
-      "Build buildId finished but snapshots haven't been compared yet. Check the build status in a few moments.",
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": undefined,
-    },
-  ],
-}
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "RUNNING",
+    "level": 30,
+    "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  },
+]
 `;
 
 exports[`VisualSnapshots uploadImageAndCreateSnapshot log output 1`] = `
-[MockFunction] {
-  "calls": [
-    [
-      "Uploaded image to build testBuildId: upload id=uploadId.",
-    ],
-    [
-      "Created a snapshot testSnapshotName for build testBuildId.",
-    ],
-  ],
-  "results": [
-    {
-      "type": "return",
-      "value": undefined,
-    },
-    {
-      "type": "return",
-      "value": undefined,
-    },
-  ],
-}
+[
+  {
+    "buildId": "testBuildId",
+    "level": 30,
+    "msg": "Uploaded image to build.",
+    "uploadId": "uploadId",
+  },
+  {
+    "buildId": "testBuildId",
+    "level": 30,
+    "msg": "Created a snapshot for build.",
+    "snapshotName": "testSnapshotName",
+    "suiteName": "testSuiteName",
+    "testName": "testTestName",
+    "uploadId": "uploadId",
+  },
+]
 `;

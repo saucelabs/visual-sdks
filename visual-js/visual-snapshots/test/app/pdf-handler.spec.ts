@@ -146,7 +146,7 @@ describe("pdf-handler", () => {
         params
       );
 
-      expect(finishBuildMock).toHaveBeenCalledWith(buildId);
+      expect(finishBuildMock).toHaveBeenCalledWith({ buildId });
     });
 
     it("should not finish build when buildId is passed", async () => {

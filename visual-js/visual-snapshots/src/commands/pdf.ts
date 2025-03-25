@@ -18,6 +18,7 @@ import { VisualSnapshotsApi } from "../api/visual-snapshots-api.js";
 import { initializeVisualApi } from "../api/visual-client.js";
 import { WorkerPoolPdfSnapshotUploader } from "../app/worker/worker-pool-pdf-snapshot-uploader.js";
 import { LibPdfFileLoader } from "../app/pdf-file-loader.js";
+import { logger } from "../logger.js";
 
 export const testNameOption = new Option(
   "--test-name <test-name>",
@@ -68,10 +69,10 @@ export const pdfCommand = (clientVersion: string) => {
       new PdfCommandHandler(visualSnapshotsApi, pdfSnapshotUploader)
         .handle(globsOrDirs, params)
         .then(() => {
-          console.info("Successfully created PDF snapshots.");
+          logger.info("Successfully created PDF snapshots.");
         })
         .catch((err) => {
-          console.error(`At least one PDF snapshot creation failed: ${err}.`);
+          logger.error(err, "At least one PDF snapshot creation failed.");
         });
     });
 };

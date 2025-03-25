@@ -86,3 +86,8 @@ export const concurrencyOption = new Option(
 )
   .default(cpus().length)
   .argParser(parseInteger);
+
+export const loggerLevel = new Option(
+  "--log <level>",
+  "Logging level to use."
+).choices(["trace", "debug", "info", "warn", "error", "fatal", "silent"]);

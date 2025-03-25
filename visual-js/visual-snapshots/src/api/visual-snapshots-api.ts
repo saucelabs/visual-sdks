@@ -1,5 +1,7 @@
 import { BuildStatus, DiffingMethod, VisualApi } from "@saucelabs/visual";
 import { __dirname } from "../utils/helpers.js";
+import { Logger } from "pino";
+import { logger as defaultLogger } from "../logger.js";
 
 export interface CreateVisualSnapshotsParams {
   branch?: string;
@@ -19,6 +21,12 @@ export interface CreateBuildParams {
   readonly defaultBranch?: string;
   readonly project?: string;
   readonly customId?: string;
+  readonly logger?: Logger;
+}
+
+export interface FinishBuildParams {
+  readonly buildId: string;
+  readonly logger?: Logger;
 }
 
 export interface UploadSnapshotParams {
@@ -27,12 +35,15 @@ export interface UploadSnapshotParams {
   readonly snapshotName: string;
   readonly suiteName?: string;
   readonly testName?: string;
+  readonly logger?: Logger;
 }
 
 export class VisualSnapshotsApi {
   constructor(private readonly api: VisualApi) {}
 
   public async createBuild(params: CreateBuildParams): Promise<string> {
+    const logger = params.logger ?? defaultLogger;
+
     const build = await this.api.createBuild({
       name: params.buildName,
       branch: params.branch,
@@ -40,37 +51,64 @@ export class VisualSnapshotsApi {
       project: params.project,
       customId: params.customId,
     });
-    console.info(`Build ${build.id} created: ${build.url}`);
+
+    logger.info(
+      {
+        buildId: build.id,
+        url: build.url,
+      },
+      `Build created.`
+    );
+
     return build.id;
   }
 
-  public async finishBuild(buildId: string) {
+  public async finishBuild(params: FinishBuildParams) {
+    const buildId = params.buildId;
+    const logger = params.logger ?? defaultLogger;
+
     const { status: buildStatus } = await this.api.finishBuild({
       uuid: buildId,
     });
 
     if ([BuildStatus.Running, BuildStatus.Queued].includes(buildStatus)) {
-      console.info(
-        `Build ${buildId} finished but snapshots haven't been compared yet. Check the build status in a few moments.`
+      logger.info(
+        {
+          buildId,
+          buildStatus,
+        },
+        `Build finished but snapshots haven't been compared yet. Check the build status in a few moments.`
       );
     } else {
       const { unapprovedCount, errorCount } = (await this.api.buildStatus(
         buildId
       ))!;
-      console.info(
-        `Build ${buildId} finished (status=${buildStatus}, unapprovedCount=${unapprovedCount}, errorCount=${errorCount}).`
+      logger.info(
+        {
+          buildId,
+          buildStatus,
+          unapprovedCount,
+          errorCount,
+        },
+        `Build finished.`
       );
     }
   }
 
   public async uploadImageAndCreateSnapshot(params: UploadSnapshotParams) {
+    const logger = params.logger ?? defaultLogger;
+
     const uploadId = await this.api.uploadSnapshot({
       buildId: params.buildId,
       image: { data: params.snapshot },
     });
 
-    console.info(
-      `Uploaded image to build ${params.buildId}: upload id=${uploadId}.`
+    logger.info(
+      {
+        buildId: params.buildId,
+        uploadId,
+      },
+      `Uploaded image to build.`
     );
 
     await this.api.createSnapshot({
@@ -82,8 +120,15 @@ export class VisualSnapshotsApi {
       suiteName: params.suiteName,
     });
 
-    console.info(
-      `Created a snapshot ${params.snapshotName} for build ${params.buildId}.`
+    logger.info(
+      {
+        buildId: params.buildId,
+        uploadId,
+        snapshotName: params.snapshotName,
+        testName: params.testName,
+        suiteName: params.suiteName,
+      },
+      `Created a snapshot for build.`
     );
 
     return uploadId;
