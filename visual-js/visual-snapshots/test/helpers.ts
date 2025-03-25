@@ -25,6 +25,7 @@ export function mockLogger() {
       const message = JSON.parse(chunk.toString("utf-8"));
       delete message.time;
       delete message.pid;
+      delete message.hostname;
       logged.push(message);
       callback();
     },

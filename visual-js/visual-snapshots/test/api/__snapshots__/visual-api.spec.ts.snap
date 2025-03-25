@@ -4,7 +4,6 @@ exports[`VisualSnapshots createBuild log output 1`] = `
 [
   {
     "buildId": "foo",
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Build created.",
   },
@@ -17,7 +16,6 @@ exports[`VisualSnapshots finishBuild log output when build status resolves to Eq
     "buildId": "buildId",
     "buildStatus": "EQUAL",
     "errorCount": 1,
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Build finished.",
     "unapprovedCount": 2,
@@ -30,7 +28,6 @@ exports[`VisualSnapshots finishBuild log output when build status resolves to Qu
   {
     "buildId": "buildId",
     "buildStatus": "QUEUED",
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
   },
@@ -42,7 +39,6 @@ exports[`VisualSnapshots finishBuild log output when build status resolves to Ru
   {
     "buildId": "buildId",
     "buildStatus": "RUNNING",
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
   },
@@ -53,14 +49,12 @@ exports[`VisualSnapshots uploadImageAndCreateSnapshot log output 1`] = `
 [
   {
     "buildId": "testBuildId",
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Uploaded image to build.",
     "uploadId": "uploadId",
   },
   {
     "buildId": "testBuildId",
-    "hostname": "SL-2267",
     "level": 30,
     "msg": "Created a snapshot for build.",
     "snapshotName": "testSnapshotName",
