@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VisualSnapshots createBuild log output 1`] = `
+[
+  {
+    "buildId": "foo",
+    "level": 30,
+    "msg": "Build created.",
+  },
+]
+`;
+
+exports[`VisualSnapshots finishBuild log output when build status resolves to Equal 1`] = `
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "EQUAL",
+    "errorCount": 1,
+    "level": 30,
+    "msg": "Build finished.",
+    "unapprovedCount": 2,
+  },
+]
+`;
+
+exports[`VisualSnapshots finishBuild log output when build status resolves to Queued 1`] = `
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "QUEUED",
+    "level": 30,
+    "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  },
+]
+`;
+
+exports[`VisualSnapshots finishBuild log output when build status resolves to Running 1`] = `
+[
+  {
+    "buildId": "buildId",
+    "buildStatus": "RUNNING",
+    "level": 30,
+    "msg": "Build finished but snapshots haven't been compared yet. Check the build status in a few moments.",
+  },
+]
+`;
+
+exports[`VisualSnapshots uploadImageAndCreateSnapshot log output 1`] = `
+[
+  {
+    "buildId": "testBuildId",
+    "level": 30,
+    "msg": "Uploaded image to build.",
+    "uploadId": "uploadId",
+  },
+  {
+    "buildId": "testBuildId",
+    "level": 30,
+    "msg": "Created a snapshot for build.",
+    "snapshotName": "testSnapshotName",
+    "suiteName": "testSuiteName",
+    "testName": "testTestName",
+    "uploadId": "uploadId",
+  },
+]
+`;

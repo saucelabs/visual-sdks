@@ -1,0 +1,12 @@
+// Builds source files and typechecks test files.
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.src.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    }
+  ]
+}

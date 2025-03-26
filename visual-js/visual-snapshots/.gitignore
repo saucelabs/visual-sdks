@@ -1,0 +1,6 @@
+.work
+build/
+lib/
+coverage/
+.parent/
+*.tsbuildinfo
