@@ -1,5 +1,11 @@
 # @saucelabs/visual-snapshots
 
+## 0.1.1
+
+### Patch Changes
+
+- 625ab79: Bump dependency versions
+
 ## 0.1.0
 
 ### Minor Changes
