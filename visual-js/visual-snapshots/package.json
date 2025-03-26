@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-snapshots",
   "description": "CLI which generates Visual snapshots from a data source such as pdf",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "main": "./lib/index.js",
   "license": "MIT",
   "bin": "./lib/index.js",
