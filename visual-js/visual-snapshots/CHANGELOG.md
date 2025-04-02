@@ -1,5 +1,12 @@
 # @saucelabs/visual-snapshots
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [fcd63ed]
+  - @saucelabs/visual@0.15.0
+
 ## 0.1.1
 
 ### Patch Changes

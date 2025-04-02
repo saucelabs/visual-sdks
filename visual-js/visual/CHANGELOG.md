@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.15.0
+
+### Minor Changes
+
+- fcd63ed: fix hover effect for web full page screenshot
+
 ## 0.14.0
 
 ### Minor Changes

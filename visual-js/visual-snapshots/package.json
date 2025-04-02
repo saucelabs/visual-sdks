@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-snapshots",
   "description": "CLI which generates Visual snapshots from a data source such as pdf",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "./lib/index.js",
   "license": "MIT",
   "bin": "./lib/index.js",
@@ -29,7 +29,7 @@
     "test-with-coverage": "cross-env NODE_NO_WARNINGS=1 NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --collect-coverage"
   },
   "dependencies": {
-    "@saucelabs/visual": "^0.14.0",
+    "@saucelabs/visual": "^0.15.0",
     "async-lock": "^1.4.1",
     "commander": "^12.0.0",
     "glob": "^11.0.1",

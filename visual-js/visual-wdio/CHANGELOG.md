@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.12.0
+
+### Minor Changes
+
+- fcd63ed: fix hover effect for web full page screenshot
+
+### Patch Changes
+
+- Updated dependencies [fcd63ed]
+  - @saucelabs/visual@0.15.0
+
 ## 0.11.0
 
 ### Minor Changes
