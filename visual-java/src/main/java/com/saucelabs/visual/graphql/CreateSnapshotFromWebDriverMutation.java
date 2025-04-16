@@ -2,12 +2,9 @@ package com.saucelabs.visual.graphql;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.saucelabs.visual.graphql.type.DiffingMethod;
-import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
-import com.saucelabs.visual.graphql.type.DiffsConnection;
-import com.saucelabs.visual.graphql.type.ElementIn;
-import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
-import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.DiffingMethodSensitivity;
+import com.saucelabs.visual.model.DiffingMethodTolerance;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import java.util.*;
 import org.openqa.selenium.WebElement;
@@ -50,6 +47,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     public Optional<DiffingOptionsIn> diffingOptions = Optional.empty();
 
     public Optional<Boolean> hideScrollBars = Optional.empty();
+
+    public Optional<com.saucelabs.visual.graphql.type.DiffingMethodSensitivity> diffingMethodSensitivity = Optional.empty();
+
+    public Optional<DiffingMethodToleranceIn> diffingMethodTolerance = Optional.empty();
 
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
@@ -119,6 +120,14 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public void setDiffingOptions(DiffingOptionsIn diffingOptions) {
       this.diffingOptions = Optional.of(diffingOptions);
+    }
+
+    public void setDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
+      this.diffingMethodSensitivity = Optional.of(diffingMethodSensitivity).map(DiffingMethodSensitivity::asGraphQLType);
+    }
+
+    public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
+      this.diffingMethodTolerance = Optional.of(diffingMethodTolerance).map(DiffingMethodTolerance::asGraphQLType);
     }
 
     public void setHideScrollBars(Boolean hideScrollBars) {

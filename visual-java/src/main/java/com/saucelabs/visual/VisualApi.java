@@ -6,6 +6,8 @@ import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.DiffingMethodSensitivity;
+import com.saucelabs.visual.model.DiffingMethodTolerance;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.model.VisualRegion;
@@ -43,6 +45,8 @@ public class VisualApi {
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
+    private com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity;
+    private DiffingMethodTolerance diffingMethodTolerance;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, resolveEndpoint());
@@ -94,6 +98,16 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withDiffingMethodSensitivity(com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+      this.diffingMethodSensitivity = diffingMethodSensitivity;
+      return this;
+    }
+
+    public Builder withDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
+      this.diffingMethodTolerance = diffingMethodTolerance;
+      return this;
+    }
+
     public VisualApi build() {
       VisualApi api =
           new VisualApi(
@@ -112,6 +126,12 @@ public class VisualApi {
       if (this.hideScrollBars != null) {
         api.setHideScrollBars(this.hideScrollBars);
       }
+      if (this.diffingMethodSensitivity != null) {
+        api.setDiffingMethodSensitivity(this.diffingMethodSensitivity);
+      }
+      if (this.diffingMethodTolerance != null) {
+        api.setDiffingMethodTolerance(this.diffingMethodTolerance);
+      }
       return api;
     }
   }
@@ -125,6 +145,8 @@ public class VisualApi {
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
   private Boolean hideScrollBars;
+  private DiffingMethodSensitivity diffingMethodSensitivity;
+  private DiffingMethodTolerance diffingMethodTolerance;
   private String sessionMetadataBlob;
   private final RemoteWebDriver driver;
 
@@ -250,6 +272,14 @@ public class VisualApi {
    */
   public void setHideScrollBars(Boolean hideScrollBars) {
     this.hideScrollBars = hideScrollBars;
+  }
+
+  public void setDiffingMethodSensitivity(com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+    this.diffingMethodSensitivity = diffingMethodSensitivity;
+  }
+
+  public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
+    this.diffingMethodTolerance = diffingMethodTolerance;
   }
 
   private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
@@ -446,6 +476,18 @@ public class VisualApi {
       input.setHideScrollBars(hideScrollBars);
     }
 
+    com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity =
+            Optional.ofNullable(options.getDiffingMethodSensitivity()).orElse(this.diffingMethodSensitivity);
+    if (diffingMethodSensitivity != null) {
+      input.setDiffingMethodSensitivity(diffingMethodSensitivity);
+    }
+
+    DiffingMethodTolerance diffingMethodTolerance =
+            Optional.ofNullable(options.getDiffingMethodTolerance()).orElse(this.diffingMethodTolerance);
+    if (diffingMethodTolerance != null) {
+      input.setDiffingMethodTolerance(diffingMethodTolerance);
+    }
+
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
         this.client.execute(mutation, CreateSnapshotFromWebDriverMutation.Data.class);
@@ -463,8 +505,6 @@ public class VisualApi {
     switch (options.getDiffingMethod()) {
       case SIMPLE:
         return DiffingMethod.SIMPLE;
-      case EXPERIMENTAL:
-        return DiffingMethod.EXPERIMENTAL;
       default:
         return DiffingMethod.BALANCED;
     }

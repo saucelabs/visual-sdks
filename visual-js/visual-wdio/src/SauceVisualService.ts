@@ -27,6 +27,8 @@ import {
   isIgnoreSelectorType,
   IgnoreSelectorIn,
   getEnvOpts,
+  DiffingMethodSensitivity,
+  DiffingMethodToleranceIn,
 } from '@saucelabs/visual';
 
 import logger from '@wdio/logger';
@@ -87,6 +89,16 @@ export type SauceVisualServiceOptions = {
   customId?: string;
   defaultBranch?: string;
   diffingMethod?: DiffingMethod;
+  /**
+   * Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for the 'Balanced'
+   * diffing method. Controls the various tolerance options all at once.
+   */
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  /**
+   * Controls one or more of the options available to adjust the sensitivity of the 'Balanced'
+   * diffing method directly.
+   */
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
   captureDom?: boolean;
   clipSelector?: string;
   clipElement?: WdioElement;
@@ -132,6 +144,16 @@ export type CheckOptions = {
    */
   captureDom?: boolean;
   diffingMethod?: DiffingMethod;
+  /**
+   * Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for the 'Balanced'
+   * diffing method. Controls the various tolerance options all at once.
+   */
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  /**
+   * Controls one or more of the options available to adjust the sensitivity of the 'Balanced'
+   * diffing method directly.
+   */
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
   disable?: (keyof DiffingOptionsIn)[];
   fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
@@ -168,6 +190,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
   url?: string;
   test?: { title: string | undefined; parent: string | undefined };
   diffingMethod: DiffingMethod | undefined;
+  diffingMethodSensitivity: DiffingMethodSensitivity | undefined | null;
+  diffingMethodTolerance: DiffingMethodToleranceIn | undefined | null;
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
   clipElement: WdioElement | undefined;
@@ -182,6 +206,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
     public config: Testrunner,
   ) {
     this.diffingMethod = options.diffingMethod;
+    this.diffingMethodSensitivity = options.diffingMethodSensitivity;
+    this.diffingMethodTolerance = options.diffingMethodTolerance;
     this.captureDom = options.captureDom;
     this.clipSelector = options.clipSelector;
     this.clipElement = options.clipElement;
@@ -429,6 +455,12 @@ export default class SauceVisualService implements Services.ServiceInstance {
         diffingOptions: selectiveRegionOptionsToDiffingOptions({
           disableOnly: options.disable ?? [],
         }),
+        diffingMethodTolerance:
+          options.diffingMethodTolerance ?? this.diffingMethodTolerance ?? null,
+        diffingMethodSensitivity:
+          options.diffingMethodSensitivity ??
+          this.diffingMethodSensitivity ??
+          null,
         sessionMetadata: metaInfo,
         diffingMethod:
           options.diffingMethod || this.diffingMethod || DiffingMethod.Balanced,
