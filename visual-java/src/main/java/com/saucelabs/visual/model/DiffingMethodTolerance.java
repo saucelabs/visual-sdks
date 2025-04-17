@@ -3,10 +3,10 @@ package com.saucelabs.visual.model;
 import com.saucelabs.visual.graphql.type.DiffingMethodToleranceIn;
 
 public class DiffingMethodTolerance {
-  private java.lang.Integer minChangeSize;
-  private java.lang.Double brightness;
-  private java.lang.Double color;
-  private java.lang.Double antiAliasing;
+  private Integer minChangeSize;
+  private Double brightness;
+  private Double color;
+  private Double antiAliasing;
 
   public Integer getMinChangeSize() {
     return minChangeSize;
@@ -61,10 +61,10 @@ public class DiffingMethodTolerance {
   }
 
   public static class Builder {
-    private java.lang.Integer minChangeSize;
-    private java.lang.Double brightness;
-    private java.lang.Double color;
-    private java.lang.Double antiAliasing;
+    private Integer minChangeSize;
+    private Double brightness;
+    private Double color;
+    private Double antiAliasing;
 
     public Builder withMinChangeSize(Integer minChangeSize) {
       this.minChangeSize = minChangeSize;

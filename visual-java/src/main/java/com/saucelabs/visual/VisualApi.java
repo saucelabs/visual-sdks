@@ -45,7 +45,7 @@ public class VisualApi {
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
-    private com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity;
+    private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
@@ -98,8 +98,7 @@ public class VisualApi {
       return this;
     }
 
-    public Builder withDiffingMethodSensitivity(
-        com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+    public Builder withDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
       this.diffingMethodSensitivity = diffingMethodSensitivity;
       return this;
     }
@@ -275,8 +274,7 @@ public class VisualApi {
     this.hideScrollBars = hideScrollBars;
   }
 
-  public void setDiffingMethodSensitivity(
-      com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+  public void setDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
     this.diffingMethodSensitivity = diffingMethodSensitivity;
   }
 
@@ -478,7 +476,7 @@ public class VisualApi {
       input.setHideScrollBars(hideScrollBars);
     }
 
-    com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity =
+    DiffingMethodSensitivity diffingMethodSensitivity =
         Optional.ofNullable(options.getDiffingMethodSensitivity())
             .orElse(this.diffingMethodSensitivity);
     if (diffingMethodSensitivity != null) {
