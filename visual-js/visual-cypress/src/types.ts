@@ -1,5 +1,7 @@
 import {
   DiffingMethod,
+  DiffingMethodSensitivity,
+  DiffingMethodToleranceIn,
   DiffingOptionsIn,
   SauceRegion,
   SelectiveRegionOptions,
@@ -15,6 +17,8 @@ export interface SauceConfig {
   key?: string;
   diffingMethod?: DiffingMethod;
   diffingOptions?: DiffingOptionsIn;
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
 }
 
 export interface HasSauceConfig {
@@ -46,6 +50,8 @@ export type ScreenshotMetadata = {
   regions: ResolvedVisualRegion[];
   diffingMethod?: DiffingMethod;
   diffingOptions?: DiffingOptionsIn;
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
   viewport: SauceVisualViewport | undefined;
   devicePixelRatio: number;
   dom?: string;
@@ -69,6 +75,16 @@ export type VisualCheckOptions = {
    * The diffing options that should be applied by default.
    */
   diffingOptions?: DiffingOptionsIn;
+  /**
+   * Controls one or more of the options available to adjust the sensitivity of supported diffing
+   * methods.
+   */
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
+  /**
+   * Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for supported
+   * diffing methods. Controls the various tolerance options all at once.
+   */
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
   /**
    * Specify what kind of checks needs to be done in a specific region
    */

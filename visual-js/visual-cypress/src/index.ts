@@ -20,6 +20,8 @@ import {
   VisualApi,
   VisualApiRegion,
   getVisualResults,
+  DiffingMethodToleranceIn,
+  DiffingMethodSensitivity,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -102,6 +104,8 @@ class CypressSauceVisual {
   private isBuildExternal = false;
   private diffingMethod: DiffingMethod | undefined;
   private diffingOptions: DiffingOptionsIn | undefined;
+  private diffingMethodTolerance?: DiffingMethodToleranceIn;
+  private diffingMethodSensitivity?: DiffingMethodSensitivity;
   private screenshotsMetadata: { [key: string]: ScreenshotMetadata } = {};
 
   private api: VisualApi;
@@ -130,6 +134,8 @@ class CypressSauceVisual {
     );
     this.diffingMethod = config.saucelabs?.diffingMethod;
     this.diffingOptions = config.saucelabs?.diffingOptions;
+    this.diffingMethodSensitivity = config.saucelabs?.diffingMethodSensitivity;
+    this.diffingMethodTolerance = config.saucelabs?.diffingMethodTolerance;
     this.domCaptureScript = this.api.domCaptureScript();
   }
 
@@ -329,6 +335,10 @@ Sauce Labs Visual: Unable to create new build.
           metadata.diffingMethod ||
           this.diffingMethod ||
           DiffingMethod.Balanced,
+        diffingMethodTolerance:
+          metadata.diffingMethodTolerance || this.diffingMethodTolerance,
+        diffingMethodSensitivity:
+          metadata.diffingMethodSensitivity || this.diffingMethodSensitivity,
         jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
       });
       logger.info(`    ${chalk.green('✔')} ${metadata.name} `);

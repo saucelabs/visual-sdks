@@ -1,5 +1,7 @@
 import {
   DiffingMethod,
+  DiffingMethodSensitivity,
+  DiffingMethodToleranceIn,
   FullPageScreenshotOptions,
   getApi,
   RegionIn,
@@ -31,6 +33,8 @@ export interface CheckOptions {
   ignore?: NightwatchIgnorable[];
   regions?: RegionType<ElementType>[];
   diffingMethod?: DiffingMethod;
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
   fullPage?: FullPageScreenshotOptions<ScopedElement>;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
@@ -53,7 +57,13 @@ export interface CheckOptions {
 export interface SauceVisualServiceOptions
   extends Pick<
     CheckOptions,
-    'fullPage' | 'captureDom' | 'clipSelector' | 'hideScrollBars'
+    | 'fullPage'
+    | 'captureDom'
+    | 'clipSelector'
+    | 'hideScrollBars'
+    | 'diffingMethodSensitivity'
+    | 'diffingMethodTolerance'
+    | 'diffingMethod'
   > {
   buildName?: string;
   project?: string;

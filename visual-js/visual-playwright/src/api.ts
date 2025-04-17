@@ -158,6 +158,8 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       captureDom,
       ignoreRegions: userIgnoreRegions,
       diffingMethod,
+      diffingMethodTolerance,
+      diffingMethodSensitivity,
     } = options ?? {};
     const {
       animations = 'disabled',
@@ -333,6 +335,8 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       name,
       ignoreRegions,
       diffingMethod,
+      diffingMethodSensitivity,
+      diffingMethodTolerance,
     });
 
     const { diffs } = await this.api.createSnapshot({

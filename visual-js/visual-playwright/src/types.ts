@@ -1,4 +1,10 @@
-import { DiffingMethod, RegionIn, VisualEnvOpts } from '@saucelabs/visual';
+import {
+  DiffingMethod,
+  DiffingMethodSensitivity,
+  DiffingMethodToleranceIn,
+  RegionIn,
+  VisualEnvOpts,
+} from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
 export interface SauceVisualParams {
@@ -27,6 +33,8 @@ export interface SauceVisualParams {
    * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
   diffingMethod?: DiffingMethod;
+  diffingMethodTolerance?: DiffingMethodToleranceIn;
+  diffingMethodSensitivity?: DiffingMethodSensitivity;
 }
 
 export interface PlaywrightEnvOpts extends VisualEnvOpts {

@@ -115,6 +115,9 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
           captureDom: globalCaptureDom = false,
           fullPage,
           hideScrollBars,
+          diffingMethod,
+          diffingMethodSensitivity,
+          diffingMethodTolerance,
         } = {},
       },
     } = nightwatchBrowserObject;
@@ -163,7 +166,12 @@ class SauceVisualCheck implements NightwatchCustomCommandsModel {
         clipElement:
           (await options.clipElement?.getId()) ?? clipElementFromClipSelector,
         captureDom: options.captureDom ?? globalCaptureDom,
-        diffingMethod: options.diffingMethod ?? DiffingMethod.Balanced,
+        diffingMethod:
+          options.diffingMethod ?? diffingMethod ?? DiffingMethod.Balanced,
+        diffingMethodTolerance:
+          options.diffingMethodTolerance ?? diffingMethodTolerance,
+        diffingMethodSensitivity:
+          options.diffingMethodSensitivity ?? diffingMethodSensitivity,
         hideScrollBars: options.hideScrollBars ?? hideScrollBars,
       });
 
