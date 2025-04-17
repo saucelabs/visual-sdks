@@ -98,7 +98,8 @@ public class VisualApi {
       return this;
     }
 
-    public Builder withDiffingMethodSensitivity(com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+    public Builder withDiffingMethodSensitivity(
+        com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
       this.diffingMethodSensitivity = diffingMethodSensitivity;
       return this;
     }
@@ -274,7 +275,8 @@ public class VisualApi {
     this.hideScrollBars = hideScrollBars;
   }
 
-  public void setDiffingMethodSensitivity(com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
+  public void setDiffingMethodSensitivity(
+      com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity) {
     this.diffingMethodSensitivity = diffingMethodSensitivity;
   }
 
@@ -477,13 +479,15 @@ public class VisualApi {
     }
 
     com.saucelabs.visual.model.DiffingMethodSensitivity diffingMethodSensitivity =
-            Optional.ofNullable(options.getDiffingMethodSensitivity()).orElse(this.diffingMethodSensitivity);
+        Optional.ofNullable(options.getDiffingMethodSensitivity())
+            .orElse(this.diffingMethodSensitivity);
     if (diffingMethodSensitivity != null) {
       input.setDiffingMethodSensitivity(diffingMethodSensitivity);
     }
 
     DiffingMethodTolerance diffingMethodTolerance =
-            Optional.ofNullable(options.getDiffingMethodTolerance()).orElse(this.diffingMethodTolerance);
+        Optional.ofNullable(options.getDiffingMethodTolerance())
+            .orElse(this.diffingMethodTolerance);
     if (diffingMethodTolerance != null) {
       input.setDiffingMethodTolerance(diffingMethodTolerance);
     }

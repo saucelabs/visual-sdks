@@ -48,7 +48,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<Boolean> hideScrollBars = Optional.empty();
 
-    public Optional<com.saucelabs.visual.graphql.type.DiffingMethodSensitivity> diffingMethodSensitivity = Optional.empty();
+    public Optional<com.saucelabs.visual.graphql.type.DiffingMethodSensitivity>
+        diffingMethodSensitivity = Optional.empty();
 
     public Optional<DiffingMethodToleranceIn> diffingMethodTolerance = Optional.empty();
 
@@ -123,11 +124,13 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     }
 
     public void setDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
-      this.diffingMethodSensitivity = Optional.of(diffingMethodSensitivity).map(DiffingMethodSensitivity::asGraphQLType);
+      this.diffingMethodSensitivity =
+          Optional.of(diffingMethodSensitivity).map(DiffingMethodSensitivity::asGraphQLType);
     }
 
     public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
-      this.diffingMethodTolerance = Optional.of(diffingMethodTolerance).map(DiffingMethodTolerance::asGraphQLType);
+      this.diffingMethodTolerance =
+          Optional.of(diffingMethodTolerance).map(DiffingMethodTolerance::asGraphQLType);
     }
 
     public void setHideScrollBars(Boolean hideScrollBars) {
