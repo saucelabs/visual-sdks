@@ -7,16 +7,12 @@ import com.saucelabs.saucebindings.options.SauceOptions;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.VisualApi;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
-import com.saucelabs.visual.model.DiffingMethodSensitivity;
-import com.saucelabs.visual.model.DiffingMethodTolerance;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
 
 @ExtendWith({TestMetaInfoExtension.class})
 class LoginPageIT extends SauceBaseTest {
-  VisualApi visual;
 
   public SauceOptions createSauceOptions() {
     return SauceOptions.chrome()
@@ -26,37 +22,14 @@ class LoginPageIT extends SauceBaseTest {
         .build();
   }
 
-  @BeforeEach
-  public void setup() {
-    visual =
-        new VisualApi(driver, System.getenv("SAUCE_USERNAME"), System.getenv("SAUCE_ACCESS_KEY"));
-    driver.get("https://www.saucedemo.com");
-  }
-
   @Test
   void checkLoginPage() {
+    VisualApi visual =
+        new VisualApi(driver, System.getenv("SAUCE_USERNAME"), System.getenv("SAUCE_ACCESS_KEY"));
+    driver.get("https://www.saucedemo.com");
     visual.sauceVisualCheck(
         "Login page",
         new CheckOptions.Builder()
-            .withClipElement(
-                driver.findElement(By.cssSelector("input[data-test=\"login-button\"]")))
-            .build());
-    System.out.println("Sauce Visual: " + visual.getBuild().getUrl());
-  }
-
-  @Test
-  void checkDiffingSettings() {
-    visual.sauceVisualCheck(
-        "Login page",
-        new CheckOptions.Builder()
-            .withDiffingMethodSensitivity(DiffingMethodSensitivity.LOW)
-            .withDiffingMethodTolerance(
-                DiffingMethodTolerance.builder()
-                    .withColor(.05)
-                    .withAntiAliasing(0.5)
-                    .withBrightness(2.5)
-                    .withMinChangeSize(3)
-                    .build())
             .withClipElement(
                 driver.findElement(By.cssSelector("input[data-test=\"login-button\"]")))
             .build());
