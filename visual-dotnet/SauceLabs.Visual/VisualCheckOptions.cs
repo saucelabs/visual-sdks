@@ -12,6 +12,8 @@ namespace SauceLabs.Visual
     public class VisualCheckOptions
     {
         public DiffingMethod? DiffingMethod { get; set; }
+        public DiffingMethodTolerance? DiffingMethodTolerance { get; set; }
+        public DiffingMethodSensitivity? DiffingMethodSensitivity { get; set; }
         public IgnoreRegion[]? IgnoreRegions { get; set; }
         public IWebElement[]? IgnoreElements { get; set; }
         public bool? CaptureDom { get; set; }

@@ -37,6 +37,10 @@ namespace SauceLabs.Visual.GraphQL
         public FullPageConfigIn? FullPageConfig { get; set; }
         [JsonProperty("hideScrollBars")]
         public bool? HideScrollBars { get; set; }
+        [JsonProperty("diffingMethodTolerance")]
+        public DiffingMethodToleranceIn? DiffingMethodTolerance { get; set; }
+        [JsonProperty("diffingMethodSensitivity")]
+        public DiffingMethodSensitivity? DiffingMethodSensitivity { get; set; }
 
         public CreateSnapshotFromWebDriverIn(
             string buildUuid,
@@ -54,7 +58,9 @@ namespace SauceLabs.Visual.GraphQL
             FullPageConfigIn? fullPageConfig,
             DiffingOptionsIn? diffingOptions,
             BaselineOverrideIn? baselineOverride,
-            bool? hideScrollBars
+            bool? hideScrollBars,
+            DiffingMethodTolerance? diffingMethodTolerance,
+            DiffingMethodSensitivity? diffingMethodSensitivity
         )
         {
             BuildUuid = buildUuid;
@@ -73,6 +79,8 @@ namespace SauceLabs.Visual.GraphQL
             DiffingOptions = diffingOptions;
             BaselineOverride = baselineOverride;
             HideScrollBars = hideScrollBars;
+            DiffingMethodTolerance = diffingMethodTolerance?.ToDiffingMethodToleranceIn();
+            DiffingMethodSensitivity = diffingMethodSensitivity;
         }
     }
 }
