@@ -241,7 +241,7 @@ export enum BaselinesOrderBy {
 export type Branch = Node & {
   __typename?: 'Branch';
   baselines: BaselinesConnection;
-  /** Returns the differents values availables for attributes. */
+  /** Returns the different values available for attributes. */
   distinctAttributeValues: DistinctAttributeValues;
   id: Scalars['String'];
   lastUsed: Scalars['Datetime'];
@@ -340,7 +340,7 @@ export type Build = Node & {
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: DiffsConnection;
   diffsPaginated: DiffsConnection;
-  /** Returns the differents values availables for attributes. */
+  /** Returns the different values available for attributes. */
   distinctAttributeValues: DistinctAttributeValues;
   /**
    * If not null, it indicates that the build encountered an error.
@@ -675,6 +675,8 @@ export type CreateSnapshotFromWebDriverIn = {
   /** @deprecated(reason: "clipElement should be used instead.") */
   clipSelector?: InputMaybe<Scalars['String']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
+  diffingMethodSensitivity?: InputMaybe<DiffingMethodSensitivity>;
+  diffingMethodTolerance?: InputMaybe<DiffingMethodToleranceIn>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   /** Enable full page screenshot using scroll-and-stitch strategy. */
   fullPageConfig?: InputMaybe<FullPageConfigIn>;
@@ -920,6 +922,56 @@ export enum DiffingMethod {
   Experimental = 'EXPERIMENTAL',
   Simple = 'SIMPLE'
 }
+
+/**
+ * Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for the 'Balanced'
+ * diffing method. Controls the various tolerance options all at once.
+ */
+export enum DiffingMethodSensitivity {
+  /**
+   * The default for the selected diffing method. This is our recommended preset with balanced
+   * settings for catching visual differences while ignoring things like antialiasing and browser
+   * rendering oddities.
+   */
+  Balanced = 'BALANCED',
+  /**
+   * Allows for fewer differences before marking a pixel as having visually changed. Will likely give
+   * more false positives but will catch every pixel change.
+   */
+  High = 'HIGH',
+  /**
+   * Allows more differences before marking a pixel as having visually changed. Might give less false
+   * positives but could miss reporting diffs that are visually similar.
+   */
+  Low = 'LOW'
+}
+
+/**
+ * Controls one or more of the options available to adjust the sensitivity of the 'Balanced' diffing
+ * method directly.
+ */
+export type DiffingMethodToleranceIn = {
+  /**
+   * Value between 0 and 1. 0 will never ignore antialiasing while 1 may allow small text or
+   * symbols to change without being reported.
+   */
+  antiAliasing?: InputMaybe<Scalars['Float']>;
+  /**
+   * Value between 0 and 1. 0 will allow no changes in lightness / darkness while 1 will
+   * allow near complete change in lightness / darkness of a pixel.
+   */
+  brightness?: InputMaybe<Scalars['Float']>;
+  /**
+   * Value between 0 and 1. 0 will allow no changes in color while 1 will allow complete color
+   * change.
+   */
+  color?: InputMaybe<Scalars['Float']>;
+  /**
+   * Control the minimum size (in pixels) before we surface a change. For example, if set to '3' we
+   * would ignore all changes that are less than 3x3 in size.
+   */
+  minChangeSize?: InputMaybe<Scalars['Int']>;
+};
 
 export type DiffingOption = {
   __typename?: 'DiffingOption';
@@ -1944,6 +1996,8 @@ export type SnapshotIn = {
   device?: InputMaybe<Scalars['String']>;
   devicePixelRatio?: InputMaybe<Scalars['Float']>;
   diffingMethod?: InputMaybe<DiffingMethod>;
+  diffingMethodSensitivity?: InputMaybe<DiffingMethodSensitivity>;
+  diffingMethodTolerance?: InputMaybe<DiffingMethodToleranceIn>;
   diffingOptions?: InputMaybe<DiffingOptionsIn>;
   ignoreRegions?: InputMaybe<Array<RegionIn>>;
   jobUrl?: InputMaybe<Scalars['String']>;

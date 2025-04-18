@@ -2,10 +2,7 @@ package com.saucelabs.visual;
 
 import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
-import com.saucelabs.visual.model.DiffingFlag;
-import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import com.saucelabs.visual.model.IgnoreRegion;
-import com.saucelabs.visual.model.VisualRegion;
+import com.saucelabs.visual.model.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -47,6 +44,24 @@ public class CheckOptions {
         fullPageScreenshotConfig,
         null,
         null);
+  }
+
+  private CheckOptions(CheckOptions.Builder builder) {
+    this.ignoreElements = builder.ignoreElements;
+    this.ignoreRegions = builder.ignoreRegions;
+    this.ignoreSelectors = builder.ignoreSelectors;
+    this.regions = builder.regions;
+    this.testName = builder.testName;
+    this.suiteName = builder.suiteName;
+    this.diffingMethod = builder.diffingMethod;
+    this.captureDom = builder.captureDom;
+    this.clipSelector = builder.clipSelector;
+    this.clipElement = builder.clipElement;
+    this.fullPageScreenshotConfig = builder.fullPageScreenshotConfig;
+    this.diffingOptions = builder.diffingOptions;
+    this.hideScrollBars = builder.hideScrollBars;
+    this.diffingMethodSensitivity = builder.diffingMethodSensitivity;
+    this.diffingMethodTolerance = builder.diffingMethodTolerance;
   }
 
   public CheckOptions(
@@ -116,6 +131,8 @@ public class CheckOptions {
   private String suiteName;
   private DiffingMethod diffingMethod;
   private DiffingOptionsIn diffingOptions;
+  private DiffingMethodSensitivity diffingMethodSensitivity;
+  private DiffingMethodTolerance diffingMethodTolerance;
   private Boolean captureDom;
   private String clipSelector;
   private WebElement clipElement;
@@ -131,6 +148,8 @@ public class CheckOptions {
     private String suiteName;
     private DiffingMethod diffingMethod;
     private DiffingOptionsIn diffingOptions;
+    private DiffingMethodSensitivity diffingMethodSensitivity;
+    private DiffingMethodTolerance diffingMethodTolerance;
     private Boolean captureDom;
     private String clipSelector;
     private WebElement clipElement;
@@ -218,21 +237,18 @@ public class CheckOptions {
       return this;
     }
 
+    public Builder withDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
+      this.diffingMethodSensitivity = diffingMethodSensitivity;
+      return this;
+    }
+
+    public Builder withDiffingMethodTolerance(DiffingMethodTolerance diffingMethodToleranceIn) {
+      this.diffingMethodTolerance = diffingMethodToleranceIn;
+      return this;
+    }
+
     public CheckOptions build() {
-      return new CheckOptions(
-          ignoreElements,
-          ignoreRegions,
-          regions,
-          testName,
-          suiteName,
-          diffingMethod,
-          diffingOptions,
-          captureDom,
-          clipSelector,
-          clipElement,
-          fullPageScreenshotConfig,
-          ignoreSelectors,
-          hideScrollBars);
+      return new CheckOptions(this);
     }
   }
 
@@ -338,5 +354,21 @@ public class CheckOptions {
 
   public Boolean getHideScrollBars() {
     return hideScrollBars;
+  }
+
+  public DiffingMethodTolerance getDiffingMethodTolerance() {
+    return diffingMethodTolerance;
+  }
+
+  public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
+    this.diffingMethodTolerance = diffingMethodTolerance;
+  }
+
+  public DiffingMethodSensitivity getDiffingMethodSensitivity() {
+    return diffingMethodSensitivity;
+  }
+
+  public void setDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
+    this.diffingMethodSensitivity = diffingMethodSensitivity;
   }
 }

@@ -35,6 +35,40 @@ type Baseline implements Node {
   branch: String
   browser: Browser!
   browserVersion: String
+
+  """Reads and enables pagination through a set of `Baseline`."""
+  childBaselines(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BaselineCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: BaselineFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Baseline`."""
+    orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BaselinesConnection!
   createdAt: Datetime!
   createdByOrgId: UUID!
   createdByUser: User!
@@ -92,10 +126,11 @@ type Baseline implements Node {
   nodeId: ID!
   operatingSystem: OperatingSystem!
   operatingSystemVersion: String
+
+  """Reads a single `Baseline` that is related to this `Baseline`."""
+  parent: Baseline
   parentId: UUID
   project: String
-  smartSuiteName: String!
-  smartTestName: String!
 
   """Reads a single `Snapshot` that is related to this `Baseline`."""
   snapshot: Snapshot
@@ -131,6 +166,9 @@ input BaselineCondition {
   """Checks for equality with the object’s `id` field."""
   id: UUID
 
+  """Checks for equality with the object’s `parentId` field."""
+  parentId: UUID
+
   """Checks for equality with the object’s `project` field."""
   project: String
 
@@ -156,6 +194,9 @@ input BaselineFilter {
 
   """Filter by the object’s `id` field."""
   id: UUIDFilter
+
+  """Filter by the object’s `parentId` field."""
+  parentId: UUIDFilter
 
   """Filter by the object’s `project` field."""
   project: StringFilter
@@ -217,6 +258,8 @@ enum BaselinesOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
+  PARENT_ID_ASC
+  PARENT_ID_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
   PROJECT_ASC
@@ -260,7 +303,7 @@ type Branch implements Node {
     orderBy: [BaselinesOrderBy!] = [PRIMARY_KEY_ASC]
   ): BaselinesConnection!
 
-  """Returns the differents values availables for attributes."""
+  """Returns the different values available for attributes."""
   distinctAttributeValues: DistinctAttributeValues!
   id: String!
   lastUsed: Datetime!
@@ -419,7 +462,7 @@ type Build implements Node {
     orderBy: [DiffsOrderBy!] = [PRIMARY_KEY_ASC]
   ): DiffsConnection!
 
-  """Returns the differents values availables for attributes."""
+  """Returns the different values available for attributes."""
   distinctAttributeValues: DistinctAttributeValues!
 
   """
@@ -793,13 +836,15 @@ input CreateSnapshotFromWebDriverIn {
   """@deprecated(reason: "clipElement should be used instead.")"""
   clipSelector: String
   diffingMethod: DiffingMethod
+  diffingMethodSensitivity: DiffingMethodSensitivity
+  diffingMethodTolerance: DiffingMethodToleranceIn
   diffingOptions: DiffingOptionsIn
 
-  """
-  Enable full page screenshot using scroll-and-stitch strategy.
-  Limitation: Currently, this feature is supported only on desktop browsers.
-  """
+  """Enable full page screenshot using scroll-and-stitch strategy."""
   fullPageConfig: FullPageConfigIn
+
+  """Hide all scrollbars in the app."""
+  hideScrollBars: Boolean
   ignoreElements: [ElementIn!]
   ignoreRegions: [RegionIn!]
   ignoreSelectors: [IgnoreSelectorIn!]
@@ -1104,6 +1149,61 @@ enum DiffingMethod {
   SIMPLE
 }
 
+"""
+Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for the 'Balanced'
+diffing method. Controls the various tolerance options all at once.
+"""
+enum DiffingMethodSensitivity {
+  """
+  The default for the selected diffing method. This is our recommended preset with balanced
+  settings for catching visual differences while ignoring things like antialiasing and browser
+  rendering oddities.
+  """
+  BALANCED
+
+  """
+  Allows for fewer differences before marking a pixel as having visually changed. Will likely give
+  more false positives but will catch every pixel change.
+  """
+  HIGH
+
+  """
+  Allows more differences before marking a pixel as having visually changed. Might give less false
+  positives but could miss reporting diffs that are visually similar.
+  """
+  LOW
+}
+
+"""
+Controls one or more of the options available to adjust the sensitivity of the 'Balanced' diffing
+method directly.
+"""
+input DiffingMethodToleranceIn {
+  """
+  Value between 0 and 1. 0 will never ignore antialiasing while 1 may allow small text or
+  symbols to change without being reported.
+  """
+  antiAliasing: Float
+
+  """
+  Value between 0 and 1. 0 will allow no changes in lightness / darkness while 1 will
+  allow near complete change in lightness / darkness of a pixel.
+  """
+  brightness: Float
+
+  """
+  Value between 0 and 1. 0 will allow no changes in color while 1 will allow complete color
+  change.
+  """
+  color: Float
+
+  """
+  Control the minimum size (in pixels) before we surface a change. For example, if set to '3' we
+  would ignore all changes that are less than 3x3 in size.
+  """
+  minChangeSize: Int
+}
+
 type DiffingOption {
   content: Boolean
   dimensions: Boolean
@@ -1173,8 +1273,6 @@ type DistinctAttributeValues {
   browser: [Browser]!
   device: [String]!
   operatingSystem: [OperatingSystemAttribute!]!
-  storybookDepth1: [String]!
-  storybookDepth2: [String]!
   suiteName: [String]!
   testName: [String]!
 }
@@ -1230,7 +1328,9 @@ input FullPageConfigIn {
   """
   hideElementsAfterFirstScroll: [WebdriverElementID!]
 
-  """Hide all scrollbars in the app."""
+  """
+  @deprecated(reason: "use hideScrollBars in CreateSnapshotFromWebDriverIn instead.")
+  """
   hideScrollBars: Boolean
 
   """
@@ -1269,8 +1369,6 @@ enum GroupByOption {
   Browser
   Device
   OperatingSystem_OperatingSystemVersion
-  SmartSuiteName
-  SmartTestName
   SuiteName
   TestName
 }
@@ -2242,8 +2340,6 @@ type Snapshot implements Node {
   nodeId: ID!
   operatingSystem: OperatingSystem!
   operatingSystemVersion: String
-  smartSuiteName: String!
-  smartTestName: String!
   suiteName: String
   testName: String
   thumbnailUrl: String!
@@ -2323,6 +2419,8 @@ input SnapshotIn {
   device: String
   devicePixelRatio: Float
   diffingMethod: DiffingMethod
+  diffingMethodSensitivity: DiffingMethodSensitivity
+  diffingMethodTolerance: DiffingMethodToleranceIn
   diffingOptions: DiffingOptionsIn
   ignoreRegions: [RegionIn!]
   jobUrl: String
