@@ -11,7 +11,8 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.client import SauceLabsVisual as Client
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, DiffingOptions, \
-    IgnoreElementRegion, BaselineOverride, Browser, OperatingSystem
+    IgnoreElementRegion, BaselineOverride, Browser, OperatingSystem, DiffingMethodSensitivity, \
+    DiffingMethodTolerance
 from saucelabs_visual.utils import ignore_region_from_dict, is_valid_ignore_region, \
     create_table_from_build_status, is_build_errored, is_build_failed
 
@@ -296,6 +297,8 @@ class SauceLabsVisual:
             diffing_options: Union[DiffingOptions, None] = None,
             baseline_override: Union[BaselineOverride, None] = None,
             hide_scroll_bars: Union[bool, None] = None,
+            diffing_method_sensitivity: Union[DiffingMethodSensitivity, None] = None,
+            diffing_method_tolerance: Union[DiffingMethodTolerance, None] = None,
     ):
         # Robot fails when attempting to parse a TypedDict out of a Union -- and converters are not
         # triggered. So, allow the default value as a string then parse it ourselves to allow us
@@ -322,6 +325,8 @@ class SauceLabsVisual:
             diffing_options=diffing_options,
             baseline_override=baseline_override,
             hide_scroll_bars=hide_scroll_bars,
+            diffing_method_sensitivity=diffing_method_sensitivity,
+            diffing_method_tolerance=diffing_method_tolerance,
         )
 
     @keyword(name="Visual Build Status")
