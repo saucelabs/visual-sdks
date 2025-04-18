@@ -1,19 +1,19 @@
 package com.saucelabs.visual.model;
 
 public enum DiffingMethodSensitivity {
-  Low,
-  Balanced,
-  High;
+  LOW,
+  BALANCED,
+  HIGH;
 
   public com.saucelabs.visual.graphql.type.DiffingMethodSensitivity asGraphQLType() {
     switch (this) {
-      case Low:
-        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.Low;
+      case LOW:
+        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.LOW;
       default:
-      case Balanced:
-        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.Balanced;
-      case High:
-        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.High;
+      case BALANCED:
+        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.BALANCED;
+      case HIGH:
+        return com.saucelabs.visual.graphql.type.DiffingMethodSensitivity.HIGH;
     }
   }
 }
