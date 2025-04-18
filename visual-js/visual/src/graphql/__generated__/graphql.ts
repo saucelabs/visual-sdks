@@ -933,17 +933,17 @@ export enum DiffingMethodSensitivity {
    * settings for catching visual differences while ignoring things like antialiasing and browser
    * rendering oddities.
    */
-  Balanced = 'Balanced',
+  Balanced = 'BALANCED',
   /**
    * Allows for fewer differences before marking a pixel as having visually changed. Will likely give
    * more false positives but will catch every pixel change.
    */
-  High = 'High',
+  High = 'HIGH',
   /**
    * Allows more differences before marking a pixel as having visually changed. Might give less false
    * positives but could miss reporting diffs that are visually similar.
    */
-  Low = 'Low'
+  Low = 'LOW'
 }
 
 /**
