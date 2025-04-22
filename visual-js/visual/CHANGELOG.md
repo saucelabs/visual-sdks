@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.16.0
+
+### Minor Changes
+
+- f365dc1: add tolerance settings support
+
 ## 0.15.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.8.5
+
+### Patch Changes
+
+- Updated dependencies [f365dc1]
+  - @saucelabs/visual@0.16.0
+
 ## 0.8.4
 
 ### Patch Changes

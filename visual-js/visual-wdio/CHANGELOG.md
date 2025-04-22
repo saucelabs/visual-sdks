@@ -1,5 +1,16 @@
 # @saucelabs/wdio-sauce-visual-service
 
+## 0.13.0
+
+### Minor Changes
+
+- f365dc1: add tolerance settings support
+
+### Patch Changes
+
+- Updated dependencies [f365dc1]
+  - @saucelabs/visual@0.16.0
+
 ## 0.12.0
 
 ### Minor Changes

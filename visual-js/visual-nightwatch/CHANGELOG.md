@@ -1,5 +1,12 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [f365dc1]
+  - @saucelabs/visual@0.16.0
+
 ## 0.13.0
 
 ### Minor Changes
