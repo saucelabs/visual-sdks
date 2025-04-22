@@ -331,8 +331,7 @@ class SauceLabsVisual:
             "diffingOptions": diffing_options,
             "diffingMethodSensitivity": diffing_method_sensitivity.value
             if diffing_method_sensitivity is not None else None,
-            "diffingMethodTolerance": asdict(diffing_method_tolerance)
-            if diffing_method_tolerance is not None else None,
+            "diffingMethodTolerance": diffing_method_tolerance,
             "baselineOverride": {
                 key: value for key, value in asdict(baseline_override).items() if value is not None
             } if baseline_override is not None else None,

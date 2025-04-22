@@ -164,9 +164,8 @@ class DiffingMethodSensitivity(str, Enum):
     HIGH = 'HIGH'
 
 
-@dataclass
-class DiffingMethodTolerance:
-    antiAliasing: Union[int, None] = None
-    brightness: Union[float, None] = None
-    color: Union[float, None] = None
-    minChangeSize: Union[int, None] = None
+class DiffingMethodTolerance(TypedDict):
+    antiAliasing: NotRequired[float]
+    brightness: NotRequired[float]
+    color: NotRequired[float]
+    minChangeSize: NotRequired[int]
