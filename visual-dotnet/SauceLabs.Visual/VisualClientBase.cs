@@ -34,7 +34,7 @@ namespace SauceLabs.Visual
         /// The default value is <c>true</c>.
         /// </summary>
         public bool? HideScrollBars { get; set; }
-        
+
         public DiffingMethodSensitivity? DiffingMethodSensitivity { get; set; }
         public DiffingMethodTolerance? DiffingMethodTolerance { get; set; }
 
