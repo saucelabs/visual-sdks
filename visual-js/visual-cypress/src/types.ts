@@ -1,4 +1,4 @@
-import {
+import type {
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
@@ -15,10 +15,12 @@ export interface SauceConfig {
   region?: SauceRegion;
   user?: string;
   key?: string;
-  diffingMethod?: DiffingMethod;
+  diffingMethod?: DiffingMethod | `${DiffingMethod}`;
   diffingOptions?: DiffingOptionsIn;
   diffingMethodTolerance?: DiffingMethodToleranceIn;
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodSensitivity?:
+    | DiffingMethodSensitivity
+    | `${DiffingMethodSensitivity}`;
 }
 
 export interface HasSauceConfig {
@@ -48,10 +50,12 @@ export type ScreenshotMetadata = {
   testName: string;
   suiteName: string;
   regions: ResolvedVisualRegion[];
-  diffingMethod?: DiffingMethod;
+  diffingMethod?: DiffingMethod | `${DiffingMethod}`;
   diffingOptions?: DiffingOptionsIn;
   diffingMethodTolerance?: DiffingMethodToleranceIn;
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodSensitivity?:
+    | DiffingMethodSensitivity
+    | `${DiffingMethodSensitivity}`;
   viewport: SauceVisualViewport | undefined;
   devicePixelRatio: number;
   dom?: string;
@@ -70,7 +74,7 @@ export type VisualCheckOptions = {
   /**
    * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
-  diffingMethod?: DiffingMethod;
+  diffingMethod?: `${DiffingMethod}`;
   /**
    * The diffing options that should be applied by default.
    */
@@ -84,7 +88,7 @@ export type VisualCheckOptions = {
    * Use one of a few presets from Sauce Labs to tweak the diffing sensitivity for supported
    * diffing methods. Controls the various tolerance options all at once.
    */
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodSensitivity?: `${DiffingMethodSensitivity}`;
   /**
    * Specify what kind of checks needs to be done in a specific region
    */
