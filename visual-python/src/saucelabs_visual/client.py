@@ -329,8 +329,10 @@ class SauceLabsVisual:
             "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.BALANCED).value,
             "diffingOptions": diffing_options,
-            "diffingMethodSensitivity": diffing_method_sensitivity,
-            "diffingMethodTolerance": diffing_method_tolerance,
+            "diffingMethodSensitivity": diffing_method_sensitivity.value
+            if diffing_method_sensitivity is not None else None,
+            "diffingMethodTolerance": asdict(diffing_method_tolerance)
+            if diffing_method_tolerance is not None else None,
             "baselineOverride": {
                 key: value for key, value in asdict(baseline_override).items() if value is not None
             } if baseline_override is not None else None,
