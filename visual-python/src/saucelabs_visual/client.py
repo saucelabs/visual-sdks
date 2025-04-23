@@ -15,7 +15,7 @@ from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod,
     DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride, DiffingMethodSensitivity, \
     DiffingMethodTolerance
 
-PKG_VERSION = '0.5.0'
+PKG_VERSION = '0.6.0'
 
 
 class SauceLabsVisual:
