@@ -7,7 +7,7 @@
     <language>en-US</language>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageId>SauceLabs.Visual</PackageId>
-    <Version>0.16.0</Version>
+    <Version>0.17.0</Version>
     <Title>Sauce Labs Visual Binding</Title>
     <PackageTags>saucelabs sauce labs visual testing screenshot capture dom</PackageTags>
     <RepositoryUrl>https://github.com/saucelabs/visual-sdks</RepositoryUrl>
