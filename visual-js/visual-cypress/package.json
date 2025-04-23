@@ -1,6 +1,6 @@
 {
   "name": "@saucelabs/cypress-visual-plugin",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "Cypress plugin for Sauce Visual Testing",
   "main": "build/index.cjs",
   "module": "build/index.js",

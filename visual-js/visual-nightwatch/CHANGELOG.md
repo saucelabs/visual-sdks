@@ -1,5 +1,11 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.14.0
+
+### Minor Changes
+
+- 3057be8: add diffing method sensitivity support
+
 ## 0.13.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.9.0
+
+### Minor Changes
+
+- 3057be8: add diffing method sensitivity support
+
 ## 0.8.5
 
 ### Patch Changes

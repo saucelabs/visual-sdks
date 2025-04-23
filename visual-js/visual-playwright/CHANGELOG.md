@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.4.0
+
+### Minor Changes
+
+- 3057be8: add diffing method sensitivity support
+
 ## 0.3.6
 
 ### Patch Changes
