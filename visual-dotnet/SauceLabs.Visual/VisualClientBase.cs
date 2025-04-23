@@ -35,6 +35,9 @@ namespace SauceLabs.Visual
         /// </summary>
         public bool? HideScrollBars { get; set; }
 
+        public DiffingMethodSensitivity? DiffingMethodSensitivity { get; set; }
+        public DiffingMethodTolerance? DiffingMethodTolerance { get; set; }
+
         protected string? PreviousSuiteName = null;
         private readonly ResiliencePipeline _retryPipeline;
 
@@ -86,7 +89,9 @@ namespace SauceLabs.Visual
                 fullPageConfig: fullPageConfigIn,
                 diffingOptions: options.DiffingOptions?.ToDiffingOptionsIn(),
                 baselineOverride: (options.BaselineOverride ?? BaselineOverride)?.ToBaselineOverrideIn(),
-                hideScrollBars: options.HideScrollBars ?? HideScrollBars
+                hideScrollBars: options.HideScrollBars ?? HideScrollBars,
+                diffingMethodSensitivity: options.DiffingMethodSensitivity ?? DiffingMethodSensitivity,
+                diffingMethodTolerance: options.DiffingMethodTolerance ?? DiffingMethodTolerance
             ))).EnsureValidResponse();
             result.Result.Diffs.Nodes.ToList().ForEach(d => _screenshotIds.Add(d.Id));
             return result.Result.Id;

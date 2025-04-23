@@ -156,3 +156,16 @@ class BaselineOverride:
     operatingSystemVersion: Union[str, None] = None
     suiteName: Union[str, None] = None
     testName: Union[str, None] = None
+
+
+class DiffingMethodSensitivity(str, Enum):
+    LOW = 'LOW'
+    BALANCED = 'BALANCED'
+    HIGH = 'HIGH'
+
+
+class DiffingMethodTolerance(TypedDict):
+    antiAliasing: NotRequired[float]
+    brightness: NotRequired[float]
+    color: NotRequired[float]
+    minChangeSize: NotRequired[int]

@@ -20,6 +20,8 @@ import {
   VisualApi,
   VisualApiRegion,
   getVisualResults,
+  DiffingMethodToleranceIn,
+  DiffingMethodSensitivity,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -33,6 +35,12 @@ import macosRelease from 'macos-release';
 import { backOff } from 'exponential-backoff';
 
 const clientVersion = 'PKG_VERSION';
+
+const asEnum = <T extends DiffingMethod | DiffingMethodSensitivity>(
+  str: T | `${T}` | undefined,
+): T => {
+  return str as T;
+};
 
 const {
   SAUCE_VISUAL_BUILD_NAME,
@@ -102,6 +110,8 @@ class CypressSauceVisual {
   private isBuildExternal = false;
   private diffingMethod: DiffingMethod | undefined;
   private diffingOptions: DiffingOptionsIn | undefined;
+  private diffingMethodTolerance?: DiffingMethodToleranceIn;
+  private diffingMethodSensitivity?: DiffingMethodSensitivity;
   private screenshotsMetadata: { [key: string]: ScreenshotMetadata } = {};
 
   private api: VisualApi;
@@ -128,8 +138,12 @@ class CypressSauceVisual {
         userAgent: `visual-cypress/${clientVersion}`,
       },
     );
-    this.diffingMethod = config.saucelabs?.diffingMethod;
+    this.diffingMethod = asEnum<DiffingMethod>(config.saucelabs?.diffingMethod);
     this.diffingOptions = config.saucelabs?.diffingOptions;
+    this.diffingMethodSensitivity = asEnum<DiffingMethodSensitivity>(
+      config.saucelabs?.diffingMethodSensitivity,
+    );
+    this.diffingMethodTolerance = config.saucelabs?.diffingMethodTolerance;
     this.domCaptureScript = this.api.domCaptureScript();
   }
 
@@ -325,10 +339,14 @@ Sauce Labs Visual: Unable to create new build.
           ? `Desktop  (${metadata.viewport.width}x${metadata.viewport.height})`
           : 'Desktop',
         devicePixelRatio: metadata.devicePixelRatio,
-        diffingMethod:
-          metadata.diffingMethod ||
-          this.diffingMethod ||
-          DiffingMethod.Balanced,
+        diffingMethod: asEnum<DiffingMethod>(
+          metadata.diffingMethod || this.diffingMethod || 'BALANCED',
+        ),
+        diffingMethodTolerance:
+          metadata.diffingMethodTolerance || this.diffingMethodTolerance,
+        diffingMethodSensitivity: asEnum<DiffingMethodSensitivity>(
+          metadata.diffingMethodSensitivity || this.diffingMethodSensitivity,
+        ),
         jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
       });
       logger.info(`    ${chalk.green('✔')} ${metadata.name} `);
@@ -458,4 +476,9 @@ Sauce Labs Visual: Unable to create new build.
   }
 }
 
-export { SauceVisualOptions, CypressSauceVisual, DiffingMethod };
+export {
+  SauceVisualOptions,
+  CypressSauceVisual,
+  DiffingMethod,
+  DiffingMethodSensitivity,
+};

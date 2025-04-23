@@ -12,7 +12,8 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
-    DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride
+    DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride, DiffingMethodSensitivity, \
+    DiffingMethodTolerance
 
 PKG_VERSION = '0.5.0'
 
@@ -41,6 +42,8 @@ class SauceLabsVisual:
 
     capture_dom: Union[bool, None] = None
     diffing_method: Union[DiffingMethod, None] = None
+    diffing_method_sensitivity: Union[DiffingMethodSensitivity, None] = None
+    diffing_method_tolerance: Union[DiffingMethodTolerance, None] = None
     baseline_override: Union[BaselineOverride, None] = None
     hide_scroll_bars: Union[bool, None] = None
     full_page_config: Union[FullPageConfig, None] = None
@@ -225,6 +228,8 @@ class SauceLabsVisual:
             diffing_options: Union[DiffingOptions, None] = None,
             baseline_override: Union[BaselineOverride, None] = None,
             hide_scroll_bars: Union[bool, None] = None,
+            diffing_method_sensitivity: Union[DiffingMethodSensitivity, None] = None,
+            diffing_method_tolerance: Union[DiffingMethodTolerance, None] = None,
     ):
         """
         Create a Visual snapshot in Sauce Labs with a running browser on Sauce.
@@ -245,6 +250,10 @@ class SauceLabsVisual:
         :param baseline_override: One or more keys we should use as an override when matching
             a baseline.
         :param hide_scroll_bars: Hide all scrollbars in the web app. Default value is `true`.
+        :param diffing_method_sensitivity: Adjust the sensitivity of supported diffing engines
+            using a preset.
+        :param diffing_method_tolerance: Adjust the individual sensitivity settings for supported
+            diffing engines.
         :return:
         """
         query = gql(
@@ -266,6 +275,8 @@ class SauceLabsVisual:
                 $diffingOptions: DiffingOptionsIn,
                 $baselineOverride: BaselineOverrideIn,
                 $hideScrollBars: Boolean,
+                $diffingMethodSensitivity: DiffingMethodSensitivity,
+                $diffingMethodTolerance: DiffingMethodToleranceIn,
             ) {
                 createSnapshotFromWebDriver(input: {
                     name: $name,
@@ -283,6 +294,8 @@ class SauceLabsVisual:
                     diffingOptions: $diffingOptions,
                     baselineOverride: $baselineOverride,
                     hideScrollBars: $hideScrollBars,
+                    diffingMethodSensitivity: $diffingMethodSensitivity,
+                    diffingMethodTolerance: $diffingMethodTolerance,
                 }){
                     id
                 }
@@ -294,6 +307,8 @@ class SauceLabsVisual:
         full_page_config = full_page_config or self.full_page_config
         baseline_override = baseline_override or self.baseline_override
         diffing_method = diffing_method or self.diffing_method
+        diffing_method_sensitivity = diffing_method_sensitivity or self.diffing_method_sensitivity
+        diffing_method_tolerance = diffing_method_tolerance or self.diffing_method_tolerance
         values = {
             "name": name,
             "sessionId": session_id,
@@ -314,6 +329,9 @@ class SauceLabsVisual:
             "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.BALANCED).value,
             "diffingOptions": diffing_options,
+            "diffingMethodSensitivity": diffing_method_sensitivity.value
+            if diffing_method_sensitivity is not None else None,
+            "diffingMethodTolerance": diffing_method_tolerance,
             "baselineOverride": {
                 key: value for key, value in asdict(baseline_override).items() if value is not None
             } if baseline_override is not None else None,
