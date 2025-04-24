@@ -18,6 +18,7 @@ import dev.failsafe.RetryPolicy;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.http.client.config.RequestConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -47,6 +48,7 @@ public class VisualApi {
     private Boolean hideScrollBars;
     private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
+    private RequestConfig requestConfig;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, resolveEndpoint());
@@ -108,6 +110,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withRequestConfig(RequestConfig requestConfig) {
+      this.requestConfig = requestConfig;
+      return this;
+    }
+
     public VisualApi build() {
       VisualApi api =
           new VisualApi(
@@ -115,7 +122,8 @@ public class VisualApi {
               endpoint,
               username,
               accessKey,
-              new BuildAttributes(buildName, projectName, branchName, defaultBranchName));
+              new BuildAttributes(buildName, projectName, branchName, defaultBranchName),
+              requestConfig);
 
       if (this.captureDom != null) {
         api.setCaptureDom(this.captureDom);
@@ -201,6 +209,27 @@ public class VisualApi {
       String username,
       String accessKey,
       BuildAttributes buildAttributes) {
+    this(driver, url, username, accessKey, buildAttributes, null);
+  }
+
+  /**
+   * Creates a VisualApi instance with a custom backend URL
+   *
+   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run
+   *     with
+   * @param url Visual Backend URL
+   * @param username SauceLabs username
+   * @param accessKey SauceLabs access key
+   * @param buildAttributes like buildName, project, branch
+   * @param requestConfig RequestConfig object to override proxy / request settings for the client.
+   */
+  public VisualApi(
+      RemoteWebDriver driver,
+      String url,
+      String username,
+      String accessKey,
+      BuildAttributes buildAttributes,
+      RequestConfig requestConfig) {
     if (username == null
         || accessKey == null
         || username.trim().isEmpty()
@@ -209,7 +238,7 @@ public class VisualApi {
           "Invalid SauceLabs credentials. "
               + "Please check your SauceLabs username and access key at https://app.saucelabs.com/user-settings");
     }
-    this.client = new GraphQLClient(url, username, accessKey);
+    this.client = new GraphQLClient(url, username, accessKey, requestConfig);
     this.sessionId = driver.getSessionId().toString();
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;
@@ -226,6 +255,18 @@ public class VisualApi {
       String url,
       String username,
       String accessKey) {
+    this(jobId, driver, build, sessionMetadataBlob, url, username, accessKey, null);
+  }
+
+  VisualApi(
+      String jobId,
+      RemoteWebDriver driver,
+      VisualBuild build,
+      String sessionMetadataBlob,
+      String url,
+      String username,
+      String accessKey,
+      RequestConfig requestConfig) {
     if (username == null
         || accessKey == null
         || username.trim().isEmpty()
@@ -238,7 +279,7 @@ public class VisualApi {
     this.jobId = jobId;
     this.sessionId = driver.getSessionId().toString();
     this.driver = driver;
-    this.client = new GraphQLClient(url, username, accessKey);
+    this.client = new GraphQLClient(url, username, accessKey, requestConfig);
     this.sessionMetadataBlob = sessionMetadataBlob;
   }
 
