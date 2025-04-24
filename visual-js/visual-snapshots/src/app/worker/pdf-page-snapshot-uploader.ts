@@ -16,10 +16,12 @@ export class PdfPageSnapshotUploader {
     buildId: string,
     pdfFilePath: string,
     pageNumber: number,
-    suiteNameFormat: string | undefined,
+    suiteNameFormat: string | undefined, // TODO: will be required after default value is defined
     testNameFormat: string | undefined, // TODO: will be required after default value is defined
     snapshotNameFormat: string | undefined // TODO: will be required after default value is defined
   ) {
+    console.log(`pdfFilePath: ${pdfFilePath}`);
+
     const pdfFile = await this.pdfFileLoader.loadPdfFile(pdfFilePath);
     const page = await pdfFile.getPage(pageNumber);
 

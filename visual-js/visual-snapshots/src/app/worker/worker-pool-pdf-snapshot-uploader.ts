@@ -27,6 +27,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
       await execAll<ProcessPdfPageMethod>(
         pool,
         this.processPageCalls(
+          // TODO: pass current dir
           buildId,
           pdfFilePaths,
           suiteNameFormat,

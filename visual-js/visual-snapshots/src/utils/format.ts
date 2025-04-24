@@ -24,13 +24,15 @@ type FileMetadata = {
 
 export function buildFileMetadata(
   pdfFilePath: string,
-  pageNumber: number
+  pageNumber: number,
+  currentDir: string = process.cwd()
 ): FileMetadata {
+  const dirname = path.dirname(pdfFilePath);
   return {
     filename: path.basename(pdfFilePath).split(".").slice(0, -1).join("."),
     ext: path.extname(pdfFilePath),
-    directory: path.dirname(pdfFilePath),
-    directoryRelative: path.relative(process.cwd(), pdfFilePath),
+    directory: dirname.split(path.sep).at(-1) ?? "",
+    directoryRelative: path.relative(currentDir, dirname),
     page: pageNumber,
   };
 }
