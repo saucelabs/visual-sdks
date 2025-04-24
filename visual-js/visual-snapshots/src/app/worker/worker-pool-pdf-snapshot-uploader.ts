@@ -18,7 +18,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   public async uploadSnapshots({
     buildId,
     pdfFilePaths,
-    suiteName,
+    suiteNameFormat,
     testNameFormat,
     snapshotNameFormat,
   }: UploadPdfSnapshotsParams): Promise<void> {
@@ -29,7 +29,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
         this.processPageCalls(
           buildId,
           pdfFilePaths,
-          suiteName,
+          suiteNameFormat,
           testNameFormat,
           snapshotNameFormat
         )
@@ -51,7 +51,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   private async *processPageCalls(
     buildId: string,
     pdfFilePaths: string[],
-    suiteName: string | undefined,
+    suiteNameFormat: string | undefined,
     testNameFormat: string | undefined,
     snapshotNameFormat: string | undefined
   ): AsyncGenerator<ProcessPdfPageMethod> {
@@ -64,7 +64,7 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
             buildId,
             pdfFilePath,
             i + 1,
-            suiteName,
+            suiteNameFormat,
             testNameFormat,
             snapshotNameFormat,
           ],

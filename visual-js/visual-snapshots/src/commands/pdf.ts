@@ -21,7 +21,6 @@ import { WorkerPoolPdfSnapshotUploader } from "../app/worker/worker-pool-pdf-sna
 import { LibPdfFileLoader } from "../app/pdf-file-loader.js";
 import { logger } from "../logger.js";
 
-
 export const pdfCommand = (clientVersion: string) => {
   return new Command()
     .name("pdf")

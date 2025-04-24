@@ -78,8 +78,8 @@ export const customIdOption = new Option(
 export const suiteNameOption = new Option(
   "--suite-name <suite-name>",
   "The name of the suite you would like to appear in the Sauce Visual dashboard." +
-  EOL +
-  "Supports the following parameters: {filename}, {ext}, {directory}, {directory-relative}, {page}"
+    EOL +
+    "Supports the following parameters: {filename}, {ext}, {directory}, {directory-relative}, {page}"
 );
 
 export const testNameOption = new Option(

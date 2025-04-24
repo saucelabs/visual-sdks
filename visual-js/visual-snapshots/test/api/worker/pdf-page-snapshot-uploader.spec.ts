@@ -77,8 +77,8 @@ describe("PdfPageSnapshotUploader", () => {
         expect.objectContaining({
           buildId: "build-id",
           snapshot: await files[0].getPage(1),
-          snapshotName: `snapshotName-${files[0].path}-1`,
-          testName: `testName-${files[0].path}`,
+          snapshotName: "snapshotName-file1-1",
+          testName: "testName-file1",
           suiteName: "suiteName",
         })
       );
