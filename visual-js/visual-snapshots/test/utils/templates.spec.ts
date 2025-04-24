@@ -1,7 +1,7 @@
 import {
   buildFileMetadata,
   formatStringWithFileMetadata,
-} from "../../src/utils/format.js";
+} from "../../src/utils/templates.js";
 
 describe("buildFileMetadata", () => {
   it("build file metadata for a file in the current directory ", () => {

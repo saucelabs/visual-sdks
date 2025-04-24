@@ -1,7 +1,7 @@
 import {
   buildFileMetadata,
   formatStringWithFileMetadata,
-} from "../../utils/format.js";
+} from "../../utils/templates.js";
 import { PdfFileLoader } from "../pdf-file-loader.js";
 import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
 import { logger as defaultLogger } from "../../logger.js";
