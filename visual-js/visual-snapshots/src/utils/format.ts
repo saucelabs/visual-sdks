@@ -5,10 +5,7 @@ import path from "path";
  *
  * If `key` does not exist in data, it is left as it is.
  */
-export function formatString( // TODO: do not export
-  value: string,
-  data: Record<string, string | number>
-) {
+function formatString(value: string, data: Record<string, string | number>) {
   return Object.entries(data)
     .map(([k, v]) => [k, v.toString()] as const)
     .reduce((current, [k, v]) => current.replaceAll(`{${k}}`, v), value);
