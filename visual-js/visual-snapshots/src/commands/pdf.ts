@@ -1,4 +1,4 @@
-import { Command, Option } from "commander";
+import { Command } from "commander";
 import {
   accessKeyOption,
   branchOption,
@@ -9,30 +9,17 @@ import {
   defaultBranchOption,
   projectOption,
   regionOption,
+  snapshotNameOption,
   suiteNameOption,
+  testNameOption,
   usernameOption,
 } from "./options.js";
 import { PdfCommandHandler, PdfCommandParams } from "../app/pdf-handler.js";
-import { EOL } from "os";
 import { VisualSnapshotsApi } from "../api/visual-snapshots-api.js";
 import { initializeVisualApi } from "../api/visual-client.js";
 import { WorkerPoolPdfSnapshotUploader } from "../app/worker/worker-pool-pdf-snapshot-uploader.js";
 import { LibPdfFileLoader } from "../app/pdf-file-loader.js";
 import { logger } from "../logger.js";
-
-export const testNameOption = new Option(
-  "--test-name <test-name>",
-  "The name of the test you would like to appear in the Sauce Visual dashboard." +
-    EOL +
-    "Supports the following parameters: {filename}"
-);
-
-export const snapshotNameOption = new Option(
-  "--snapshot-name <snapshot-name>",
-  "The name of the snapshot you would like to appear in the Sauce Visual dashboard." +
-    EOL +
-    " Supports the following parameters: {filename}, {page}"
-);
 
 export const pdfCommand = (clientVersion: string) => {
   return new Command()

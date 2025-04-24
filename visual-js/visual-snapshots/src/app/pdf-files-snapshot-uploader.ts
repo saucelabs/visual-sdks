@@ -1,7 +1,7 @@
 export interface UploadPdfSnapshotsParams {
   readonly buildId: string;
   readonly pdfFilePaths: string[];
-  readonly suiteName?: string;
+  readonly suiteNameFormat?: string;
   readonly testNameFormat?: string;
   readonly snapshotNameFormat?: string;
 }

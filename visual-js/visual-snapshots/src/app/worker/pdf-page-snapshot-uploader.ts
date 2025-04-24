@@ -1,5 +1,7 @@
-import path from "path";
-import { formatString } from "../../utils/format.js";
+import {
+  buildFileMetadata,
+  formatStringWithFileMetadata,
+} from "../../utils/templates.js";
 import { PdfFileLoader } from "../pdf-file-loader.js";
 import { VisualSnapshotsApi } from "../../api/visual-snapshots-api.js";
 import { logger as defaultLogger } from "../../logger.js";
@@ -14,23 +16,24 @@ export class PdfPageSnapshotUploader {
     buildId: string,
     pdfFilePath: string,
     pageNumber: number,
-    suiteName: string | undefined,
+    suiteNameFormat: string | undefined,
     testNameFormat: string | undefined,
     snapshotNameFormat: string | undefined
   ) {
     const pdfFile = await this.pdfFileLoader.loadPdfFile(pdfFilePath);
     const page = await pdfFile.getPage(pageNumber);
 
-    const filename = path.basename(pdfFile.path);
+    const pdfFileMetadata = buildFileMetadata(pdfFilePath, pageNumber);
     const testName = testNameFormat
-      ? formatString(testNameFormat, { filename })
+      ? formatStringWithFileMetadata(testNameFormat, pdfFileMetadata)
       : undefined;
-
-    const snapshotFormat = this.getSnapshotFormat(snapshotNameFormat);
-    const snapshotName = formatString(snapshotFormat, {
-      filename,
-      page: pageNumber,
-    });
+    const snapshotName = formatStringWithFileMetadata(
+      snapshotNameFormat ? snapshotNameFormat : `page-{page}`,
+      pdfFileMetadata
+    );
+    const suiteName = suiteNameFormat
+      ? formatStringWithFileMetadata(suiteNameFormat, pdfFileMetadata)
+      : undefined;
 
     const logger = defaultLogger.child({
       filePath: pdfFilePath,
@@ -48,18 +51,5 @@ export class PdfPageSnapshotUploader {
       testName,
       logger,
     });
-  }
-
-  private getSnapshotFormat(format: string | undefined) {
-    if (!format) {
-      return `page-{page}`;
-    }
-
-    // Page number is always required to make the snapshot names unique
-    if (!format.includes("{page}")) {
-      format = format += "-{page}";
-    }
-
-    return format;
   }
 }

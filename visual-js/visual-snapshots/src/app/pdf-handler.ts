@@ -31,7 +31,7 @@ export class PdfCommandHandler {
       await this.pdfSnapshotUploader.uploadSnapshots({
         buildId,
         pdfFilePaths,
-        suiteName: params.suiteName,
+        suiteNameFormat: params.suiteName,
         testNameFormat: params.testName,
         snapshotNameFormat: params.snapshotName,
       });
