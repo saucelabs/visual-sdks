@@ -4,7 +4,7 @@ import {
   UploadSnapshotParams,
   VisualSnapshotsApi,
 } from "../../src/api/visual-snapshots-api.js";
-import { mockLogger } from "../helpers.js";
+import { mockLogger } from "../mock-logger.js";
 
 describe("VisualSnapshots", () => {
   const { logger, logged, reset: resetLogger } = mockLogger();

@@ -1,7 +1,7 @@
 import workerpool, { WorkerPoolOptions } from "workerpool";
 import path from "path";
 import { execAll, WorkerMethod } from "../../src/utils/pool.js";
-import { __dirname } from "../helpers.js";
+import { __dirname } from "../system-helpers.js";
 
 function* workers(
   elements: number[]

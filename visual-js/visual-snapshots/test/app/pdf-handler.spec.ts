@@ -4,21 +4,10 @@ import {
   PdfCommandHandler,
   PdfCommandParams,
 } from "../../src/app/pdf-handler.js";
-import { FileExtractor } from "../../src/utils/glob.js";
-import { __dirname, mockLogger } from "../helpers.js";
+import { MockFileExtractor } from "../mock-file-extractor.js";
+import { mockLogger } from "../mock-logger.js";
+import { __dirname } from "../system-helpers.js";
 import path from "path";
-
-class FakeFileExtractor implements FileExtractor {
-  private files: string[] = [];
-
-  public setFilesToReturn(files: string[]) {
-    this.files = files;
-  }
-
-  public async getFiles(_globOrDirs: string[], _dirGlob: string) {
-    return this.files;
-  }
-}
 
 describe("pdf-handler", () => {
   const createBuildMock = jest.fn<
@@ -49,7 +38,7 @@ describe("pdf-handler", () => {
   const snapshotName = "snapshotName";
   const buildId = "buildId";
 
-  const fileExtractor = new FakeFileExtractor();
+  const fileExtractor = new MockFileExtractor();
 
   const { logger, logged, reset: resetLogger } = mockLogger();
 

@@ -1,6 +1,6 @@
 import { GlobFileExtractor } from "../../src/utils/glob.js";
 import path from "path";
-import { __dirname, __filename } from "../helpers.js";
+import { __dirname, __filename } from "../system-helpers.js";
 
 const glob = new GlobFileExtractor();
 
