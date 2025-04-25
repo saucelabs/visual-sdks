@@ -38,18 +38,19 @@ describe("pdf-handler", () => {
   const snapshotName = "snapshotName";
   const buildId = "buildId";
 
-  const fileExtractor = new MockFileExtractor();
+  const mockFileExtractor = new MockFileExtractor();
 
   const { logger, logged, reset: resetLogger } = mockLogger();
 
   beforeEach(() => {
     jest.resetAllMocks();
     resetLogger();
+    mockFileExtractor.reset();
   });
 
   describe("creating build", () => {
     it("should create a build when buildId is not passed", async () => {
-      fileExtractor.setFilesToReturn([
+      mockFileExtractor.setFilesToReturn([
         "/absolute/path/to/files/1.pdf",
         "/absolute/path/to/files/2.pdf",
       ]);
@@ -57,7 +58,7 @@ describe("pdf-handler", () => {
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -74,6 +75,12 @@ describe("pdf-handler", () => {
       );
 
       expect(createBuildMock).toHaveBeenCalledWith(params);
+      expect(mockFileExtractor.calls()).toEqual([
+        {
+          globOrDirs: [path.join(__dirname(import.meta), "../files/")],
+          dirGlob: "*.pdf",
+        },
+      ]);
       expect(logged).toEqual([
         {
           level: 30,
@@ -83,12 +90,12 @@ describe("pdf-handler", () => {
     });
 
     it("should not create a build when buildId is passed", async () => {
-      fileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
+      mockFileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -106,6 +113,12 @@ describe("pdf-handler", () => {
       );
 
       expect(createBuildMock).not.toHaveBeenCalled();
+      expect(mockFileExtractor.calls()).toEqual([
+        {
+          globOrDirs: [path.join(__dirname(import.meta), "../files/1.pdf")],
+          dirGlob: "*.pdf",
+        },
+      ]);
       expect(logged).toEqual([
         {
           level: 30,
@@ -115,12 +128,12 @@ describe("pdf-handler", () => {
     });
 
     it("should not create a build when there are no files to process", async () => {
-      fileExtractor.setFilesToReturn([]);
+      mockFileExtractor.setFilesToReturn([]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -138,6 +151,12 @@ describe("pdf-handler", () => {
       );
 
       expect(createBuildMock).not.toHaveBeenCalled();
+      expect(mockFileExtractor.calls()).toEqual([
+        {
+          globOrDirs: [path.join(__dirname(import.meta), "../files/1.pdf")],
+          dirGlob: "*.pdf",
+        },
+      ]);
       expect(logged).toEqual([
         { level: 40, msg: "No PDF files found to process." },
       ]);
@@ -146,12 +165,12 @@ describe("pdf-handler", () => {
 
   describe("uploading snapshots", () => {
     it("should call uploadSnapshots with created build ID", async () => {
-      fileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
+      mockFileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -180,12 +199,12 @@ describe("pdf-handler", () => {
     });
 
     it("should call uploadSnapshots with provided build ID", async () => {
-      fileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
+      mockFileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -217,12 +236,12 @@ describe("pdf-handler", () => {
     it("should finish build when buildId is not passed, using created build ID", async () => {
       createBuildMock.mockResolvedValue(buildId);
 
-      fileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
+      mockFileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
@@ -242,12 +261,12 @@ describe("pdf-handler", () => {
     });
 
     it("should not finish build when buildId is passed", async () => {
-      fileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
+      mockFileExtractor.setFilesToReturn(["/absolute/path/to/files/1.pdf"]);
 
       const handler = new PdfCommandHandler(
         visualSnapshotsApi,
         pdfSnapshotUploaderMock,
-        fileExtractor,
+        mockFileExtractor,
         logger
       );
 
