@@ -89,7 +89,7 @@ export const testNameOption = new Option(
   "The name of the test you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-).default("{filename}");
+).default("{filename}{ext}");
 
 export const snapshotNameOption = new Option(
   "--snapshot-name <snapshot-name>",
