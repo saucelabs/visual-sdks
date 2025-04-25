@@ -12,6 +12,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -24,12 +25,26 @@ public class GraphQLClient {
   private final String authentication;
 
   private final ObjectMapper objectMapper;
+  private RequestConfig requestConfig = RequestConfig.DEFAULT;
 
   public GraphQLClient(String uri, String username, String accessKey) {
     this(HttpClients.createSystem(), uri, username, accessKey);
   }
 
+  public GraphQLClient(String uri, String username, String accessKey, RequestConfig requestConfig) {
+    this(HttpClients.createSystem(), uri, username, accessKey, requestConfig);
+  }
+
   public GraphQLClient(HttpClient client, String uri, String username, String accessKey) {
+    this(client, uri, username, accessKey, null);
+  }
+
+  public GraphQLClient(
+      HttpClient client,
+      String uri,
+      String username,
+      String accessKey,
+      RequestConfig requestConfig) {
     this.client = client;
     this.uri = uri;
     this.authentication =
@@ -38,6 +53,10 @@ public class GraphQLClient {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new Jdk8Module());
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    if (requestConfig != null) {
+      this.requestConfig = requestConfig;
+    }
 
     this.objectMapper = objectMapper;
   }
@@ -52,6 +71,7 @@ public class GraphQLClient {
       request.setHeader(
           HttpHeaders.USER_AGENT,
           "sauce-visual-java/" + ArtifactVersion.getArtifactVersion().orElse("unknown"));
+      request.setConfig(requestConfig);
 
       String requestBody = this.objectMapper.writeValueAsString(operation);
       request.setEntity(new StringEntity(requestBody));
