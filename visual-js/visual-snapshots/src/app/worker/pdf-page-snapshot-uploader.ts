@@ -16,24 +16,26 @@ export class PdfPageSnapshotUploader {
     buildId: string,
     pdfFilePath: string,
     pageNumber: number,
-    suiteNameFormat: string | undefined,
-    testNameFormat: string | undefined,
-    snapshotNameFormat: string | undefined
+    suiteNameFormat: string,
+    testNameFormat: string,
+    snapshotNameFormat: string
   ) {
     const pdfFile = await this.pdfFileLoader.loadPdfFile(pdfFilePath);
     const page = await pdfFile.getPage(pageNumber);
 
     const pdfFileMetadata = buildFileMetadata(pdfFilePath, pageNumber);
-    const testName = testNameFormat
-      ? formatStringWithFileMetadata(testNameFormat, pdfFileMetadata)
-      : undefined;
-    const snapshotName = formatStringWithFileMetadata(
-      snapshotNameFormat ? snapshotNameFormat : `page-{page}`,
+    const testName = formatStringWithFileMetadata(
+      testNameFormat,
       pdfFileMetadata
     );
-    const suiteName = suiteNameFormat
-      ? formatStringWithFileMetadata(suiteNameFormat, pdfFileMetadata)
-      : undefined;
+    const snapshotName = formatStringWithFileMetadata(
+      snapshotNameFormat,
+      pdfFileMetadata
+    );
+    const suiteName = formatStringWithFileMetadata(
+      suiteNameFormat,
+      pdfFileMetadata
+    );
 
     const logger = defaultLogger.child({
       filePath: pdfFilePath,

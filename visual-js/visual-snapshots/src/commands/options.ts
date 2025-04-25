@@ -80,21 +80,21 @@ export const suiteNameOption = new Option(
   "The name of the suite you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{directory}");
 
 export const testNameOption = new Option(
   "--test-name <test-name>",
   "The name of the test you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{filename}");
 
 export const snapshotNameOption = new Option(
   "--snapshot-name <snapshot-name>",
   "The name of the snapshot you would like to appear in the Sauce Visual dashboard." +
     EOL +
     " Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{filename}-page-{page}");
 
 export const concurrencyOption = new Option(
   "-j, --concurrency <number>",

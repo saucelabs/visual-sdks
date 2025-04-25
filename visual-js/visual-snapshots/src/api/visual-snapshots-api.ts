@@ -10,9 +10,9 @@ export interface CreateVisualSnapshotsParams {
   project?: string;
   customId?: string;
   buildId?: string;
-  suiteName?: string;
-  testName?: string;
-  snapshotName?: string;
+  suiteName: string;
+  testName: string;
+  snapshotName: string;
 }
 
 export interface CreateBuildParams {

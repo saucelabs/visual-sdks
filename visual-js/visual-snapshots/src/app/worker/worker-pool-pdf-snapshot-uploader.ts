@@ -51,9 +51,9 @@ export class WorkerPoolPdfSnapshotUploader implements PdfSnapshotUploader {
   private async *processPageCalls(
     buildId: string,
     pdfFilePaths: string[],
-    suiteNameFormat: string | undefined,
-    testNameFormat: string | undefined,
-    snapshotNameFormat: string | undefined
+    suiteNameFormat: string,
+    testNameFormat: string,
+    snapshotNameFormat: string
   ): AsyncGenerator<ProcessPdfPageMethod> {
     for (const pdfFilePath of pdfFilePaths) {
       const loaded = await this.pdfLoader.loadPdfFile(pdfFilePath);

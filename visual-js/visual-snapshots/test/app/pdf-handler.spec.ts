@@ -31,6 +31,11 @@ describe("pdf-handler", () => {
     uploadSnapshots: uploadSnapshotsMock,
   } as never as PdfSnapshotUploader;
 
+  const suiteName = "suiteName";
+  const testName = "testName";
+  const snapshotName = "snapshotName";
+  const buildId = "buildId";
+
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -43,6 +48,9 @@ describe("pdf-handler", () => {
       );
 
       const params: PdfCommandParams = {
+        suiteName,
+        testName,
+        snapshotName,
         concurrency: 1,
       };
 
@@ -61,7 +69,10 @@ describe("pdf-handler", () => {
       );
 
       const params: PdfCommandParams = {
-        buildId: "buildId",
+        suiteName,
+        testName,
+        snapshotName,
+        buildId,
         concurrency: 1,
       };
 
@@ -81,9 +92,10 @@ describe("pdf-handler", () => {
         pdfSnapshotUploaderMock
       );
 
-      const buildId = "buildId";
-
       const params: PdfCommandParams = {
+        suiteName,
+        testName,
+        snapshotName,
         concurrency: 1,
       };
 
@@ -97,6 +109,9 @@ describe("pdf-handler", () => {
       expect(uploadSnapshotsMock).toHaveBeenCalledWith(
         expect.objectContaining({
           buildId,
+          suiteNameFormat: suiteName,
+          testNameFormat: testName,
+          snapshotNameFormat: snapshotName,
         })
       );
     });
@@ -107,10 +122,11 @@ describe("pdf-handler", () => {
         pdfSnapshotUploaderMock
       );
 
-      const buildId = "buildId";
-
       const params: PdfCommandParams = {
         buildId,
+        suiteName,
+        testName,
+        snapshotName,
         concurrency: 1,
       };
 
@@ -122,6 +138,9 @@ describe("pdf-handler", () => {
       expect(uploadSnapshotsMock).toHaveBeenCalledWith(
         expect.objectContaining({
           buildId,
+          suiteNameFormat: suiteName,
+          testNameFormat: testName,
+          snapshotNameFormat: snapshotName,
         })
       );
     });
@@ -129,7 +148,6 @@ describe("pdf-handler", () => {
 
   describe("finishing build", () => {
     it("should finish build when buildId is not passed, using created build ID", async () => {
-      const buildId = "buildId";
       createBuildMock.mockResolvedValue(buildId);
 
       const handler = new PdfCommandHandler(
@@ -138,6 +156,9 @@ describe("pdf-handler", () => {
       );
 
       const params: PdfCommandParams = {
+        suiteName,
+        testName,
+        snapshotName,
         concurrency: 1,
       };
 
@@ -157,7 +178,10 @@ describe("pdf-handler", () => {
 
       const params: PdfCommandParams = {
         concurrency: 1,
-        buildId: "buildId",
+        suiteName,
+        testName,
+        snapshotName,
+        buildId,
       };
 
       await handler.handle(
