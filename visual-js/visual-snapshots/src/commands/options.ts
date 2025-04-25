@@ -34,7 +34,9 @@ export const buildNameOption = new Option(
   "The name you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "If not provided, SAUCE_VISUAL_BUILD_NAME environment variable will be used."
-).env("SAUCE_VISUAL_BUILD_NAME");
+)
+  .env("SAUCE_VISUAL_BUILD_NAME")
+  .default("Sauce Visual Build");
 
 export const branchOption = new Option(
   "-b, --branch <branch>",
