@@ -20,6 +20,7 @@ import { initializeVisualApi } from "../api/visual-client.js";
 import { WorkerPoolPdfSnapshotUploader } from "../app/worker/worker-pool-pdf-snapshot-uploader.js";
 import { LibPdfFileLoader } from "../app/pdf-file-loader.js";
 import { logger } from "../logger.js";
+import { GlobFileExtractor } from "../utils/glob.js";
 
 export const pdfCommand = (clientVersion: string) => {
   return new Command()
@@ -52,12 +53,14 @@ export const pdfCommand = (clientVersion: string) => {
           maxWorkers: params.concurrency,
         }
       );
+      const globFileExtractor = new GlobFileExtractor();
 
-      new PdfCommandHandler(visualSnapshotsApi, pdfSnapshotUploader)
+      new PdfCommandHandler(
+        visualSnapshotsApi,
+        pdfSnapshotUploader,
+        globFileExtractor
+      )
         .handle(globsOrDirs, params)
-        .then(() => {
-          logger.info("Successfully created PDF snapshots.");
-        })
         .catch((err) => {
           logger.error(err, "At least one PDF snapshot creation failed.");
         });
