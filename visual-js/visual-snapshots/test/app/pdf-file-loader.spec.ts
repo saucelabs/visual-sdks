@@ -1,5 +1,5 @@
 import { LibPdfFileLoader } from "../../src/app/pdf-file-loader.js";
-import { __dirname } from "../helpers.js";
+import { __dirname } from "../system-helpers.js";
 
 describe("LibPdfFileLoader", () => {
   it("should call library with path and scale", async () => {

@@ -38,7 +38,7 @@ describe("buildFileMetadata", () => {
     ).toEqual(expected);
   });
 
-  it("build file metadata for a file ourside the current directory ", () => {
+  it("build file metadata for a file outside the current directory ", () => {
     const expected = {
       filename: "test2",
       ext: ".pdf",
@@ -52,6 +52,19 @@ describe("buildFileMetadata", () => {
         1,
         "/absolute/path/current-dir"
       )
+    ).toEqual(expected);
+  });
+
+  it("build file metadata for file in the home directory", () => {
+    const expected = {
+      filename: "test1",
+      ext: ".pdf",
+      directory: "",
+      directoryRelative: "../../..",
+      page: 3,
+    };
+    expect(
+      buildFileMetadata("/test1.pdf", 3, "/absolute/path/current-dir")
     ).toEqual(expected);
   });
 });

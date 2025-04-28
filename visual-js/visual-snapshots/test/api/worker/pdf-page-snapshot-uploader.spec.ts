@@ -17,10 +17,6 @@ function createUploadId(content: Buffer) {
 
 describe("PdfPageSnapshotUploader", () => {
   describe("uploadPageSnapshot", () => {
-    const consoleInfoSpy = jest
-      .spyOn(console, "info")
-      .mockImplementation(() => undefined);
-
     const uploadImageAndCreateSnapshot = jest.fn<
       ReturnType<VisualSnapshotsApi["uploadImageAndCreateSnapshot"]>,
       Parameters<VisualSnapshotsApi["uploadImageAndCreateSnapshot"]>
@@ -59,8 +55,6 @@ describe("PdfPageSnapshotUploader", () => {
       uploadImageAndCreateSnapshot.mockImplementation(({ snapshot }) =>
         Promise.resolve(createUploadId(snapshot))
       );
-
-      consoleInfoSpy.mockReset();
     });
 
     it("should call uploadImageAndCreateSnapshot", async () => {

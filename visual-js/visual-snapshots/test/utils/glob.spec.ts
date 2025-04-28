@@ -1,6 +1,8 @@
-import { getFiles } from "../../src/utils/glob.js";
+import { GlobFileExtractor } from "../../src/utils/glob.js";
 import path from "path";
-import { __dirname, __filename } from "../helpers.js";
+import { __dirname, __filename } from "../system-helpers.js";
+
+const glob = new GlobFileExtractor();
 
 describe("getFiles", () => {
   function normalize(paths: string[]) {
@@ -11,7 +13,7 @@ describe("getFiles", () => {
     const input = ["./src/index.ts"];
     const expected = normalize(input);
 
-    const result = await getFiles(input, "*");
+    const result = await glob.getFiles(input, "*");
     expect(normalize(result)).toEqual(expected);
   });
 
@@ -19,7 +21,7 @@ describe("getFiles", () => {
     const input = ["./src/index.ts", __filename(import.meta)];
     const expected = normalize(input);
 
-    const actual = await getFiles(input, "*");
+    const actual = await glob.getFiles(input, "*");
     expect(normalize(actual)).toEqual(expected);
   });
 
@@ -27,7 +29,7 @@ describe("getFiles", () => {
     const input = [path.join(__dirname(import.meta), "*.spec.ts")];
     const expected = normalize([__filename(import.meta)]);
 
-    const actual = await getFiles(input, "*");
+    const actual = await glob.getFiles(input, "*");
     expect(normalize(actual)).toEqual(expect.arrayContaining(expected));
   });
 
@@ -35,7 +37,7 @@ describe("getFiles", () => {
     const input = [__dirname(import.meta)];
     const expected = normalize([__filename(import.meta)]);
 
-    const actual = await getFiles(input, "*.spec.ts");
+    const actual = await glob.getFiles(input, "*.spec.ts");
     expect(normalize(actual)).toEqual(expect.arrayContaining(expected));
   });
 
@@ -46,7 +48,7 @@ describe("getFiles", () => {
     ];
     const expected = normalize([__filename(import.meta)]);
 
-    const result = await getFiles(input, "*");
+    const result = await glob.getFiles(input, "*");
     expect(normalize(result)).toEqual(expected);
   });
 
@@ -54,7 +56,7 @@ describe("getFiles", () => {
     const input = [__dirname(import.meta) + ".not-existing"];
     const expected: string[] = [];
 
-    const result = await getFiles(input, "*");
+    const result = await glob.getFiles(input, "*");
     expect(normalize(result)).toEqual(expected);
   });
 });
