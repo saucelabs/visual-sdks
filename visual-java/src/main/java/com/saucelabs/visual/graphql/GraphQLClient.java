@@ -14,6 +14,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -59,6 +61,26 @@ public class GraphQLClient {
     }
 
     this.objectMapper = objectMapper;
+  }
+
+  /**
+   * Uploads an image/png file to Sauce's visual storage.
+   *
+   * @param uri The URL retrieved from the createSnapshotUpload mutation.
+   * @param image An image byte array, retrieved from the selenium driver's getScreenshotAs()
+   *     method.
+   */
+  public void upload(String uri, byte[] image) throws VisualApiException {
+    HttpPut request = new HttpPut(uri);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "image/png");
+    request.setConfig(requestConfig);
+    request.setEntity(new ByteArrayEntity(image));
+
+    try {
+      client.execute(request);
+    } catch (IOException e) {
+      throw new VisualApiException(e.getMessage(), e);
+    }
   }
 
   public <D> D execute(GraphQLOperation operation, Class<D> responseType)
