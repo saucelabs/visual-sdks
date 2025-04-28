@@ -81,12 +81,7 @@ describe("pdf-handler", () => {
           dirGlob: "*.pdf",
         },
       ]);
-      expect(logged).toEqual([
-        {
-          level: 30,
-          msg: "Found 2 PDF files to process: /absolute/path/to/files/1.pdf, /absolute/path/to/files/2.pdf",
-        },
-      ]);
+      expect(logged).toMatchSnapshot();
     });
 
     it("should not create a build when buildId is passed", async () => {
@@ -119,12 +114,7 @@ describe("pdf-handler", () => {
           dirGlob: "*.pdf",
         },
       ]);
-      expect(logged).toEqual([
-        {
-          level: 30,
-          msg: "Found 1 PDF file to process: /absolute/path/to/files/1.pdf",
-        },
-      ]);
+      expect(logged).toMatchSnapshot();
     });
 
     it("should not create a build when there are no files to process", async () => {
@@ -157,9 +147,7 @@ describe("pdf-handler", () => {
           dirGlob: "*.pdf",
         },
       ]);
-      expect(logged).toEqual([
-        { level: 40, msg: "No PDF files found to process." },
-      ]);
+      expect(logged).toMatchSnapshot();
     });
   });
 

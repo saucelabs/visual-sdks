@@ -37,9 +37,11 @@ export class PdfCommandHandler {
     }
 
     this.logger.info(
-      `Found ${pdfFilePaths.length} PDF file${
-        pdfFilePaths.length > 1 ? "s" : ""
-      } to process: ${pdfFilePaths.join(", ")}`
+      {
+        count: pdfFilePaths.length,
+        paths: pdfFilePaths,
+      },
+      `Found PDF file${pdfFilePaths.length > 1 ? "s" : ""} to process`
     );
 
     const buildId =

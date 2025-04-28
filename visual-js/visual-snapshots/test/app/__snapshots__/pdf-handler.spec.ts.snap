@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pdf-handler creating build should create a build when buildId is not passed 1`] = `
+[
+  {
+    "count": 2,
+    "level": 30,
+    "msg": "Found PDF files to process",
+    "paths": [
+      "/absolute/path/to/files/1.pdf",
+      "/absolute/path/to/files/2.pdf",
+    ],
+  },
+]
+`;
+
+exports[`pdf-handler creating build should not create a build when buildId is passed 1`] = `
+[
+  {
+    "count": 1,
+    "level": 30,
+    "msg": "Found PDF file to process",
+    "paths": [
+      "/absolute/path/to/files/1.pdf",
+    ],
+  },
+]
+`;
+
+exports[`pdf-handler creating build should not create a build when there are no files to process 1`] = `
+[
+  {
+    "level": 40,
+    "msg": "No PDF files found to process.",
+  },
+]
+`;
