@@ -563,17 +563,8 @@ public class VisualApi {
             this.sessionMetadataBlob,
             options.getIgnoreSelectors());
 
-    if (options.getTestName() != null) {
-      input.setTestName(options.getTestName());
-    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
-      input.setTestName(TestMetaInfo.THREAD_LOCAL.get().get().getTestName());
-    }
-
-    if (options.getSuiteName() != null) {
-      input.setSuiteName(options.getSuiteName());
-    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
-      input.setSuiteName(TestMetaInfo.THREAD_LOCAL.get().get().getTestSuite());
-    }
+    input.setTestName(getOrInferTestName(options));
+    input.setSuiteName(getOrInferSuiteName(options));
 
     Boolean captureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
     if (captureDom != null) {
@@ -618,7 +609,7 @@ public class VisualApi {
     }
   }
 
-  private void sauceVisualCheckLocal(String snapshotName, CheckOptions checkOptions) {
+  private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
 
     // create upload and get urls
@@ -641,22 +632,42 @@ public class VisualApi {
                 .withOperatingSystem(CapabilityUtils.getOperatingSystem(caps))
                 .withUploadId(uploadResult.getId())
                 .withBuildId(this.build.getId())
-                .withTestName(checkOptions.getTestName())
-                .withSuiteName(checkOptions.getSuiteName())
-                .withDiffingMethod(toDiffingMethod(checkOptions))
-                .withDiffingOptions(checkOptions.getDiffingOptions())
-                .withIgnoreRegions(extractIgnoreList(checkOptions))
+                .withTestName(getOrInferTestName(options))
+                .withSuiteName(getOrInferSuiteName(options))
+                .withDiffingMethod(toDiffingMethod(options))
+                .withDiffingOptions(options.getDiffingOptions())
+                .withIgnoreRegions(extractIgnoreList(options))
                 .withDiffingMethodSensitivity(
-                    Optional.ofNullable(getDiffingMethodSensitivity(checkOptions))
+                    Optional.ofNullable(getDiffingMethodSensitivity(options))
                         .map(DiffingMethodSensitivity::asGraphQLType)
                         .orElse(null))
                 .withDiffingMethodTolerance(
-                    Optional.ofNullable(getDiffingMethodTolerance(checkOptions))
+                    Optional.ofNullable(getDiffingMethodTolerance(options))
                         .map(DiffingMethodTolerance::asGraphQLType)
                         .orElse(null))
                 .withName(snapshotName)
                 .build());
     this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+  }
+
+  private String getOrInferSuiteName(CheckOptions options) {
+    if (options.getSuiteName() != null) {
+      return options.getSuiteName();
+    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
+      return TestMetaInfo.THREAD_LOCAL.get().get().getTestSuite();
+    }
+
+    return null;
+  }
+
+  private String getOrInferTestName(CheckOptions options) {
+    if (options.getTestName() != null) {
+      return options.getTestName();
+    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
+      return TestMetaInfo.THREAD_LOCAL.get().get().getTestName();
+    }
+
+    return null;
   }
 
   private DiffingMethodSensitivity getDiffingMethodSensitivity(CheckOptions checkOptions) {
