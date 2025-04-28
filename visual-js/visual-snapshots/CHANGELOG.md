@@ -1,5 +1,11 @@
 # @saucelabs/visual-snapshots
 
+## 0.2.0
+
+### Minor Changes
+
+- cafc4f5: Reasonable defaults for build name, suite name, test name, and snapshot name
+
 ## 0.1.3
 
 ### Patch Changes
