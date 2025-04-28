@@ -34,7 +34,9 @@ export const buildNameOption = new Option(
   "The name you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "If not provided, SAUCE_VISUAL_BUILD_NAME environment variable will be used."
-).env("SAUCE_VISUAL_BUILD_NAME");
+)
+  .env("SAUCE_VISUAL_BUILD_NAME")
+  .default("Sauce Visual Build");
 
 export const branchOption = new Option(
   "-b, --branch <branch>",
@@ -80,21 +82,21 @@ export const suiteNameOption = new Option(
   "The name of the suite you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{directoryRelative}");
 
 export const testNameOption = new Option(
   "--test-name <test-name>",
   "The name of the test you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{filename}{ext}");
 
 export const snapshotNameOption = new Option(
   "--snapshot-name <snapshot-name>",
   "The name of the snapshot you would like to appear in the Sauce Visual dashboard." +
     EOL +
     " Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-);
+).default("{filename}-page-{page}");
 
 export const concurrencyOption = new Option(
   "-j, --concurrency <number>",
