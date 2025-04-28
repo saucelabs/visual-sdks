@@ -82,7 +82,7 @@ export const suiteNameOption = new Option(
   "The name of the suite you would like to appear in the Sauce Visual dashboard." +
     EOL +
     "Supports the following parameters: {filename}, {ext}, {directory}, {directoryRelative}, {page}"
-).default("{directory}");
+).default("{directoryRelative}");
 
 export const testNameOption = new Option(
   "--test-name <test-name>",
