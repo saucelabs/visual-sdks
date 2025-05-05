@@ -7,14 +7,17 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.utils.ArtifactVersion;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -25,6 +28,8 @@ public class GraphQLClient {
   private final String uri;
   private final HttpClient client;
   private final String authentication;
+  private final String staticUrl;
+  private static String domCaptureScript;
 
   private final ObjectMapper objectMapper;
   private RequestConfig requestConfig = RequestConfig.DEFAULT;
@@ -49,6 +54,7 @@ public class GraphQLClient {
       RequestConfig requestConfig) {
     this.client = client;
     this.uri = uri;
+    this.staticUrl = URI.create(uri + "/").resolve("../static/").toString();
     this.authentication =
         Base64.getEncoder().encodeToString((username + ":" + accessKey).getBytes());
 
@@ -64,17 +70,55 @@ public class GraphQLClient {
   }
 
   /**
-   * Uploads an image/png file to Sauce's visual storage.
+   * Inject the headers & configuration options for interacting with the GraphQL API.
+   */
+  private void configureRequest(HttpRequestBase request){
+    request.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + authentication);
+    request.setHeader(
+            HttpHeaders.USER_AGENT,
+            "sauce-visual-java/" + ArtifactVersion.getArtifactVersion().orElse("unknown"));
+    request.setConfig(requestConfig);
+  }
+
+  /**
+   * Grab our DOM Capture script from the API if not already cached locally.
+   */
+  public String getDomCaptureScript() {
+    if (GraphQLClient.domCaptureScript != null) {
+      return GraphQLClient.domCaptureScript;
+    }
+
+    String url = this.staticUrl + "browser-scripts/dom-capture.js";
+    try {
+      HttpGet request = new HttpGet(url);
+      configureRequest(request);
+      HttpResponse response = this.client.execute(request);
+      int status = response.getStatusLine().getStatusCode();
+      HttpEntity entity = response.getEntity();
+      String responseString = EntityUtils.toString(entity, "UTF-8");
+
+      if (status != 200) {
+        throw new VisualApiException("Unexpected status code: " + status + " " + responseString);
+      }
+
+      GraphQLClient.domCaptureScript = responseString;
+      return responseString;
+    } catch (IOException e) {
+      throw new VisualApiException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Uploads a file to Sauce's visual storage.
    *
    * @param uri The URL retrieved from the createSnapshotUpload mutation.
-   * @param image An image byte array, retrieved from the selenium driver's getScreenshotAs()
-   *     method.
+   * @param content A byte array containing the contents to upload to Visual storage.
    */
-  public void upload(String uri, byte[] image) throws VisualApiException {
+  public void upload(String uri, byte[] content, String mimeType) throws VisualApiException {
     HttpPut request = new HttpPut(uri);
-    request.setHeader(HttpHeaders.CONTENT_TYPE, "image/png");
+    request.setHeader(HttpHeaders.CONTENT_TYPE, mimeType);
     request.setConfig(requestConfig);
-    request.setEntity(new ByteArrayEntity(image));
+    request.setEntity(new ByteArrayEntity(content));
 
     try {
       client.execute(request);
@@ -89,11 +133,7 @@ public class GraphQLClient {
       HttpPost request = new HttpPost(this.uri);
       request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
       request.setHeader(HttpHeaders.ACCEPT, "application/json");
-      request.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + authentication);
-      request.setHeader(
-          HttpHeaders.USER_AGENT,
-          "sauce-visual-java/" + ArtifactVersion.getArtifactVersion().orElse("unknown"));
-      request.setConfig(requestConfig);
+      configureRequest(request);
 
       String requestBody = this.objectMapper.writeValueAsString(operation);
       request.setEntity(new StringEntity(requestBody));
