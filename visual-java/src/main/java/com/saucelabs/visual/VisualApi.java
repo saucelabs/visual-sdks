@@ -627,7 +627,8 @@ public class VisualApi {
     if (shouldCaptureDom != null && shouldCaptureDom) {
       Object result = this.driver.executeScript(this.client.getDomCaptureScript());
       if (result instanceof String) {
-        this.client.upload(uploadResult.getDomUploadUrl(), ((String) result).getBytes(), "text/html");
+        this.client.upload(
+            uploadResult.getDomUploadUrl(), ((String) result).getBytes(), "text/html");
       } else {
         System.out.println("Failed to capture Visual DOM.");
       }

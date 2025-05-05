@@ -69,20 +69,16 @@ public class GraphQLClient {
     this.objectMapper = objectMapper;
   }
 
-  /**
-   * Inject the headers & configuration options for interacting with the GraphQL API.
-   */
-  private void configureRequest(HttpRequestBase request){
+  /** Inject the headers & configuration options for interacting with the GraphQL API. */
+  private void configureRequest(HttpRequestBase request) {
     request.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + authentication);
     request.setHeader(
-            HttpHeaders.USER_AGENT,
-            "sauce-visual-java/" + ArtifactVersion.getArtifactVersion().orElse("unknown"));
+        HttpHeaders.USER_AGENT,
+        "sauce-visual-java/" + ArtifactVersion.getArtifactVersion().orElse("unknown"));
     request.setConfig(requestConfig);
   }
 
-  /**
-   * Grab our DOM Capture script from the API if not already cached locally.
-   */
+  /** Grab our DOM Capture script from the API if not already cached locally. */
   public String getDomCaptureScript() {
     if (GraphQLClient.domCaptureScript != null) {
       return GraphQLClient.domCaptureScript;
