@@ -623,12 +623,20 @@ public class VisualApi {
     this.client.upload(uploadResult.getImageUploadUrl(), screenshot);
     Capabilities caps = driver.getCapabilities();
 
+    Map<String, Object> dims =
+        (Map<String, Object>)
+            driver.executeScript(
+                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+    String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
+
     // create snapshot using upload id
     CreateSnapshotMutation snapshotMutation =
         new CreateSnapshotMutation(
             SnapshotIn.builder()
                 .withBrowser(CapabilityUtils.getBrowser(caps))
                 .withBrowserVersion(caps.getBrowserVersion())
+                .withDevice(deviceName)
+                .withDevicePixelRatio(formatDevicePixelRatio(dims.get("dpr")))
                 .withOperatingSystem(CapabilityUtils.getOperatingSystem(caps))
                 .withUploadId(uploadResult.getId())
                 .withBuildId(this.build.getId())
@@ -648,6 +656,21 @@ public class VisualApi {
                 .withName(snapshotName)
                 .build());
     this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+  }
+
+  /**
+   * Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API
+   */
+  private double formatDevicePixelRatio(Object rawDpr) {
+    double dpr = 1.0;
+
+    if (rawDpr instanceof Long) {
+      dpr = ((Long) rawDpr).doubleValue();
+    } else if (rawDpr instanceof Double) {
+      dpr = (Double) rawDpr;
+    }
+
+    return dpr;
   }
 
   private String getOrInferSuiteName(CheckOptions options) {
