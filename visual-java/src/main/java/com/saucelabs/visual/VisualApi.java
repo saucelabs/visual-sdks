@@ -658,9 +658,7 @@ public class VisualApi {
     this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
   }
 
-  /**
-   * Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API
-   */
+  /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
   private double formatDevicePixelRatio(Object rawDpr) {
     double dpr = 1.0;
 
