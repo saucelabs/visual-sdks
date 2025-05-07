@@ -11,23 +11,30 @@ import com.saucelabs.visual.model.DiffingMethodTolerance;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import com.saucelabs.visual.model.IgnoreRegion;
 import com.saucelabs.visual.model.VisualRegion;
+import com.saucelabs.visual.utils.CapabilityUtils;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
+import java.lang.reflect.Field;
+import java.net.URL;
 import java.time.Duration;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.client.config.RequestConfig;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.RemoteWebElement;
+import org.openqa.selenium.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VisualApi {
   private static final Logger log = LoggerFactory.getLogger(VisualApi.class);
+  private static final Pattern sauceRegionRegex = Pattern.compile("saucelabs.(com|net)");
 
   private static String resolveEndpoint() {
     return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
@@ -49,6 +56,7 @@ public class VisualApi {
     private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
     private RequestConfig requestConfig;
+    private Boolean isSauceSession;
 
     public Builder(RemoteWebDriver driver, String username, String accessKey) {
       this(driver, username, accessKey, resolveEndpoint());
@@ -115,15 +123,22 @@ public class VisualApi {
       return this;
     }
 
+    /**
+     * Set whether this is running against a Sauce session. If not called, we'll do our best to
+     * automatically determine this setting. Set false to run against a local grid / local Selenium
+     * session.
+     */
+    public Builder withSauceSession(Boolean isSauceSession) {
+      this.isSauceSession = isSauceSession;
+      return this;
+    }
+
+    private BuildAttributes getBuildAttributes() {
+      return new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
+    }
+
     public VisualApi build() {
-      VisualApi api =
-          new VisualApi(
-              driver,
-              endpoint,
-              username,
-              accessKey,
-              new BuildAttributes(buildName, projectName, branchName, defaultBranchName),
-              requestConfig);
+      VisualApi api = new VisualApi(this);
 
       if (this.captureDom != null) {
         api.setCaptureDom(this.captureDom);
@@ -157,6 +172,7 @@ public class VisualApi {
   private DiffingMethodTolerance diffingMethodTolerance;
   private String sessionMetadataBlob;
   private final RemoteWebDriver driver;
+  private Boolean isSauceSession;
 
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
@@ -230,6 +246,17 @@ public class VisualApi {
       String accessKey,
       BuildAttributes buildAttributes,
       RequestConfig requestConfig) {
+    this(driver, url, username, accessKey, buildAttributes, requestConfig, false);
+  }
+
+  private VisualApi(
+      RemoteWebDriver driver,
+      String url,
+      String username,
+      String accessKey,
+      BuildAttributes buildAttributes,
+      RequestConfig requestConfig,
+      Boolean isSauceSession) {
     if (username == null
         || accessKey == null
         || username.trim().isEmpty()
@@ -243,8 +270,20 @@ public class VisualApi {
     String jobIdString = (String) driver.getCapabilities().getCapability("jobUuid");
     this.jobId = jobIdString == null ? sessionId : jobIdString;
     this.build = VisualBuild.getBuildOnce(this, buildAttributes);
-    this.sessionMetadataBlob = this.webdriverSessionInfo().blob;
     this.driver = driver;
+    this.isSauceSession = isSauceSession;
+    refreshWebDriverSessionInfo();
+  }
+
+  private VisualApi(Builder builder) {
+    this(
+        builder.driver,
+        builder.endpoint,
+        builder.username,
+        builder.accessKey,
+        builder.getBuildAttributes(),
+        builder.requestConfig,
+        builder.isSauceSession);
   }
 
   VisualApi(
@@ -281,6 +320,41 @@ public class VisualApi {
     this.driver = driver;
     this.client = new GraphQLClient(url, username, accessKey, requestConfig);
     this.sessionMetadataBlob = sessionMetadataBlob;
+  }
+
+  /**
+   * Use reflection to attempt to automatically determine if the current session is Sauce if not
+   * already configured by the user or cached.
+   */
+  private boolean isSauceSession() {
+    if (isSauceSession != null) {
+      return isSauceSession;
+    }
+
+    CommandExecutor executor = this.driver.getCommandExecutor();
+    Object resolvedExecutor = null;
+    if (executor instanceof TracedCommandExecutor) {
+      try {
+        final Field field = TracedCommandExecutor.class.getDeclaredField("delegate");
+        field.setAccessible(true);
+        resolvedExecutor = field.get(executor);
+      } catch (NoSuchFieldException | IllegalAccessException ignored) {
+      }
+    } else if (executor instanceof HttpCommandExecutor) {
+      resolvedExecutor = executor;
+    }
+
+    if (resolvedExecutor instanceof HttpCommandExecutor) {
+      URL remoteUrl = ((HttpCommandExecutor) resolvedExecutor).getAddressOfRemoteServer();
+      Matcher matcher = sauceRegionRegex.matcher(remoteUrl.toString());
+      isSauceSession = matcher.find();
+    } else {
+      // Fallback to assuming this is currently a sauce session. This can be overridden via the
+      // builder options.
+      isSauceSession = true;
+    }
+
+    return isSauceSession;
   }
 
   /**
@@ -323,14 +397,14 @@ public class VisualApi {
     this.diffingMethodTolerance = diffingMethodTolerance;
   }
 
-  private WebdriverSessionInfoQuery.Result webdriverSessionInfo() {
+  private String webdriverSessionInfo() {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
             new WebdriverSessionInfoQuery.WebdriverSessionInfoIn(this.jobId, this.sessionId));
     try {
       WebdriverSessionInfoQuery.Data response =
           this.client.execute(query, WebdriverSessionInfoQuery.Data.class);
-      return response.result;
+      return response.result.blob;
     } catch (VisualApiException e) {
       log.error(
           "Sauce Visual: No WebDriver session found. Please make sure WebDriver and Sauce Visual data centers are aligned.");
@@ -466,6 +540,14 @@ public class VisualApi {
    * @param options Options for the API
    */
   public void sauceVisualCheck(String snapshotName, CheckOptions options) {
+    if (isSauceSession()) {
+      sauceVisualCheckSauce(snapshotName, options);
+    } else {
+      sauceVisualCheckLocal(snapshotName, options);
+    }
+  }
+
+  private void sauceVisualCheckSauce(String snapshotName, CheckOptions options) {
     DiffingMethod diffingMethod = toDiffingMethod(options);
 
     CreateSnapshotFromWebDriverMutation.CreateSnapshotFromWebDriverIn input =
@@ -481,17 +563,8 @@ public class VisualApi {
             this.sessionMetadataBlob,
             options.getIgnoreSelectors());
 
-    if (options.getTestName() != null) {
-      input.setTestName(options.getTestName());
-    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
-      input.setTestName(TestMetaInfo.THREAD_LOCAL.get().get().getTestName());
-    }
-
-    if (options.getSuiteName() != null) {
-      input.setSuiteName(options.getSuiteName());
-    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
-      input.setSuiteName(TestMetaInfo.THREAD_LOCAL.get().get().getTestSuite());
-    }
+    input.setTestName(getOrInferTestName(options));
+    input.setSuiteName(getOrInferSuiteName(options));
 
     Boolean captureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
     if (captureDom != null) {
@@ -517,16 +590,12 @@ public class VisualApi {
       input.setHideScrollBars(hideScrollBars);
     }
 
-    DiffingMethodSensitivity diffingMethodSensitivity =
-        Optional.ofNullable(options.getDiffingMethodSensitivity())
-            .orElse(this.diffingMethodSensitivity);
+    DiffingMethodSensitivity diffingMethodSensitivity = getDiffingMethodSensitivity(options);
     if (diffingMethodSensitivity != null) {
       input.setDiffingMethodSensitivity(diffingMethodSensitivity);
     }
 
-    DiffingMethodTolerance diffingMethodTolerance =
-        Optional.ofNullable(options.getDiffingMethodTolerance())
-            .orElse(this.diffingMethodTolerance);
+    DiffingMethodTolerance diffingMethodTolerance = getDiffingMethodTolerance(options);
     if (diffingMethodTolerance != null) {
       input.setDiffingMethodTolerance(diffingMethodTolerance);
     }
@@ -538,6 +607,98 @@ public class VisualApi {
       uploadedDiffIds.addAll(
           check.result.diffs.getNodes().stream().map(Diff::getId).collect(Collectors.toList()));
     }
+  }
+
+  private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
+    byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
+
+    // create upload and get urls
+    CreateSnapshotUploadMutation mutation =
+        new CreateSnapshotUploadMutation(
+            SnapshotUploadIn.builder().withBuildId(this.build.getId()).build());
+    SnapshotUpload uploadResult =
+        this.client.execute(mutation, CreateSnapshotUploadMutation.Data.class).result;
+
+    // upload image
+    this.client.upload(uploadResult.getImageUploadUrl(), screenshot);
+    Capabilities caps = driver.getCapabilities();
+
+    Map<String, Object> dims =
+        (Map<String, Object>)
+            driver.executeScript(
+                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+    String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
+
+    // create snapshot using upload id
+    CreateSnapshotMutation snapshotMutation =
+        new CreateSnapshotMutation(
+            SnapshotIn.builder()
+                .withBrowser(CapabilityUtils.getBrowser(caps))
+                .withBrowserVersion(caps.getBrowserVersion())
+                .withDevice(deviceName)
+                .withDevicePixelRatio(formatDevicePixelRatio(dims.get("dpr")))
+                .withOperatingSystem(CapabilityUtils.getOperatingSystem(caps))
+                .withUploadId(uploadResult.getId())
+                .withBuildId(this.build.getId())
+                .withTestName(getOrInferTestName(options))
+                .withSuiteName(getOrInferSuiteName(options))
+                .withDiffingMethod(toDiffingMethod(options))
+                .withDiffingOptions(options.getDiffingOptions())
+                .withIgnoreRegions(extractIgnoreList(options))
+                .withDiffingMethodSensitivity(
+                    Optional.ofNullable(getDiffingMethodSensitivity(options))
+                        .map(DiffingMethodSensitivity::asGraphQLType)
+                        .orElse(null))
+                .withDiffingMethodTolerance(
+                    Optional.ofNullable(getDiffingMethodTolerance(options))
+                        .map(DiffingMethodTolerance::asGraphQLType)
+                        .orElse(null))
+                .withName(snapshotName)
+                .build());
+    this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+  }
+
+  /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
+  private double formatDevicePixelRatio(Object rawDpr) {
+    double dpr = 1.0;
+
+    if (rawDpr instanceof Long) {
+      dpr = ((Long) rawDpr).doubleValue();
+    } else if (rawDpr instanceof Double) {
+      dpr = (Double) rawDpr;
+    }
+
+    return dpr;
+  }
+
+  private String getOrInferSuiteName(CheckOptions options) {
+    if (options.getSuiteName() != null) {
+      return options.getSuiteName();
+    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
+      return TestMetaInfo.THREAD_LOCAL.get().get().getTestSuite();
+    }
+
+    return null;
+  }
+
+  private String getOrInferTestName(CheckOptions options) {
+    if (options.getTestName() != null) {
+      return options.getTestName();
+    } else if (TestMetaInfo.THREAD_LOCAL.get().isPresent()) {
+      return TestMetaInfo.THREAD_LOCAL.get().get().getTestName();
+    }
+
+    return null;
+  }
+
+  private DiffingMethodSensitivity getDiffingMethodSensitivity(CheckOptions checkOptions) {
+    DiffingMethodSensitivity sensitivity = checkOptions.getDiffingMethodSensitivity();
+    return sensitivity != null ? sensitivity : this.diffingMethodSensitivity;
+  }
+
+  private DiffingMethodTolerance getDiffingMethodTolerance(CheckOptions checkOptions) {
+    DiffingMethodTolerance sensitivity = checkOptions.getDiffingMethodTolerance();
+    return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
@@ -610,7 +771,9 @@ public class VisualApi {
   }
 
   public void refreshWebDriverSessionInfo() {
-    this.sessionMetadataBlob = this.webdriverSessionInfo().blob;
+    if (isSauceSession()) {
+      this.sessionMetadataBlob = this.webdriverSessionInfo();
+    }
   }
 
   private List<RegionIn> extractIgnoreList(CheckOptions options) {
