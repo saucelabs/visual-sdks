@@ -616,26 +616,7 @@ public class VisualApi {
     // upload image
     this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
 
-    // upload dom if present / enabled
-    Boolean shouldCaptureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
-    if (shouldCaptureDom != null && shouldCaptureDom) {
-      Object result = this.driver.executeScript(this.client.getDomCaptureScript());
-      if (result instanceof String) {
-        this.client.upload(
-            uploadResult.getDomUploadUrl(), ((String) result).getBytes(), "text/html");
-      } else {
-        System.out.println("Failed to capture Visual DOM.");
-      }
-    }
-
-    Capabilities caps = driver.getCapabilities();
-
-    Map<String, Object> dims =
-        (Map<String, Object>)
-            driver.executeScript(
-                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
-    String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
-
+    // add ignore regions
     WindowScroll scroll = getWindowScroll();
     List<RegionIn> ignoreRegions = extractIgnoreList(options);
 
@@ -655,6 +636,26 @@ public class VisualApi {
       region.setX(region.getX() - scroll.getX());
       region.setY(region.getY() - scroll.getY());
     }
+
+    // upload dom if present / enabled
+    Boolean shouldCaptureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
+    if (shouldCaptureDom != null && shouldCaptureDom) {
+      Object result = this.driver.executeScript(this.client.getDomCaptureScript());
+      if (result instanceof String) {
+        this.client.upload(
+            uploadResult.getDomUploadUrl(), ((String) result).getBytes(), "text/html");
+      } else {
+        System.out.println("Failed to capture Visual DOM.");
+      }
+    }
+
+    Capabilities caps = driver.getCapabilities();
+
+    Map<String, Object> dims =
+        (Map<String, Object>)
+            driver.executeScript(
+                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+    String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
 
     // create snapshot using upload id
     CreateSnapshotMutation snapshotMutation =
