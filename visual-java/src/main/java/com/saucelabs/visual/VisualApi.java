@@ -21,10 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.client.config.RequestConfig;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -641,6 +638,12 @@ public class VisualApi {
 
     WindowScroll scroll = getWindowScroll();
     List<RegionIn> ignoreRegions = extractIgnoreList(options);
+
+    for (WebElement element : options.getIgnoreElements()) {
+      RegionIn ignoreRegion = VisualRegion.ignoreChangesFor(element).toRegionIn();
+      ignoreRegions.add(ignoreRegion);
+    }
+
     for (RegionIn region : ignoreRegions) {
       region.setX(region.getX() - scroll.x);
       region.setY(region.getY() - scroll.y);
