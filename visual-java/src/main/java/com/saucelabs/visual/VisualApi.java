@@ -6,11 +6,8 @@ import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
-import com.saucelabs.visual.model.DiffingMethodTolerance;
-import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import com.saucelabs.visual.model.IgnoreRegion;
-import com.saucelabs.visual.model.VisualRegion;
 import com.saucelabs.visual.utils.CapabilityUtils;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
@@ -642,6 +639,13 @@ public class VisualApi {
                 "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
     String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
 
+    WindowScroll scroll = getWindowScroll();
+    List<RegionIn> ignoreRegions = extractIgnoreList(options);
+    for (RegionIn region : ignoreRegions) {
+      region.setX(region.getX() - scroll.x);
+      region.setY(region.getY() - scroll.y);
+    }
+
     // create snapshot using upload id
     CreateSnapshotMutation snapshotMutation =
         new CreateSnapshotMutation(
@@ -657,7 +661,7 @@ public class VisualApi {
                 .withSuiteName(getOrInferSuiteName(options))
                 .withDiffingMethod(toDiffingMethod(options))
                 .withDiffingOptions(options.getDiffingOptions())
-                .withIgnoreRegions(extractIgnoreList(options))
+                .withIgnoreRegions(ignoreRegions)
                 .withDiffingMethodSensitivity(
                     Optional.ofNullable(getDiffingMethodSensitivity(options))
                         .map(DiffingMethodSensitivity::asGraphQLType)
@@ -712,6 +716,22 @@ public class VisualApi {
   private DiffingMethodTolerance getDiffingMethodTolerance(CheckOptions checkOptions) {
     DiffingMethodTolerance sensitivity = checkOptions.getDiffingMethodTolerance();
     return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
+  }
+
+  private WindowScroll getWindowScroll() {
+    Object result = driver.executeScript("return [window.scrollX, window.scrollY]");
+    if (!(result instanceof List<?>)) {
+      return new WindowScroll(0, 0);
+    }
+
+    List<?> list = (List<?>) result;
+    Object rawScrollX = list.get(0);
+    Object rawScrollY = list.get(1);
+
+    int scrollX = rawScrollX instanceof Long ? ((Long) rawScrollX).intValue() : 0;
+    int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
+
+    return new WindowScroll(scrollX, scrollY);
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
