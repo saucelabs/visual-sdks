@@ -785,7 +785,7 @@ public class VisualApi {
         options.getIgnoreRegions() == null ? Arrays.asList() : options.getIgnoreRegions();
 
     List<VisualRegion> visualRegions =
-        options.getIgnoreRegions() == null ? Arrays.asList() : options.getRegions();
+        options.getRegions() == null ? Arrays.asList() : options.getRegions();
 
     List<RegionIn> result = new ArrayList<>();
     for (int i = 0; i < ignoredRegions.size(); i++) {
