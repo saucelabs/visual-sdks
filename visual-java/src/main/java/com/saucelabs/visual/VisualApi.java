@@ -652,8 +652,8 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      region.setX(region.getX() - scroll.x);
-      region.setY(region.getY() - scroll.y);
+      region.setX(region.getX() - scroll.getX());
+      region.setY(region.getY() - scroll.getY());
     }
 
     // create snapshot using upload id
