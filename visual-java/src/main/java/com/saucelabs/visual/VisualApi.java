@@ -644,6 +644,13 @@ public class VisualApi {
       ignoreRegions.add(ignoreRegion);
     }
 
+    for (IgnoreSelectorIn selector : options.getIgnoreSelectors()) {
+      VisualRegion region = getIgnoreRegionFromSelector(selector);
+      if (region != null) {
+        ignoreRegions.add(region.toRegionIn());
+      }
+    }
+
     for (RegionIn region : ignoreRegions) {
       region.setX(region.getX() - scroll.x);
       region.setY(region.getY() - scroll.y);
@@ -735,6 +742,22 @@ public class VisualApi {
     int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
 
     return new WindowScroll(scrollX, scrollY);
+  }
+
+  private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
+    SelectorIn selector = ignoreSelector.getSelector();
+    By bySelector;
+
+    switch (selector.getType()) {
+      case XPATH:
+        bySelector = By.xpath(selector.getValue());
+        break;
+      default:
+        return null;
+    }
+
+    WebElement element = driver.findElement(bySelector);
+    return new VisualRegion(element, ignoreSelector.getDiffingOptions());
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
