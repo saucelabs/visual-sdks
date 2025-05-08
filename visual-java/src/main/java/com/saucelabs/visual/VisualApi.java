@@ -797,7 +797,7 @@ public class VisualApi {
           VisualRegion.ignoreChangesFor(
                   ignoreRegion.getName(),
                   ignoreRegion.getX(),
-                  ignoreRegion.getHeight(),
+                  ignoreRegion.getY(),
                   ignoreRegion.getWidth(),
                   ignoreRegion.getHeight())
               .toRegionIn());
