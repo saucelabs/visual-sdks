@@ -11,7 +11,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToElementOnThePage=[
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
@@ -34,7 +34,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
@@ -57,7 +57,7 @@ com.saucelabs.visual.integration.ClippingIT.scrollToElementBeforeClipping=[
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },

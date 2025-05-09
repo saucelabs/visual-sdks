@@ -11,7 +11,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSAndDisplayScrollBa
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
@@ -34,7 +34,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithDefaultSetting
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
@@ -57,7 +57,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithScrollLimit=[
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
