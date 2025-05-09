@@ -723,7 +723,8 @@ public class VisualApi {
                         .orElse(null))
                 .withName(snapshotName)
                 .build());
-    CreateSnapshotMutation.Data result = this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+    CreateSnapshotMutation.Data result =
+        this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
     return result.result.getId();
   }
 

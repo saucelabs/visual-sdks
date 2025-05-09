@@ -74,5 +74,8 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Run integration tests
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           ./mvnw -q test -Dtest=com.saucelabs.visual.integration.**
