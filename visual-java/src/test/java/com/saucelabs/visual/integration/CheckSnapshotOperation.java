@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.saucelabs.visual.graphql.GraphQLOperation;
+import com.saucelabs.visual.graphql.type.DiffStatus;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class CheckSnapshotOperation implements GraphQLOperation {
@@ -27,11 +29,19 @@ class CheckSnapshotOperation implements GraphQLOperation {
 
   static class Result {
     String data;
+    DiffStatus status;
 
     @JsonCreator
-    Result(Object data) throws JsonProcessingException {
+    Result(LinkedHashMap<String, LinkedHashMap> data) throws JsonProcessingException {
       this.data =
           new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(data);
+      status =
+          DiffStatus.valueOf(
+              new ObjectMapper()
+                  .readTree(this.data)
+                  .at("/snapshot/diffs/nodes/0")
+                  .get("status")
+                  .textValue());
     }
   }
 }
