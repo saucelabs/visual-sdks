@@ -11,10 +11,7 @@ import dev.failsafe.RetryPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -41,7 +38,7 @@ abstract class IntegrationBase {
           "Sauce Labs credentials not found. Please set SAUCE_USERNAME and SAUCE_ACCESS_KEY in your environment";
       throw new RuntimeException(err);
     }
-    String dataCenter = System.getenv("SAUCE_REGION");
+    String dataCenter = Optional.of(System.getenv("SAUCE_REGION")).orElse("us-west-1");
     return new URL(
         "https://"
             + username
