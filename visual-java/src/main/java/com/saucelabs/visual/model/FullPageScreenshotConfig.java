@@ -18,6 +18,8 @@ public class FullPageScreenshotConfig {
   private SelectorIn nativeClipSelector;
   private ScrollOption scrollOption;
 
+  public FullPageScreenshotConfig() {}
+
   public FullPageScreenshotConfig(
       int delayAfterScrollMs,
       Boolean disableCSSAnimation,

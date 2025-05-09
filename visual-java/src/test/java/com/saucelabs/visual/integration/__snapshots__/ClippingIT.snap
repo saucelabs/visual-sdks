@@ -1,0 +1,67 @@
+com.saucelabs.visual.integration.ClippingIT.clipToElementOnThePage=[
+{
+  "snapshot" : {
+    "name" : "Clipped element (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.ClippingIT",
+    "testName" : "clipToElementOnThePage",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
+{
+  "snapshot" : {
+    "name" : "Clipped selector (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.ClippingIT",
+    "testName" : "clipToSelectorOnThePage",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.ClippingIT.scrollToElementBeforeClipping=[
+{
+  "snapshot" : {
+    "name" : "Scroll to element before clipping (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.ClippingIT",
+    "testName" : "scrollToElementBeforeClipping",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
