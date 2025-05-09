@@ -38,7 +38,7 @@ abstract class IntegrationBase {
           "Sauce Labs credentials not found. Please set SAUCE_USERNAME and SAUCE_ACCESS_KEY in your environment";
       throw new RuntimeException(err);
     }
-    String dataCenter = Optional.of(System.getenv("SAUCE_REGION")).orElse("us-west-1");
+    String dataCenter = Optional.ofNullable(System.getenv("SAUCE_REGION")).orElse("us-west-1");
     return new URL(
         "https://"
             + username
