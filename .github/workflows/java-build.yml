@@ -37,7 +37,9 @@ jobs:
         run: mvn -B verify --file pom.xml
         if: matrix.version == '11'
 
-  integration-test:
+  # Runs the ENV integration test, using our single test suite for all SDKs & a dockerfile for each.
+  # Has specific expectations for a limited number of results so adding more here isn't ideal.
+  integration-test-env:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,3 +61,21 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           CONTAINER_IMAGE_NAME: saucelabs/visual-java
+
+  # Houses all the 'standard' integration tests for local & Sauce session support.
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Run integration tests
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          ./mvnw -q test -Dtest=com.saucelabs.visual.integration.**

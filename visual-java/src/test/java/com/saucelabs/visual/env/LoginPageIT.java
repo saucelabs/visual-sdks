@@ -1,4 +1,4 @@
-package com.saucelabs.visual.integration;
+package com.saucelabs.visual.env;
 
 import com.saucelabs.saucebindings.SaucePlatform;
 import com.saucelabs.saucebindings.UnhandledPromptBehavior;
