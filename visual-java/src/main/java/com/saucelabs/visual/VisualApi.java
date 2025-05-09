@@ -6,11 +6,8 @@ import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
-import com.saucelabs.visual.model.DiffingMethodTolerance;
-import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import com.saucelabs.visual.model.IgnoreRegion;
-import com.saucelabs.visual.model.VisualRegion;
 import com.saucelabs.visual.utils.CapabilityUtils;
 import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
@@ -24,10 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.client.config.RequestConfig;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -622,6 +616,27 @@ public class VisualApi {
     // upload image
     this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
 
+    // add ignore regions
+    WindowScroll scroll = getWindowScroll();
+    List<RegionIn> ignoreRegions = extractIgnoreList(options);
+
+    for (WebElement element : options.getIgnoreElements()) {
+      RegionIn ignoreRegion = VisualRegion.ignoreChangesFor(element).toRegionIn();
+      ignoreRegions.add(ignoreRegion);
+    }
+
+    for (IgnoreSelectorIn selector : options.getIgnoreSelectors()) {
+      VisualRegion region = getIgnoreRegionFromSelector(selector);
+      if (region != null) {
+        ignoreRegions.add(region.toRegionIn());
+      }
+    }
+
+    for (RegionIn region : ignoreRegions) {
+      region.setX(region.getX() - scroll.getX());
+      region.setY(region.getY() - scroll.getY());
+    }
+
     // upload dom if present / enabled
     Boolean shouldCaptureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
     if (shouldCaptureDom != null && shouldCaptureDom) {
@@ -657,7 +672,7 @@ public class VisualApi {
                 .withSuiteName(getOrInferSuiteName(options))
                 .withDiffingMethod(toDiffingMethod(options))
                 .withDiffingOptions(options.getDiffingOptions())
-                .withIgnoreRegions(extractIgnoreList(options))
+                .withIgnoreRegions(ignoreRegions)
                 .withDiffingMethodSensitivity(
                     Optional.ofNullable(getDiffingMethodSensitivity(options))
                         .map(DiffingMethodSensitivity::asGraphQLType)
@@ -712,6 +727,38 @@ public class VisualApi {
   private DiffingMethodTolerance getDiffingMethodTolerance(CheckOptions checkOptions) {
     DiffingMethodTolerance sensitivity = checkOptions.getDiffingMethodTolerance();
     return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
+  }
+
+  private WindowScroll getWindowScroll() {
+    Object result = driver.executeScript("return [window.scrollX, window.scrollY]");
+    if (!(result instanceof List<?>)) {
+      return new WindowScroll(0, 0);
+    }
+
+    List<?> list = (List<?>) result;
+    Object rawScrollX = list.get(0);
+    Object rawScrollY = list.get(1);
+
+    int scrollX = rawScrollX instanceof Long ? ((Long) rawScrollX).intValue() : 0;
+    int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
+
+    return new WindowScroll(scrollX, scrollY);
+  }
+
+  private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
+    SelectorIn selector = ignoreSelector.getSelector();
+    By bySelector;
+
+    switch (selector.getType()) {
+      case XPATH:
+        bySelector = By.xpath(selector.getValue());
+        break;
+      default:
+        return null;
+    }
+
+    WebElement element = driver.findElement(bySelector);
+    return new VisualRegion(element, ignoreSelector.getDiffingOptions());
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
