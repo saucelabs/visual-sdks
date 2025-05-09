@@ -141,7 +141,7 @@ abstract class IntegrationBase {
         RetryPolicy.builder()
             .handle(RuntimeException.class)
             .withBackoff(Duration.ofMillis(100), Duration.ofSeconds(120))
-            .withMaxRetries(5)
+            .withMaxRetries(10)
             .build();
 
     return Failsafe.with(retryPolicy).get(() -> getSnapshotResultInternal(snapshotId));
