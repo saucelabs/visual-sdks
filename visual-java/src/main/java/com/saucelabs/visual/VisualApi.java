@@ -13,6 +13,10 @@ import com.saucelabs.visual.utils.ConsoleColors;
 import com.saucelabs.visual.utils.EnvironmentVariables;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.time.Duration;
@@ -20,6 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import org.apache.http.client.config.RequestConfig;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.*;
@@ -565,10 +570,9 @@ public class VisualApi {
       input.setCaptureDom(captureDom);
     }
 
-    if (options.getClipElement() != null) {
-      input.setClipElement(options.getClipElement());
-    } else if (options.getClipSelector() != null) {
-      input.setClipElement(this.driver.findElement(By.cssSelector(options.getClipSelector())));
+    WebElement clipElement = getClipElement(options);
+    if (clipElement != null) {
+      input.setClipElement(clipElement);
     }
 
     FullPageScreenshotConfig fullPageScreenshotConfig =
@@ -606,6 +610,26 @@ public class VisualApi {
   private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
 
+    WindowScroll scroll = getWindowScroll();
+    int offsetX = scroll.getX();
+    int offsetY = scroll.getY();
+
+    // clip image if required
+    WebElement clipElement = getClipElement(options);
+    if (clipElement != null) {
+      Rectangle clipRect = clipElement.getRect();
+
+      int realX = clipRect.getX() - offsetX;
+      int realY = clipRect.getY() - offsetY;
+
+      screenshot =
+          cropImage(screenshot, "png", realX, realY, clipRect.getWidth(), clipRect.getHeight());
+
+      // change the offsets so they account for cropping
+      offsetX = realX;
+      offsetY = realY;
+    }
+
     // create upload and get urls
     CreateSnapshotUploadMutation mutation =
         new CreateSnapshotUploadMutation(
@@ -617,7 +641,6 @@ public class VisualApi {
     this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
 
     // add ignore regions
-    WindowScroll scroll = getWindowScroll();
     List<RegionIn> ignoreRegions = extractIgnoreList(options);
 
     for (WebElement element : options.getIgnoreElements()) {
@@ -633,8 +656,8 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      region.setX(region.getX() - scroll.getX());
-      region.setY(region.getY() - scroll.getY());
+      region.setX(region.getX() - offsetX);
+      region.setY(region.getY() - offsetY);
     }
 
     // upload dom if present / enabled
@@ -727,6 +750,42 @@ public class VisualApi {
   private DiffingMethodTolerance getDiffingMethodTolerance(CheckOptions checkOptions) {
     DiffingMethodTolerance sensitivity = checkOptions.getDiffingMethodTolerance();
     return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
+  }
+
+  private WebElement getClipElement(CheckOptions checkOptions) {
+    if (checkOptions.getClipElement() != null) {
+      return checkOptions.getClipElement();
+    } else if (checkOptions.getClipSelector() != null) {
+      return this.driver.findElement(By.cssSelector(checkOptions.getClipSelector()));
+    }
+
+    return null;
+  }
+
+  private byte[] cropImage(
+      byte[] imageData, String imageFormat, int x, int y, int width, int height) {
+    BufferedImage image = loadImage(imageData);
+    BufferedImage cropped = image.getSubimage(x, y, width, height);
+    return saveImage(cropped, imageFormat);
+  }
+
+  private BufferedImage loadImage(byte[] imageData) {
+    ByteArrayInputStream stream = new ByteArrayInputStream(imageData);
+    try {
+      return ImageIO.read(stream);
+    } catch (IOException e) {
+      throw new VisualApiException("Failed to load image from bytes", e);
+    }
+  }
+
+  private byte[] saveImage(BufferedImage image, String imageFormat) {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    try {
+      ImageIO.write(image, imageFormat, stream);
+      return stream.toByteArray();
+    } catch (IOException e) {
+      throw new VisualApiException("Failed to save image to bytes", e);
+    }
   }
 
   private WindowScroll getWindowScroll() {
