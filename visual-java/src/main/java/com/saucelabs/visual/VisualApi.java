@@ -764,7 +764,19 @@ public class VisualApi {
 
   private byte[] cropImage(
       byte[] imageData, String imageFormat, int x, int y, int width, int height) {
+    // We can check that before loading the image
+    if (x < 0 || y < 0) {
+      throw new VisualApiException("Clipped element is not visible.");
+    }
+
     BufferedImage image = loadImage(imageData);
+
+    int imageWidth = image.getWidth();
+    int imageHeight = image.getHeight();
+    if (x + width > imageWidth || y + height > imageHeight) {
+      throw new VisualApiException("Clipped element is not visible.");
+    }
+
     BufferedImage cropped = image.getSubimage(x, y, width, height);
     return saveImage(cropped, imageFormat);
   }
