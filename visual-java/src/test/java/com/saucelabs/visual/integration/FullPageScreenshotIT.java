@@ -28,8 +28,8 @@ public class FullPageScreenshotIT extends IntegrationBase {
         sauceVisualCheck(
             "FPS",
             new CheckOptions.Builder().withFullPageConfig(new FullPageScreenshotConfig()).build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -41,8 +41,8 @@ public class FullPageScreenshotIT extends IntegrationBase {
                 .withHideScrollBars(false)
                 .withFullPageConfig(new FullPageScreenshotConfig())
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -54,7 +54,7 @@ public class FullPageScreenshotIT extends IntegrationBase {
                 .withHideScrollBars(true)
                 .withFullPageConfig(new FullPageScreenshotConfig())
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 }

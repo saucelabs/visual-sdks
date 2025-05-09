@@ -28,8 +28,8 @@ public class ClippingIT extends IntegrationBase {
         sauceVisualCheck(
             "Clipped selector",
             new CheckOptions.Builder().withClipSelector(".inventory_list").build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -40,8 +40,8 @@ public class ClippingIT extends IntegrationBase {
             new CheckOptions.Builder()
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class ClippingIT extends IntegrationBase {
                 .withClipElement(
                     driver.findElement(By.cssSelector(".inventory_item:nth-child(21)")))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 }

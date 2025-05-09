@@ -2,11 +2,15 @@ package com.saucelabs.visual.integration;
 
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.VisualApi;
+import com.saucelabs.visual.graphql.type.DiffStatus;
 import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
 import com.saucelabs.visual.graphql.type.SelectorIn;
 import com.saucelabs.visual.graphql.type.SelectorType;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,9 +125,29 @@ abstract class IntegrationBase {
     }
   }
 
-  protected CheckSnapshotOperation.Result getSnapshotResult(String snapshotId) {
-    return visual.execute(
-        new CheckSnapshotOperation(snapshotId), CheckSnapshotOperation.Result.class);
+  private String getSnapshotResultInternal(String snapshotId) {
+    CheckSnapshotOperation.Result result =
+        visual.execute(new CheckSnapshotOperation(snapshotId), CheckSnapshotOperation.Result.class);
+
+    String data = result.data;
+    DiffStatus status = result.status;
+
+    if (status.equals(DiffStatus.QUEUED)) {
+      throw new RuntimeException("Diff still in queued status.");
+    }
+
+    return data;
+  }
+
+  protected String getSnapshotResult(String snapshotId) {
+    RetryPolicy<Object> retryPolicy =
+        RetryPolicy.builder()
+            .handle(RuntimeException.class)
+            .withBackoff(Duration.ofMillis(100), Duration.ofSeconds(120))
+            .withMaxRetries(5)
+            .build();
+
+    return Failsafe.with(retryPolicy).get(() -> getSnapshotResultInternal(snapshotId));
   }
 
   protected static class InventoryLongPage {

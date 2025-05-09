@@ -33,8 +33,8 @@ public class IgnoreRegionsIT extends IntegrationBase {
             new CheckOptions.Builder()
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -46,8 +46,8 @@ public class IgnoreRegionsIT extends IntegrationBase {
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -59,8 +59,8 @@ public class IgnoreRegionsIT extends IntegrationBase {
                 .withFullPageConfig(new FullPageScreenshotConfig.Builder().build())
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -73,8 +73,8 @@ public class IgnoreRegionsIT extends IntegrationBase {
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 
   @Test
@@ -89,7 +89,7 @@ public class IgnoreRegionsIT extends IntegrationBase {
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .build());
-    CheckSnapshotOperation.Result result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result.data);
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
   }
 }
