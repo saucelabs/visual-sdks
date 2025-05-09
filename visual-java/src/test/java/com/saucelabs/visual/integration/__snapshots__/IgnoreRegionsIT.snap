@@ -1,0 +1,1353 @@
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkDefaultStandardIgnoreRegions=[
+{
+  "snapshot" : {
+    "name" : "Standard (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkDefaultStandardIgnoreRegions",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 271,
+      "y" : 155,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 155,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 155,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 155,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 407,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 407,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 407,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 407,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 659,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 659,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 659,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 659,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 911,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 911,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 911,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 911,
+      "width" : 159,
+      "height" : 238
+    } ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnClippedSnapshot=[
+{
+  "snapshot" : {
+    "name" : "Clipped (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkPositionRegionsOnClippedSnapshot",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 16,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    } ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPS=[
+{
+  "snapshot" : {
+    "name" : "FPS (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkPositionRegionsOnFPS",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 271,
+      "y" : 155,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 155,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 155,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 155,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 407,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 407,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 407,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 407,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 659,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 659,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 659,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 659,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 911,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 911,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 1095,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 911,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 911,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 1095,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 1163,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 1163,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 1347,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 1163,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 1163,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 1347,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 1415,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 1415,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 1599,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 1415,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 1415,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 1599,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 1667,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 1667,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 1851,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 1667,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 1667,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 1851,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 1919,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 1919,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 2103,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 1919,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 1919,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 2103,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 2171,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 2171,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 2355,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 2171,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 2171,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 2355,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 2423,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 2423,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 2607,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 2423,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 2423,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 2607,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 271,
+      "y" : 2675,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 271,
+      "y" : 2675,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 580,
+      "y" : 2859,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 826,
+      "y" : 2675,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 826,
+      "y" : 2675,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 1135,
+      "y" : 2859,
+      "width" : 160,
+      "height" : 34
+    } ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPSWhenClipped=[
+{
+  "snapshot" : {
+    "name" : "Clipped (FPS) (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkPositionRegionsOnFPSWhenClipped",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 16,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1193,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1193,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1261,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1261,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1445,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1261,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1261,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1445,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1513,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1513,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1697,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1513,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1513,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1697,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1765,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1765,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1949,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1765,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1765,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1949,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2017,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2017,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2201,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2017,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2017,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2201,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2269,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2269,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2453,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2269,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2269,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2453,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2521,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2521,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2705,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2521,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2521,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2705,
+      "width" : 160,
+      "height" : 34
+    } ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPSWhenScrolledPriorToClip=[
+{
+  "snapshot" : {
+    "name" : "FPS (scrolled) (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkPositionRegionsOnFPSWhenScrolledPriorToClip",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1600x1059)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 16,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 185,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 253,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 437,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 505,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 689,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 757,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 941,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1193,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1009,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1193,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1261,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1261,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1445,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1261,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1261,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1445,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1513,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1513,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1697,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1513,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1513,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1697,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 1765,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 1765,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 1949,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 1765,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 1765,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 1949,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2017,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2017,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2201,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2017,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2017,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2201,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2269,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2269,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2453,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2269,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2269,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2453,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 16,
+      "y" : 2521,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 16,
+      "y" : 2521,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 325,
+      "y" : 2705,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 571,
+      "y" : 2521,
+      "width" : 150,
+      "height" : 238
+    }, {
+      "x" : 571,
+      "y" : 2521,
+      "width" : 159,
+      "height" : 238
+    }, {
+      "x" : 880,
+      "y" : 2705,
+      "width" : 160,
+      "height" : 34
+    } ]
+  }
+}
+]

@@ -10,4 +10,4 @@ COPY ./mvnw /workspace/
 
 RUN ./mvnw -q clean test-compile
 
-ENTRYPOINT ["./mvnw", "-q", "test" ,"-Dtest=com.saucelabs.visual.integration.**"]
+ENTRYPOINT ["./mvnw", "-q", "test" ,"-Dtest=com.saucelabs.visual.env.**"]

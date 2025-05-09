@@ -523,8 +523,8 @@ public class VisualApi {
    *
    * @param snapshotName A name for the snapshot
    */
-  public void sauceVisualCheck(String snapshotName) {
-    sauceVisualCheck(snapshotName, new CheckOptions());
+  public String sauceVisualCheck(String snapshotName) {
+    return sauceVisualCheck(snapshotName, new CheckOptions());
   }
 
   /**
@@ -533,15 +533,15 @@ public class VisualApi {
    * @param snapshotName A name for the snapshot
    * @param options Options for the API
    */
-  public void sauceVisualCheck(String snapshotName, CheckOptions options) {
+  public String sauceVisualCheck(String snapshotName, CheckOptions options) {
     if (isSauceSession()) {
-      sauceVisualCheckSauce(snapshotName, options);
+      return sauceVisualCheckSauce(snapshotName, options);
     } else {
-      sauceVisualCheckLocal(snapshotName, options);
+      return sauceVisualCheckLocal(snapshotName, options);
     }
   }
 
-  private void sauceVisualCheckSauce(String snapshotName, CheckOptions options) {
+  private String sauceVisualCheckSauce(String snapshotName, CheckOptions options) {
     DiffingMethod diffingMethod = toDiffingMethod(options);
 
     CreateSnapshotFromWebDriverMutation.CreateSnapshotFromWebDriverIn input =
@@ -600,10 +600,21 @@ public class VisualApi {
     if (check != null && check.result != null) {
       uploadedDiffIds.addAll(
           check.result.diffs.getNodes().stream().map(Diff::getId).collect(Collectors.toList()));
+
+      return check.result.id;
     }
+
+    return null;
   }
 
-  private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
+  /**
+   * Expose execute binding directly, allowing queries to the Visual API using the existing client.
+   */
+  public <D> D execute(GraphQLOperation operation, Class<D> responseType) {
+    return this.client.execute(operation, responseType);
+  }
+
+  private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
 
     // create upload and get urls
@@ -683,7 +694,8 @@ public class VisualApi {
                         .orElse(null))
                 .withName(snapshotName)
                 .build());
-    this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+    CreateSnapshotMutation.Data result = this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
+    return result.result.getId();
   }
 
   /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
