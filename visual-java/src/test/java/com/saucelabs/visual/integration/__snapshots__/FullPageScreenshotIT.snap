@@ -6,7 +6,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSAndDisplayScrollBa
     "testName" : "takeAFPSAndDisplayScrollBars",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -29,7 +29,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithDefaultSetting
     "testName" : "takeAFPSWithDefaultSettings",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -52,7 +52,7 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithScrollLimit=[
     "testName" : "takeAFPSWithScrollLimit",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {

@@ -6,7 +6,7 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkDefaultStandardIgnoreRegio
     "testName" : "checkDefaultStandardIgnoreRegions",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -16,112 +16,112 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkDefaultStandardIgnoreRegio
       } ]
     },
     "ignoreRegions" : [ {
-      "x" : 271,
+      "x" : 163,
       "y" : 155,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 155,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 339,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 155,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 155,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 339,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 407,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 407,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 591,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 407,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 407,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 591,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 659,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 659,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 843,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 659,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 659,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 843,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 911,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 911,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 911,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 911,
       "width" : 159,
       "height" : 238
@@ -139,7 +139,7 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnClippedSn
     "testName" : "checkPositionRegionsOnClippedSnapshot",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -268,26 +268,6 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnClippedSn
       "y" : 941,
       "width" : 160,
       "height" : 34
-    }, {
-      "x" : 16,
-      "y" : 1009,
-      "width" : 150,
-      "height" : 238
-    }, {
-      "x" : 16,
-      "y" : 1009,
-      "width" : 159,
-      "height" : 238
-    }, {
-      "x" : 571,
-      "y" : 1009,
-      "width" : 150,
-      "height" : 238
-    }, {
-      "x" : 571,
-      "y" : 1009,
-      "width" : 159,
-      "height" : 238
     } ]
   }
 }
@@ -302,7 +282,7 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPS=[
     "testName" : "checkPositionRegionsOnFPS",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -312,332 +292,332 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPS=[
       } ]
     },
     "ignoreRegions" : [ {
-      "x" : 271,
+      "x" : 163,
       "y" : 155,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 155,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 339,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 155,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 155,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 339,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 407,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 407,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 591,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 407,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 407,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 591,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 659,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 659,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 843,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 659,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 659,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 843,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 911,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 911,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 1095,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 911,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 911,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 1095,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1163,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1163,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 1347,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1163,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1163,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 1347,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1415,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1415,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 1599,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1415,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1415,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 1599,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1667,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1667,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 1851,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1667,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1667,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 1851,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1919,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 1919,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 2103,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1919,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 1919,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 2103,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2171,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2171,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 2355,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2171,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2171,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 2355,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2423,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2423,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 2607,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2423,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2423,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 2607,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2675,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 271,
+      "x" : 163,
       "y" : 2675,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 580,
+      "x" : 472,
       "y" : 2859,
       "width" : 160,
       "height" : 34
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2675,
       "width" : 150,
       "height" : 238
     }, {
-      "x" : 826,
+      "x" : 718,
       "y" : 2675,
       "width" : 159,
       "height" : 238
     }, {
-      "x" : 1135,
+      "x" : 1027,
       "y" : 2859,
       "width" : 160,
       "height" : 34
@@ -655,7 +635,7 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPSWhenCl
     "testName" : "checkPositionRegionsOnFPSWhenClipped",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -1008,7 +988,7 @@ com.saucelabs.visual.integration.IgnoreRegionsIT.checkPositionRegionsOnFPSWhenSc
     "testName" : "checkPositionRegionsOnFPSWhenScrolledPriorToClip",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {

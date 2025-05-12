@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -52,13 +53,14 @@ abstract class IntegrationBase {
   @BeforeAll
   public static void setUp() throws MalformedURLException {
     MutableCapabilities caps = new MutableCapabilities();
-    caps.setCapability("browserName", "chrome");
+    caps.setCapability("browserName", "firefox");
     caps.setCapability("browserVersion", "latest");
     caps.setCapability("platformName", "Windows 10");
     Map<String, Object> sauceOptions = new HashMap<>();
     sauceOptions.put("screenResolution", "1600x1200");
     caps.setCapability("sauce:options", sauceOptions);
     driver = isLocal ? new FirefoxDriver() : new RemoteWebDriver(getDriverUrl(), caps);
+    driver.manage().window().setSize(new Dimension(1400, 1100));
     visual =
         new VisualApi.Builder(driver, username, accessKey)
             .withBuild("Java integration tests")

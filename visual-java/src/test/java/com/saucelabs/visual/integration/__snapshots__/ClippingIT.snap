@@ -6,7 +6,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToElementOnThePage=[
     "testName" : "clipToElementOnThePage",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -29,7 +29,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
     "testName" : "clipToSelectorOnThePage",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
@@ -52,7 +52,7 @@ com.saucelabs.visual.integration.ClippingIT.scrollToElementBeforeClipping=[
     "testName" : "scrollToElementBeforeClipping",
     "operatingSystem" : "WINDOWS",
     "operatingSystemVersion" : "10",
-    "device" : "Desktop (1600x1059)",
+    "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
     "diffs" : {
