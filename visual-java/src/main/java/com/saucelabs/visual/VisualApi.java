@@ -608,26 +608,22 @@ public class VisualApi {
   }
 
   private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
+    Rectangle viewport = getViewport();
     byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
-
-    WindowScroll scroll = getWindowScroll();
-    int offsetX = scroll.getX();
-    int offsetY = scroll.getY();
 
     // clip image if required
     WebElement clipElement = getClipElement(options);
     if (clipElement != null) {
       Rectangle clipRect = clipElement.getRect();
+      Optional<Rectangle> cropRect = intersect(clipRect, viewport);
+      if (!cropRect.isPresent()) {
+        throw new VisualApiException("Clipping would result in an empty image");
+      }
 
-      int realX = clipRect.getX() - offsetX;
-      int realY = clipRect.getY() - offsetY;
-
-      screenshot =
-          cropImage(screenshot, "png", realX, realY, clipRect.getWidth(), clipRect.getHeight());
-
-      // change the offsets so they account for cropping
-      offsetX = realX;
-      offsetY = realY;
+      BufferedImage image = loadImage(screenshot);
+      BufferedImage cropped = cropImage(image, relativeTo(viewport.getPoint(), cropRect.get()));
+      screenshot = saveImage(cropped, "png");
+      viewport = cropRect.get();
     }
 
     // create upload and get urls
@@ -656,8 +652,9 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      region.setX(region.getX() - offsetX);
-      region.setY(region.getY() - offsetY);
+      Point newPoint = relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
+      region.setX(newPoint.x);
+      region.setY(newPoint.y);
     }
 
     // upload dom if present / enabled
@@ -762,23 +759,8 @@ public class VisualApi {
     return null;
   }
 
-  private byte[] cropImage(
-      byte[] imageData, String imageFormat, int x, int y, int width, int height) {
-    // We can check that before loading the image
-    if (x < 0 || y < 0) {
-      throw new VisualApiException("Clipped element is not visible.");
-    }
-
-    BufferedImage image = loadImage(imageData);
-
-    int imageWidth = image.getWidth();
-    int imageHeight = image.getHeight();
-    if (x + width > imageWidth || y + height > imageHeight) {
-      throw new VisualApiException("Clipped element is not visible.");
-    }
-
-    BufferedImage cropped = image.getSubimage(x, y, width, height);
-    return saveImage(cropped, imageFormat);
+  private BufferedImage cropImage(BufferedImage image, Rectangle cropRegion) {
+    return image.getSubimage(cropRegion.x, cropRegion.y, cropRegion.width, cropRegion.height);
   }
 
   private BufferedImage loadImage(byte[] imageData) {
@@ -800,20 +782,54 @@ public class VisualApi {
     }
   }
 
-  private WindowScroll getWindowScroll() {
-    Object result = driver.executeScript("return [window.scrollX, window.scrollY]");
+  private Rectangle getViewport() {
+    Object result =
+        driver.executeScript(
+            "return [window.scrollX, window.scrollY, window.innerWidth, window.innerHeight];");
     if (!(result instanceof List<?>)) {
-      return new WindowScroll(0, 0);
+      return new Rectangle(0, 0, 0, 0);
     }
 
     List<?> list = (List<?>) result;
     Object rawScrollX = list.get(0);
     Object rawScrollY = list.get(1);
+    Object rawWidth = list.get(2);
+    Object rawHeight = list.get(3);
 
     int scrollX = rawScrollX instanceof Long ? ((Long) rawScrollX).intValue() : 0;
     int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
+    int width = rawWidth instanceof Long ? ((Long) rawWidth).intValue() : 0;
+    int height = rawHeight instanceof Long ? ((Long) rawHeight).intValue() : 0;
 
-    return new WindowScroll(scrollX, scrollY);
+    return new Rectangle(scrollX, scrollY, height, width);
+  }
+
+  private Rectangle relativeTo(Point origin, Rectangle rectangle) {
+    int newX = rectangle.x - origin.x;
+    int newY = rectangle.y - origin.y;
+    return new Rectangle(new Point(newX, newY), rectangle.getDimension());
+  }
+
+  private Point relativeTo(Point origin, Point point) {
+    int newX = point.x - origin.x;
+    int newY = point.y - origin.y;
+    return new Point(newX, newY);
+  }
+
+  private Optional<Rectangle> intersect(Rectangle r1, Rectangle r2) {
+    int x1 = Math.max(r1.x, r2.x);
+    int y1 = Math.max(r1.y, r2.y);
+    int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
+    int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
+
+    int intersectionWidth = x2 - x1;
+    int intersectionHeight = y2 - y1;
+
+    if (intersectionWidth <= 0 || intersectionHeight <= 0) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new Rectangle(x1, y1, intersectionHeight, intersectionWidth));
   }
 
   private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
