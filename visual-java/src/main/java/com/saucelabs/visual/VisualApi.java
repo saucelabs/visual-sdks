@@ -8,9 +8,7 @@ import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
 import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
-import com.saucelabs.visual.utils.CapabilityUtils;
-import com.saucelabs.visual.utils.ConsoleColors;
-import com.saucelabs.visual.utils.EnvironmentVariables;
+import com.saucelabs.visual.utils.*;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import java.awt.image.BufferedImage;
@@ -608,7 +606,8 @@ public class VisualApi {
   }
 
   private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
-    Rectangle viewport = getViewport();
+    Window window = new Window(this.driver);
+    Rectangle viewport = window.getViewport();
 
     byte[] screenshot;
 
@@ -618,20 +617,20 @@ public class VisualApi {
       Rectangle clipRect = clipElement.getRect();
 
       // Scroll to the clipped element
-      Rectangle newViewport = scrollTo(clipRect.getPoint());
+      Rectangle newViewport = window.scrollTo(clipRect.getPoint());
       screenshot = driver.getScreenshotAs(OutputType.BYTES);
 
       // Restore the original scroll
-      scrollTo(viewport.getPoint());
+      window.scrollTo(viewport.getPoint());
 
-      Optional<Rectangle> cropRect = intersect(clipRect, newViewport);
+      Optional<Rectangle> cropRect = CartesianHelpers.intersect(clipRect, newViewport);
       if (!cropRect.isPresent()) {
         throw new VisualApiException("Clipping would result in an empty image");
       }
 
-      BufferedImage image = loadImage(screenshot);
-      BufferedImage cropped = cropImage(image, relativeTo(newViewport.getPoint(), cropRect.get()));
-      screenshot = saveImage(cropped, "png");
+      BufferedImage image = ImageHelpers.loadImage(screenshot);
+      BufferedImage cropped = ImageHelpers.cropImage(image, CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get()));
+      screenshot = ImageHelpers.saveImage(cropped, "png");
       viewport = cropRect.get();
     } else {
       screenshot = driver.getScreenshotAs(OutputType.BYTES);
@@ -663,7 +662,7 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      Point newPoint = relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
+      Point newPoint = CartesianHelpers.relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
       region.setX(newPoint.x);
       region.setY(newPoint.y);
     }
@@ -768,84 +767,6 @@ public class VisualApi {
     }
 
     return null;
-  }
-
-  private BufferedImage cropImage(BufferedImage image, Rectangle cropRegion) {
-    return image.getSubimage(cropRegion.x, cropRegion.y, cropRegion.width, cropRegion.height);
-  }
-
-  private BufferedImage loadImage(byte[] imageData) {
-    ByteArrayInputStream stream = new ByteArrayInputStream(imageData);
-    try {
-      return ImageIO.read(stream);
-    } catch (IOException e) {
-      throw new VisualApiException("Failed to load image from bytes", e);
-    }
-  }
-
-  private byte[] saveImage(BufferedImage image, String imageFormat) {
-    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    try {
-      ImageIO.write(image, imageFormat, stream);
-      return stream.toByteArray();
-    } catch (IOException e) {
-      throw new VisualApiException("Failed to save image to bytes", e);
-    }
-  }
-
-  private Rectangle getViewport() {
-    Object result =
-        driver.executeScript(
-            "return [window.scrollX, window.scrollY, window.innerWidth, window.innerHeight];");
-    if (!(result instanceof List<?>)) {
-      return new Rectangle(0, 0, 0, 0);
-    }
-
-    List<?> list = (List<?>) result;
-    Object rawScrollX = list.get(0);
-    Object rawScrollY = list.get(1);
-    Object rawWidth = list.get(2);
-    Object rawHeight = list.get(3);
-
-    int scrollX = rawScrollX instanceof Long ? ((Long) rawScrollX).intValue() : 0;
-    int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
-    int width = rawWidth instanceof Long ? ((Long) rawWidth).intValue() : 0;
-    int height = rawHeight instanceof Long ? ((Long) rawHeight).intValue() : 0;
-
-    return new Rectangle(scrollX, scrollY, height, width);
-  }
-
-  private Rectangle scrollTo(Point point) {
-    driver.executeScript(String.format("window.scrollTo(%d, %d)", point.x, point.y));
-    return getViewport();
-  }
-
-  private Rectangle relativeTo(Point origin, Rectangle rectangle) {
-    int newX = rectangle.x - origin.x;
-    int newY = rectangle.y - origin.y;
-    return new Rectangle(new Point(newX, newY), rectangle.getDimension());
-  }
-
-  private Point relativeTo(Point origin, Point point) {
-    int newX = point.x - origin.x;
-    int newY = point.y - origin.y;
-    return new Point(newX, newY);
-  }
-
-  private Optional<Rectangle> intersect(Rectangle r1, Rectangle r2) {
-    int x1 = Math.max(r1.x, r2.x);
-    int y1 = Math.max(r1.y, r2.y);
-    int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
-    int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
-
-    int width = x2 - x1;
-    int height = y2 - y1;
-
-    if (width <= 0 || height <= 0) {
-      return Optional.empty();
-    }
-
-    return Optional.of(new Rectangle(x1, y1, height, width));
   }
 
   private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
