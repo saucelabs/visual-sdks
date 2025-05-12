@@ -621,6 +621,9 @@ public class VisualApi {
       Rectangle newViewport = scrollTo(clipRect.getPoint());
       screenshot = driver.getScreenshotAs(OutputType.BYTES);
 
+      // Restore the original scroll
+      scrollTo(viewport.getPoint());
+
       Optional<Rectangle> cropRect = intersect(clipRect, newViewport);
       if (!cropRect.isPresent()) {
         throw new VisualApiException("Clipping would result in an empty image");
@@ -630,9 +633,6 @@ public class VisualApi {
       BufferedImage cropped = cropImage(image, relativeTo(newViewport.getPoint(), cropRect.get()));
       screenshot = saveImage(cropped, "png");
       viewport = cropRect.get();
-
-      // Restore the original scroll
-      scrollTo(viewport.getPoint());
     } else {
       screenshot = driver.getScreenshotAs(OutputType.BYTES);
     }
