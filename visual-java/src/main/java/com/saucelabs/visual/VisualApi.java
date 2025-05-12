@@ -609,21 +609,32 @@ public class VisualApi {
 
   private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     Rectangle viewport = getViewport();
-    byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
+
+    byte[] screenshot;
 
     // clip image if required
     WebElement clipElement = getClipElement(options);
     if (clipElement != null) {
       Rectangle clipRect = clipElement.getRect();
-      Optional<Rectangle> cropRect = intersect(clipRect, viewport);
+
+      // Scroll to the clipped element
+      Rectangle newViewport = scrollTo(clipRect.getPoint());
+      screenshot = driver.getScreenshotAs(OutputType.BYTES);
+
+      Optional<Rectangle> cropRect = intersect(clipRect, newViewport);
       if (!cropRect.isPresent()) {
         throw new VisualApiException("Clipping would result in an empty image");
       }
 
       BufferedImage image = loadImage(screenshot);
-      BufferedImage cropped = cropImage(image, relativeTo(viewport.getPoint(), cropRect.get()));
+      BufferedImage cropped = cropImage(image, relativeTo(newViewport.getPoint(), cropRect.get()));
       screenshot = saveImage(cropped, "png");
       viewport = cropRect.get();
+
+      // Restore the original scroll
+      scrollTo(viewport.getPoint());
+    } else {
+      screenshot = driver.getScreenshotAs(OutputType.BYTES);
     }
 
     // create upload and get urls
@@ -804,6 +815,11 @@ public class VisualApi {
     return new Rectangle(scrollX, scrollY, height, width);
   }
 
+  private Rectangle scrollTo(Point point) {
+    driver.executeScript(String.format("window.scrollTo(%d, %d)", point.x, point.y));
+    return getViewport();
+  }
+
   private Rectangle relativeTo(Point origin, Rectangle rectangle) {
     int newX = rectangle.x - origin.x;
     int newY = rectangle.y - origin.y;
@@ -822,14 +838,14 @@ public class VisualApi {
     int x2 = Math.min(r1.x + r1.width, r2.x + r2.width);
     int y2 = Math.min(r1.y + r1.height, r2.y + r2.height);
 
-    int intersectionWidth = x2 - x1;
-    int intersectionHeight = y2 - y1;
+    int width = x2 - x1;
+    int height = y2 - y1;
 
-    if (intersectionWidth <= 0 || intersectionHeight <= 0) {
+    if (width <= 0 || height <= 0) {
       return Optional.empty();
     }
 
-    return Optional.of(new Rectangle(x1, y1, intersectionHeight, intersectionWidth));
+    return Optional.of(new Rectangle(x1, y1, height, width));
   }
 
   private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
