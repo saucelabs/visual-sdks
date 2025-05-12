@@ -12,9 +12,6 @@ import com.saucelabs.visual.utils.*;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.time.Duration;
@@ -22,7 +19,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.imageio.ImageIO;
 import org.apache.http.client.config.RequestConfig;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.*;
@@ -629,7 +625,9 @@ public class VisualApi {
       }
 
       BufferedImage image = ImageHelpers.loadImage(screenshot);
-      BufferedImage cropped = ImageHelpers.cropImage(image, CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get()));
+      BufferedImage cropped =
+          ImageHelpers.cropImage(
+              image, CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get()));
       screenshot = ImageHelpers.saveImage(cropped, "png");
       viewport = cropRect.get();
     } else {
@@ -662,7 +660,8 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      Point newPoint = CartesianHelpers.relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
+      Point newPoint =
+          CartesianHelpers.relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
       region.setX(newPoint.x);
       region.setY(newPoint.y);
     }
