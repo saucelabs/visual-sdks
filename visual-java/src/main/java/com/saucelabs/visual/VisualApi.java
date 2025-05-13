@@ -8,11 +8,10 @@ import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
 import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
-import com.saucelabs.visual.utils.CapabilityUtils;
-import com.saucelabs.visual.utils.ConsoleColors;
-import com.saucelabs.visual.utils.EnvironmentVariables;
+import com.saucelabs.visual.utils.*;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.time.Duration;
@@ -565,10 +564,9 @@ public class VisualApi {
       input.setCaptureDom(captureDom);
     }
 
-    if (options.getClipElement() != null) {
-      input.setClipElement(options.getClipElement());
-    } else if (options.getClipSelector() != null) {
-      input.setClipElement(this.driver.findElement(By.cssSelector(options.getClipSelector())));
+    WebElement clipElement = getClipElement(options);
+    if (clipElement != null) {
+      input.setClipElement(clipElement);
     }
 
     FullPageScreenshotConfig fullPageScreenshotConfig =
@@ -604,7 +602,37 @@ public class VisualApi {
   }
 
   private void sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
-    byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
+    Window window = new Window(this.driver);
+    Rectangle viewport = window.getViewport();
+
+    byte[] screenshot;
+
+    // clip image if required
+    WebElement clipElement = getClipElement(options);
+    if (clipElement != null) {
+      Rectangle clipRect = clipElement.getRect();
+
+      // Scroll to the clipped element
+      Rectangle newViewport = window.scrollTo(clipRect.getPoint());
+      screenshot = driver.getScreenshotAs(OutputType.BYTES);
+
+      // Restore the original scroll
+      window.scrollTo(viewport.getPoint());
+
+      Optional<Rectangle> cropRect = CartesianHelpers.intersect(clipRect, newViewport);
+      if (!cropRect.isPresent()) {
+        throw new VisualApiException("Clipping would result in an empty image");
+      }
+
+      BufferedImage image = ImageHelpers.loadImage(screenshot);
+      BufferedImage cropped =
+          ImageHelpers.cropImage(
+              image, CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get()));
+      screenshot = ImageHelpers.saveImage(cropped, "png");
+      viewport = cropRect.get();
+    } else {
+      screenshot = driver.getScreenshotAs(OutputType.BYTES);
+    }
 
     // create upload and get urls
     CreateSnapshotUploadMutation mutation =
@@ -617,7 +645,6 @@ public class VisualApi {
     this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
 
     // add ignore regions
-    WindowScroll scroll = getWindowScroll();
     List<RegionIn> ignoreRegions = extractIgnoreList(options);
 
     for (WebElement element : options.getIgnoreElements()) {
@@ -633,8 +660,10 @@ public class VisualApi {
     }
 
     for (RegionIn region : ignoreRegions) {
-      region.setX(region.getX() - scroll.getX());
-      region.setY(region.getY() - scroll.getY());
+      Point newPoint =
+          CartesianHelpers.relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
+      region.setX(newPoint.x);
+      region.setY(newPoint.y);
     }
 
     // upload dom if present / enabled
@@ -729,20 +758,14 @@ public class VisualApi {
     return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
   }
 
-  private WindowScroll getWindowScroll() {
-    Object result = driver.executeScript("return [window.scrollX, window.scrollY]");
-    if (!(result instanceof List<?>)) {
-      return new WindowScroll(0, 0);
+  private WebElement getClipElement(CheckOptions checkOptions) {
+    if (checkOptions.getClipElement() != null) {
+      return checkOptions.getClipElement();
+    } else if (checkOptions.getClipSelector() != null) {
+      return this.driver.findElement(By.cssSelector(checkOptions.getClipSelector()));
     }
 
-    List<?> list = (List<?>) result;
-    Object rawScrollX = list.get(0);
-    Object rawScrollY = list.get(1);
-
-    int scrollX = rawScrollX instanceof Long ? ((Long) rawScrollX).intValue() : 0;
-    int scrollY = rawScrollY instanceof Long ? ((Long) rawScrollY).intValue() : 0;
-
-    return new WindowScroll(scrollX, scrollY);
+    return null;
   }
 
   private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
