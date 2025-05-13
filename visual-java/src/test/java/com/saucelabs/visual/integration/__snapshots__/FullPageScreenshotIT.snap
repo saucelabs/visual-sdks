@@ -1,0 +1,67 @@
+com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSAndDisplayScrollBars=[
+{
+  "snapshot" : {
+    "name" : "FPS hideScrollBars=false (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.FullPageScreenshotIT",
+    "testName" : "takeAFPSAndDisplayScrollBars",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithDefaultSettings=[
+{
+  "snapshot" : {
+    "name" : "FPS (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.FullPageScreenshotIT",
+    "testName" : "takeAFPSWithDefaultSettings",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithScrollLimit=[
+{
+  "snapshot" : {
+    "name" : "FPS scrollLimit=1 (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.FullPageScreenshotIT",
+    "testName" : "takeAFPSWithScrollLimit",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
