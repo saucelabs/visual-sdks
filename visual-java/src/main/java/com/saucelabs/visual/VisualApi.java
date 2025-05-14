@@ -903,8 +903,7 @@ public class VisualApi {
       }
     }
 
-    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(bulkWebElements);
-
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.areDisplayed(bulkWebElements);
     for (int i = 0; i < bulkIsDisplayed.size(); i++) {
       VisualRegion region = bulkRegions.get(i);
       Boolean isDisplayed = bulkIsDisplayed.get(i);
@@ -930,7 +929,8 @@ public class VisualApi {
             : Arrays.asList();
 
     List<ElementIn> result = new ArrayList<>();
-    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(ignoredElements);
+
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.areDisplayed(ignoredElements);
     for (int i = 0; i < bulkIsDisplayed.size(); i++) {
       WebElement element = ignoredElements.get(i);
       Boolean isDisplayed = bulkIsDisplayed.get(i);
@@ -946,7 +946,8 @@ public class VisualApi {
 
   private List<RegionIn> extractElementsToIgnoreRegions(List<WebElement> elements) {
     List<RegionIn> result = new ArrayList<>();
-    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(elements);
+
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.areDisplayed(elements);
     for (int i = 0; i < bulkIsDisplayed.size(); i++) {
       WebElement element = elements.get(i);
       Boolean isDisplayed = bulkIsDisplayed.get(i);
@@ -980,8 +981,9 @@ public class VisualApi {
       }
     }
 
-    List<RegionIn> regions = extractElementsToIgnoreRegions(elements);
     List<RegionIn> result = new ArrayList<>();
+
+    List<RegionIn> regions = extractElementsToIgnoreRegions(elements);
     for (int i = 0; i < regions.size(); i++) {
       IgnoreSelectorIn selector = selectors.get(i);
       RegionIn region = regions.get(i);

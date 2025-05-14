@@ -108,6 +108,11 @@ public class VisualRegion {
         name, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
   }
 
+  public static VisualRegion detectChangesFor(Rectangle rectangle) {
+    return VisualRegion.detectChangesFor(
+        "", rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+  }
+
   private static DiffingOptionsIn setAllFlags(DiffingOptionsIn opt, boolean value) {
     opt.setContent(value);
     opt.setDimensions(value);

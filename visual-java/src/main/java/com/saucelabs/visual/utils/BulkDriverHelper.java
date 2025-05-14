@@ -43,7 +43,7 @@ public class BulkDriverHelper {
     return result;
   }
 
-  public List<Boolean> getIsDisplayed(List<WebElement> elements) {
+  public List<Boolean> areDisplayed(List<WebElement> elements) {
     final String script =
         "return Array.from(arguments[0]).map(function (element) {"
             + "  if (!element) throw new Error('element cannot be null');"
