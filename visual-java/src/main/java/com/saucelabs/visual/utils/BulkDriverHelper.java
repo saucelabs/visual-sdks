@@ -53,12 +53,17 @@ public class BulkDriverHelper {
     return (List<Boolean>) driver.executeScript(script, elements);
   }
 
-  public List<WebElement> resolveElements(List<SelectorIn> selectors) {
+  public List<List<WebElement>> resolveElements(List<SelectorIn> selectors) {
     final String script =
         "return Array.from(arguments[0]).map(function (xpath) {"
-            + "  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)"
-            + "    .singleNodeValue"
-            + "});";
+            + "  var it = document.evaluate(xpath, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);"
+            + "  var result = [];"
+            + "  var element;"
+            + "  while (element = it.iterateNext()) {"
+            + "    result.push(element);"
+            + "  };"
+            + "  return result;"
+            + "})";
 
     List<String> xpaths = new ArrayList<>();
 
@@ -72,6 +77,6 @@ public class BulkDriverHelper {
       }
     }
 
-    return (List<WebElement>) driver.executeScript(script, xpaths);
+    return (List<List<WebElement>>) driver.executeScript(script, xpaths);
   }
 }

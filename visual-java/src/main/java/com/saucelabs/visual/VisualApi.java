@@ -971,34 +971,45 @@ public class VisualApi {
             ? options.getIgnoreSelectors()
             : Arrays.asList();
 
-    List<WebElement> elements =
+    List<List<WebElement>> elementLists =
         bulkDriverHelper.resolveElements(
             selectors.stream().map(IgnoreSelectorIn::getSelector).collect(Collectors.toList()));
+
     for (int i = 0; i < selectors.size(); i++) {
-      WebElement element = elements.get(i);
+      List<WebElement> elements = elementLists.get(i);
       IgnoreSelectorIn selector = selectors.get(i);
-      if (element == null) {
+      if (elements == null || elements.isEmpty()) {
         throw new InvalidIgnoreSelectorException(selector, "Web element does not exist");
       }
     }
 
     List<RegionIn> result = new ArrayList<>();
 
-    List<RegionIn> regions = extractElementsToIgnoreRegions(elements);
-    for (int i = 0; i < regions.size(); i++) {
-      IgnoreSelectorIn selector = selectors.get(i);
-      RegionIn region = regions.get(i);
+    List<RegionIn> flatRegions =
+        extractElementsToIgnoreRegions(
+            elementLists.stream().flatMap(List::stream).collect(Collectors.toList()));
 
-      result.add(
-          new VisualRegion(
-                  new IgnoreRegion(
-                      region.getName(),
-                      region.getX(),
-                      region.getY(),
-                      region.getWidth(),
-                      region.getHeight()),
-                  selector.getDiffingOptions())
-              .toRegionIn());
+    for (int listIndex = 0, regionIndex = 0; listIndex < elementLists.size(); listIndex++) {
+      IgnoreSelectorIn selector = selectors.get(listIndex);
+      List<WebElement> elements = elementLists.get(listIndex);
+      List<RegionIn> regions = flatRegions.subList(regionIndex, regionIndex + elements.size());
+
+      result.addAll(
+          regions.stream()
+              .map(
+                  region ->
+                      new VisualRegion(
+                              new IgnoreRegion(
+                                  region.getName(),
+                                  region.getX(),
+                                  region.getY(),
+                                  region.getWidth(),
+                                  region.getHeight()),
+                              selector.getDiffingOptions())
+                          .toRegionIn())
+              .collect(Collectors.toList()));
+
+      regionIndex += regions.size();
     }
 
     return result;
