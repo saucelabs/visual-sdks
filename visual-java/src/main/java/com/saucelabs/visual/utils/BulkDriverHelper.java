@@ -1,9 +1,9 @@
 package com.saucelabs.visual.utils;
 
+import com.saucelabs.visual.exception.InvalidSelectorException;
+import com.saucelabs.visual.graphql.type.SelectorIn;
 import java.util.*;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Rectangle;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 
 public class BulkDriverHelper {
   private final JavascriptExecutor driver;
@@ -51,5 +51,27 @@ public class BulkDriverHelper {
             + "});";
 
     return (List<Boolean>) driver.executeScript(script, elements);
+  }
+
+  public List<WebElement> resolveElements(List<SelectorIn> selectors) {
+    final String script =
+        "return Array.from(arguments[0]).map(function (xpath) {"
+            + "  return document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)"
+            + "    .singleNodeValue"
+            + "});";
+
+    List<String> xpaths = new ArrayList<>();
+
+    for (SelectorIn selector : selectors) {
+      switch (selector.getType()) {
+        case XPATH:
+          xpaths.add(selector.getValue());
+          break;
+        default:
+          throw new InvalidSelectorException(selector, "Unsupported selector type");
+      }
+    }
+
+    return (List<WebElement>) driver.executeScript(script, xpaths);
   }
 }

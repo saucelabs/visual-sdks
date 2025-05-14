@@ -787,21 +787,6 @@ public class VisualApi {
     return null;
   }
 
-  private WebElement getElement(IgnoreSelectorIn ignoreSelector) {
-    SelectorIn selector = ignoreSelector.getSelector();
-    By bySelector;
-
-    switch (selector.getType()) {
-      case XPATH:
-        bySelector = By.xpath(selector.getValue());
-        break;
-      default:
-        return null;
-    }
-
-    return driver.findElement(bySelector);
-  }
-
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
     if (options == null || options.getDiffingMethod() == null) {
       return DiffingMethod.BALANCED;
@@ -984,13 +969,15 @@ public class VisualApi {
             ? options.getIgnoreSelectors()
             : Arrays.asList();
 
-    List<WebElement> elements = new ArrayList<>();
-    for (IgnoreSelectorIn ignoreSelector : selectors) {
-      WebElement element = getElement(ignoreSelector);
+    List<WebElement> elements =
+        bulkDriverHelper.resolveElements(
+            selectors.stream().map(IgnoreSelectorIn::getSelector).collect(Collectors.toList()));
+    for (int i = 0; i < selectors.size(); i++) {
+      WebElement element = elements.get(i);
+      IgnoreSelectorIn selector = selectors.get(i);
       if (element == null) {
-        throw new InvalidIgnoreSelectorException(ignoreSelector, "Web element does not exist");
+        throw new InvalidIgnoreSelectorException(selector, "Web element does not exist");
       }
-      elements.add(element);
     }
 
     List<RegionIn> regions = extractElementsToIgnoreRegions(elements);
