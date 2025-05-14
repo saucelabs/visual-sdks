@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.client.config.RequestConfig;
 import org.openqa.selenium.*;
+import org.openqa.selenium.bidi.browsingcontext.BrowsingContext;
+import org.openqa.selenium.bidi.browsingcontext.CaptureScreenshotParameters;
 import org.openqa.selenium.remote.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -617,8 +619,10 @@ public class VisualApi {
   }
 
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
+    Capabilities caps = driver.getCapabilities();
     Window window = new Window(this.driver);
     Rectangle viewport = window.getViewport();
+    boolean fullPage = options.getFullPageScreenshotConfig() != null;
 
     byte[] screenshot;
 
@@ -626,27 +630,40 @@ public class VisualApi {
     WebElement clipElement = getClipElement(options);
     if (clipElement != null) {
       Rectangle clipRect = clipElement.getRect();
+      Rectangle newViewport = viewport;
+      Optional<Rectangle> cropRect;
+      Rectangle relativeRect;
 
-      // Scroll to the clipped element
-      Rectangle newViewport = window.scrollTo(clipRect.getPoint());
-      screenshot = driver.getScreenshotAs(OutputType.BYTES);
+      // If not full page, then we should scroll to the element in question prior to getting the
+      // screenshot to have as much of it in view as possible, then account for offsets of the
+      // element and scrolled viewport.
+      if (!fullPage) {
+        // Scroll to the clipped element
+        newViewport = window.scrollTo(clipRect.getPoint());
+        screenshot = getScreenshot(false);
 
-      // Restore the original scroll
-      window.scrollTo(viewport.getPoint());
+        // Restore the original scroll
+        window.scrollTo(viewport.getPoint());
 
-      Optional<Rectangle> cropRect = CartesianHelpers.intersect(clipRect, newViewport);
-      if (!cropRect.isPresent()) {
-        throw new VisualApiException("Clipping would result in an empty image");
+        cropRect = CartesianHelpers.intersect(clipRect, newViewport);
+        if (!cropRect.isPresent()) {
+          throw new VisualApiException("Clipping would result in an empty image");
+        }
+
+        relativeRect = CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get());
+      } else {
+        // Otherwise, we just need to clip to the rect of the element
+        screenshot = getScreenshot(true);
+        cropRect = Optional.of(clipRect);
+        relativeRect = cropRect.get();
       }
 
       BufferedImage image = ImageHelpers.loadImage(screenshot);
-      BufferedImage cropped =
-          ImageHelpers.cropImage(
-              image, CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get()));
+      BufferedImage cropped = ImageHelpers.cropImage(image, relativeRect);
       screenshot = ImageHelpers.saveImage(cropped, "png");
       viewport = cropRect.get();
     } else {
-      screenshot = driver.getScreenshotAs(OutputType.BYTES);
+      screenshot = getScreenshot(fullPage);
     }
 
     // create upload and get urls
@@ -695,8 +712,6 @@ public class VisualApi {
       }
     }
 
-    Capabilities caps = driver.getCapabilities();
-
     Map<String, Object> dims =
         (Map<String, Object>)
             driver.executeScript(
@@ -732,6 +747,18 @@ public class VisualApi {
     CreateSnapshotMutation.Data result =
         this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
     return result.result.getId();
+  }
+
+  private byte[] getScreenshot(boolean fullPage) {
+    if (fullPage) {
+      BrowsingContext browsingContext = new BrowsingContext(driver, driver.getWindowHandle());
+      CaptureScreenshotParameters csp = new CaptureScreenshotParameters();
+      csp.origin(CaptureScreenshotParameters.Origin.DOCUMENT);
+      String screenshot = browsingContext.captureScreenshot(csp);
+      return OutputType.BYTES.convertFromBase64Png(screenshot);
+    }
+
+    return driver.getScreenshotAs(OutputType.BYTES);
   }
 
   /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
