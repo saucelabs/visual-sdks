@@ -909,7 +909,7 @@ public class VisualApi {
       VisualRegion region = bulkRegions.get(i);
       Boolean isDisplayed = bulkIsDisplayed.get(i);
       if (!isDisplayed) {
-        throw new InvalidVisualRegionException(region, "Visual region's WebElement is not visible");
+        throw new InvalidVisualRegionException(region, "Visual region's web element does not exist (yet)");
       }
     }
 
