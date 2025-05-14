@@ -30,6 +30,16 @@ public class VisualRegion {
     this.y = ir.getY();
   }
 
+  public VisualRegion(IgnoreRegion ir, DiffingOptionsIn diffingOptions) {
+    this.options = diffingOptions;
+    this.isIgnoreRegion = true;
+    this.name = ir.getName();
+    this.height = ir.getHeight();
+    this.width = ir.getWidth();
+    this.x = ir.getX();
+    this.y = ir.getY();
+  }
+
   public VisualRegion(WebElement element, DiffingOptionsIn diffingOptions) {
     this.options = diffingOptions;
     this.element = element;
@@ -67,6 +77,16 @@ public class VisualRegion {
     return VisualRegion.ignoreChangesFor("", x, y, width, height);
   }
 
+  public static VisualRegion ignoreChangesFor(String name, Rectangle rectangle) {
+    return VisualRegion.ignoreChangesFor(
+        name, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+  }
+
+  public static VisualRegion ignoreChangesFor(Rectangle rectangle) {
+    return VisualRegion.ignoreChangesFor(
+        "", rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+  }
+
   public static VisualRegion detectChangesFor(String name, int x, int y, int width, int height) {
     VisualRegion r = new VisualRegion();
     r.options = setAllFlags(new DiffingOptionsIn(), true);
@@ -81,6 +101,11 @@ public class VisualRegion {
 
   public static VisualRegion detectChangesFor(int x, int y, int width, int height) {
     return VisualRegion.detectChangesFor("", x, y, width, height);
+  }
+
+  public static VisualRegion detectChangesFor(String name, Rectangle rectangle) {
+    return VisualRegion.detectChangesFor(
+        name, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
   }
 
   private static DiffingOptionsIn setAllFlags(DiffingOptionsIn opt, boolean value) {

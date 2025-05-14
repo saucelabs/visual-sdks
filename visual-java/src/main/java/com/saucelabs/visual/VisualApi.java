@@ -3,6 +3,9 @@ package com.saucelabs.visual;
 import static com.saucelabs.visual.utils.EnvironmentVariables.isNotBlank;
 import static com.saucelabs.visual.utils.EnvironmentVariables.valueOrDefault;
 
+import com.saucelabs.visual.exception.InvalidIgnoreSelectorException;
+import com.saucelabs.visual.exception.InvalidVisualRegionException;
+import com.saucelabs.visual.exception.InvalidWebElementException;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
@@ -153,6 +156,7 @@ public class VisualApi {
   }
 
   private final GraphQLClient client;
+  private final BulkDriverHelper bulkDriverHelper;
 
   private final VisualBuild build;
   private final String jobId;
@@ -170,7 +174,7 @@ public class VisualApi {
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
    *
-   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
+   * @param driver The {@link WebDriver} instance where the tests should run at
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
    */
@@ -181,7 +185,7 @@ public class VisualApi {
   /**
    * Creates a VisualApi instance for a given Visual Backend {@link DataCenter}
    *
-   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
+   * @param driver The {@link WebDriver} instance where the tests should run at
    * @param region Visual Backend Region. For available values, see: {@link DataCenter}
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
@@ -193,7 +197,7 @@ public class VisualApi {
   /**
    * Creates a VisualApi instance with a custom backend URL
    *
-   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run at
+   * @param driver The {@link WebDriver} instance where the tests should run at
    * @param url Visual Backend URL
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
@@ -205,8 +209,7 @@ public class VisualApi {
   /**
    * Creates a VisualApi instance with a custom backend URL
    *
-   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run
-   *     with
+   * @param driver The {@link WebDriver} instance where the tests should run with
    * @param url Visual Backend URL
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
@@ -224,8 +227,7 @@ public class VisualApi {
   /**
    * Creates a VisualApi instance with a custom backend URL
    *
-   * @param driver The {@link org.openqa.selenium.WebDriver} instance where the tests should run
-   *     with
+   * @param driver The {@link WebDriver} instance where the tests should run with
    * @param url Visual Backend URL
    * @param username SauceLabs username
    * @param accessKey SauceLabs access key
@@ -265,6 +267,7 @@ public class VisualApi {
     this.build = VisualBuild.getBuildOnce(this, buildAttributes);
     this.driver = driver;
     this.isSauceSession = isSauceSession;
+    this.bulkDriverHelper = new BulkDriverHelper(driver);
     refreshWebDriverSessionInfo();
   }
 
@@ -313,6 +316,7 @@ public class VisualApi {
     this.driver = driver;
     this.client = new GraphQLClient(url, username, accessKey, requestConfig);
     this.sessionMetadataBlob = sessionMetadataBlob;
+    this.bulkDriverHelper = new BulkDriverHelper(driver);
   }
 
   /**
@@ -652,24 +656,14 @@ public class VisualApi {
     SnapshotUpload uploadResult =
         this.client.execute(mutation, CreateSnapshotUploadMutation.Data.class).result;
 
-    // upload image
-    this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
-
     // add ignore regions
     List<RegionIn> ignoreRegions = extractIgnoreList(options);
+    ignoreRegions.addAll(
+        extractElementsToIgnoreRegions(
+            Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
+    ignoreRegions.addAll(extractIgnoreSelectors(options));
 
-    for (WebElement element : options.getIgnoreElements()) {
-      RegionIn ignoreRegion = VisualRegion.ignoreChangesFor(element).toRegionIn();
-      ignoreRegions.add(ignoreRegion);
-    }
-
-    for (IgnoreSelectorIn selector : options.getIgnoreSelectors()) {
-      VisualRegion region = getIgnoreRegionFromSelector(selector);
-      if (region != null) {
-        ignoreRegions.add(region.toRegionIn());
-      }
-    }
-
+    // make regions relative to viewport
     List<RegionIn> visibleIgnoreRegions = new ArrayList<>();
     for (RegionIn region : ignoreRegions) {
       Rectangle regionRect =
@@ -685,6 +679,9 @@ public class VisualApi {
         visibleIgnoreRegions.add(region);
       }
     }
+
+    // upload image
+    this.client.upload(uploadResult.getImageUploadUrl(), screenshot, "image/png");
 
     // upload dom if present / enabled
     Boolean shouldCaptureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
@@ -790,7 +787,7 @@ public class VisualApi {
     return null;
   }
 
-  private VisualRegion getIgnoreRegionFromSelector(IgnoreSelectorIn ignoreSelector) {
+  private WebElement getElement(IgnoreSelectorIn ignoreSelector) {
     SelectorIn selector = ignoreSelector.getSelector();
     By bySelector;
 
@@ -802,8 +799,7 @@ public class VisualApi {
         return null;
     }
 
-    WebElement element = driver.findElement(bySelector);
-    return new VisualRegion(element, ignoreSelector.getDiffingOptions());
+    return driver.findElement(bySelector);
   }
 
   private static DiffingMethod toDiffingMethod(CheckOptions options) {
@@ -887,33 +883,58 @@ public class VisualApi {
     }
 
     List<IgnoreRegion> ignoredRegions =
-        options.getIgnoreRegions() == null ? Arrays.asList() : options.getIgnoreRegions();
+        options.getIgnoreRegions() == null ? Collections.emptyList() : options.getIgnoreRegions();
 
     List<VisualRegion> visualRegions =
-        options.getRegions() == null ? Arrays.asList() : options.getRegions();
+        options.getRegions() == null ? Collections.emptyList() : options.getRegions();
 
-    List<RegionIn> result = new ArrayList<>();
-    for (int i = 0; i < ignoredRegions.size(); i++) {
-      IgnoreRegion ignoreRegion = ignoredRegions.get(i);
-      if (validate(ignoreRegion) == null) {
-        throw new VisualApiException("options.ignoreRegion[" + i + "] is an invalid ignore region");
-      }
-      result.add(
-          VisualRegion.ignoreChangesFor(
-                  ignoreRegion.getName(),
-                  ignoreRegion.getX(),
-                  ignoreRegion.getY(),
-                  ignoreRegion.getWidth(),
-                  ignoreRegion.getHeight())
-              .toRegionIn());
+    List<VisualRegion> allVisualRegions =
+        new ArrayList<>(ignoredRegions.size() + visualRegions.size());
+    allVisualRegions.addAll(visualRegions);
+
+    for (IgnoreRegion ignoreRegion : ignoredRegions) {
+      allVisualRegions.add(new VisualRegion(ignoreRegion));
     }
-    for (int i = 0; i < visualRegions.size(); i++) {
-      VisualRegion region = visualRegions.get(i);
+
+    return extractRegions(allVisualRegions);
+  }
+
+  private List<RegionIn> extractRegions(List<VisualRegion> regions) {
+    List<RegionIn> result = new ArrayList<>(regions.size());
+    List<WebElement> bulkWebElements = new ArrayList<>();
+    List<VisualRegion> bulkRegions = new ArrayList<>();
+
+    for (VisualRegion region : regions) {
       if (validate(region) == null) {
-        throw new VisualApiException("options.region[" + i + "] is an invalid visual region");
+        throw new InvalidVisualRegionException(region, "Visual region is invalid");
       }
-      result.add(region.toRegionIn());
+
+      WebElement element = region.getElement();
+      if (element != null) {
+        bulkWebElements.add(element);
+        bulkRegions.add(region);
+      } else {
+        result.add(region.toRegionIn());
+      }
     }
+
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(bulkWebElements);
+
+    for (int i = 0; i < bulkIsDisplayed.size(); i++) {
+      VisualRegion region = bulkRegions.get(i);
+      Boolean isDisplayed = bulkIsDisplayed.get(i);
+      if (!isDisplayed) {
+        throw new InvalidVisualRegionException(region, "Visual region's WebElement is not visible");
+      }
+    }
+
+    List<Rectangle> bulkRectangles = bulkDriverHelper.getRects(bulkWebElements);
+    for (int i = 0; i < bulkRectangles.size(); i++) {
+      VisualRegion region = bulkRegions.get(i);
+      Rectangle rectangle = bulkRectangles.get(i);
+      result.add(VisualRegion.ignoreChangesFor(region.getName(), rectangle).toRegionIn());
+    }
+
     return result;
   }
 
@@ -924,31 +945,73 @@ public class VisualApi {
             : Arrays.asList();
 
     List<ElementIn> result = new ArrayList<>();
-    for (int i = 0; i < ignoredElements.size(); i++) {
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(ignoredElements);
+    for (int i = 0; i < bulkIsDisplayed.size(); i++) {
       WebElement element = ignoredElements.get(i);
-      if (validate(element) == null) {
-        throw new VisualApiException("options.ignoreElement[" + i + "] does not exist (yet)");
+      Boolean isDisplayed = bulkIsDisplayed.get(i);
+      if (!isDisplayed) {
+        throw new InvalidWebElementException(element, "Web element does not exist (yet)");
       }
+
       result.add(VisualRegion.ignoreChangesFor(element).toElementIn());
     }
+
     return result;
   }
 
-  private WebElement validate(WebElement element) {
-    if (element instanceof RemoteWebElement && element.isDisplayed()) {
-      return element;
+  private List<RegionIn> extractElementsToIgnoreRegions(List<WebElement> elements) {
+    List<RegionIn> result = new ArrayList<>();
+    List<Boolean> bulkIsDisplayed = bulkDriverHelper.getIsDisplayed(elements);
+    for (int i = 0; i < bulkIsDisplayed.size(); i++) {
+      WebElement element = elements.get(i);
+      Boolean isDisplayed = bulkIsDisplayed.get(i);
+      if (!isDisplayed) {
+        throw new InvalidWebElementException(element, "Web element does not exist (yet)");
+      }
     }
-    return null;
+
+    List<Rectangle> bulkRectangles = bulkDriverHelper.getRects(elements);
+    for (Rectangle rectangle : bulkRectangles) {
+      result.add(VisualRegion.ignoreChangesFor(rectangle).toRegionIn());
+    }
+
+    return result;
   }
 
-  private IgnoreRegion validate(IgnoreRegion region) {
-    if (region == null) {
-      return null;
+  private List<RegionIn> extractIgnoreSelectors(CheckOptions options) {
+    List<IgnoreSelectorIn> selectors =
+        options != null && options.getIgnoreSelectors() != null
+            ? options.getIgnoreSelectors()
+            : Arrays.asList();
+
+    List<WebElement> elements = new ArrayList<>();
+    for (IgnoreSelectorIn ignoreSelector : selectors) {
+      WebElement element = getElement(ignoreSelector);
+      if (element == null) {
+        throw new InvalidIgnoreSelectorException(ignoreSelector, "Web element does not exist");
+      }
+      elements.add(element);
     }
-    if (region.getHeight() <= 0 || region.getWidth() <= 0) {
-      return null;
+
+    List<RegionIn> regions = extractElementsToIgnoreRegions(elements);
+    List<RegionIn> result = new ArrayList<>();
+    for (int i = 0; i < regions.size(); i++) {
+      IgnoreSelectorIn selector = selectors.get(i);
+      RegionIn region = regions.get(i);
+
+      result.add(
+          new VisualRegion(
+                  new IgnoreRegion(
+                      region.getName(),
+                      region.getX(),
+                      region.getY(),
+                      region.getWidth(),
+                      region.getHeight()),
+                  selector.getDiffingOptions())
+              .toRegionIn());
     }
-    return region;
+
+    return result;
   }
 
   private VisualRegion validate(VisualRegion region) {
@@ -956,10 +1019,6 @@ public class VisualApi {
       return null;
     }
     if (0 < region.getHeight() * region.getWidth()) {
-      return region;
-    }
-    WebElement ele = region.getElement();
-    if (ele != null && ele.isDisplayed() && ele.getRect() != null) {
       return region;
     }
     return null;
