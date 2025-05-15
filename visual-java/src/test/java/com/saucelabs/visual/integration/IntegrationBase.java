@@ -74,8 +74,8 @@ abstract class IntegrationBase {
     driver.quit();
   }
 
-  protected void sauceVisualCheck(String name) {
-    sauceVisualCheck(name, new CheckOptions());
+  protected String sauceVisualCheck(String name) {
+    return sauceVisualCheck(name, new CheckOptions());
   }
 
   protected String sauceVisualCheck(String name, CheckOptions checkOptions) {

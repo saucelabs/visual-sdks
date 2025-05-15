@@ -1,0 +1,44 @@
+com.saucelabs.visual.integration.WithoutTestMetaIT.checkSupplyingValuesManually=[
+{
+  "snapshot" : {
+    "name" : "Manual Test Meta (Local)",
+    "suiteName" : "Custom Suite Name",
+    "testName" : "Custom Test Name",
+    "operatingSystem" : "MACOS",
+    "operatingSystemVersion" : null,
+    "device" : "Desktop (1400x1015)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.WithoutTestMetaIT.checkWithoutTestMeta=[
+{
+  "snapshot" : {
+    "name" : "No Test Meta (Local)",
+    "suiteName" : null,
+    "testName" : null,
+    "operatingSystem" : "MACOS",
+    "operatingSystemVersion" : null,
+    "device" : "Desktop (1400x1015)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "UNAPPROVED",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
