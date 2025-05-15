@@ -25,7 +25,7 @@ public class Window {
   }
 
   private final String jsViewportTupleSnippet =
-      "return [window.scrollX, window.scrollY, window.innerWidth, window.innerHeight];";
+      "return [Math.round(window.scrollX), Math.round(window.scrollY), Math.round(window.innerWidth), Math.round(window.innerHeight)];";
 
   private Rectangle convertJsTupleToRectangle(Object result) {
     if (!(result instanceof List<?>)) {

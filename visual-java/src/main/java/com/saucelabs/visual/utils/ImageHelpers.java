@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Rectangle;
 
 public class ImageHelpers {
@@ -30,5 +31,10 @@ public class ImageHelpers {
     } catch (IOException e) {
       throw new VisualApiException("Failed to save image to bytes", e);
     }
+  }
+
+  public static Dimension getImageDimensions(byte[] image) {
+    BufferedImage bImage = loadImage(image);
+    return new Dimension(bImage.getWidth(), bImage.getHeight());
   }
 }
