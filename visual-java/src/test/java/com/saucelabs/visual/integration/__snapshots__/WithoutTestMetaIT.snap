@@ -1,0 +1,44 @@
+com.saucelabs.visual.integration.WithoutTestMetaIT.checkSupplyingValuesManually=[
+{
+  "snapshot" : {
+    "name" : "Manual Test Meta (Sauce)",
+    "suiteName" : "Custom Suite Name",
+    "testName" : "Custom Test Name",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.WithoutTestMetaIT.checkWithoutTestMeta=[
+{
+  "snapshot" : {
+    "name" : "No Test Meta (Sauce)",
+    "suiteName" : null,
+    "testName" : null,
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
