@@ -670,11 +670,20 @@ public class VisualApi {
       }
     }
 
+    List<RegionIn> visibleIgnoreRegions = new ArrayList<>();
     for (RegionIn region : ignoreRegions) {
-      Point newPoint =
-          CartesianHelpers.relativeTo(viewport.getPoint(), new Point(region.getX(), region.getY()));
-      region.setX(newPoint.x);
-      region.setY(newPoint.y);
+      Rectangle regionRect =
+          new Rectangle(region.getX(), region.getY(), region.getHeight(), region.getWidth());
+
+      if (CartesianHelpers.intersect(regionRect, viewport).isPresent()) {
+        Point newPoint =
+            CartesianHelpers.relativeTo(
+                viewport.getPoint(), new Point(region.getX(), region.getY()));
+        region.setX(newPoint.x);
+        region.setY(newPoint.y);
+
+        visibleIgnoreRegions.add(region);
+      }
     }
 
     // upload dom if present / enabled
@@ -712,7 +721,7 @@ public class VisualApi {
                 .withSuiteName(getOrInferSuiteName(options))
                 .withDiffingMethod(toDiffingMethod(options))
                 .withDiffingOptions(options.getDiffingOptions())
-                .withIgnoreRegions(ignoreRegions)
+                .withIgnoreRegions(visibleIgnoreRegions)
                 .withDiffingMethodSensitivity(
                     Optional.ofNullable(getDiffingMethodSensitivity(options))
                         .map(DiffingMethodSensitivity::asGraphQLType)
