@@ -11,7 +11,7 @@ com.saucelabs.visual.integration.WithoutTestMetaIT.checkSupplyingValuesManually=
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
@@ -34,7 +34,7 @@ com.saucelabs.visual.integration.WithoutTestMetaIT.checkWithoutTestMeta=[
     "hasDom" : true,
     "diffs" : {
       "nodes" : [ {
-        "status" : "UNAPPROVED",
+        "status" : "EQUAL",
         "diffClusters" : [ ]
       } ]
     },
