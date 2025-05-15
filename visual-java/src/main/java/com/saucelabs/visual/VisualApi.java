@@ -14,7 +14,6 @@ import com.saucelabs.visual.model.DiffingMethodSensitivity;
 import com.saucelabs.visual.utils.*;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.time.Duration;
@@ -621,49 +620,49 @@ public class VisualApi {
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     Capabilities caps = driver.getCapabilities();
     Window window = new Window(this.driver);
-    Rectangle viewport = window.getViewport();
+    Map<String, Object> windowDims =
+        (Map<String, Object>)
+            driver.executeScript(
+                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+    double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
     boolean fullPage = options.getFullPageScreenshotConfig() != null;
-
-    byte[] screenshot;
-
-    // clip image if required
     WebElement clipElement = getClipElement(options);
+    Point scrollOffset = new Point(0, 0);
+    Point clipOffset = new Point(0, 0);
+    Rectangle clipRect = null;
+
     if (clipElement != null) {
-      Rectangle clipRect = clipElement.getRect();
-      Rectangle newViewport = viewport;
-      Optional<Rectangle> cropRect;
-      Rectangle relativeRect;
+      Rectangle clipElementDims = getClipElementDimensions(fullPage, clipElement);
 
-      // If not full page, then we should scroll to the element in question prior to getting the
-      // screenshot to have as much of it in view as possible, then account for offsets of the
-      // element and scrolled viewport.
       if (!fullPage) {
-        // Scroll to the clipped element
-        newViewport = window.scrollTo(clipRect.getPoint());
-        screenshot = getScreenshot(false);
-
-        // Restore the original scroll
-        window.scrollTo(viewport.getPoint());
-
-        cropRect = CartesianHelpers.intersect(clipRect, newViewport);
-        if (!cropRect.isPresent()) {
-          throw new VisualApiException("Clipping would result in an empty image");
-        }
-
-        relativeRect = CartesianHelpers.relativeTo(newViewport.getPoint(), cropRect.get());
-      } else {
-        // Otherwise, we just need to clip to the rect of the element
-        screenshot = getScreenshot(true);
-        cropRect = Optional.of(clipRect);
-        relativeRect = cropRect.get();
+        scrollOffset = window.getViewport().getPoint();
       }
 
-      BufferedImage image = ImageHelpers.loadImage(screenshot);
-      BufferedImage cropped = ImageHelpers.cropImage(image, relativeRect);
-      screenshot = ImageHelpers.saveImage(cropped, "png");
-      viewport = cropRect.get();
-    } else {
-      screenshot = getScreenshot(fullPage);
+      clipRect =
+          new Rectangle(
+              (int) Math.round(clipElementDims.getX() * devicePixelRatio),
+              (int) Math.round(clipElementDims.getY() * devicePixelRatio),
+              (int) Math.round(clipElementDims.getHeight() * devicePixelRatio),
+              (int) Math.round(clipElementDims.getWidth() * devicePixelRatio));
+
+      clipOffset = new Point(clipElementDims.getX(), clipElementDims.getY());
+    }
+
+    byte[] screenshot = getScreenshot(fullPage);
+
+    // Handle clipping, if rect is present
+    if (clipRect != null) {
+      Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
+      // bound the clip rect to the image bounds so there is no outside of bounds exception
+      Optional<Rectangle> offsetRect =
+          CartesianHelpers.intersect(clipRect, new Rectangle(new Point(0, 0), imageDims));
+
+      if (offsetRect.isPresent()) {
+        screenshot =
+            ImageHelpers.saveImage(
+                ImageHelpers.cropImage(ImageHelpers.loadImage(screenshot), offsetRect.get()),
+                "png");
+      }
     }
 
     // create upload and get urls
@@ -680,19 +679,30 @@ public class VisualApi {
             Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
     ignoreRegions.addAll(extractIgnoreSelectors(options));
 
+    // get adjusted screenshot dimensions
+    Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
+    Rectangle imageDimsDpr =
+        new Rectangle(
+            new Point(0, 0),
+            new Dimension(
+                (int) Math.round(imageDims.getWidth() / devicePixelRatio),
+                (int) Math.round(imageDims.getHeight() / devicePixelRatio)));
+    String deviceName =
+        String.format("Desktop (%sx%s)", windowDims.get("width"), windowDims.get("height"));
+
     // make regions relative to viewport
     List<RegionIn> visibleIgnoreRegions = new ArrayList<>();
     for (RegionIn region : ignoreRegions) {
+      // Update the offset to all ignore regions
+      Point newPoint =
+          CartesianHelpers.relativeTo(clipOffset, new Point(region.getX(), region.getY()));
+      region.setX(newPoint.x - scrollOffset.getX());
+      region.setY(newPoint.y - scrollOffset.getY());
+
       Rectangle regionRect =
           new Rectangle(region.getX(), region.getY(), region.getHeight(), region.getWidth());
-
-      if (CartesianHelpers.intersect(regionRect, viewport).isPresent()) {
-        Point newPoint =
-            CartesianHelpers.relativeTo(
-                viewport.getPoint(), new Point(region.getX(), region.getY()));
-        region.setX(newPoint.x);
-        region.setY(newPoint.y);
-
+      // Only add it if the region is visible inside the new image
+      if (CartesianHelpers.intersect(regionRect, imageDimsDpr).isPresent()) {
         visibleIgnoreRegions.add(region);
       }
     }
@@ -712,12 +722,6 @@ public class VisualApi {
       }
     }
 
-    Map<String, Object> dims =
-        (Map<String, Object>)
-            driver.executeScript(
-                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
-    String deviceName = String.format("Desktop (%sx%s)", dims.get("width"), dims.get("height"));
-
     // create snapshot using upload id
     CreateSnapshotMutation snapshotMutation =
         new CreateSnapshotMutation(
@@ -725,7 +729,7 @@ public class VisualApi {
                 .withBrowser(CapabilityUtils.getBrowser(caps))
                 .withBrowserVersion(caps.getBrowserVersion())
                 .withDevice(deviceName)
-                .withDevicePixelRatio(formatDevicePixelRatio(dims.get("dpr")))
+                .withDevicePixelRatio(devicePixelRatio)
                 .withOperatingSystem(CapabilityUtils.getOperatingSystem(caps))
                 .withUploadId(uploadResult.getId())
                 .withBuildId(this.build.getId())
@@ -759,6 +763,39 @@ public class VisualApi {
     }
 
     return driver.getScreenshotAs(OutputType.BYTES);
+  }
+
+  /** Query the browser for the dimensions and offset of the current clip element. */
+  private Rectangle getClipElementDimensions(boolean fullPage, WebElement clipElement) {
+    final String getElementDimensions =
+        "const [clipElement, isFullPage] = arguments;\n"
+            + "      if (!isFullPage) {\n"
+            + "        clipElement.scrollIntoView({\n"
+            + "          behavior: 'instant',\n"
+            + "        });\n"
+            + "      }\n"
+            + "      const rect = clipElement.getBoundingClientRect().toJSON();\n"
+            + "      return isFullPage ? {\n"
+            + "        // FPS should use original coordinates of element on page\n"
+            + "        width: Math.round(rect.width),\n"
+            + "        height: Math.round(rect.height),\n"
+            + "        x: Math.round(rect.x + window.scrollX),\n"
+            + "        y: Math.round(rect.y + window.scrollY),\n"
+            + "      } : {"
+            + "        width: Math.round(rect.width),\n"
+            + "        height: Math.round(rect.height),\n"
+            + "        x: Math.round(rect.x),\n"
+            + "        y: Math.round(rect.y),\n"
+            + "      };";
+
+    Map<String, Long> clipMap =
+        (Map<String, Long>) driver.executeScript(getElementDimensions, clipElement, fullPage);
+
+    return new Rectangle(
+        clipMap.get("x").intValue(),
+        clipMap.get("y").intValue(),
+        clipMap.get("height").intValue(),
+        clipMap.get("width").intValue());
   }
 
   /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
