@@ -662,6 +662,8 @@ public class VisualApi {
             ImageHelpers.saveImage(
                 ImageHelpers.cropImage(ImageHelpers.loadImage(screenshot), offsetRect.get()),
                 "png");
+      } else {
+        throw new VisualApiException("Clipping would result in an empty image");
       }
     }
 
