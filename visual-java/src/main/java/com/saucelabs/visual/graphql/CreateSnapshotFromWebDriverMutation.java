@@ -100,11 +100,11 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     }
 
     public void setTestName(String testName) {
-      this.testName = Optional.of(testName);
+      this.testName = Optional.ofNullable(testName);
     }
 
     public void setSuiteName(String suiteName) {
-      this.suiteName = Optional.of(suiteName);
+      this.suiteName = Optional.ofNullable(suiteName);
     }
 
     public void setCaptureDom(Boolean captureDom) {
