@@ -890,7 +890,7 @@ public class VisualApi {
     List<VisualRegion> bulkRegions = new ArrayList<>();
 
     for (VisualRegion region : regions) {
-      if (validate(region) == null) {
+      if (region.getElement() == null && validate(region) == null) {
         throw new InvalidVisualRegionException(region, "Visual region is invalid");
       }
 
