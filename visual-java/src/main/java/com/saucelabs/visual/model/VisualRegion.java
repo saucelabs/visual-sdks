@@ -45,6 +45,15 @@ public class VisualRegion {
     this.element = element;
   }
 
+  public VisualRegion(String name, Rectangle rectangle, DiffingOptionsIn diffingOptions) {
+    this.name = name;
+    this.options = diffingOptions;
+    this.height = rectangle.height;
+    this.width = rectangle.width;
+    this.x = rectangle.x;
+    this.y = rectangle.y;
+  }
+
   public static VisualRegion ignoreChangesFor(WebElement element) {
     VisualRegion r = new VisualRegion();
     r.options = setAllFlags(new DiffingOptionsIn(), false);
@@ -71,15 +80,6 @@ public class VisualRegion {
     r.x = x;
     r.y = y;
     return r;
-  }
-
-  public static VisualRegion ignoreChangesFor(int x, int y, int width, int height) {
-    return VisualRegion.ignoreChangesFor("", x, y, width, height);
-  }
-
-  public static VisualRegion ignoreChangesFor(String name, Rectangle rectangle) {
-    return VisualRegion.ignoreChangesFor(
-        name, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
   }
 
   public static VisualRegion ignoreChangesFor(Rectangle rectangle) {
@@ -169,6 +169,14 @@ public class VisualRegion {
 
   public void setY(int y) {
     this.y = y;
+  }
+
+  public DiffingOptionsIn getOptions() {
+    return options;
+  }
+
+  public void setOptions(DiffingOptionsIn options) {
+    this.options = options;
   }
 
   public VisualRegion except(EnumSet<DiffingFlag> flags) {

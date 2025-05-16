@@ -890,14 +890,12 @@ public class VisualApi {
     List<VisualRegion> bulkRegions = new ArrayList<>();
 
     for (VisualRegion region : regions) {
-      if (region.getElement() == null && validate(region) == null) {
-        throw new InvalidVisualRegionException(region, "Visual region is invalid");
-      }
-
       WebElement element = region.getElement();
       if (element != null) {
         bulkWebElements.add(element);
         bulkRegions.add(region);
+      } else if (validate(region) == null) {
+        throw new InvalidVisualRegionException(region, "Visual region is invalid");
       } else {
         result.add(region.toRegionIn());
       }
@@ -917,7 +915,10 @@ public class VisualApi {
     for (int i = 0; i < bulkRectangles.size(); i++) {
       VisualRegion region = bulkRegions.get(i);
       Rectangle rectangle = bulkRectangles.get(i);
-      result.add(VisualRegion.ignoreChangesFor(region.getName(), rectangle).toRegionIn());
+      result.add(
+          new VisualRegion(region.getName(), rectangle, region.getOptions())
+              .toRegionIn()
+      );
     }
 
     return result;
