@@ -1,3 +1,246 @@
+com.saucelabs.visual.integration.IgnoreRegionsIT.checkAbilityToUseSelectiveRegion=[
+{
+  "snapshot" : {
+    "name" : "Standard Selective Regions (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.IgnoreRegionsIT",
+    "testName" : "checkAbilityToUseSelectiveRegion",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ {
+      "x" : 324,
+      "y" : 205,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 205,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 477,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 477,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 729,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 729,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 981,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 981,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 1233,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 1233,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 1485,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 1485,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 1737,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 1737,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 1969,
+      "width" : 299,
+      "height" : 100
+    }, {
+      "x" : 879,
+      "y" : 1989,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 2241,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 2241,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 2493,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 2493,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 324,
+      "y" : 2745,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 879,
+      "y" : 2745,
+      "width" : 299,
+      "height" : 80
+    }, {
+      "x" : 472,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 339,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 591,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 843,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 1095,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 1095,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 1347,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 1347,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 1599,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 1599,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 1851,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 1851,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 2103,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 2103,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 2355,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 2355,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 2607,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 2607,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 472,
+      "y" : 2859,
+      "width" : 160,
+      "height" : 34
+    }, {
+      "x" : 1027,
+      "y" : 2859,
+      "width" : 160,
+      "height" : 34
+    } ]
+  }
+}
+]
+
+
 com.saucelabs.visual.integration.IgnoreRegionsIT.checkDefaultStandardIgnoreRegions=[
 {
   "snapshot" : {
