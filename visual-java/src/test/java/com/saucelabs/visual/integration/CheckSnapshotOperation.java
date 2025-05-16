@@ -19,7 +19,7 @@ class CheckSnapshotOperation implements GraphQLOperation {
 
   @Override
   public String getQuery() {
-    return "query GetSnapshot($snapshotId: UUID!) { snapshot(id: $snapshotId) { name suiteName testName operatingSystem operatingSystemVersion device devicePixelRatio hasDom diffs { nodes { status diffClusters { x y width height } } } ignoreRegions { x y width height } } }";
+    return "query GetSnapshot($snapshotId: UUID!) {snapshot(id: $snapshotId) {name suiteName testName operatingSystem operatingSystemVersion device devicePixelRatio hasDom diffs {nodes {status diffClusters {x y width height}}} ignoreRegions {x y width height diffingOptions {visual style content structure dimensions position}}}}";
   }
 
   @Override
