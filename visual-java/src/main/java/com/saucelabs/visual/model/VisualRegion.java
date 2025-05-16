@@ -99,20 +99,6 @@ public class VisualRegion {
     return r;
   }
 
-  public static VisualRegion detectChangesFor(int x, int y, int width, int height) {
-    return VisualRegion.detectChangesFor("", x, y, width, height);
-  }
-
-  public static VisualRegion detectChangesFor(String name, Rectangle rectangle) {
-    return VisualRegion.detectChangesFor(
-        name, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-  }
-
-  public static VisualRegion detectChangesFor(Rectangle rectangle) {
-    return VisualRegion.detectChangesFor(
-        "", rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-  }
-
   private static DiffingOptionsIn setAllFlags(DiffingOptionsIn opt, boolean value) {
     opt.setContent(value);
     opt.setDimensions(value);
@@ -173,10 +159,6 @@ public class VisualRegion {
 
   public DiffingOptionsIn getOptions() {
     return options;
-  }
-
-  public void setOptions(DiffingOptionsIn options) {
-    this.options = options;
   }
 
   public VisualRegion except(EnumSet<DiffingFlag> flags) {
