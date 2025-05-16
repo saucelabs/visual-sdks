@@ -915,10 +915,7 @@ public class VisualApi {
     for (int i = 0; i < bulkRectangles.size(); i++) {
       VisualRegion region = bulkRegions.get(i);
       Rectangle rectangle = bulkRectangles.get(i);
-      result.add(
-          new VisualRegion(region.getName(), rectangle, region.getOptions())
-              .toRegionIn()
-      );
+      result.add(new VisualRegion(region.getName(), rectangle, region.getOptions()).toRegionIn());
     }
 
     return result;
