@@ -4,11 +4,15 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
+import com.saucelabs.visual.model.DiffingFlag;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
+import java.util.EnumSet;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 @ExtendWith({TestMetaInfoExtension.class, SnapshotExtension.class})
 public class IgnoreRegionsIT extends IntegrationBase {
@@ -89,6 +93,25 @@ public class IgnoreRegionsIT extends IntegrationBase {
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .build());
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
+  }
+
+  @Test
+  public void checkAbilityToUseSelectiveRegion() {
+    EnumSet<DiffingFlag> contentChanges = EnumSet.of(DiffingFlag.Content);
+    List<WebElement> elements = driver.findElements(By.cssSelector(".inventory_item_desc"));
+
+    CheckOptions.Builder options =
+        new CheckOptions.Builder()
+            .withIgnoreElements(driver.findElements(By.cssSelector(".btn_inventory")))
+            .withFullPageConfig(new FullPageScreenshotConfig.Builder().build());
+
+    for (WebElement element : elements) {
+      options.disableOnly(contentChanges, element);
+    }
+
+    String id = sauceVisualCheck("Standard Selective Regions", options.build());
     String result = getSnapshotResult(id);
     expect.toMatchSnapshot(result);
   }
