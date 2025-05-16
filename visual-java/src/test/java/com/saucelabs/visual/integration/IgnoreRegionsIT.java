@@ -25,6 +25,7 @@ public class IgnoreRegionsIT extends IntegrationBase {
     loginPage.login();
     InventoryLongPage inventoryPage = new InventoryLongPage();
     inventoryPage.open();
+    driver.executeScript("window.scrollTo(0, 0)");
   }
 
   final By ignoreSelectors = By.cssSelector(".inventory_item_img,.btn_inventory");
@@ -42,10 +43,39 @@ public class IgnoreRegionsIT extends IntegrationBase {
   }
 
   @Test
+  public void checkPositionRegionsWhenScrolledPrior() {
+    driver.executeScript("window.scrollBy(0, 100)");
+
+    String id =
+        sauceVisualCheck(
+            "Standard (scrolled)",
+            new CheckOptions.Builder()
+                .withIgnoreElements(driver.findElements(ignoreSelectors))
+                .build());
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
+  }
+
+  @Test
   public void checkPositionRegionsOnClippedSnapshot() {
     String id =
         sauceVisualCheck(
             "Clipped",
+            new CheckOptions.Builder()
+                .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
+                .withIgnoreElements(driver.findElements(ignoreSelectors))
+                .build());
+    String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
+  }
+
+  @Test
+  public void checkPositionRegionsWhenScrolledPriorToClip() {
+    driver.executeScript("window.scrollBy(0, 100)");
+
+    String id =
+        sauceVisualCheck(
+            "Clipped (scrolled)",
             new CheckOptions.Builder()
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .withIgnoreElements(driver.findElements(ignoreSelectors))
