@@ -627,12 +627,12 @@ public class VisualApi {
     double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
     boolean fullPage = options.getFullPageScreenshotConfig() != null;
     WebElement clipElement = getClipElement(options);
-    Point scrollOffset = new Point(0, 0);
+    Point scrollOffset = fullPage ? new Point(0, 0) : window.getViewport().getPoint();
     Point clipOffset = new Point(0, 0);
     Rectangle clipRect = null;
 
     if (clipElement != null) {
-      Rectangle clipElementDims = getClipElementDimensions(fullPage, clipElement);
+      Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement);
 
       if (!fullPage) {
         scrollOffset = window.getViewport().getPoint();
@@ -767,8 +767,11 @@ public class VisualApi {
     return driver.getScreenshotAs(OutputType.BYTES);
   }
 
-  /** Query the browser for the dimensions and offset of the current clip element. */
-  private Rectangle getClipElementDimensions(boolean fullPage, WebElement clipElement) {
+  /**
+   * Query the browser for the dimensions and offset of the current clip element after scrolling to
+   * it, if applicable.
+   */
+  private Rectangle scrollToAndGetClipElementDims(boolean fullPage, WebElement clipElement) {
     final String getElementDimensions =
         "const [clipElement, isFullPage] = arguments;\n"
             + "      if (!isFullPage) {\n"
