@@ -627,16 +627,11 @@ public class VisualApi {
     double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
     boolean fullPage = options.getFullPageScreenshotConfig() != null;
     WebElement clipElement = getClipElement(options);
-    Point scrollOffset = fullPage ? new Point(0, 0) : window.getViewport().getPoint();
     Point clipOffset = new Point(0, 0);
     Rectangle clipRect = null;
 
     if (clipElement != null) {
       Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement);
-
-      if (!fullPage) {
-        scrollOffset = window.getViewport().getPoint();
-      }
 
       clipRect =
           new Rectangle(
@@ -648,6 +643,8 @@ public class VisualApi {
       clipOffset = new Point(clipElementDims.getX(), clipElementDims.getY());
     }
 
+    // Needs to be queried after our clipElement block due to potential scrolling if fullPage=false
+    Point scrollOffset = fullPage ? new Point(0, 0) : window.getViewport().getPoint();
     byte[] screenshot = getScreenshot(fullPage);
 
     // Handle clipping, if rect is present
