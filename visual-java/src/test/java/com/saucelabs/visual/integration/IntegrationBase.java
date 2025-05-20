@@ -21,6 +21,7 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 abstract class IntegrationBase {
@@ -59,7 +60,10 @@ abstract class IntegrationBase {
     Map<String, Object> sauceOptions = new HashMap<>();
     sauceOptions.put("screenResolution", "1600x1200");
     caps.setCapability("sauce:options", sauceOptions);
-    driver = isLocal ? new FirefoxDriver() : new RemoteWebDriver(getDriverUrl(), caps);
+    FirefoxOptions firefoxOptions = new FirefoxOptions();
+    firefoxOptions.setCapability("webSocketUrl", true);
+    driver =
+        isLocal ? new FirefoxDriver(firefoxOptions) : new RemoteWebDriver(getDriverUrl(), caps);
     driver.manage().window().setSize(new Dimension(1400, 1100));
     visual =
         new VisualApi.Builder(driver, username, accessKey)
