@@ -237,6 +237,7 @@ class CypressSauceVisual {
           SAUCE_VISUAL_DEFAULT_BRANCH_NAME ||
           null,
         customId: SAUCE_VISUAL_CUSTOM_ID || null,
+        // config.saucelabs?.diffingOptions, // TODO: buildIn doesn't have diffingOptions
       });
       this.buildId = id;
       logger.info(buildUrl(url));
@@ -320,6 +321,8 @@ Sauce Labs Visual: Unable to create new build.
         image: { path: screenshot.path },
         dom: metadata.dom ? { data: Buffer.from(metadata.dom) } : undefined,
       });
+
+
       const result = await this.api.createSnapshot({
         buildUuid: this.buildId ?? '',
         uploadUuid: screenshotId,
@@ -342,6 +345,7 @@ Sauce Labs Visual: Unable to create new build.
         diffingMethod: asEnum<DiffingMethod>(
           metadata.diffingMethod || this.diffingMethod || 'BALANCED',
         ),
+        diffingOptions: this.diffingOptions,
         diffingMethodTolerance:
           metadata.diffingMethodTolerance || this.diffingMethodTolerance,
         diffingMethodSensitivity: asEnum<DiffingMethodSensitivity>(
