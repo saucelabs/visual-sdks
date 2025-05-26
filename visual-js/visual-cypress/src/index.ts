@@ -342,6 +342,7 @@ Sauce Labs Visual: Unable to create new build.
         diffingMethod: asEnum<DiffingMethod>(
           metadata.diffingMethod || this.diffingMethod || 'BALANCED',
         ),
+        diffingOptions: metadata.diffingOptions || this.diffingOptions,
         diffingMethodTolerance:
           metadata.diffingMethodTolerance || this.diffingMethodTolerance,
         diffingMethodSensitivity: asEnum<DiffingMethodSensitivity>(
