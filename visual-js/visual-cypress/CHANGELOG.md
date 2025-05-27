@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.10.0
+
+### Minor Changes
+
+- 5e17ced: pass diffingOptions to visual api
+
 ## 0.9.0
 
 ### Minor Changes
