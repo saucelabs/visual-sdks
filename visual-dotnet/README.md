@@ -28,6 +28,12 @@ dotnet format '.' --verify-no-changes
 
 ## Running the tests
 
+Run all tests:
 ```sh
 dotnet test --verbosity normal
+```
+
+Run only unit tests:
+```sh
+dotnet test --filter "Category=Unit" --verbosity normal
 ```

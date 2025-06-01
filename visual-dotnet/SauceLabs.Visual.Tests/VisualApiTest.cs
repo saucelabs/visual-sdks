@@ -10,6 +10,7 @@ using SauceLabs.Visual.Tests.Utils;
 
 namespace SauceLabs.Visual.Tests;
 
+[UnitTest]
 public class VisualApiTest
 {
     internal VisualApi? Api { get; set; }

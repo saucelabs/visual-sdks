@@ -13,6 +13,7 @@ using SauceLabs.Visual.Models;
 
 namespace SauceLabs.Visual.Tests;
 
+[UnitTest]
 public class BuildFactoryTest
 {
     MockHttpMessageHandler MockedHandler;
