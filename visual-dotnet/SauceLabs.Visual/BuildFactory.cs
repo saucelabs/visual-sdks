@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using SauceLabs.Visual.GraphQL;
@@ -6,78 +7,97 @@ using SauceLabs.Visual.Utils;
 
 namespace SauceLabs.Visual
 {
+    /// <summary>
+    /// Factory for creating and managing Visual builds.
+    /// This class is thread-safe and supports parallel execution.
+    /// </summary>
     internal static class BuildFactory
     {
-        private static readonly Dictionary<string, ApiBuildPair> Builds = new Dictionary<string, ApiBuildPair>();
+        private static readonly ConcurrentDictionary<string, Lazy<Task<ApiBuildPair>>> Builds =
+            new ConcurrentDictionary<string, Lazy<Task<ApiBuildPair>>>();
 
         /// <summary>
-        /// <c>Get</c> returns the build matching with the requested region.
+        /// <c>Get</c> returns the build matching with the requested region or name.
         /// If none is available, it returns a newly created build with <c>options</c>.
         /// It will also clone the input <c>api</c> to be able to close the build later.
+        /// This method is thread-safe and ensures only one build is created when called concurrently with the same key.
         /// </summary>
         /// <param name="api">the api to use to create build</param>
         /// <param name="options">the options to use when creating the build</param>
-        /// <returns></returns>
+        /// <returns>A VisualBuild instance</returns>
         internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
-            // Check if there is already a build for the current region.
-            if (Builds.TryGetValue(api.Region.Name, out var build))
-            {
-                return build.Build;
-            }
+            string buildKey = !string.IsNullOrEmpty(options.Name)
+                ? options.Name
+                : api.Region.Name;
 
-            var createdBuild = await Create(api, options);
-            Builds[api.Region.Name] = new ApiBuildPair(api.Clone(), createdBuild);
-            return createdBuild;
+            var lazyBuild = Builds.GetOrAdd(buildKey, key => new Lazy<Task<ApiBuildPair>>(async () =>
+            {
+                var createdBuild = await Create(api, options);
+                return new ApiBuildPair(api.Clone(), createdBuild);
+            }));
+
+            ApiBuildPair storedBuildPair = await lazyBuild.Value;
+            return storedBuildPair.Build;
         }
 
         /// <summary>
-        /// <c>FindRegionByBuild</c> returns the region matching the passed build.
+        /// <c>FindBuildKey</c> returns the key (build name or region) matching the passed build.
         /// </summary>
         /// <param name="build"></param>
-        /// <returns>the matching region name</returns>
-        private static string? FindRegionByBuild(VisualBuild build)
+        /// <returns>the matching build key</returns>
+        private static string? FindBuildKey(VisualBuild build)
         {
-            return Builds.Where(n => n.Value.Build == build).Select(n => n.Key).FirstOrDefault();
+            return Builds.Where(n => n.Value.IsValueCreated && n.Value.Value.IsCompleted && n.Value.Value.Result.Build == build)
+                .Select(n => n.Key)
+                .FirstOrDefault();
         }
 
         /// <summary>
-        /// <c>Close</c> finishes and forget about <c>build</c>
+        /// <c>Close</c> finishes and removes the specified build from the cache.
+        /// This method is thread-safe and can be called from multiple threads.
         /// </summary>
         /// <param name="build">the build to finish</param>
         internal static async Task Close(VisualBuild build)
         {
-            var key = FindRegionByBuild(build);
-            if (key != null)
+            var key = FindBuildKey(build);
+            if (key != null && Builds.TryGetValue(key, out var lazyBuildPair) && lazyBuildPair.IsValueCreated)
             {
-                await Close(key, Builds[key]);
+                var buildPair = await lazyBuildPair.Value;
+                await Close(key, buildPair);
             }
         }
 
         /// <summary>
-        /// <c>Close</c> finishes and forget about <c>build</c>
+        /// <c>Close</c> finishes and removes the build from the cache.
         /// </summary>
-        /// <param name="region">the build to finish</param>
+        /// <param name="buildKey">the build key (name or region) to finish</param>
         /// <param name="entry">the api/build pair</param>
-        private static async Task Close(string region, ApiBuildPair entry)
+        private static async Task Close(string buildKey, ApiBuildPair entry)
         {
             if (!entry.Build.IsExternal)
             {
                 await entry.Api.FinishBuild(entry.Build.Id);
             }
-            Builds.Remove(region);
+            
+            Builds.TryRemove(buildKey, out _);
             entry.Api.Dispose();
         }
 
         /// <summary>
-        /// <c>CloseBuilds</c> closes all build that are still open.
+        /// <c>CloseBuilds</c> closes all builds that are still open.
+        /// This method is thread-safe and should be called during application shutdown.
         /// </summary>
         internal static async Task CloseBuilds()
         {
-            var regions = Builds.Keys;
-            foreach (var region in regions)
+            var buildsToClose = Builds.ToArray();
+            foreach (var kvp in buildsToClose)
             {
-                await Close(region, Builds[region]);
+                if (kvp.Value.IsValueCreated && kvp.Value.Value.IsCompleted)
+                {
+                    var buildPair = await kvp.Value.Value;
+                    await Close(kvp.Key, buildPair);
+                }
             }
         }
 
