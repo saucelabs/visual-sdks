@@ -37,7 +37,7 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException"></exception>
         public static Region FromEnvironment()
         {
-            return string.IsNullOrEmpty(EnvVars.Region) ? FromName(EnvVars.Region) : UsWest1;
+            return string.IsNullOrEmpty(EnvVars.Region) ? UsWest1 : FromName(EnvVars.Region);
         }
 
         /// <summary>
