@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
@@ -10,9 +11,9 @@ namespace SauceLabs.Visual
     /// </summary>
     public class VisualClient : VisualClientBase
     {
-        private readonly string _sessionId;
-        private readonly string _jobId;
-        private string? _sessionMetadataBlob;
+        private static readonly WebDriverMetadataCache _wdCache = new WebDriverMetadataCache();
+
+        private WebDriverMetadata? _metadata;
 
         /// <summary>
         /// Creates a new instance of <c>VisualClient</c>
@@ -76,17 +77,75 @@ namespace SauceLabs.Visual
         /// <param name="buildOptions">the options of the build creation</param>
         public static async Task<VisualClient> Create(WebDriver wd, Region region, string username, string accessKey, CreateBuildOptions buildOptions)
         {
-            var client = new VisualClient(wd, region, username, accessKey);
+            var client = new VisualClient(region, username, accessKey);
+            client._metadata = await client.GetMetadata(wd);
+            await client.SetupBuild(buildOptions);
+            return client;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        public static async Task<VisualClient> Create()
+        {
+            return await Create(Region.FromEnvironment(), EnvVars.Username, EnvVars.AccessKey, new CreateBuildOptions());
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="buildOptions">the options of the build creation</param>
+        public static async Task<VisualClient> Create(CreateBuildOptions buildOptions)
+        {
+            return await Create(Region.FromEnvironment(), EnvVars.Username, EnvVars.AccessKey, buildOptions);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        public static async Task<VisualClient> Create(Region region)
+        {
+            return await Create(region, EnvVars.Username, EnvVars.AccessKey, new CreateBuildOptions());
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="buildOptions">the options of the build creation</param>
+        public static async Task<VisualClient> Create(Region region, CreateBuildOptions buildOptions)
+        {
+            return await Create(region, EnvVars.Username, EnvVars.AccessKey, buildOptions);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="username">the Sauce Labs username</param>
+        /// <param name="accessKey">the Sauce Labs access key</param>
+        public static async Task<VisualClient> Create(Region region, string username, string accessKey)
+        {
+            return await Create(region, username, accessKey, new CreateBuildOptions());
+        }
+
+        /// <summary>
+        /// Creates a new instance of <c>VisualClient</c>
+        /// </summary>
+        /// <param name="region">the Sauce Labs region to connect to</param>
+        /// <param name="username">the Sauce Labs username</param>
+        /// <param name="accessKey">the Sauce Labs access key</param>
+        /// <param name="buildOptions">the options of the build creation</param>
+        public static async Task<VisualClient> Create(Region region, string username, string accessKey, CreateBuildOptions buildOptions)
+        {
+            var client = new VisualClient(region, username, accessKey);
             await client.SetupBuild(buildOptions);
             return client;
         }
 
         private async Task SetupBuild(CreateBuildOptions buildOptions)
         {
-            var response = await Api.WebDriverSessionInfo(_jobId, _sessionId);
-            var metadata = response.EnsureValidResponse();
-            _sessionMetadataBlob = metadata.Result.Blob;
-
             Build = await BuildFactory.Get(Api, buildOptions);
         }
 
@@ -97,11 +156,8 @@ namespace SauceLabs.Visual
         /// <param name="region">the Sauce Labs region to connect to</param>
         /// <param name="username">the Sauce Labs username</param>
         /// <param name="accessKey">the Sauce Labs access key</param>
-        private VisualClient(WebDriver wd, Region region, string username, string accessKey) : base(region, username, accessKey)
+        private VisualClient(Region region, string username, string accessKey) : base(region, username, accessKey)
         {
-            _sessionId = wd.SessionId.ToString();
-            _jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : _sessionId;
-
         }
 
         /// <summary>
@@ -123,15 +179,47 @@ namespace SauceLabs.Visual
         public Task<string> VisualCheck(string name, VisualCheckOptions? options = null,
             [CallerMemberName] string callerMemberName = "")
         {
+            if (_metadata == null)
+            {
+                throw new InvalidOperationException("VisualClient has not been initialized with a WebDriver instance. Please use the `VisualCheck` method accepting a WebDriver instance.");
+            }
+
             options ??= new VisualCheckOptions();
             options.EnsureTestContextIsPopulated(callerMemberName, PreviousSuiteName);
             PreviousSuiteName = options.SuiteName;
-            return VisualCheckAsync(name, options);
+
+            return VisualCheckAsync(name, options, _metadata);
         }
 
-        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options)
+        /// <summary>
+        /// <c>VisualCheck</c> captures a screenshot and queue it for processing.
+        /// </summary>
+        /// <param name="wd">the instance of the WebDriver session</param>
+        /// <param name="name">the name of the screenshot</param>
+        /// <param name="options">the configuration for the screenshot capture and comparison</param>
+        /// <param name="callerMemberName">the member name of the caller (automated) </param>
+        /// <returns></returns>
+        public async Task<string> VisualCheck(WebDriver wd, string name, VisualCheckOptions? options = null,
+            [CallerMemberName] string callerMemberName = "")
         {
-            return await VisualCheckBaseAsync(name, options, _jobId, _sessionId, _sessionMetadataBlob);
+            options ??= new VisualCheckOptions();
+            options.EnsureTestContextIsPopulated(callerMemberName, PreviousSuiteName);
+            PreviousSuiteName = options.SuiteName;
+
+            var metadata = await GetMetadata(wd);
+            return await VisualCheckAsync(name, options, metadata);
+        }
+
+        private async Task<string> VisualCheckAsync(string name, VisualCheckOptions options, WebDriverMetadata webDriverMetadata)
+        {
+            return await VisualCheckBaseAsync(name, options, webDriverMetadata);
+        }
+
+        private async Task<WebDriverMetadata> GetMetadata(WebDriver wd)
+        {
+            var sessionId = wd.SessionId.ToString();
+            var jobId = wd.Capabilities.HasCapability("jobUuid") ? wd.Capabilities.GetCapability("jobUuid").ToString() : sessionId;
+            return await _wdCache.GetMetadata(Api, sessionId, jobId);
         }
 
         /// <summary>
