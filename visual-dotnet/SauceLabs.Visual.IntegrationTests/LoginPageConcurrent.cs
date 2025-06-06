@@ -6,6 +6,7 @@ using OpenQA.Selenium.Remote;
 namespace SauceLabs.Visual.IntegrationTests;
 
 [Parallelizable(ParallelScope.Children)]
+[IntegrationTest]
 public class LoginPageConcurrent
 {
     private VisualClient? VisualClient { get; set; }
@@ -17,7 +18,6 @@ public class LoginPageConcurrent
         TestContext.Progress.WriteLine($"Build: {VisualClient.Build.Url}");
     }
 
-    [IntegrationTest]
     [Test]
     public async Task LoginPage_ShouldOpen1()
     {
@@ -28,7 +28,6 @@ public class LoginPageConcurrent
         });
     }
 
-    [IntegrationTest]
     [Test]
     public async Task LoginPage_ShouldOpen2()
     {
@@ -39,7 +38,6 @@ public class LoginPageConcurrent
         });
     }
 
-    [IntegrationTest]
     [Test]
     public async Task LoginPage_ShouldOpen3()
     {

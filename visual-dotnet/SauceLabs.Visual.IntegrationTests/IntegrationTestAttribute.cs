@@ -5,7 +5,7 @@ using NUnit.Framework.Internal;
 
 namespace SauceLabs.Visual.IntegrationTests;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false)]
 public class IntegrationTestAttribute : NUnitAttribute, IApplyToTest
 {
     public void ApplyToTest(Test test)
