@@ -40,22 +40,22 @@ internal static class Utils
         return accessKey;
     }
 
-    public static string GetSauceRegion()
+    public static Region GetSauceRegion()
     {
         var region = Environment.GetEnvironmentVariable("SAUCE_REGION");
         if (string.IsNullOrEmpty(region))
         {
-            return "us-west-1";
+            return Region.UsWest1;
         }
 
-        return region;
+        return Region.FromName(region);
     }
 
     public static Uri GetOnDemandURL()
     {
         var regionName = GetSauceRegion();
-        var tld = regionName == "staging" ? "net" : "com";
-        return new Uri("https://ondemand." + regionName + ".saucelabs." + tld + "/wd/hub");
+        var tld = regionName.Name == "staging" ? "net" : "com";
+        return new Uri("https://ondemand." + regionName.Name + ".saucelabs." + tld + "/wd/hub");
     }
 
     public static DriverOptions GetBrowserOptions()
