@@ -13,7 +13,7 @@ public class LoginPageConcurrent
     [OneTimeSetUp]
     public async Task Setup()
     {
-        VisualClient = await VisualClient.Create(Region.UsWest1);
+        VisualClient = await VisualClient.Create(Utils.GetSauceRegion());
         TestContext.Progress.WriteLine($"Build: {VisualClient.Build.Url}");
     }
 
@@ -73,6 +73,6 @@ public class LoginPageConcurrent
     public async Task Teardown()
     {
         await VisualClient.Finish();
-        VisualClient?.Dispose();
+        VisualClient.Dispose();
     }
 }
