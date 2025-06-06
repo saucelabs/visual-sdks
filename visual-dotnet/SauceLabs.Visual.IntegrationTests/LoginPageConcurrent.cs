@@ -6,7 +6,7 @@ using OpenQA.Selenium.Remote;
 namespace SauceLabs.Visual.IntegrationTests;
 
 [Parallelizable(ParallelScope.Children)]
-[IntegrationTest]
+[IntegrationTest(skipIfSingle: true)]
 public class LoginPageConcurrent
 {
     private VisualClient? VisualClient { get; set; }
