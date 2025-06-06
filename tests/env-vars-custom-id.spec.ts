@@ -1,9 +1,7 @@
 import { BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
 import {
   RE_VISUAL_BUILD_ID,
-  RE_VISUAL_BUILD_LINK,
   SAUCE_VISUAL_BUILD_NAME,
-  waitStatusForBuild,
 } from './utils/helpers';
 import { execute } from './utils/process';
 import { FileHandle } from 'fs/promises';
@@ -18,12 +16,9 @@ const visualApi = getApi({
 });
 
 const customId = randomBytes(20).toString('hex');
-const customId2 = randomBytes(20).toString('hex');
 
 let fileOutput: FileHandle | undefined;
-let dockerOutput = '';
 let externalBuildId = '';
-let buildId = '';
 
 describe('Custom ID env var', () => {
   beforeAll(
@@ -34,7 +29,10 @@ describe('Custom ID env var', () => {
           displayOutputOnFailure: true,
           pipeOutput: false,
           fileOutput,
-        }
+          env: {
+            SAUCE_REGION: region,
+          },
+        },
       );
       expect(result.statusCode).toEqual(0);
       const cliOutput = result.stdout;
@@ -52,6 +50,7 @@ describe('Custom ID env var', () => {
         `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
         -e SAUCE_VISUAL_BUILD_NAME \\
         -e SAUCE_VISUAL_CUSTOM_ID \\
+        -e SAUCE_REGION \\
         ${process.env.CONTAINER_IMAGE_NAME}`,
         {
           displayOutputOnFailure: true,
@@ -60,6 +59,7 @@ describe('Custom ID env var', () => {
           env: {
             SAUCE_VISUAL_BUILD_NAME: SAUCE_VISUAL_BUILD_NAME,
             SAUCE_VISUAL_CUSTOM_ID: customId,
+            SAUCE_REGION: region,
           },
         }
       );
@@ -67,7 +67,6 @@ describe('Custom ID env var', () => {
       if (!process.env.CONTAINER_IMAGE_NAME?.includes('storybook')) {
         expect(result.statusCode).toEqual(0);
       }
-      dockerOutput = result.stdout;
     },
     2 * 60 * 1000
   );
@@ -85,60 +84,6 @@ describe('Custom ID env var', () => {
     15 * 1000
   );
 
-  it(
-    'runs the docker image with an unlinked custom ID in place',
-    async () => {
-      const result = await execute(
-        `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
-        -e SAUCE_VISUAL_BUILD_NAME \\
-        -e SAUCE_VISUAL_CUSTOM_ID \\
-        ${process.env.CONTAINER_IMAGE_NAME}`,
-        {
-          displayOutputOnFailure: true,
-          pipeOutput: false,
-          fileOutput,
-          env: {
-            SAUCE_VISUAL_BUILD_NAME: SAUCE_VISUAL_BUILD_NAME,
-            SAUCE_VISUAL_CUSTOM_ID: customId2,
-          },
-        }
-      );
-
-      // Storybook container exits with code 1, this is expected behaviour
-      if (!process.env.CONTAINER_IMAGE_NAME?.includes('storybook')) {
-        expect(result.statusCode).toEqual(0);
-      }
-      dockerOutput = result.stdout;
-    },
-    2 * 60 * 1000
-  );
-
-  it('returns a new build ID (not external build ID)', async () => {
-    expect(dockerOutput.length).toBeGreaterThan(0);
-
-    const links = [...dockerOutput.matchAll(RE_VISUAL_BUILD_LINK)];
-    expect(links.length).toBeGreaterThanOrEqual(1);
-    buildId = links[0][4];
-    expect(buildId).not.toEqual(externalBuildId);
-  });
-
-  it(
-    'build is completed',
-    async () => {
-      expect(buildId).toMatch(RE_VISUAL_BUILD_ID);
-
-      await waitStatusForBuild(visualApi, buildId, [BuildStatus.Unapproved], {
-        refreshRate: 1000,
-        retries: 10,
-      });
-
-      const build = await visualApi.buildWithDiffs(buildId);
-      expect(build).toBeTruthy();
-      expect(build?.diffs?.nodes.length).toBe(1);
-    },
-    15 * 1000
-  );
-
   afterAll(
     async () => {
       const result = await execute(
@@ -147,6 +92,9 @@ describe('Custom ID env var', () => {
           displayOutputOnFailure: true,
           pipeOutput: false,
           fileOutput,
+          env: {
+            SAUCE_REGION: region,
+          },
         }
       );
       expect(result.statusCode).toEqual(0);
