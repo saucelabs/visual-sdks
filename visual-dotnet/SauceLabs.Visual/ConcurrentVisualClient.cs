@@ -109,7 +109,8 @@ namespace SauceLabs.Visual
                 return res.EnsureValidResponse().Result;
             });
 
-            return await VisualCheckBaseAsync(name, options, jobId, sessionId, sessionMetadata.Blob);
+            var metadata = new WebDriverMetadata(sessionId, jobId, sessionMetadata.Blob);
+            return await VisualCheckBaseAsync(name, options, metadata);
         }
     }
 }

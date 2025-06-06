@@ -90,20 +90,13 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
         private static async Task<VisualBuild> FindBuildById(VisualApi api, string buildId)
         {
-            try
-            {
-                var build = (await api.Build(buildId)).EnsureValidResponse().Result;
-                if (build == null)
-                {
-                    throw new VisualClientException($@"build {buildId} was not found");
-                }
-
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
+            var build = (await api.Build(buildId)).EnsureValidResponse().Result;
+            if (build == null)
             {
                 throw new VisualClientException($@"build {buildId} was not found");
             }
+
+            return new VisualBuild(build.Id, build.Url, build.Mode);
         }
 
         /// <summary>
@@ -115,20 +108,13 @@ namespace SauceLabs.Visual
         /// <exception cref="VisualClientException">when build is not existing or has an invalid state</exception>
         private static async Task<VisualBuild?> FindBuildByCustomId(VisualApi api, string customId)
         {
-            try
-            {
-                var build = (await api.BuildByCustomId(customId)).EnsureValidResponse().Result;
-                if (build == null)
-                {
-                    throw new VisualClientException($@"build identified by {customId} was not found");
-                }
-
-                return new VisualBuild(build.Id, build.Url, build.Mode);
-            }
-            catch (VisualClientException)
+            var build = (await api.BuildByCustomId(customId)).EnsureValidResponse().Result;
+            if (build == null)
             {
                 return null;
             }
+
+            return new VisualBuild(build.Id, build.Url, build.Mode);
         }
 
         /// <summary>
