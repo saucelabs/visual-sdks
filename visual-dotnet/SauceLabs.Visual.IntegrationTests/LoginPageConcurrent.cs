@@ -14,7 +14,7 @@ public class LoginPageConcurrent
     [OneTimeSetUp]
     public async Task Setup()
     {
-        VisualClient = await VisualClient.Create(Utils.GetSauceRegion());
+        VisualClient = await VisualClient.Create();
         TestContext.Progress.WriteLine($"Build: {VisualClient.Build.Url}");
     }
 
