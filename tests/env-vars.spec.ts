@@ -11,7 +11,7 @@ import {
 import { execute } from './utils/process';
 import { FileHandle } from 'fs/promises';
 
-const region = 'us-west-1' as SauceRegion;
+const region = (process.env.SAUCE_REGION ?? 'us-west-1') as SauceRegion;
 
 const visualApi = getApi({
   region,
