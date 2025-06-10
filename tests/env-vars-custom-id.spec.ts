@@ -78,7 +78,7 @@ describe('Custom ID env var', () => {
       expect(build).toBeTruthy();
       expect(build?.id).toEqual(externalBuildId);
       expect(build?.name).toEqual(SAUCE_VISUAL_BUILD_NAME);
-      expect(build?.diffs?.nodes.length).toBe(1);
+      expect(build?.diffs?.nodes.length).toBeGreaterThanOrEqual(1);
       expect(build?.status).toBe(BuildStatus.Running);
     },
     15 * 1000

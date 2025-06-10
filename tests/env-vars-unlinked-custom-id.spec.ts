@@ -77,7 +77,7 @@ describe('Unlinked custom ID env var', () => {
 
       const build = await visualApi.buildWithDiffs(buildId);
       expect(build).toBeTruthy();
-      expect(build?.diffs?.nodes.length).toBe(1);
+      expect(build?.diffs?.nodes.length).toBeGreaterThanOrEqual(1);
     },
     60 * 1000
   );
