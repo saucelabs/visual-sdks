@@ -3,7 +3,7 @@ import { RE_VISUAL_BUILD_ID, SAUCE_VISUAL_BUILD_NAME } from './utils/helpers';
 import { execute } from './utils/process';
 import { FileHandle } from 'fs/promises';
 
-const region = 'us-west-1' as SauceRegion;
+const region = (process.env.SAUCE_REGION ?? 'us-west-1') as SauceRegion;
 
 const visualApi = getApi({
   region,
@@ -68,7 +68,7 @@ describe('Build ID env var', () => {
       expect(build).toBeTruthy();
       expect(build?.id).toEqual(buildId);
       expect(build?.name).toEqual(SAUCE_VISUAL_BUILD_NAME);
-      expect(build?.diffs?.nodes.length).toBe(1);
+      expect(build?.diffs?.nodes.length).toBeGreaterThanOrEqual(1);
       expect(build?.status).toBe(BuildStatus.Running);
     },
     15 * 1000

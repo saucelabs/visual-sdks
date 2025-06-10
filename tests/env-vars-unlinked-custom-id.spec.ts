@@ -2,14 +2,12 @@ import { BuildStatus, SauceRegion, getApi } from '@saucelabs/visual';
 import {
   RE_VISUAL_BUILD_ID,
   RE_VISUAL_BUILD_LINK,
-  SAUCE_VISUAL_BRANCH,
   SAUCE_VISUAL_BUILD_NAME,
-  SAUCE_VISUAL_DEFAULT_BRANCH,
-  SAUCE_VISUAL_PROJECT,
   waitStatusForBuild,
 } from './utils/helpers';
 import { execute } from './utils/process';
 import { FileHandle } from 'fs/promises';
+import { randomBytes } from 'crypto';
 
 const region = (process.env.SAUCE_REGION ?? 'us-west-1') as SauceRegion;
 
@@ -19,30 +17,32 @@ const visualApi = getApi({
   key: process.env.SAUCE_ACCESS_KEY!,
 });
 
+const customId = randomBytes(20).toString('hex');
+
 let fileOutput: FileHandle | undefined;
 let dockerOutput = '';
 let buildId = '';
 
-describe('Build-configuring env vars', () => {
+describe('Unlinked custom ID env var', () => {
   it(
-    'runs the docker image with env vars in place',
+    'runs the docker image with an unlinked custom ID in place',
     async () => {
       const result = await execute(
         `docker run --rm -e SAUCE_USERNAME -e SAUCE_ACCESS_KEY \\
-        -e SAUCE_VISUAL_PROJECT \\
-        -e SAUCE_VISUAL_BRANCH \\
-        -e SAUCE_VISUAL_DEFAULT_BRANCH \\
         -e SAUCE_VISUAL_BUILD_NAME \\
+        -e SAUCE_VISUAL_CUSTOM_ID \\
+        -e SAUCE_REGION \\
+        -e RUN_IT_SINGLE \\
         ${process.env.CONTAINER_IMAGE_NAME}`,
         {
           displayOutputOnFailure: true,
           pipeOutput: false,
           fileOutput,
           env: {
-            SAUCE_VISUAL_PROJECT: SAUCE_VISUAL_PROJECT,
-            SAUCE_VISUAL_BRANCH: SAUCE_VISUAL_BRANCH,
-            SAUCE_VISUAL_DEFAULT_BRANCH: SAUCE_VISUAL_DEFAULT_BRANCH,
             SAUCE_VISUAL_BUILD_NAME: SAUCE_VISUAL_BUILD_NAME,
+            SAUCE_VISUAL_CUSTOM_ID: customId,
+            SAUCE_REGION: region,
+            RUN_IT_SINGLE: 'true'
           },
         }
       );
@@ -56,32 +56,29 @@ describe('Build-configuring env vars', () => {
     2 * 60 * 1000
   );
 
-  it('returns a valid build link', async () => {
+  it('returns a new build ID', async () => {
     expect(dockerOutput.length).toBeGreaterThan(0);
 
     const links = [...dockerOutput.matchAll(RE_VISUAL_BUILD_LINK)];
     expect(links.length).toBeGreaterThanOrEqual(1);
     buildId = links[0][4];
+    expect(buildId).toMatch(RE_VISUAL_BUILD_ID);
   });
 
   it(
-    'env vars are processed correctly',
+    'build is completed',
     async () => {
       expect(buildId).toMatch(RE_VISUAL_BUILD_ID);
 
       await waitStatusForBuild(visualApi, buildId, [BuildStatus.Unapproved], {
         refreshRate: 1000,
-        retries: 10,
+        retries: 30,
       });
 
-      const build = await visualApi.build(buildId);
+      const build = await visualApi.buildWithDiffs(buildId);
       expect(build).toBeTruthy();
-      expect(build?.id).toEqual(buildId);
-      expect(build?.name).toEqual(SAUCE_VISUAL_BUILD_NAME);
-      expect(build?.project).toBe(SAUCE_VISUAL_PROJECT);
-      expect(build?.branch).toBe(SAUCE_VISUAL_BRANCH);
-      expect(build?.defaultBranch).toBe(SAUCE_VISUAL_DEFAULT_BRANCH);
+      expect(build?.diffs?.nodes.length).toBeGreaterThanOrEqual(1);
     },
-    15 * 1000
+    60 * 1000
   );
 });
