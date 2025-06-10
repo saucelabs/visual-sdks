@@ -20,7 +20,7 @@ public class LoginPage
         Driver = new RemoteWebDriver(sauceUrl, browserOptions);
         Driver.ExecuteScript("sauce:job-name=NUnit C#/.Net Visual Session");
 
-        VisualClient = await VisualClient.Create(Driver, Region.UsWest1);
+        VisualClient = await VisualClient.Create(Driver);
         TestContext.Progress.WriteLine($"Build: {VisualClient.Build.Url}");
     }
 

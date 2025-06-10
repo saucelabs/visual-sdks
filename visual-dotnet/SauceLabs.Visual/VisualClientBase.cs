@@ -62,7 +62,7 @@ namespace SauceLabs.Visual
         }
 
         internal async Task<string> VisualCheckBaseAsync(string name,
-            VisualCheckOptions options, string jobId, string sessionId, string? sessionMetadataBlob)
+            VisualCheckOptions options, WebDriverMetadata wdMetadata)
         {
             var ignoredRegions =
                 IgnoredRegions.SplitIgnoredRegions(options.Regions, options.IgnoreRegions, options.IgnoreElements);
@@ -76,12 +76,12 @@ namespace SauceLabs.Visual
             var result = (await Api.CreateSnapshotFromWebDriver(new CreateSnapshotFromWebDriverIn(
                 buildUuid: Build.Id,
                 name: name,
-                jobId: jobId,
+                jobId: wdMetadata.JobId,
                 diffingMethod: options.DiffingMethod ?? DiffingMethod.Balanced,
                 regions: ignoredRegions.RegionsIn,
                 ignoredElements: ignoredRegions.ElementsIn,
-                sessionId: sessionId,
-                sessionMetadata: sessionMetadataBlob ?? "",
+                sessionId: wdMetadata.SessionId,
+                sessionMetadata: wdMetadata.SessionMetadataBlob ?? "",
                 captureDom: options.CaptureDom ?? CaptureDom,
                 clipElement: options.ClipElement?.GetElementId(),
                 suiteName: options.SuiteName,
