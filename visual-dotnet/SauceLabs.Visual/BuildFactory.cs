@@ -79,7 +79,7 @@ namespace SauceLabs.Visual
             {
                 await entry.Api.FinishBuild(entry.Build.Id);
             }
-            
+
             Builds.TryRemove(buildKey, out _);
             entry.Api.Dispose();
         }

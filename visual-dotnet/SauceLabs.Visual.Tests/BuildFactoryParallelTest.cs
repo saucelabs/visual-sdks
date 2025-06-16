@@ -30,7 +30,7 @@ public class BuildFactoryParallelTest
         var createHandler = () =>
         {
             _buildCounter++;
-            
+
             var id = RandomString(32);
             var content = new VisualBuild(id, $"http://dummy/test/{id}", BuildMode.Running);
             var resp = new HttpResponseMessage(HttpStatusCode.OK);
@@ -88,30 +88,30 @@ public class BuildFactoryParallelTest
         var api = new VisualApi(Region.Staging, _username, _accessKey, MockedHandler.ToHttpClient());
         var options = new CreateBuildOptions { Name = "ParallelBuildTest" };
         const int parallelCalls = 6;
-        
+
         var tasks = Enumerable.Range(0, parallelCalls)
             .Select(_ => BuildFactory.Get(api, options))
             .ToArray();
-        
+
         var builds = await Task.WhenAll(tasks);
-        
+
         var firstBuild = builds[0];
         Assert.That(builds, Is.All.EqualTo(firstBuild), "All builds should be the same instance");
         Assert.AreEqual(1, _buildCounter, "Only one build should have been created");
     }
-    
+
     [Test]
     public async Task BuildFactory_CreateDifferentBuildsWhenCalledInParallelWithDifferentNames()
     {
         var api = new VisualApi(Region.Staging, _username, _accessKey, MockedHandler.ToHttpClient());
         const int parallelCalls = 3;
-        
+
         var tasks = Enumerable.Range(0, parallelCalls)
             .Select(i => BuildFactory.Get(api, new CreateBuildOptions { Name = $"ParallelBuildTest-{i}" }))
             .ToArray();
-        
+
         var builds = await Task.WhenAll(tasks);
-        
+
         Assert.That(builds.Distinct().Count(), Is.EqualTo(builds.Length), "All builds should be different instances");
         Assert.AreEqual(parallelCalls, _buildCounter, $"Expected {parallelCalls} builds to be created");
     }
