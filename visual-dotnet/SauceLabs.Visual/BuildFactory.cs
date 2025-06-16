@@ -13,8 +13,9 @@ namespace SauceLabs.Visual
     /// </summary>
     internal static class BuildFactory
     {
-        private static readonly ConcurrentDictionary<string, Lazy<Task<ApiBuildPair>>> Builds =
-            new ConcurrentDictionary<string, Lazy<Task<ApiBuildPair>>>();
+
+        private static readonly ConcurrentDictionary<BuildKey, Lazy<Task<ApiBuildPair>>> Builds =
+            new ConcurrentDictionary<BuildKey, Lazy<Task<ApiBuildPair>>>();
 
         /// <summary>
         /// <c>Get</c> returns the build matching with the requested region or name.
@@ -27,9 +28,15 @@ namespace SauceLabs.Visual
         /// <returns>A VisualBuild instance</returns>
         internal static async Task<VisualBuild> Get(VisualApi api, CreateBuildOptions options)
         {
-            string buildKey = !string.IsNullOrEmpty(options.Name)
-                ? options.Name
-                : api.Region.Name;
+            BuildKey buildKey;
+            if (!string.IsNullOrEmpty(options.Name))
+            {
+                buildKey = BuildKey.OfBuildName(options.Name);
+            }
+            else
+            {
+                buildKey = BuildKey.OfRegion(api.Region);
+            }
 
             var lazyBuild = Builds.GetOrAdd(buildKey, key => new Lazy<Task<ApiBuildPair>>(async () =>
             {
@@ -46,7 +53,7 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="build"></param>
         /// <returns>the matching build key</returns>
-        private static string? FindBuildKey(VisualBuild build)
+        private static BuildKey? FindBuildKey(VisualBuild build)
         {
             return Builds.Where(n => n.Value.IsValueCreated && n.Value.Value.IsCompleted && n.Value.Value.Result.Build == build)
                 .Select(n => n.Key)
@@ -73,7 +80,7 @@ namespace SauceLabs.Visual
         /// </summary>
         /// <param name="buildKey">the build key (name or region) to finish</param>
         /// <param name="entry">the api/build pair</param>
-        private static async Task Close(string buildKey, ApiBuildPair entry)
+        private static async Task Close(BuildKey buildKey, ApiBuildPair entry)
         {
             if (!entry.Build.IsExternal)
             {

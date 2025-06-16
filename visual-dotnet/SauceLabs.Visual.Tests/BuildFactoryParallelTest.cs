@@ -11,6 +11,8 @@ using RichardSzalay.MockHttp;
 using SauceLabs.Visual.GraphQL;
 using SauceLabs.Visual.Models;
 using System.Collections.Generic;
+using Moq;
+using GraphQL;
 
 namespace SauceLabs.Visual.Tests;
 
@@ -59,8 +61,9 @@ public class BuildFactoryParallelTest
     }
 
     [TearDown]
-    public void Cleanup()
+    public async Task Cleanup()
     {
+        await BuildFactory.CloseBuilds();
         MockedHandler.Dispose();
     }
 
@@ -108,6 +111,34 @@ public class BuildFactoryParallelTest
 
         var tasks = Enumerable.Range(0, parallelCalls)
             .Select(i => BuildFactory.Get(api, new CreateBuildOptions { Name = $"ParallelBuildTest-{i}" }))
+            .ToArray();
+
+        var builds = await Task.WhenAll(tasks);
+
+        Assert.That(builds.Distinct().Count(), Is.EqualTo(builds.Length), "All builds should be different instances");
+        Assert.AreEqual(parallelCalls, _buildCounter, $"Expected {parallelCalls} builds to be created");
+    }
+
+    [Test]
+    public async Task BuildFactory_CreateDifferentBuildsWhenCalledInParallelWithNamesEqualToRegionNames()
+    {
+        var api = new VisualApi(Region.Staging, _username, _accessKey, MockedHandler.ToHttpClient());
+
+        var buildOptions = new[]{
+            new CreateBuildOptions {
+                Name = "ParallelBuildTest-1"
+            },
+            new CreateBuildOptions {
+                Name = "ParallelBuildTest-2"
+            },
+            new CreateBuildOptions {
+                Name = Region.Staging.Name,
+            },
+        };
+        var parallelCalls = buildOptions.Length;
+
+        var tasks = buildOptions
+            .Select(opts => BuildFactory.Get(api, opts))
             .ToArray();
 
         var builds = await Task.WhenAll(tasks);

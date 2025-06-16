@@ -17,6 +17,7 @@ namespace SauceLabs.Visual
         internal readonly Region Region;
         private readonly string _username;
         private readonly string _accessKey;
+        private readonly HttpClient? _httpClient;
         private readonly GraphQLHttpClient _graphQlClient;
 
         public VisualApi(Region region, string username, string accessKey, HttpClient? httpClient = null)
@@ -32,7 +33,7 @@ namespace SauceLabs.Visual
             _username = username.Trim();
             _accessKey = accessKey.Trim();
 
-            httpClient ??= new HttpClient();
+            _httpClient = httpClient ?? new HttpClient();
 
             var serializerOptions = new JsonSerializerSettings()
             {
@@ -48,7 +49,7 @@ namespace SauceLabs.Visual
                     DefaultUserAgentRequestHeader = new ProductInfoHeaderValue(currentAssembly.Name, currentAssembly.Version.ToString())
                 },
                 serializer: new NewtonsoftJsonSerializer(serializerOptions),
-                httpClient);
+                _httpClient);
         }
 
         public async Task<GraphQLResponse<ServerResponse<CreateBuild>>> CreateBuild(CreateBuildIn input)
@@ -125,7 +126,7 @@ namespace SauceLabs.Visual
 
         internal VisualApi Clone()
         {
-            return new VisualApi(Region, _username, _accessKey);
+            return new VisualApi(Region, _username, _accessKey, _httpClient);
         }
     }
 }

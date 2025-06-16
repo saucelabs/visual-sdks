@@ -7,7 +7,7 @@ namespace SauceLabs.Visual
     /// Class <c>Region</c> represents a Sauce Labs Region.
     /// It is used to specify where the <c>VisualClient</c> should connect to.
     /// </summary>
-    public class Region
+    public class Region : IEquatable<Region>
     {
         private Region(string name, Uri value)
         {
@@ -56,6 +56,31 @@ namespace SauceLabs.Visual
                 "staging" => Staging,
                 _ => throw new VisualClientException($"Unknown region {name}")
             };
+        }
+
+        public bool Equals(Region other)
+        {
+            return other.Name == Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj switch
+            {
+                Region region => Equals(region),
+                _ => false
+            };
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 29 + Name.GetHashCode();
+                hash = hash * 29 + Value.GetHashCode();
+                return hash;
+            }
         }
 
         public static Region UsWest1 => new Region("us-west-1", "https://api.us-west-1.saucelabs.com/v1/visual/graphql");
