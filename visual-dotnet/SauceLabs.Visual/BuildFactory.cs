@@ -44,8 +44,18 @@ namespace SauceLabs.Visual
                 return new ApiBuildPair(api.Clone(), createdBuild);
             }));
 
-            ApiBuildPair storedBuildPair = await lazyBuild.Value;
-            return storedBuildPair.Build;
+            try
+            {
+                ApiBuildPair storedBuildPair = await lazyBuild.Value;
+                return storedBuildPair.Build;
+            }
+            catch
+            {
+                // If resolving build fails, remove the lazy task
+                // so subsequent calls do not fail with the same result
+                Builds.TryRemove(buildKey, out _);
+                throw;
+            }
         }
 
         /// <summary>
