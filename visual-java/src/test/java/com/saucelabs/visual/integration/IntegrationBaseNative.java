@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebElement;
@@ -41,6 +42,11 @@ public class IntegrationBaseNative {
             .withProject("visual-java-integration")
             .withCaptureDom(true)
             .build();
+  }
+
+  @AfterAll
+  public static void tearDown() {
+    driver.quit();
   }
 
   static URL getDriverUrl() throws MalformedURLException {
