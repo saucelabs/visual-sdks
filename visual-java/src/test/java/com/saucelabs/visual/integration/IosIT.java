@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.WebElement;
 
 @ExtendWith({TestMetaInfoExtension.class})
-public class iOSIT extends IntegrationBaseNative {
+public class IosIT extends IntegrationBaseNative {
   @Test
   void checkAppCatalog() {
     visual.sauceVisualCheck("Startup");
