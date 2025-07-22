@@ -2,17 +2,48 @@ package com.saucelabs.visual.utils;
 
 import com.saucelabs.visual.exception.InvalidSelectorException;
 import com.saucelabs.visual.graphql.type.SelectorIn;
-import java.util.*;
-import org.openqa.selenium.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.UnsupportedCommandException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 public class BulkDriverHelper {
-  private final JavascriptExecutor driver;
+  private final RemoteWebDriver driver;
 
-  public BulkDriverHelper(JavascriptExecutor javascriptExecutor) {
-    this.driver = javascriptExecutor;
+  public BulkDriverHelper(RemoteWebDriver driver) {
+    this.driver = driver;
   }
 
   public List<Rectangle> getRects(List<WebElement> elements) {
+    try {
+      return this.getRectsJS(elements);
+    } catch (UnsupportedCommandException e) {
+      return this.getRectsNative(elements);
+    }
+  }
+
+  public List<Boolean> areDisplayed(List<WebElement> elements) {
+    try {
+      return this.areDisplayedJS(elements);
+    } catch (UnsupportedCommandException e) {
+      return this.areDisplayedNative(elements);
+    }
+  }
+
+  public List<List<WebElement>> resolveElements(List<SelectorIn> selectors) {
+    try {
+      return this.resolveElementsJS(selectors);
+    } catch (UnsupportedCommandException e) {
+      return this.resolveElementsNative(selectors);
+    }
+  }
+
+  public List<Rectangle> getRectsJS(List<WebElement> elements) {
     final String script =
         "return Array.from(arguments[0]).map(function (element) {"
             + "  if (!element) throw new Error('element cannot be null');"
@@ -43,7 +74,7 @@ public class BulkDriverHelper {
     return result;
   }
 
-  public List<Boolean> areDisplayed(List<WebElement> elements) {
+  private List<Boolean> areDisplayedJS(List<WebElement> elements) {
     final String script =
         "return Array.from(arguments[0]).map(function (element) {"
             + "  if (!element) throw new Error('element cannot be null');"
@@ -53,7 +84,7 @@ public class BulkDriverHelper {
     return (List<Boolean>) driver.executeScript(script, elements);
   }
 
-  public List<List<WebElement>> resolveElements(List<SelectorIn> selectors) {
+  private List<List<WebElement>> resolveElementsJS(List<SelectorIn> selectors) {
     final String script =
         "return Array.from(arguments[0]).map(function (xpath) {"
             + "  var it = document.evaluate(xpath, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);"
@@ -78,5 +109,32 @@ public class BulkDriverHelper {
     }
 
     return (List<List<WebElement>>) driver.executeScript(script, xpaths);
+  }
+
+  private List<Rectangle> getRectsNative(List<WebElement> elements) {
+    return elements.stream().map(WebElement::getRect).collect(Collectors.toList());
+  }
+
+  private List<Boolean> areDisplayedNative(List<WebElement> elements) {
+    return elements.stream().map(WebElement::isDisplayed).collect(Collectors.toList());
+  }
+
+  private List<List<WebElement>> resolveElementsNative(List<SelectorIn> selectors) {
+    return selectors.stream()
+        .map(
+            selector -> {
+              By bySelector;
+
+              switch (selector.getType()) {
+                case XPATH:
+                  bySelector = By.xpath(selector.getValue());
+                  break;
+                default:
+                  throw new InvalidSelectorException(selector, "Unsupported selector type");
+              }
+
+              return driver.findElements(bySelector);
+            })
+        .collect(Collectors.toList());
   }
 }
