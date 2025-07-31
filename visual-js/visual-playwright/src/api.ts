@@ -160,6 +160,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       diffingMethod,
       diffingMethodTolerance,
       diffingMethodSensitivity,
+      diffingOptions,
     } = options ?? {};
     const {
       animations = 'disabled',
@@ -337,6 +338,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       diffingMethod,
       diffingMethodSensitivity,
       diffingMethodTolerance,
+      diffingOptions,
     });
 
     const { diffs } = await this.api.createSnapshot({
