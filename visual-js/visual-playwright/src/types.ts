@@ -2,6 +2,7 @@ import {
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
+  DiffingOptionsIn,
   RegionIn,
   VisualEnvOpts,
 } from '@saucelabs/visual';
@@ -35,6 +36,7 @@ export interface SauceVisualParams {
   diffingMethod?: DiffingMethod;
   diffingMethodTolerance?: DiffingMethodToleranceIn;
   diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingOptions?: DiffingOptionsIn;
 }
 
 export interface PlaywrightEnvOpts extends VisualEnvOpts {
