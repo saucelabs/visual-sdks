@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.5.0
+
+### Minor Changes
+
+- d7d5b3a: add support for diffingOptions
+
 ## 0.4.0
 
 ### Minor Changes
