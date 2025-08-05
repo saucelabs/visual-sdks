@@ -3,6 +3,7 @@ import {
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
+  DiffingOptionsIn,
   getEnvOpts,
   OperatingSystem,
   SnapshotIn,
@@ -110,6 +111,7 @@ export const buildSnapshotMetadata = ({
   diffingMethod,
   diffingMethodTolerance,
   diffingMethodSensitivity,
+  diffingOptions,
 }: {
   browserName: string | undefined;
   browserVersion: string | undefined;
@@ -119,13 +121,15 @@ export const buildSnapshotMetadata = ({
   name: string;
   ignoreRegions: SnapshotIn['ignoreRegions'];
   diffingMethod: DiffingMethod | undefined;
-  diffingMethodTolerance?: DiffingMethodToleranceIn;
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodTolerance: DiffingMethodToleranceIn | undefined;
+  diffingMethodSensitivity: DiffingMethodSensitivity | undefined;
+  diffingOptions: DiffingOptionsIn | undefined;
 }): Omit<SnapshotIn, 'uploadId'> => {
   return {
     diffingMethod: diffingMethod || DiffingMethod.Balanced,
     diffingMethodTolerance,
     diffingMethodSensitivity,
+    diffingOptions,
     browser: getKnownBrowserType(browserName),
     browserVersion: browserVersion ? `Playwright - ${browserVersion}` : null,
     buildUuid: buildId,
