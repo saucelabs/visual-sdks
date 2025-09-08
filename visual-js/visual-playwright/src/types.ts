@@ -9,6 +9,8 @@ import type {
 } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
+export type EnumOrString<T extends string> = T | `${T}`;
+
 export interface SauceVisualParams {
   screenshotOptions?: Pick<
     PageScreenshotOptions,
@@ -34,9 +36,9 @@ export interface SauceVisualParams {
   /**
    * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
-  diffingMethod?: DiffingMethod;
+  diffingMethod?: EnumOrString<DiffingMethod>;
   diffingMethodTolerance?: DiffingMethodToleranceIn;
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodSensitivity?: EnumOrString<DiffingMethodSensitivity>;
   diffingOptions?: DiffingOptionsIn;
   baselineOverride?: BaselineOverrideIn;
 }
