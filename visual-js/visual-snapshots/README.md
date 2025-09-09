@@ -4,8 +4,8 @@ This package provides a CLI tool to create Visual snapshots of a provided PDF do
 
 ## Requirements
 
-```sh
-node >= 18
+```
+node >= 20
 ```
 
 ## Installation

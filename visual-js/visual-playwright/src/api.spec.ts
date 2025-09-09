@@ -16,6 +16,11 @@ jest.mock('@saucelabs/visual', () => {
 });
 
 describe('api', () => {
+  const exitSpy = jest
+    .spyOn(process, 'exitCode', 'set')
+    .mockImplementation(() => {
+      //
+    });
   const consoleInfoSpy = jest
     .spyOn(console, 'info')
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -54,6 +59,7 @@ describe('api', () => {
           'Build has been deleted or you do not have access to view it',
         ),
       );
+      expect(exitSpy).toBeCalledWith(1);
     });
 
     it('should retry if an exception is thrown from the api', async () => {

@@ -298,6 +298,7 @@ export enum BranchesOrderBy {
 export enum Browser {
   Chrome = 'CHROME',
   Edge = 'EDGE',
+  Figma = 'FIGMA',
   Firefox = 'FIREFOX',
   None = 'NONE',
   PlaywrightWebkit = 'PLAYWRIGHT_WEBKIT',
@@ -308,7 +309,7 @@ export enum Browser {
 export type Build = Node & {
   __typename?: 'Build';
   branch: Maybe<Scalars['String']>;
-  commentCount: Maybe<Scalars['Int']>;
+  commentCount: Scalars['Int'];
   createdAt: Scalars['Datetime'];
   createdByOrgId: Scalars['UUID'];
   createdByUser: User;
@@ -715,6 +716,10 @@ export type DeleteCommentIn = {
   id: Scalars['UUID'];
 };
 
+export type DeleteUserResourcePermissionsIn = {
+  userId: Scalars['UUID'];
+};
+
 /**
  * The result of diffing a `Baseline` with a `Snapshot`.
  *
@@ -741,6 +746,7 @@ export type Diff = Node & {
   feedback: DiffFeedback;
   hasDom: Scalars['Boolean'];
   id: Scalars['UUID'];
+  movementInfo: Maybe<Array<Maybe<MovementInfo>>>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   nodeId: Scalars['ID'];
   options: Maybe<DiffingOption>;
@@ -1058,6 +1064,22 @@ export type ElementIn = {
   name?: InputMaybe<Scalars['String']>;
 };
 
+export type FigmaAuthentication = {
+  __typename?: 'FigmaAuthentication';
+  status: FigmaAuthenticationStatus;
+};
+
+export enum FigmaAuthenticationStatus {
+  /** The user is authenticated and the token is ready to use. */
+  Authenticated = 'AUTHENTICATED',
+  /** The user authentication has been rejected by Figma. */
+  AuthenticationDenied = 'AUTHENTICATION_DENIED',
+  /** The user authentication has expired and has to be redone. */
+  AuthenticationExpired = 'AUTHENTICATION_EXPIRED',
+  /** The user is not authenticated with Figma. */
+  NotAuthenticated = 'NOT_AUTHENTICATED'
+}
+
 export type FinishBuildIn = {
   customId?: InputMaybe<Scalars['String']>;
   /** Delay the finishing the build for at least the specified number of seconds. */
@@ -1144,12 +1166,26 @@ export type MergeBaselinesPayload = {
   query: Maybe<Query>;
 };
 
+export type MovementInfo = {
+  __typename?: 'MovementInfo';
+  diffClusterIdx: Scalars['Int'];
+  movementType: MovementType;
+  xOffset: Scalars['Int'];
+  yOffset: Scalars['Int'];
+};
+
+export enum MovementType {
+  Added = 'ADDED',
+  Moved = 'MOVED',
+  Removed = 'REMOVED'
+}
+
 /** The root mutation type which contains root level fields which mutate data. */
 export type Mutation = {
   __typename?: 'Mutation';
   addComment: Comment;
   /** @deprecated Use setDiffStatus */
-  approveBuild: Build;
+  approveBuild: Maybe<Build>;
   createBuild: Build;
   /**
    * Copy a set of baselines specified by `baselineIds` and save it as the latest baseline, but
@@ -1160,14 +1196,16 @@ export type Mutation = {
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
   deleteComment: Maybe<Scalars['Void']>;
+  deleteUserResourcePermissions: Maybe<Scalars['UUID']>;
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
   mergeBaselines: MergeBaselinesPayload;
   setDiffFeedback: Diff;
   setDiffStatus: Array<Diff>;
+  setUserResourcePermissions: Maybe<UserResourcePermission>;
   updateComment: Comment;
   /** @deprecated Use setDiffStatus */
-  updateDiff: Diff;
+  updateDiff: Maybe<Diff>;
 };
 
 
@@ -1220,6 +1258,12 @@ export type MutationDeleteCommentArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteUserResourcePermissionsArgs = {
+  input: DeleteUserResourcePermissionsIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationFinishBuildArgs = {
   input: FinishBuildIn;
 };
@@ -1246,6 +1290,12 @@ export type MutationSetDiffFeedbackArgs = {
 /** The root mutation type which contains root level fields which mutate data. */
 export type MutationSetDiffStatusArgs = {
   input: SetDiffStatusIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationSetUserResourcePermissionsArgs = {
+  input: SetUserResourcePermissionsIn;
 };
 
 
@@ -1415,7 +1465,7 @@ export type Project = Node & {
   __typename?: 'Project';
   /**
    * Reads and enables pagination through a set of `Branch`.
-   * @deprecated Experimental API, could change at any time. Use with caution.
+   * @deprecated Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.
    */
   branches: BranchesConnection;
   id: Scalars['String'];
@@ -1477,12 +1527,12 @@ export type Query = Node & {
   branch: Maybe<Branch>;
   /**
    * Reads a single `Branch` using its globally unique `ID`.
-   * @deprecated Experimental API, could change at any time. Use with caution.
+   * @deprecated Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.
    */
   branchByNodeId: Maybe<Branch>;
   /**
    * Reads and enables pagination through a set of `Branch`.
-   * @deprecated Experimental API, could change at any time. Use with caution.
+   * @deprecated Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.
    */
   branches: Maybe<BranchesConnection>;
   build: Maybe<Build>;
@@ -1503,6 +1553,8 @@ export type Query = Node & {
   diffFeedbacks: Maybe<DiffFeedbacksConnection>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: Maybe<DiffsConnection>;
+  /** Returns a status of current authentication with Figma for the given user. */
+  figmaAuthentication: FigmaAuthentication;
   /**
    * List all the build branches that are visible to the current user and that include `filtername`.
    *
@@ -1531,12 +1583,12 @@ export type Query = Node & {
   project: Maybe<Project>;
   /**
    * Reads a single `Project` using its globally unique `ID`.
-   * @deprecated Experimental API, could change at any time. Use with caution.
+   * @deprecated Experimental API, could change at any time. Use with caution. Only lists projects used in the last 90 days.
    */
   projectByNodeId: Maybe<Project>;
   /**
    * Reads and enables pagination through a set of `Project`.
-   * @deprecated Experimental API, could change at any time. Use with caution.
+   * @deprecated Experimental API, could change at any time. Use with caution. Only lists projects used in the last 90 days.
    */
   projects: Maybe<ProjectsConnection>;
   /**
@@ -1549,6 +1601,11 @@ export type Query = Node & {
   snapshotByNodeId: Maybe<Snapshot>;
   /** Reads and enables pagination through a set of `Snapshot`. */
   snapshots: Maybe<SnapshotsConnection>;
+  userResourcePermission: Maybe<UserResourcePermission>;
+  /** Reads a single `UserResourcePermission` using its globally unique `ID`. */
+  userResourcePermissionByNodeId: Maybe<UserResourcePermission>;
+  /** Reads and enables pagination through a set of `UserResourcePermission`. */
+  userResourcePermissions: Maybe<UserResourcePermissionsConnection>;
   webdriverSessionInfo: Maybe<WebdriverSession>;
 };
 
@@ -1797,6 +1854,31 @@ export type QuerySnapshotsArgs = {
 
 
 /** The root query type which gives access points into the data universe. */
+export type QueryUserResourcePermissionArgs = {
+  id: Scalars['UUID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryUserResourcePermissionByNodeIdArgs = {
+  nodeId: Scalars['ID'];
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryUserResourcePermissionsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  condition: InputMaybe<UserResourcePermissionCondition>;
+  filter: InputMaybe<UserResourcePermissionFilter>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<Array<UserResourcePermissionsOrderBy>>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
 export type QueryWebdriverSessionInfoArgs = {
   input: WebdriverSessionInfoIn;
 };
@@ -1858,6 +1940,11 @@ export type SetDiffStatusIn = {
   status: UpdateDiffStatus;
 };
 
+export type SetUserResourcePermissionsIn = {
+  permissions: Array<UserResourcePermissionIn>;
+  userId: Scalars['UUID'];
+};
+
 export type Snapshot = Node & {
   __typename?: 'Snapshot';
   appId: Maybe<Scalars['String']>;
@@ -1885,9 +1972,9 @@ export type Snapshot = Node & {
    * - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
    * - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
    * - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
-   * - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
-   * - `{"domCode": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
-   * - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
+   * - `{"dom_code": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
+   * - `{"dom_code": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+   * - `{"dom_code": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
    *
    * Other error types may exist and the frontend should display a generic error message
    * together with the JSON contents of `error`.
@@ -2120,6 +2207,110 @@ export type User = {
   username: Maybe<Scalars['String']>;
 };
 
+export type UserResourcePermission = Node & {
+  __typename?: 'UserResourcePermission';
+  id: Scalars['UUID'];
+  /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
+  nodeId: Scalars['ID'];
+  orgId: Scalars['UUID'];
+  permissions: UserResourcePermissionPermissionsConnection;
+};
+
+
+export type UserResourcePermissionPermissionsArgs = {
+  after: InputMaybe<Scalars['Cursor']>;
+  before: InputMaybe<Scalars['Cursor']>;
+  first: InputMaybe<Scalars['Int']>;
+  last: InputMaybe<Scalars['Int']>;
+  offset: InputMaybe<Scalars['Int']>;
+};
+
+/**
+ * A condition to be used against `UserResourcePermission` object types. All fields
+ * are tested for equality and combined with a logical ‘and.’
+ */
+export type UserResourcePermissionCondition = {
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `orgId` field. */
+  orgId?: InputMaybe<Scalars['UUID']>;
+};
+
+/** A filter to be used against `UserResourcePermission` object types. All fields are combined with a logical ‘and.’ */
+export type UserResourcePermissionFilter = {
+  /** Filter by the object’s `id` field. */
+  id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `orgId` field. */
+  orgId?: InputMaybe<UuidFilter>;
+};
+
+export type UserResourcePermissionIn = {
+  action: Scalars['String'];
+  attributes?: InputMaybe<Scalars['JSON']>;
+  resourceName: Scalars['String'];
+};
+
+/** A `UserResourcePermissionPermissionsRecord` edge in the connection. */
+export type UserResourcePermissionPermissionEdge = {
+  __typename?: 'UserResourcePermissionPermissionEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `UserResourcePermissionPermissionsRecord` at the end of the edge. */
+  node: UserResourcePermissionPermissionsRecord;
+};
+
+/** A connection to a list of `UserResourcePermissionPermissionsRecord` values. */
+export type UserResourcePermissionPermissionsConnection = {
+  __typename?: 'UserResourcePermissionPermissionsConnection';
+  /** A list of edges which contains the `UserResourcePermissionPermissionsRecord` and cursor to aid in pagination. */
+  edges: Array<UserResourcePermissionPermissionEdge>;
+  /** A list of `UserResourcePermissionPermissionsRecord` objects. */
+  nodes: Array<UserResourcePermissionPermissionsRecord>;
+  /** The count of *all* `UserResourcePermissionPermissionsRecord` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** The return type of our `permissions` query. */
+export type UserResourcePermissionPermissionsRecord = {
+  __typename?: 'UserResourcePermissionPermissionsRecord';
+  action: Maybe<Scalars['String']>;
+  attributes: Maybe<Scalars['JSON']>;
+  resourceName: Maybe<Scalars['String']>;
+};
+
+/** A connection to a list of `UserResourcePermission` values. */
+export type UserResourcePermissionsConnection = {
+  __typename?: 'UserResourcePermissionsConnection';
+  /** A list of edges which contains the `UserResourcePermission` and cursor to aid in pagination. */
+  edges: Array<UserResourcePermissionsEdge>;
+  /** A list of `UserResourcePermission` objects. */
+  nodes: Array<UserResourcePermission>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** The count of *all* `UserResourcePermission` you could get from the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** A `UserResourcePermission` edge in the connection. */
+export type UserResourcePermissionsEdge = {
+  __typename?: 'UserResourcePermissionsEdge';
+  /** A cursor for use in pagination. */
+  cursor: Maybe<Scalars['Cursor']>;
+  /** The `UserResourcePermission` at the end of the edge. */
+  node: UserResourcePermission;
+};
+
+/** Methods to use when ordering `UserResourcePermission`. */
+export enum UserResourcePermissionsOrderBy {
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  OrgIdAsc = 'ORG_ID_ASC',
+  OrgIdDesc = 'ORG_ID_DESC',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
 export type WebdriverSession = {
   __typename?: 'WebdriverSession';
   applicationSummary: Maybe<ApplicationSummary>;
@@ -2227,7 +2418,7 @@ export type UpdateDiffMutationVariables = Exact<{
 }>;
 
 
-export type UpdateDiffMutation = { __typename?: 'Mutation', result: { __typename?: 'Diff', id: string, status: DiffStatus, baselineId: string | null, snapshotId: string } };
+export type UpdateDiffMutation = { __typename?: 'Mutation', result: { __typename?: 'Diff', id: string, status: DiffStatus, baselineId: string | null, snapshotId: string } | null };
 
 export type WebdriverSessionInfoQueryVariables = Exact<{
   input: WebdriverSessionInfoIn;
