@@ -1,5 +1,11 @@
 # @saucelabs/visual-snapshots
 
+## 0.3.0
+
+### Minor Changes
+
+- f2b26d9: Bump pdf-to-img
+
 ## 0.2.0
 
 ### Minor Changes
