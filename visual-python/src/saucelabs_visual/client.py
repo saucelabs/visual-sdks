@@ -48,23 +48,35 @@ class SauceLabsVisual:
     hide_scroll_bars: Union[bool, None] = None
     full_page_config: Union[FullPageConfig, None] = None
 
+    def __init__(
+            self,
+            username: Union[str, None] = environ.get("SAUCE_USERNAME"),
+            access_key : Union[str, None] = environ.get("SAUCE_ACCESS_KEY"),
+            region: Union[str, None] = environ.get('SAUCE_REGION'),
+    ):
+        self._client = self._create_client(
+            username=username,
+            access_key=access_key,
+            region=region,
+        )
+
     @property
     def client(self):
-        if self._client is None:
-            self._client = self._create_client()
         return self._client
 
-    def _create_client(self):
-        username = environ.get("SAUCE_USERNAME")
-        access_key = environ.get("SAUCE_ACCESS_KEY")
-
+    def _create_client(
+            self,
+            username: Union[str, None] = None,
+            access_key : Union[str, None] = None,
+            region : Union[str, None] = None,
+       ):
         if username is None or access_key is None:
             raise RuntimeError(
                 'Sauce Labs credentials not set. Please check that you set correctly your '
                 '`SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables.'
             )
 
-        self._region = Region.from_name(environ.get("SAUCE_REGION") or 'us-west-1')
+        self._region = Region.from_name(region or 'us-west-1')
         region_url = self._region.graphql_endpoint
         user_agent = 'visual-python/{version}'.format(version=PKG_VERSION)
         transport = RequestsHTTPTransport(url=region_url, auth=HTTPBasicAuth(username, access_key),
