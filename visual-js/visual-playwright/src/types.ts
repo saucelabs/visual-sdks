@@ -1,12 +1,15 @@
-import {
+import type {
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
   DiffingOptionsIn,
   RegionIn,
   VisualEnvOpts,
+  BaselineOverrideIn,
 } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
+
+export type StringFromEnum<T extends string> = `${T}`;
 
 export interface SauceVisualParams {
   screenshotOptions?: Pick<
@@ -33,10 +36,11 @@ export interface SauceVisualParams {
   /**
    * The diffing method we should use when finding visual changes. Defaults to DiffingMethod.Balanced
    */
-  diffingMethod?: DiffingMethod;
+  diffingMethod?: StringFromEnum<DiffingMethod>;
   diffingMethodTolerance?: DiffingMethodToleranceIn;
-  diffingMethodSensitivity?: DiffingMethodSensitivity;
+  diffingMethodSensitivity?: StringFromEnum<DiffingMethodSensitivity>;
   diffingOptions?: DiffingOptionsIn;
+  baselineOverride?: BaselineOverrideIn;
 }
 
 export interface PlaywrightEnvOpts extends VisualEnvOpts {

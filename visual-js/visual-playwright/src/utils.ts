@@ -1,4 +1,5 @@
 import {
+  BaselineOverrideIn,
   Browser,
   DiffingMethod,
   DiffingMethodSensitivity,
@@ -11,7 +12,13 @@ import {
 import * as os from 'node:os';
 
 import { OPTS_ENV_KEY } from './constants';
-import { PlaywrightEnvOpts } from './types';
+import { StringFromEnum, PlaywrightEnvOpts } from './types';
+
+const asEnum = <T extends DiffingMethod | DiffingMethodSensitivity>(
+  str: StringFromEnum<T> | undefined,
+): T => {
+  return str as T;
+};
 
 /**
  * Parses options / envs and stores them into a settings ENV key to be passed through jest into
@@ -112,6 +119,7 @@ export const buildSnapshotMetadata = ({
   diffingMethodTolerance,
   diffingMethodSensitivity,
   diffingOptions,
+  baselineOverride,
 }: {
   browserName: string | undefined;
   browserVersion: string | undefined;
@@ -120,16 +128,24 @@ export const buildSnapshotMetadata = ({
   buildId: string;
   name: string;
   ignoreRegions: SnapshotIn['ignoreRegions'];
-  diffingMethod: DiffingMethod | undefined;
+  diffingMethod: StringFromEnum<DiffingMethod> | undefined;
   diffingMethodTolerance: DiffingMethodToleranceIn | undefined;
-  diffingMethodSensitivity: DiffingMethodSensitivity | undefined;
+  diffingMethodSensitivity:
+    | StringFromEnum<DiffingMethodSensitivity>
+    | undefined;
   diffingOptions: DiffingOptionsIn | undefined;
+  baselineOverride: BaselineOverrideIn | undefined;
 }): Omit<SnapshotIn, 'uploadId'> => {
   return {
-    diffingMethod: diffingMethod || DiffingMethod.Balanced,
+    diffingMethod: asEnum<DiffingMethod>(
+      diffingMethod || DiffingMethod.Balanced,
+    ),
     diffingMethodTolerance,
-    diffingMethodSensitivity,
+    diffingMethodSensitivity: asEnum<DiffingMethodSensitivity>(
+      diffingMethodSensitivity,
+    ),
     diffingOptions,
+    baselineOverride,
     browser: getKnownBrowserType(browserName),
     browserVersion: browserVersion ? `Playwright - ${browserVersion}` : null,
     buildUuid: buildId,
