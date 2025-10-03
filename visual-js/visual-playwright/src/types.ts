@@ -1,10 +1,11 @@
-import {
+import type {
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
   DiffingOptionsIn,
   RegionIn,
   VisualEnvOpts,
+  BaselineOverrideIn,
 } from '@saucelabs/visual';
 import { PageScreenshotOptions } from 'playwright-core';
 
@@ -37,6 +38,7 @@ export interface SauceVisualParams {
   diffingMethodTolerance?: DiffingMethodToleranceIn;
   diffingMethodSensitivity?: DiffingMethodSensitivity;
   diffingOptions?: DiffingOptionsIn;
+  baselineOverride?: BaselineOverrideIn;
 }
 
 export interface PlaywrightEnvOpts extends VisualEnvOpts {

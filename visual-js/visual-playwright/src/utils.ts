@@ -1,4 +1,5 @@
 import {
+  BaselineOverrideIn,
   Browser,
   DiffingMethod,
   DiffingMethodSensitivity,
@@ -112,6 +113,7 @@ export const buildSnapshotMetadata = ({
   diffingMethodTolerance,
   diffingMethodSensitivity,
   diffingOptions,
+  baselineOverride,
 }: {
   browserName: string | undefined;
   browserVersion: string | undefined;
@@ -124,12 +126,14 @@ export const buildSnapshotMetadata = ({
   diffingMethodTolerance: DiffingMethodToleranceIn | undefined;
   diffingMethodSensitivity: DiffingMethodSensitivity | undefined;
   diffingOptions: DiffingOptionsIn | undefined;
+  baselineOverride: BaselineOverrideIn | undefined;
 }): Omit<SnapshotIn, 'uploadId'> => {
   return {
     diffingMethod: diffingMethod || DiffingMethod.Balanced,
     diffingMethodTolerance,
     diffingMethodSensitivity,
     diffingOptions,
+    baselineOverride,
     browser: getKnownBrowserType(browserName),
     browserVersion: browserVersion ? `Playwright - ${browserVersion}` : null,
     buildUuid: buildId,
