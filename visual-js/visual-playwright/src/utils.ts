@@ -12,10 +12,10 @@ import {
 import * as os from 'node:os';
 
 import { OPTS_ENV_KEY } from './constants';
-import { EnumOrString, PlaywrightEnvOpts } from './types';
+import { StringFromEnum, PlaywrightEnvOpts } from './types';
 
 const asEnum = <T extends DiffingMethod | DiffingMethodSensitivity>(
-  str: EnumOrString<T> | undefined,
+  str: StringFromEnum<T> | undefined,
 ): T => {
   return str as T;
 };
@@ -128,9 +128,11 @@ export const buildSnapshotMetadata = ({
   buildId: string;
   name: string;
   ignoreRegions: SnapshotIn['ignoreRegions'];
-  diffingMethod: EnumOrString<DiffingMethod> | undefined;
+  diffingMethod: StringFromEnum<DiffingMethod> | undefined;
   diffingMethodTolerance: DiffingMethodToleranceIn | undefined;
-  diffingMethodSensitivity: EnumOrString<DiffingMethodSensitivity> | undefined;
+  diffingMethodSensitivity:
+    | StringFromEnum<DiffingMethodSensitivity>
+    | undefined;
   diffingOptions: DiffingOptionsIn | undefined;
   baselineOverride: BaselineOverrideIn | undefined;
 }): Omit<SnapshotIn, 'uploadId'> => {
