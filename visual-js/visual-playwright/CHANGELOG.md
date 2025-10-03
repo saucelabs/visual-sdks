@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.6.0
+
+### Minor Changes
+
+- b3c6cfe: add baselineOverride support / tweak enum support
+
 ## 0.5.0
 
 ### Minor Changes
