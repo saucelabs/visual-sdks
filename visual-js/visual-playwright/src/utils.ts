@@ -159,3 +159,44 @@ export const buildSnapshotMetadata = ({
     testName: null,
   };
 };
+
+interface Clip {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
+
+export const constrainClipToViewport = (
+  clip: Clip | undefined,
+  viewport: { width: number; height: number } | null,
+): Clip | undefined => {
+  if (!clip || !viewport) {
+    return;
+  }
+
+  const x = Math.min(Math.max(Math.round(clip.x), 0), viewport.width);
+  const y = Math.min(Math.max(Math.round(clip.y), 0), viewport.height);
+  const width = Math.min(
+    viewport.width - Math.abs(clip.x),
+    Math.round(clip.width),
+  );
+  const height = Math.min(
+    viewport.height - Math.abs(clip.y),
+    Math.round(clip.height),
+  );
+
+  if (width === 0 || height === 0) {
+    console.warn(
+      'Sauce Visual: Skipping clipping due to requested element existing outside screenshot bounds.',
+    );
+    return;
+  }
+
+  return {
+    x,
+    y,
+    width,
+    height,
+  };
+};

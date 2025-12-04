@@ -11,13 +11,20 @@ import {
 } from '@saucelabs/visual';
 import { backOff } from 'exponential-backoff';
 import { SauceVisualParams } from './types';
-import { buildSnapshotMetadata, getOpts, parseOpts, setOpts } from './utils';
+import {
+  buildSnapshotMetadata,
+  getOpts,
+  parseOpts,
+  setOpts,
+  constrainClipToViewport,
+} from './utils';
 
 const clientVersion = 'PKG_VERSION';
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
   uploadedDiffIds: Record<string, string[]> = {};
+  private originalViewportSize: { width: number; height: number } | null = null;
 
   public get api() {
     let api = globalThis.visualApi;
@@ -131,6 +138,107 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     }
   }
 
+  /**
+   * Resize all scrollable elements to max size and resize the viewport to fit.
+   * @param page
+   * @private
+   */
+  private async fitViewport(page: Page) {
+    await page.evaluate(() => {
+      const elements = Array.from(document.querySelectorAll('*')).filter(
+        /**
+         * Adapted from Mozilla's scrollHeight docs with some additional checks for visibility.
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight
+         * @param element
+         * @private
+         */
+        function isVisibleAndScrollable(
+          element: Element,
+        ): element is HTMLElement {
+          return (
+            element instanceof HTMLElement &&
+            element.checkVisibility() &&
+            element.scrollHeight > element.clientHeight &&
+            ['scroll', 'auto'].includes(
+              window.getComputedStyle(element).overflowY,
+            )
+          );
+        },
+      );
+
+      const styleMap = new Map();
+
+      for (const el of elements) {
+        styleMap.set(el, {
+          height: el.style.height,
+          maxHeight: el.style.maxHeight,
+          overflowY: el.style.overflowY,
+        });
+
+        // Ensure the inner content expands
+        el.style.height = 'auto';
+        el.style.maxHeight = 'unset';
+        el.style.overflowY = 'visible'; // Sometimes necessary
+
+        // Set the height explicitly to its content height (scrollHeight)
+        if (el.scrollHeight > el.clientHeight) {
+          el.style.height = `${el.scrollHeight}px`;
+        }
+      }
+
+      window.styleMap = styleMap;
+    });
+
+    const viewportSize = page.viewportSize();
+    const pageScrollHeight = await page.evaluate(() => {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+      );
+    });
+
+    if (
+      pageScrollHeight &&
+      viewportSize &&
+      pageScrollHeight > viewportSize.height
+    ) {
+      this.originalViewportSize = viewportSize;
+      await page.setViewportSize({
+        ...viewportSize,
+        height: pageScrollHeight,
+      });
+    }
+  }
+
+  /**
+   * Cleanup any mutations made to the viewport / elements.
+   * @param page
+   * @private
+   */
+  private async resetViewport(page: Page) {
+    await page.evaluate(() => {
+      const styleMap = window.styleMap;
+
+      if (!styleMap) {
+        return;
+      }
+
+      // Roll back all sauce-visual changes and cleanup
+      for (const [el, style] of styleMap.entries()) {
+        el.style.height = style.height;
+        el.style.maxHeight = style.maxHeight;
+        el.style.overflowY = style.overflowY;
+      }
+
+      delete window.styleMap;
+    });
+
+    if (this.originalViewportSize) {
+      await page.setViewportSize(this.originalViewportSize);
+      this.originalViewportSize = null;
+    }
+  }
+
   public async takePlaywrightScreenshot(
     page: Page,
     info: {
@@ -169,21 +277,20 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       fullPage = true,
       style,
       timeout,
+      autoSizeViewport = false,
     } = screenshotOptions;
     let ignoreRegions: RegionIn[] = [];
 
-    const promises: Promise<unknown>[] = [
-      // Wait for all fonts to be loaded & ready
-      page.evaluate(() => document.fonts.ready),
-    ];
+    await page.evaluate(() => document.fonts.ready);
+
+    if (autoSizeViewport) {
+      await this.fitViewport(page);
+    }
 
     if (delay) {
       // If a delay has been configured by the user, append it to our promises
-      promises.push(new Promise((resolve) => setTimeout(resolve, delay)));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-
-    // Await all queued / concurrent promises before resuming
-    await Promise.all(promises);
 
     const clip = clipSelector
       ? await page.evaluate(
@@ -288,14 +395,20 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
 
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
+    const constrainedClip = constrainClipToViewport(clip, page.viewportSize());
+
     const screenshotBuffer = await page.screenshot({
-      fullPage,
+      fullPage: autoSizeViewport ? false : fullPage,
       style,
       timeout,
       animations,
       caret,
-      clip,
+      clip: autoSizeViewport ? constrainedClip : clip,
     });
+
+    if (autoSizeViewport) {
+      await this.resetViewport(page);
+    }
 
     // Inject scripts to get dom snapshot
     let dom: string | undefined;

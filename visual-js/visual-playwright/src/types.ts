@@ -15,7 +15,7 @@ export interface SauceVisualParams {
   screenshotOptions?: Pick<
     PageScreenshotOptions,
     'animations' | 'caret' | 'fullPage' | 'style' | 'timeout'
-  >;
+  > & { autoSizeViewport?: boolean };
   /**
    * Whether we should capture a dom snapshot.
    */
