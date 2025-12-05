@@ -139,56 +139,11 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   }
 
   /**
-   * Resize all scrollable elements to max size and resize the viewport to fit.
+   * Resize the viewport to fit the document height and store the original dimensions.
    * @param page
    * @private
    */
   private async fitViewport(page: Page) {
-    await page.evaluate(() => {
-      const elements = Array.from(document.querySelectorAll('*')).filter(
-        /**
-         * Adapted from Mozilla's scrollHeight docs with some additional checks for visibility.
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight
-         * @param element
-         * @private
-         */
-        function isVisibleAndScrollable(
-          element: Element,
-        ): element is HTMLElement {
-          return (
-            element instanceof HTMLElement &&
-            element.checkVisibility() &&
-            element.scrollHeight > element.clientHeight &&
-            ['scroll', 'auto'].includes(
-              window.getComputedStyle(element).overflowY,
-            )
-          );
-        },
-      );
-
-      const styleMap = new Map();
-
-      for (const el of elements) {
-        styleMap.set(el, {
-          height: el.style.height,
-          maxHeight: el.style.maxHeight,
-          overflowY: el.style.overflowY,
-        });
-
-        // Ensure the inner content expands
-        el.style.height = 'auto';
-        el.style.maxHeight = 'unset';
-        el.style.overflowY = 'visible'; // Sometimes necessary
-
-        // Set the height explicitly to its content height (scrollHeight)
-        if (el.scrollHeight > el.clientHeight) {
-          el.style.height = `${el.scrollHeight}px`;
-        }
-      }
-
-      window.styleMap = styleMap;
-    });
-
     const viewportSize = page.viewportSize();
     const pageScrollHeight = await page.evaluate(() => {
       return Math.max(
@@ -216,23 +171,6 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
    * @private
    */
   private async resetViewport(page: Page) {
-    await page.evaluate(() => {
-      const styleMap = window.styleMap;
-
-      if (!styleMap) {
-        return;
-      }
-
-      // Roll back all sauce-visual changes and cleanup
-      for (const [el, style] of styleMap.entries()) {
-        el.style.height = style.height;
-        el.style.maxHeight = style.maxHeight;
-        el.style.overflowY = style.overflowY;
-      }
-
-      delete window.styleMap;
-    });
-
     if (this.originalViewportSize) {
       await page.setViewportSize(this.originalViewportSize);
       this.originalViewportSize = null;
