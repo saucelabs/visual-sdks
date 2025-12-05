@@ -24,7 +24,7 @@ const clientVersion = 'PKG_VERSION';
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
   uploadedDiffIds: Record<string, string[]> = {};
-  private originalViewportSize: { width: number; height: number } | null = null;
+  originalViewportSize: { width: number; height: number } | null = null;
 
   public get api() {
     let api = globalThis.visualApi;
@@ -143,7 +143,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
    * @param page
    * @private
    */
-  private async fitViewport(page: Page) {
+  async fitViewport(page: Page) {
     const viewportSize = page.viewportSize();
     const pageScrollHeight = await page.evaluate(() => {
       return Math.max(
@@ -170,7 +170,7 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
    * @param page
    * @private
    */
-  private async resetViewport(page: Page) {
+  async resetViewport(page: Page) {
     if (this.originalViewportSize) {
       await page.setViewportSize(this.originalViewportSize);
       this.originalViewportSize = null;
