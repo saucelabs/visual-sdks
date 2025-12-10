@@ -11,13 +11,20 @@ import {
 } from '@saucelabs/visual';
 import { backOff } from 'exponential-backoff';
 import { SauceVisualParams } from './types';
-import { buildSnapshotMetadata, getOpts, parseOpts, setOpts } from './utils';
+import {
+  buildSnapshotMetadata,
+  getOpts,
+  parseOpts,
+  setOpts,
+  constrainClipToViewport,
+} from './utils';
 
 const clientVersion = 'PKG_VERSION';
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
   uploadedDiffIds: Record<string, string[]> = {};
+  originalViewportSize: { width: number; height: number } | null = null;
 
   public get api() {
     let api = globalThis.visualApi;
@@ -131,6 +138,45 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     }
   }
 
+  /**
+   * Resize the viewport to fit the document height and store the original dimensions.
+   * @param page
+   * @private
+   */
+  async fitViewport(page: Page) {
+    const viewportSize = page.viewportSize();
+    const pageScrollHeight = await page.evaluate(() => {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+      );
+    });
+
+    if (
+      pageScrollHeight &&
+      viewportSize &&
+      pageScrollHeight > viewportSize.height
+    ) {
+      this.originalViewportSize = viewportSize;
+      await page.setViewportSize({
+        ...viewportSize,
+        height: pageScrollHeight,
+      });
+    }
+  }
+
+  /**
+   * Cleanup any mutations made to the viewport / elements.
+   * @param page
+   * @private
+   */
+  async resetViewport(page: Page) {
+    if (this.originalViewportSize) {
+      await page.setViewportSize(this.originalViewportSize);
+      this.originalViewportSize = null;
+    }
+  }
+
   public async takePlaywrightScreenshot(
     page: Page,
     info: {
@@ -169,21 +215,20 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
       fullPage = true,
       style,
       timeout,
+      autoSizeViewport = false,
     } = screenshotOptions;
     let ignoreRegions: RegionIn[] = [];
 
-    const promises: Promise<unknown>[] = [
-      // Wait for all fonts to be loaded & ready
-      page.evaluate(() => document.fonts.ready),
-    ];
+    await page.evaluate(() => document.fonts.ready);
+
+    if (autoSizeViewport) {
+      await this.fitViewport(page);
+    }
 
     if (delay) {
       // If a delay has been configured by the user, append it to our promises
-      promises.push(new Promise((resolve) => setTimeout(resolve, delay)));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-
-    // Await all queued / concurrent promises before resuming
-    await Promise.all(promises);
 
     const clip = clipSelector
       ? await page.evaluate(
@@ -288,14 +333,20 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
 
     const devicePixelRatio = await page.evaluate(() => window.devicePixelRatio);
 
+    const constrainedClip = constrainClipToViewport(clip, page.viewportSize());
+
     const screenshotBuffer = await page.screenshot({
-      fullPage,
+      fullPage: autoSizeViewport ? false : fullPage,
       style,
       timeout,
       animations,
       caret,
-      clip,
+      clip: autoSizeViewport ? constrainedClip : clip,
     });
+
+    if (autoSizeViewport) {
+      await this.resetViewport(page);
+    }
 
     // Inject scripts to get dom snapshot
     let dom: string | undefined;

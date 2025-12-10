@@ -15,7 +15,16 @@ export interface SauceVisualParams {
   screenshotOptions?: Pick<
     PageScreenshotOptions,
     'animations' | 'caret' | 'fullPage' | 'style' | 'timeout'
-  >;
+  > & {
+    /**
+     * When true, resizes the viewport of the page to match the height of the document. Can provide
+     * better quality full page screenshots over the native scroll/stitch implementation, especially
+     * with fixed elements on the page.
+     *
+     * @deprecated Experimental. Use with caution until API is finalized.
+     */
+    autoSizeViewport?: boolean;
+  };
   /**
    * Whether we should capture a dom snapshot.
    */
