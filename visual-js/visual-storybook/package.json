@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-storybook",
   "description": "Storybook Plugin / Bootstrapper for Sauce Labs Visual",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "main": "build/index.cjs",
   "module": "build/index.js",
   "types": "build/index.d.ts",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@saucelabs/visual": "^0.16.0",
-    "@saucelabs/visual-playwright": "^0.6.0",
+    "@saucelabs/visual-playwright": "^0.7.0",
     "@storybook/core-events": "^6.4.0 || ^7.0.0 || ^8.0.0",
     "@storybook/instrumenter": "^6.4.0 || ^7.0.0 || ^8.0.0",
     "@storybook/test-runner": ">=0.13.0",

@@ -1,5 +1,11 @@
 # @saucelabs/visual-playwright
 
+## 0.7.0
+
+### Minor Changes
+
+- 618fd95: Add auto viewport sizing option
+
 ## 0.6.0
 
 ### Minor Changes
