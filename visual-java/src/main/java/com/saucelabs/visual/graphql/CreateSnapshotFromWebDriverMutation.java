@@ -140,49 +140,16 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
   public static class Data {
 
-    public final Result result;
+    public final SnapshotDiffResult result;
 
     @JsonCreator
-    public Data(@JsonProperty("result") Result result) {
+    public Data(@JsonProperty("result") SnapshotDiffResult result) {
       this.result = result;
     }
 
     @Override
     public String toString() {
       return "CreateSnapshotFromWebDriverMutation.Data{" + "result=" + result + '}';
-    }
-  }
-
-  public static class Result {
-    public String id;
-
-    public String uploadId;
-
-    /** Reads and enables pagination through a set of `Diff`. */
-    public DiffsConnection diffs;
-
-    @JsonCreator
-    public Result(
-        @JsonProperty("id") String id,
-        @JsonProperty("uploadId") String uploadId,
-        @JsonProperty("diffs") DiffsConnection diffs) {
-      this.id = id;
-      this.uploadId = uploadId;
-      this.diffs = diffs;
-    }
-
-    @Override
-    public String toString() {
-      return "CreateSnapshotFromWebDriverMutation.Result{"
-          + "id='"
-          + id
-          + '\''
-          + ", uploadId='"
-          + uploadId
-          + '\''
-          + ", diffs="
-          + diffs
-          + '}';
     }
   }
 
