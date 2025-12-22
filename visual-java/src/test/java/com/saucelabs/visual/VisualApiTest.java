@@ -82,13 +82,14 @@ class VisualApiTest {
                     mockVisualId,
                     "upload-id",
                     DiffsConnection.builder()
-                        .withNodes(List.of(Diff.builder().withId(mockDiffId).build()))
+                        .withNodes(
+                            Collections.singletonList(Diff.builder().withId(mockDiffId).build()))
                         .build())));
 
     String result = api.sauceVisualCheck("test name");
     assertEquals(mockVisualId, result);
     List<String> uploadedIds = (List<String>) getField(api, "uploadedDiffIds");
-    assertEquals(uploadedIds, List.of(mockDiffId));
+    assertEquals(uploadedIds, Collections.singletonList(mockDiffId));
   }
 
   @Test
@@ -118,13 +119,14 @@ class VisualApiTest {
                     mockLocalId,
                     "upload-id",
                     DiffsConnection.builder()
-                        .withNodes(List.of(Diff.builder().withId(mockDiffId).build()))
+                        .withNodes(
+                            Collections.singletonList(Diff.builder().withId(mockDiffId).build()))
                         .build())));
 
     String result = api.sauceVisualCheck("test name");
     assertEquals(mockLocalId, result);
     List<String> uploadedIds = (List<String>) getField(api, "uploadedDiffIds");
-    assertEquals(uploadedIds, List.of(mockDiffId));
+    assertEquals(uploadedIds, Collections.singletonList(mockDiffId));
   }
 
   public static <T> Object getField(T clazz, String fieldName) throws IllegalAccessException {
