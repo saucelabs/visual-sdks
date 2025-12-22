@@ -3,7 +3,6 @@ package com.saucelabs.visual.graphql;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.SnapshotIn;
-
 import java.util.Collections;
 import java.util.Map;
 
