@@ -90,4 +90,4 @@ jobs:
           cache: 'maven'
       - name: Run unit tests
         run: |
-          ./mvnw -q test
+          ./mvnw test
