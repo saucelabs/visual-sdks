@@ -75,4 +75,4 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           curl -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" --location --request POST 'https://api.us-west-1.saucelabs.com/v1/storage/upload' --form 'payload=@"../tests/assets/SauceLabs-Demo-App.Simulator.ipa"' --form 'name="visual-sdks-ios-simulator.ipa"' -o /dev/null
-          ./mvnw -q test -Dtest=com.saucelabs.visual.integration.**
+          ./mvnw -q test -Dtest="com.saucelabs.visual.integration.**"
