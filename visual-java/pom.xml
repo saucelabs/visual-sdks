@@ -18,6 +18,18 @@
     <jackson.version>2.16.1</jackson.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.14.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
 
     <dependency>
@@ -63,13 +75,13 @@
     <dependency>
       <groupId>io.appium</groupId>
       <artifactId>java-client</artifactId>
-      <version>9.5.0</version>
+      <version>10.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.saucelabs</groupId>
       <artifactId>saucebindings-junit5</artifactId>
-      <version>1.0.0</version>
+      <version>1.5.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -82,7 +94,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
