@@ -15,7 +15,6 @@ class CreateBuildMutationTest {
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
                     "buildName", "projectName", "branchName", "defaultBranchName")));
-    System.out.println(json);
   }
 
   @Test
@@ -30,6 +29,5 @@ class CreateBuildMutationTest {
                 new CreateBuildMutation.BuildIn(
                     "buildName", "projectName", "branchName", "defaultBranchName")),
             CreateBuildMutation.Data.class);
-    System.out.println(data);
   }
 }

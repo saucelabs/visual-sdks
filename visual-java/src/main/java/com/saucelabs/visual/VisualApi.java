@@ -600,14 +600,8 @@ public class VisualApi {
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
         this.client.execute(mutation, CreateSnapshotFromWebDriverMutation.Data.class);
-    if (check != null && check.result != null) {
-      uploadedDiffIds.addAll(
-          check.result.diffs.getNodes().stream().map(Diff::getId).collect(Collectors.toList()));
 
-      return check.result.id;
-    }
-
-    return null;
+    return this.addUploadedDiffIds(check != null ? check.result : null);
   }
 
   /**
@@ -749,7 +743,18 @@ public class VisualApi {
                 .build());
     CreateSnapshotMutation.Data result =
         this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
-    return result.result.getId();
+
+    return this.addUploadedDiffIds(result != null ? result.result : null);
+  }
+
+  private String addUploadedDiffIds(SnapshotDiffResult result) {
+    if (result != null) {
+      uploadedDiffIds.addAll(result.diffIds);
+
+      return result.id;
+    }
+
+    return null;
   }
 
   private byte[] getScreenshot(boolean fullPage) {
