@@ -11,7 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
-from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
+from saucelabs_visual.typing import UNSET, IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
     DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride, DiffingMethodSensitivity, \
     DiffingMethodTolerance
 
@@ -345,7 +345,7 @@ class SauceLabsVisual:
             if diffing_method_sensitivity is not None else None,
             "diffingMethodTolerance": diffing_method_tolerance,
             "baselineOverride": {
-                key: value for key, value in asdict(baseline_override).items() if value is not None
+                key: value for key, value in asdict(baseline_override).items() if value is not UNSET
             } if baseline_override is not None else None,
             "hideScrollBars": hide_scroll_bars if hide_scroll_bars is not None else self.hide_scroll_bars
         }

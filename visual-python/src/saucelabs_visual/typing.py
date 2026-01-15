@@ -1,6 +1,6 @@
 from dataclasses import dataclass, InitVar, asdict
 from enum import Enum
-from typing import List, Union, Literal
+from typing import List, Type, Union, Literal
 
 from selenium.webdriver.remote.webelement import WebElement
 from typing_extensions import TypedDict, NotRequired
@@ -142,20 +142,22 @@ class OperatingSystem(str, Enum):
     MACOS = 'MACOS'
     WINDOWS = 'WINDOWS'
 
+UNSET = object()
+_UNSET_TYPE = Type["UNSET"]
 
 @dataclass
 class BaselineOverride:
     """
     One or more keys we should use as an override when matching a baseline.
     """
-    browser: Union[Browser, None] = None
-    browserVersion: Union[str, None] = None
-    device: Union[str, None] = None
-    name: Union[str, None] = None
-    operatingSystem: Union[OperatingSystem, None] = None
-    operatingSystemVersion: Union[str, None] = None
-    suiteName: Union[str, None] = None
-    testName: Union[str, None] = None
+    browser: Union[Browser, None, _UNSET_TYPE] = UNSET
+    browserVersion: Union[str, None, _UNSET_TYPE] = UNSET
+    device: Union[str, None, _UNSET_TYPE] = UNSET
+    name: Union[str, None, _UNSET_TYPE] = UNSET
+    operatingSystem: Union[OperatingSystem, None, _UNSET_TYPE] = UNSET
+    operatingSystemVersion: Union[str, None, _UNSET_TYPE] = UNSET
+    suiteName: Union[str, None, _UNSET_TYPE] = UNSET
+    testName: Union[str, None, _UNSET_TYPE] = UNSET
 
 
 class DiffingMethodSensitivity(str, Enum):
