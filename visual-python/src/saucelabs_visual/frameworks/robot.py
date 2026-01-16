@@ -260,14 +260,14 @@ class SauceLabsVisual:
     @keyword(name="Visual BaselineOverride")
     def visual_baseline_override(
             self,
-            browser: Union[Browser, None] = None,
-            browser_version: Union[str, None] = None,
-            device: Union[str, None] = None,
-            name: Union[str, None] = None,
-            operating_system: Union[OperatingSystem, None] = None,
-            operating_system_version: Union[str, None] = None,
-            suite_name: Union[str, None] = None,
-            test_name: Union[str, None] = None,
+            browser: Union[Browser, None, False] = False,
+            browser_version: Union[str, None, False] = False,
+            device: Union[str, None, False] = False,
+            name: Union[str, None, False] = False,
+            operating_system: Union[OperatingSystem, None, False] = False,
+            operating_system_version: Union[str, None, False] = False,
+            suite_name: Union[str, None, False] = False,
+            test_name: Union[str, None, False] = False,
     ):
         return BaselineOverride(
             browser=browser,

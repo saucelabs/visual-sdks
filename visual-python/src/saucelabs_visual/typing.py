@@ -142,22 +142,19 @@ class OperatingSystem(str, Enum):
     MACOS = 'MACOS'
     WINDOWS = 'WINDOWS'
 
-UNSET = object()
-_UNSET_TYPE = Type["UNSET"]
-
 @dataclass
 class BaselineOverride:
     """
     One or more keys we should use as an override when matching a baseline.
     """
-    browser: Union[Browser, None, _UNSET_TYPE] = UNSET
-    browserVersion: Union[str, None, _UNSET_TYPE] = UNSET
-    device: Union[str, None, _UNSET_TYPE] = UNSET
-    name: Union[str, None, _UNSET_TYPE] = UNSET
-    operatingSystem: Union[OperatingSystem, None, _UNSET_TYPE] = UNSET
-    operatingSystemVersion: Union[str, None, _UNSET_TYPE] = UNSET
-    suiteName: Union[str, None, _UNSET_TYPE] = UNSET
-    testName: Union[str, None, _UNSET_TYPE] = UNSET
+    browser: Union[Browser, None, False] = False
+    browserVersion: Union[str, None, False] = False
+    device: Union[str, None, False] = False
+    name: Union[str, None, False] = False
+    operatingSystem: Union[OperatingSystem, None, False] = False
+    operatingSystemVersion: Union[str, None, False] = False
+    suiteName: Union[str, None, False] = False
+    testName: Union[str, None, False] = False
 
 
 class DiffingMethodSensitivity(str, Enum):
