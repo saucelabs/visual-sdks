@@ -279,6 +279,7 @@ class SauceLabsVisual:
                 $testName: String,
                 $suiteName: String,
                 $captureDom: Boolean,
+                $jobId: String,
                 $clipElement: WebdriverElementID,
                 $ignoreRegions: [RegionIn!],
                 $ignoreElements: [ElementIn!],
@@ -297,6 +298,7 @@ class SauceLabsVisual:
                     buildUuid: $buildId,
                     testName: $testName,
                     suiteName: $suiteName,
+                    jobId: $jobId,
                     captureDom: $captureDom,
                     clipElement: $clipElement,
                     ignoreRegions: $ignoreRegions,
@@ -330,6 +332,7 @@ class SauceLabsVisual:
             "suiteName": suite_name,
             "captureDom": capture_dom if capture_dom is not None else self.capture_dom,
             "clipElement": clip_element.id if clip_element is not None else None,
+            "jobId": driver.capabilities.get("jobUuid") or driver.session_id,
             "ignoreRegions": [
                 asdict(region) for region in ignore_regions
             ] if ignore_regions is not None else None,
@@ -345,7 +348,7 @@ class SauceLabsVisual:
             if diffing_method_sensitivity is not None else None,
             "diffingMethodTolerance": diffing_method_tolerance,
             "baselineOverride": {
-                key: value for key, value in asdict(baseline_override).items() if value is not None
+                key: value for key, value in asdict(baseline_override).items() if value is not False
             } if baseline_override is not None else None,
             "hideScrollBars": hide_scroll_bars if hide_scroll_bars is not None else self.hide_scroll_bars
         }

@@ -142,20 +142,19 @@ class OperatingSystem(str, Enum):
     MACOS = 'MACOS'
     WINDOWS = 'WINDOWS'
 
-
 @dataclass
 class BaselineOverride:
     """
     One or more keys we should use as an override when matching a baseline.
     """
-    browser: Union[Browser, None] = None
-    browserVersion: Union[str, None] = None
-    device: Union[str, None] = None
-    name: Union[str, None] = None
-    operatingSystem: Union[OperatingSystem, None] = None
-    operatingSystemVersion: Union[str, None] = None
-    suiteName: Union[str, None] = None
-    testName: Union[str, None] = None
+    browser: Union[Browser, None, Literal[False]] = False
+    browserVersion: Union[str, None, Literal[False]] = False
+    device: Union[str, None, Literal[False]] = False
+    name: Union[str, None, Literal[False]] = False
+    operatingSystem: Union[OperatingSystem, None, Literal[False]] = False
+    operatingSystemVersion: Union[str, None, Literal[False]] = False
+    suiteName: Union[str, None, Literal[False]] = False
+    testName: Union[str, None, Literal[False]] = False
 
 
 class DiffingMethodSensitivity(str, Enum):
