@@ -8,14 +8,14 @@ namespace SauceLabs.Visual.GraphQL
     [JsonConverter(typeof(BaselineOverrideInJsonConverter))]
     internal class BaselineOverrideIn
     {
-        public JsonUndefined<Browser?>? Browser { get; set; }
-        public JsonUndefined<string?>? BrowserVersion { get; set; }
-        public JsonUndefined<string?>? Device { get; set; }
-        public JsonUndefined<string?>? Name { get; set; }
-        public JsonUndefined<OperatingSystem?>? OperatingSystem { get; set; }
-        public JsonUndefined<string?>? OperatingSystemVersion { get; set; }
-        public JsonUndefined<string?>? SuiteName { get; set; }
-        public JsonUndefined<string?>? TestName { get; set; }
+        public Option<Browser?> Browser { get; set; }
+        public Option<string?> BrowserVersion { get; set; }
+        public Option<string?> Device { get; set; }
+        public Option<string?> Name { get; set; }
+        public Option<OperatingSystem?> OperatingSystem { get; set; }
+        public Option<string?> OperatingSystemVersion { get; set; }
+        public Option<string?> SuiteName { get; set; }
+        public Option<string?> TestName { get; set; }
     }
 
     internal class BaselineOverrideInJsonConverter : JsonConverter<BaselineOverrideIn>
@@ -34,35 +34,35 @@ namespace SauceLabs.Visual.GraphQL
             }
 
             var dict = new Dictionary<string, object?>();
-            if (value.Browser?.HasValue == true)
+            if (value.Browser.HasValue == true)
             {
                 dict["browser"] = value.Browser.Value;
             }
-            if (value.BrowserVersion?.HasValue == true)
+            if (value.BrowserVersion.HasValue == true)
             {
                 dict["browserVersion"] = value.BrowserVersion.Value;
             }
-            if (value.Device?.HasValue == true)
+            if (value.Device.HasValue == true)
             {
                 dict["device"] = value.Device.Value;
             }
-            if (value.Name?.HasValue == true)
+            if (value.Name.HasValue == true)
             {
                 dict["name"] = value.Name.Value;
             }
-            if (value.OperatingSystem?.HasValue == true)
+            if (value.OperatingSystem.HasValue == true)
             {
                 dict["operatingSystem"] = value.OperatingSystem.Value;
             }
-            if (value.OperatingSystemVersion?.HasValue == true)
+            if (value.OperatingSystemVersion.HasValue == true)
             {
                 dict["operatingSystemVersion"] = value.OperatingSystemVersion.Value;
             }
-            if (value.SuiteName?.HasValue == true)
+            if (value.SuiteName.HasValue == true)
             {
                 dict["suiteName"] = value.SuiteName.Value;
             }
-            if (value.TestName?.HasValue == true)
+            if (value.TestName.HasValue == true)
             {
                 dict["testName"] = value.TestName.Value;
             }
