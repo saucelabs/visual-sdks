@@ -9,9 +9,6 @@
         "name": "typescript-plugin-resolve-plugins",
         "resolvePlugins": true
       }
-    ],
-    "types": [
-      "jest-playwright-preset"
     ]
   },
   "include": [

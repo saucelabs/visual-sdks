@@ -1,5 +1,5 @@
 import type { SauceVisualParams as PlaywrightParams } from '@saucelabs/visual-playwright';
-import { instrument } from '@storybook/instrumenter';
+import { instrument } from 'storybook/internal/instrumenter';
 
 const _takeVisualSnapshot = async (
   name: string,

@@ -10,9 +10,10 @@
         "resolvePlugins": true
       }
     ],
+    "moduleResolution": "bundler",
     "types": [
       "jest",
-      "jest-playwright-preset"
+      "@storybook/test-runner/dist/jest-playwright-entries/runner"
     ],
   },
   "include": [
