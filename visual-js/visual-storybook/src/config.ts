@@ -7,10 +7,10 @@ export const getVisualTestConfig = (
 ): Partial<Config.InitialOptions> => {
   VisualStorybook.globalSetup(opts);
   return {
-    globalSetup: require.resolve(
+    globalSetup: import.meta.resolve(
       '@saucelabs/visual-storybook/build/config/global-setup.js',
     ),
-    globalTeardown: require.resolve(
+    globalTeardown: import.meta.resolve(
       '@saucelabs/visual-storybook/build/config/global-teardown.js',
     ),
   };

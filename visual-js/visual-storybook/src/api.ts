@@ -6,8 +6,8 @@ import {
   SauceVisualParams as PlaywrightParams,
 } from '@saucelabs/visual-playwright';
 import type { SauceVisualParams, StoryContext, StoryVariation } from './types';
-import type { Channel } from '@storybook/core/channels';
-import events from '@storybook/core/core-events';
+import type { Channel } from 'storybook/internal/channels';
+import events from 'storybook/internal/core-events';
 
 const { VisualPlaywright } = internals;
 
