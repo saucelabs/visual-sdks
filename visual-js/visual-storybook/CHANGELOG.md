@@ -1,5 +1,11 @@
 # @saucelabs/visual-storybook
 
+## 1.0.0
+
+### Major Changes
+
+- 91b7262: storybook 10 support
+
 ## 0.10.9
 
 ### Patch Changes
