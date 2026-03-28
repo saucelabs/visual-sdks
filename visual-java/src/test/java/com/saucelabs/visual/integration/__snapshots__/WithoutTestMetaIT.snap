@@ -9,6 +9,7 @@ com.saucelabs.visual.integration.WithoutTestMetaIT.checkSupplyingValuesManually=
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : null,
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",
@@ -32,6 +33,7 @@ com.saucelabs.visual.integration.WithoutTestMetaIT.checkWithoutTestMeta=[
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : null,
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",

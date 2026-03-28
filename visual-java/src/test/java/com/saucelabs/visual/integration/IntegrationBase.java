@@ -25,8 +25,8 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 abstract class IntegrationBase {
-  private static final String username = System.getenv("SAUCE_USERNAME");
-  private static final String accessKey = System.getenv("SAUCE_ACCESS_KEY");
+  protected static final String username = System.getenv("SAUCE_USERNAME");
+  protected static final String accessKey = System.getenv("SAUCE_ACCESS_KEY");
   protected static RemoteWebDriver driver;
   protected static VisualApi visual;
   protected static boolean isLocal = Objects.equals(System.getenv("RUN_ON"), "local");

@@ -1,0 +1,118 @@
+com.saucelabs.visual.integration.BaselineOverrideIT.testIncludeBaselineOverrides=[
+{
+  "snapshot" : {
+    "name" : "Set on snapshot level (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.BaselineOverrideIT",
+    "testName" : "testIncludeBaselineOverrides",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : false,
+    "metadata" : {
+      "baselineOverride" : {
+        "device" : "Device",
+        "browser" : "CHROME",
+        "testName" : "testIncludeBaselineOverrides",
+        "suiteName" : "BaselineOverrideIT",
+        "browserVersion" : "130",
+        "operatingSystem" : "MACOS",
+        "operatingSystemVersion" : "17"
+      }
+    },
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.BaselineOverrideIT.testIncludeBaselineOverridesWithNullValues=[
+{
+  "snapshot" : {
+    "name" : "Set with null values (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.BaselineOverrideIT",
+    "testName" : "testIncludeBaselineOverridesWithNullValues",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : false,
+    "metadata" : {
+      "baselineOverride" : {
+        "device" : null,
+        "browser" : null,
+        "testName" : null,
+        "suiteName" : null,
+        "browserVersion" : null,
+        "operatingSystem" : null,
+        "operatingSystemVersion" : null
+      }
+    },
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.BaselineOverrideIT.testNullBaselineOverride=[
+{
+  "snapshot" : {
+    "name" : "Standard (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.BaselineOverrideIT",
+    "testName" : "testNullBaselineOverride",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "metadata" : null,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
+com.saucelabs.visual.integration.BaselineOverrideIT.testSetAtBuildLevel=[
+{
+  "snapshot" : {
+    "name" : "Set at build level (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.BaselineOverrideIT",
+    "testName" : "testSetAtBuildLevel",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : false,
+    "metadata" : {
+      "baselineOverride" : {
+        "operatingSystemVersion" : "130"
+      }
+    },
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
