@@ -1,172 +1,154 @@
 package com.saucelabs.visual.model;
 
-import java.util.Optional;
-
 public class BaselineOverride {
-  private Optional<Browser> browser;
-  private Optional<OperatingSystem> operatingSystem;
-  private Optional<String> browserVersion;
-  private Optional<String> device;
-  private Optional<String> name;
-  private Optional<String> operatingSystemVersion;
-  private Optional<String> suiteName;
-  private Optional<String> testName;
+  private JSOptional<Browser> browser = JSOptional.unset();
+  private JSOptional<OperatingSystem> operatingSystem = JSOptional.unset();
+  private JSOptional<String> browserVersion = JSOptional.unset();
+  private JSOptional<String> device = JSOptional.unset();
+  private JSOptional<String> name = JSOptional.unset();
+  private JSOptional<String> operatingSystemVersion = JSOptional.unset();
+  private JSOptional<String> suiteName = JSOptional.unset();
+  private JSOptional<String> testName = JSOptional.unset();
 
-  public Optional<Browser> getBrowser() {
+  public JSOptional<Browser> getBrowser() {
     return browser;
   }
 
   public void setBrowser(Browser browser) {
-    this.browser = Optional.ofNullable(browser);
+    this.browser = JSOptional.ofNullable(browser);
   }
 
-  public Optional<OperatingSystem> getOperatingSystem() {
+  public JSOptional<OperatingSystem> getOperatingSystem() {
     return operatingSystem;
   }
 
-  public void setOperatingSystem(OperatingSystem operatingSystem) {
-    this.operatingSystem = Optional.ofNullable(operatingSystem);
+  public void setOperatingSystem(OperatingSystem os) {
+    this.operatingSystem = JSOptional.ofNullable(os);
   }
 
-  public Optional<String> getBrowserVersion() {
+  public JSOptional<String> getBrowserVersion() {
     return browserVersion;
   }
 
-  public void setBrowserVersion(String browserVersion) {
-    this.browserVersion = Optional.ofNullable(browserVersion);
+  public void setBrowserVersion(String v) {
+    this.browserVersion = JSOptional.ofNullable(v);
   }
 
-  public Optional<String> getDevice() {
+  public JSOptional<String> getDevice() {
     return device;
   }
 
   public void setDevice(String device) {
-    this.device = Optional.ofNullable(device);
+    this.device = JSOptional.ofNullable(device);
   }
 
-  public Optional<String> getName() {
+  public JSOptional<String> getName() {
     return name;
   }
 
   public void setName(String name) {
-    this.name = Optional.ofNullable(name);
+    this.name = JSOptional.ofNullable(name);
   }
 
-  public Optional<String> getOperatingSystemVersion() {
+  public JSOptional<String> getOperatingSystemVersion() {
     return operatingSystemVersion;
   }
 
-  public void setOperatingSystemVersion(String operatingSystemVersion) {
-    this.operatingSystemVersion = Optional.ofNullable(operatingSystemVersion);
+  public void setOperatingSystemVersion(String v) {
+    this.operatingSystemVersion = JSOptional.ofNullable(v);
   }
 
-  public Optional<String> getSuiteName() {
+  public JSOptional<String> getSuiteName() {
     return suiteName;
   }
 
   public void setSuiteName(String suiteName) {
-    this.suiteName = Optional.ofNullable(suiteName);
+    this.suiteName = JSOptional.ofNullable(suiteName);
   }
 
-  public Optional<String> getTestName() {
+  public JSOptional<String> getTestName() {
     return testName;
   }
 
   public void setTestName(String testName) {
-    this.testName = Optional.ofNullable(testName);
+    this.testName = JSOptional.ofNullable(testName);
   }
 
-
   public static class Builder {
-    private Optional<Browser> browser;
-    private Optional<OperatingSystem> operatingSystem;
-    private Optional<String> browserVersion;
-    private Optional<String> device;
-    private Optional<String> name;
-    private Optional<String> operatingSystemVersion;
-    private Optional<String> suiteName;
-    private Optional<String> testName;
+    private JSOptional<Browser> browser = JSOptional.unset();
+    private JSOptional<OperatingSystem> operatingSystem = JSOptional.unset();
+    private JSOptional<String> browserVersion = JSOptional.unset();
+    private JSOptional<String> device = JSOptional.unset();
+    private JSOptional<String> name = JSOptional.unset();
+    private JSOptional<String> operatingSystemVersion = JSOptional.unset();
+    private JSOptional<String> suiteName = JSOptional.unset();
+    private JSOptional<String> testName = JSOptional.unset();
 
-    public Builder withBrowser(Browser browser) {
-      this.browser = Optional.ofNullable(browser);
+    public Builder withBrowser(Browser b) {
+      this.browser = JSOptional.ofNullable(b);
       return this;
     }
 
-    public Builder withOperatingSystem(OperatingSystem operatingSystem) {
-      this.operatingSystem = Optional.ofNullable(operatingSystem);
+    public Builder withOperatingSystem(OperatingSystem os) {
+      this.operatingSystem = JSOptional.ofNullable(os);
       return this;
     }
 
-    public Builder withBrowserVersion(String browserVersion) {
-      this.browserVersion = Optional.ofNullable(browserVersion);
+    public Builder withBrowserVersion(String v) {
+      this.browserVersion = JSOptional.ofNullable(v);
       return this;
     }
 
-    public Builder withDevice(String device) {
-      this.device = Optional.ofNullable(device);
+    public Builder withDevice(String v) {
+      this.device = JSOptional.ofNullable(v);
       return this;
     }
 
-    public Builder withName(String name) {
-      this.name = Optional.ofNullable(name);
+    public Builder withName(String v) {
+      this.name = JSOptional.ofNullable(v);
       return this;
     }
 
-    public Builder withOperatingSystemVersion(String operatingSystemVersion) {
-      this.operatingSystemVersion = Optional.ofNullable(operatingSystemVersion);
+    public Builder withOperatingSystemVersion(String v) {
+      this.operatingSystemVersion = JSOptional.ofNullable(v);
       return this;
     }
 
-    public Builder withSuiteName(String suiteName) {
-      this.suiteName = Optional.ofNullable(suiteName);
+    public Builder withSuiteName(String v) {
+      this.suiteName = JSOptional.ofNullable(v);
       return this;
     }
 
-    public Builder withTestName(String testName) {
-      this.testName = Optional.ofNullable(testName);
+    public Builder withTestName(String v) {
+      this.testName = JSOptional.ofNullable(v);
       return this;
     }
 
     public BaselineOverride build() {
       BaselineOverride b = new BaselineOverride();
-      b.setBrowser(this.browser != null ? this.browser.get() : null);
-      b.setOperatingSystem(this.operatingSystem != null ? this.operatingSystem.get() : null);
-      b.setBrowserVersion(this.browserVersion != null ? this.browserVersion.get() : null);
-      b.setDevice(this.device != null ? this.device.get() : null);
-      b.setName(this.name != null ? this.name.get() : null);
-      b.setOperatingSystemVersion(this.operatingSystemVersion != null ? this.operatingSystemVersion.get() : null);
-      b.setSuiteName(this.suiteName != null ? this.suiteName.get() : null);
-      b.setTestName(this.testName != null ? this.testName.get() : null);
+      b.browser = this.browser;
+      b.operatingSystem = this.operatingSystem;
+      b.browserVersion = this.browserVersion;
+      b.device = this.device;
+      b.name = this.name;
+      b.operatingSystemVersion = this.operatingSystemVersion;
+      b.suiteName = this.suiteName;
+      b.testName = this.testName;
       return b;
     }
   }
 
   public BaselineOverrideInput asGraphQLType() {
     BaselineOverrideInput input = new BaselineOverrideInput();
-    if (this.browser != null) {
-      input.setBrowser(this.browser.map(Browser::asGraphQLType));
-    }
-    if (this.operatingSystem != null) {
-      input.setOperatingSystem(this.operatingSystem.map(OperatingSystem::asGraphQLType));
-    }
-    if (this.browserVersion != null) {
-      input.setBrowserVersion(this.browserVersion);
-    }
-    if (this.device != null) {
-      input.setDevice(this.device);
-    }
-    if (this.name != null) {
-      input.setName(this.name);
-    }
-    if (this.operatingSystemVersion != null) {
-      input.setOperatingSystemVersion(this.operatingSystemVersion);
-    }
-    if (this.suiteName != null) {
-      input.setSuiteName(this.suiteName);
-    }
-    if (this.testName != null) {
-      input.setTestName(this.testName);
-    }
+    this.browser.ifSet(b -> input.setBrowser(b.map(Browser::asGraphQLType)));
+    this.operatingSystem.ifSet(
+        os -> input.setOperatingSystem(os.map(OperatingSystem::asGraphQLType)));
+    this.browserVersion.ifSet(input::setBrowserVersion);
+    this.device.ifSet(input::setDevice);
+    this.name.ifSet(input::setName);
+    this.operatingSystemVersion.ifSet(input::setOperatingSystemVersion);
+    this.suiteName.ifSet(input::setSuiteName);
+    this.testName.ifSet(input::setTestName);
     return input;
   }
 }

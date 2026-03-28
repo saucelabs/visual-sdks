@@ -745,9 +745,10 @@ public class VisualApi {
                     Optional.ofNullable(getDiffingMethodTolerance(options))
                         .map(DiffingMethodTolerance::asGraphQLType)
                         .orElse(null))
-                .withBaselineOverride(Optional.ofNullable(getBaselineOverride(options))
-                    .map(BaselineOverride::asGraphQLType)
-                    .orElse(null))
+                .withBaselineOverride(
+                    Optional.ofNullable(getBaselineOverride(options))
+                        .map(BaselineOverride::asGraphQLType)
+                        .orElse(null))
                 .withName(snapshotName)
                 .build());
     CreateSnapshotMutation.Data result =

@@ -8,8 +8,8 @@ public enum Browser {
   PLAYWRIGHT_WEBKIT,
   SAFARI;
 
-  public com.saucelabs.visual.graphql.type.Browser asGraphQLType(){
-    switch (this){
+  public com.saucelabs.visual.graphql.type.Browser asGraphQLType() {
+    switch (this) {
       case CHROME:
         return com.saucelabs.visual.graphql.type.Browser.CHROME;
       case EDGE:
