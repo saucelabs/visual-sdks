@@ -10,64 +10,64 @@ public class BaselineOverride {
   private JSOptional<String> suiteName = JSOptional.unset();
   private JSOptional<String> testName = JSOptional.unset();
 
-  public JSOptional<Browser> getBrowser() {
-    return browser;
+  public Browser getBrowser() {
+    return browser.orElse(null);
   }
 
   public void setBrowser(Browser browser) {
     this.browser = JSOptional.ofNullable(browser);
   }
 
-  public JSOptional<OperatingSystem> getOperatingSystem() {
-    return operatingSystem;
+  public OperatingSystem getOperatingSystem() {
+    return operatingSystem.orElse(null);
   }
 
   public void setOperatingSystem(OperatingSystem os) {
     this.operatingSystem = JSOptional.ofNullable(os);
   }
 
-  public JSOptional<String> getBrowserVersion() {
-    return browserVersion;
+  public String getBrowserVersion() {
+    return browserVersion.orElse(null);
   }
 
   public void setBrowserVersion(String v) {
     this.browserVersion = JSOptional.ofNullable(v);
   }
 
-  public JSOptional<String> getDevice() {
-    return device;
+  public String getDevice() {
+    return device.orElse(null);
   }
 
   public void setDevice(String device) {
     this.device = JSOptional.ofNullable(device);
   }
 
-  public JSOptional<String> getName() {
-    return name;
+  public String getName() {
+    return name.orElse(null);
   }
 
   public void setName(String name) {
     this.name = JSOptional.ofNullable(name);
   }
 
-  public JSOptional<String> getOperatingSystemVersion() {
-    return operatingSystemVersion;
+  public String getOperatingSystemVersion() {
+    return operatingSystemVersion.orElse(null);
   }
 
   public void setOperatingSystemVersion(String v) {
     this.operatingSystemVersion = JSOptional.ofNullable(v);
   }
 
-  public JSOptional<String> getSuiteName() {
-    return suiteName;
+  public String getSuiteName() {
+    return suiteName.orElse(null);
   }
 
   public void setSuiteName(String suiteName) {
     this.suiteName = JSOptional.ofNullable(suiteName);
   }
 
-  public JSOptional<String> getTestName() {
-    return testName;
+  public String getTestName() {
+    return testName.orElse(null);
   }
 
   public void setTestName(String testName) {

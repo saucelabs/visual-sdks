@@ -9,7 +9,7 @@ import java.util.function.Function;
  * Class to have state variables function like JS for use with GraphQL fields which can be set,
  * unset (js undefined - omitted from the request), or explicitly `null`.
  */
-public class JSOptional<T> {
+class JSOptional<T> {
   private enum State {
     UNSET,
     NULL,
@@ -46,6 +46,10 @@ public class JSOptional<T> {
 
   public boolean isNull() {
     return state == State.NULL;
+  }
+
+  public boolean isUnset() {
+    return state == State.UNSET;
   }
 
   public T orElse(T other) {
