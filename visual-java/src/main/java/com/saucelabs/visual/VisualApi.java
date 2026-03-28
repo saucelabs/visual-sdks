@@ -52,6 +52,7 @@ public class VisualApi {
     private Boolean hideScrollBars;
     private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
+    private BaselineOverride baselineOverride;
     private RequestConfig requestConfig;
     private Boolean isSauceSession;
 
@@ -115,6 +116,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withBaselineOverride(BaselineOverride baselineOverride) {
+      this.baselineOverride = baselineOverride;
+      return this;
+    }
+
     public Builder withRequestConfig(RequestConfig requestConfig) {
       this.requestConfig = requestConfig;
       return this;
@@ -151,6 +157,12 @@ public class VisualApi {
       }
       if (this.diffingMethodTolerance != null) {
         api.setDiffingMethodTolerance(this.diffingMethodTolerance);
+      }
+      if (this.diffingMethodTolerance != null) {
+        api.setDiffingMethodTolerance(this.diffingMethodTolerance);
+      }
+      if (this.baselineOverride != null) {
+        api.setBaselineOverride(this.baselineOverride);
       }
       return api;
     }
@@ -394,6 +406,10 @@ public class VisualApi {
 
   public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
     this.diffingMethodTolerance = diffingMethodTolerance;
+  }
+
+  public void setBaselineOverride(BaselineOverride baselineOverride) {
+    this.baselineOverride = baselineOverride;
   }
 
   private String webdriverSessionInfo() {

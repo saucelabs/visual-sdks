@@ -54,7 +54,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
 
     public Optional<DiffingMethodToleranceIn> diffingMethodTolerance = Optional.empty();
 
-    public Optional<BaselineOverrideIn> baselineOverrideIn = Optional.empty();
+    public Optional<BaselineOverrideIn> baselineOverride = Optional.empty();
 
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
@@ -137,7 +137,7 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     }
 
     public void setBaselineOverride(BaselineOverride diffingMethodTolerance) {
-      this.baselineOverrideIn =
+      this.baselineOverride =
           Optional.of(diffingMethodTolerance).map(BaselineOverride::asGraphQLType);
     }
 
