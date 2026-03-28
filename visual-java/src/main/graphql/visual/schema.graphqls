@@ -355,6 +355,7 @@ enum BranchesOrderBy {
 enum Browser {
   CHROME
   EDGE
+  FIGMA
   FIREFOX
   NONE
   PLAYWRIGHT_WEBKIT
@@ -364,7 +365,7 @@ enum Browser {
 """The result of diffing a `Baseline` with a `Snapshot`."""
 type Build implements Node {
   branch: String
-  commentCount: Int
+  commentCount: Int!
   createdAt: Datetime!
   createdByOrgId: UUID!
   createdByUser: User!
@@ -898,6 +899,10 @@ input DeleteCommentIn {
   id: UUID!
 }
 
+input DeleteUserResourcePermissionsIn {
+  userId: UUID!
+}
+
 """
 The result of diffing a `Baseline` with a `Snapshot`.
 
@@ -957,6 +962,7 @@ type Diff implements Node {
   feedback: DiffFeedback!
   hasDom: Boolean!
   id: UUID!
+  movementInfo: [MovementInfo]
 
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
@@ -1412,6 +1418,19 @@ type MergeBaselinesPayload {
   query: Query
 }
 
+type MovementInfo {
+  diffClusterIdx: Int!
+  movementType: MovementType!
+  xOffset: Int!
+  yOffset: Int!
+}
+
+enum MovementType {
+  ADDED
+  MOVED
+  REMOVED
+}
+
 """
 The root mutation type which contains root level fields which mutate data.
 """
@@ -1427,7 +1446,7 @@ type Mutation {
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
     input: ApproveBuildIn!
-  ): Build! @deprecated(reason: "Use setDiffStatus")
+  ): Build @deprecated(reason: "Use setDiffStatus")
   createBuild(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1510,7 +1529,7 @@ type Mutation {
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
     input: UpdateDiffIn!
-  ): Diff! @deprecated(reason: "Use setDiffStatus")
+  ): Diff @deprecated(reason: "Use setDiffStatus")
 }
 
 """An object with a globally unique `ID`."""
@@ -1733,7 +1752,7 @@ type Project implements Node {
 
     """The method to use when ordering `Branch`."""
     orderBy: [BranchesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): BranchesConnection! @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  ): BranchesConnection! @deprecated(reason: "Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.")
   id: String!
   lastUsed: Datetime!
   name: String
@@ -1848,7 +1867,7 @@ type Query implements Node {
   branchByNodeId(
     """The globally unique `ID` to be used in selecting a single `Branch`."""
     nodeId: ID!
-  ): Branch @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  ): Branch @deprecated(reason: "Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.")
 
   """Reads and enables pagination through a set of `Branch`."""
   branches(
@@ -1872,7 +1891,7 @@ type Query implements Node {
 
     """The method to use when ordering `Branch`."""
     orderBy: [BranchesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): BranchesConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  ): BranchesConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution. Only lists branches used in the last 90 days.")
   build(id: UUID!): Build
   buildByCustomId(customId: String!): Build
 
@@ -2086,7 +2105,7 @@ type Query implements Node {
   projectByNodeId(
     """The globally unique `ID` to be used in selecting a single `Project`."""
     nodeId: ID!
-  ): Project @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  ): Project @deprecated(reason: "Experimental API, could change at any time. Use with caution. Only lists projects used in the last 90 days.")
 
   """Reads and enables pagination through a set of `Project`."""
   projects(
@@ -2110,7 +2129,7 @@ type Query implements Node {
 
     """The method to use when ordering `Project`."""
     orderBy: [ProjectsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ProjectsConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution.")
+  ): ProjectsConnection @deprecated(reason: "Experimental API, could change at any time. Use with caution. Only lists projects used in the last 90 days.")
 
   """
   Exposes the root query type nested one level down. This is helpful for Relay 1
@@ -2308,9 +2327,9 @@ type Snapshot implements Node {
   - `{"code": "TRUNCATED"}`: The image file is corrupt and was probably truncated.
   - `{"code": "IMAGE_TOO_LARGE"}`: The image file exceeds the resolution / filesize limits for the diffing service.
   - `{"code": "INVALID"}`: The image file is invalid or in an unsupported image format.
-  - `{"domCode": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
-  - `{"domCode": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
-  - `{"domCode": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
+  - `{"dom_code": "DOM_TOO_LARGE"}`: [WARNING] The uploaded DOM is too large.
+  - `{"dom_code": "DOM_CAPTURE_FAILED"}`: [WARNING] A DOM snapshot was requested, but could not be captured.
+  - `{"dom_code": "DOM_INVALID"}`: [WARNING] The DOM snapshot has an invalid structure.
   
   Other error types may exist and the frontend should display a generic error message
   together with the JSON contents of `error`.

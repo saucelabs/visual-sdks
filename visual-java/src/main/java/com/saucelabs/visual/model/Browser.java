@@ -4,6 +4,7 @@ public enum Browser {
   CHROME,
   EDGE,
   FIREFOX,
+  FIGMA,
   NONE,
   PLAYWRIGHT_WEBKIT,
   SAFARI;
@@ -14,6 +15,8 @@ public enum Browser {
         return com.saucelabs.visual.graphql.type.Browser.CHROME;
       case EDGE:
         return com.saucelabs.visual.graphql.type.Browser.EDGE;
+      case FIGMA:
+        return com.saucelabs.visual.graphql.type.Browser.FIGMA;
       case FIREFOX:
         return com.saucelabs.visual.graphql.type.Browser.FIREFOX;
       case NONE:
