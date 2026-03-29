@@ -158,9 +158,6 @@ public class VisualApi {
       if (this.diffingMethodTolerance != null) {
         api.setDiffingMethodTolerance(this.diffingMethodTolerance);
       }
-      if (this.diffingMethodTolerance != null) {
-        api.setDiffingMethodTolerance(this.diffingMethodTolerance);
-      }
       if (this.baselineOverride != null) {
         api.setBaselineOverride(this.baselineOverride);
       }
