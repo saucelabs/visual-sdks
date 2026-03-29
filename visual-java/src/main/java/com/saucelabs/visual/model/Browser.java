@@ -26,6 +26,6 @@ public enum Browser {
       case SAFARI:
         return com.saucelabs.visual.graphql.type.Browser.SAFARI;
     }
-    return null;
+    throw new IllegalStateException("Missing enum match from API for 'Browser'.");
   }
 }

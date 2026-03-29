@@ -136,9 +136,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
           Optional.of(diffingMethodTolerance).map(DiffingMethodTolerance::asGraphQLType);
     }
 
-    public void setBaselineOverride(BaselineOverride diffingMethodTolerance) {
-      this.baselineOverride =
-          Optional.of(diffingMethodTolerance).map(BaselineOverride::asGraphQLType);
+    public void setBaselineOverride(BaselineOverride baselineOverride) {
+      this.baselineOverride = Optional.of(baselineOverride).map(BaselineOverride::asGraphQLType);
     }
 
     public void setHideScrollBars(Boolean hideScrollBars) {

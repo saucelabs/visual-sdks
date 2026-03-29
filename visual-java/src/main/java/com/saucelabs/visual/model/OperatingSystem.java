@@ -23,6 +23,6 @@ public enum OperatingSystem {
       case WINDOWS:
         return com.saucelabs.visual.graphql.type.OperatingSystem.WINDOWS;
     }
-    return null;
+    throw new IllegalStateException("Missing enum match from API for 'OperatingSystem'.");
   }
 }
