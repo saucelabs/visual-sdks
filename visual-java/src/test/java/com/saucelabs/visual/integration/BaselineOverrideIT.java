@@ -1,7 +1,7 @@
 package com.saucelabs.visual.integration;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.VisualApi;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
@@ -12,9 +12,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({TestMetaInfoExtension.class, SnapshotExtension.class})
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ExtendWith({TestMetaInfoExtension.class})
 public class BaselineOverrideIT extends IntegrationBase {
-  Expect expect;
+  ObjectMapper mapper = new ObjectMapper();
 
   @BeforeAll
   public static void login() {
@@ -27,15 +29,18 @@ public class BaselineOverrideIT extends IntegrationBase {
   }
 
   @Test
-  public void testNullBaselineOverride() {
+  public void testNullBaselineOverride() throws JsonProcessingException {
     String id =
         sauceVisualCheck("Standard", new CheckOptions.Builder().withBaselineOverride(null).build());
     String result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result);
+    assertEquals(
+        mapper.readTree("null"),
+        mapper.readTree(result).at("/snapshot/metadata")
+    );
   }
 
   @Test
-  public void testIncludeBaselineOverrides() {
+  public void testIncludeBaselineOverrides() throws JsonProcessingException {
     String id =
         sauceVisualCheck(
             "Set on snapshot level",
@@ -52,11 +57,22 @@ public class BaselineOverrideIT extends IntegrationBase {
                         .build())
                 .build());
     String result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result);
+    assertEquals(
+        mapper.readTree("{" +
+            "\"device\" : \"Device\"," +
+            " \"browser\" : \"CHROME\"," +
+            " \"testName\" : \"testIncludeBaselineOverrides\"," +
+            " \"suiteName\" : \"BaselineOverrideIT\"," +
+            " \"browserVersion\" : \"130\"," +
+            " \"operatingSystem\" : \"MACOS\"," +
+            " \"operatingSystemVersion\" : \"17\"" +
+            "}"),
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
+    );
   }
 
   @Test
-  public void testIncludeBaselineOverridesWithNullValues() {
+  public void testIncludeBaselineOverridesWithNullValues() throws JsonProcessingException {
     String id =
         sauceVisualCheck(
             "Set with null values",
@@ -73,11 +89,22 @@ public class BaselineOverrideIT extends IntegrationBase {
                         .build())
                 .build());
     String result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result);
+    assertEquals(
+        mapper.readTree("{" +
+            "\"device\": null," +
+            " \"browser\": null," +
+            " \"testName\": null," +
+            " \"suiteName\": null," +
+            " \"browserVersion\": null," +
+            " \"operatingSystem\": null," +
+            " \"operatingSystemVersion\": null" +
+            "}"),
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
+    );
   }
 
   @Test
-  public void testSetAtBuildLevel() {
+  public void testSetAtBuildLevel() throws JsonProcessingException {
     visual =
         new VisualApi.Builder(driver, username, accessKey)
             .withBuild("Java integration tests")
@@ -88,6 +115,9 @@ public class BaselineOverrideIT extends IntegrationBase {
 
     String id = sauceVisualCheck("Set at build level");
     String result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result);
+    assertEquals(
+        mapper.readTree("{\"operatingSystemVersion\": \"130\"}"),
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
+    );
   }
 }
