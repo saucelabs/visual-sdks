@@ -1,5 +1,7 @@
 package com.saucelabs.visual.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saucelabs.visual.CheckOptions;
@@ -11,8 +13,6 @@ import com.saucelabs.visual.model.OperatingSystem;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith({TestMetaInfoExtension.class})
 public class BaselineOverrideIT extends IntegrationBase {
@@ -33,10 +33,7 @@ public class BaselineOverrideIT extends IntegrationBase {
     String id =
         sauceVisualCheck("Standard", new CheckOptions.Builder().withBaselineOverride(null).build());
     String result = getSnapshotResult(id);
-    assertEquals(
-        mapper.readTree("null"),
-        mapper.readTree(result).at("/snapshot/metadata")
-    );
+    assertEquals(mapper.readTree("null"), mapper.readTree(result).at("/snapshot/metadata"));
   }
 
   @Test
@@ -58,17 +55,17 @@ public class BaselineOverrideIT extends IntegrationBase {
                 .build());
     String result = getSnapshotResult(id);
     assertEquals(
-        mapper.readTree("{" +
-            "\"device\" : \"Device\"," +
-            " \"browser\" : \"CHROME\"," +
-            " \"testName\" : \"testIncludeBaselineOverrides\"," +
-            " \"suiteName\" : \"BaselineOverrideIT\"," +
-            " \"browserVersion\" : \"130\"," +
-            " \"operatingSystem\" : \"MACOS\"," +
-            " \"operatingSystemVersion\" : \"17\"" +
-            "}"),
-        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
-    );
+        mapper.readTree(
+            "{"
+                + "\"device\" : \"Device\","
+                + " \"browser\" : \"CHROME\","
+                + " \"testName\" : \"testIncludeBaselineOverrides\","
+                + " \"suiteName\" : \"BaselineOverrideIT\","
+                + " \"browserVersion\" : \"130\","
+                + " \"operatingSystem\" : \"MACOS\","
+                + " \"operatingSystemVersion\" : \"17\""
+                + "}"),
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride"));
   }
 
   @Test
@@ -90,17 +87,17 @@ public class BaselineOverrideIT extends IntegrationBase {
                 .build());
     String result = getSnapshotResult(id);
     assertEquals(
-        mapper.readTree("{" +
-            "\"device\": null," +
-            " \"browser\": null," +
-            " \"testName\": null," +
-            " \"suiteName\": null," +
-            " \"browserVersion\": null," +
-            " \"operatingSystem\": null," +
-            " \"operatingSystemVersion\": null" +
-            "}"),
-        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
-    );
+        mapper.readTree(
+            "{"
+                + "\"device\": null,"
+                + " \"browser\": null,"
+                + " \"testName\": null,"
+                + " \"suiteName\": null,"
+                + " \"browserVersion\": null,"
+                + " \"operatingSystem\": null,"
+                + " \"operatingSystemVersion\": null"
+                + "}"),
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride"));
   }
 
   @Test
@@ -117,7 +114,6 @@ public class BaselineOverrideIT extends IntegrationBase {
     String result = getSnapshotResult(id);
     assertEquals(
         mapper.readTree("{\"operatingSystemVersion\": \"130\"}"),
-        mapper.readTree(result).at("/snapshot/metadata/baselineOverride")
-    );
+        mapper.readTree(result).at("/snapshot/metadata/baselineOverride"));
   }
 }
