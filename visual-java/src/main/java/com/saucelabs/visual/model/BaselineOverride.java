@@ -18,12 +18,28 @@ public class BaselineOverride {
     this.browser = JSOptional.ofNullable(browser);
   }
 
+  public void clearBrowser() {
+    this.browser = JSOptional.unset();
+  }
+
+  public boolean hasBrowser() {
+    return browser.isSet();
+  }
+
   public OperatingSystem getOperatingSystem() {
     return operatingSystem.orElse(null);
   }
 
   public void setOperatingSystem(OperatingSystem os) {
     this.operatingSystem = JSOptional.ofNullable(os);
+  }
+
+  public void clearOperatingSystem() {
+    this.operatingSystem = JSOptional.unset();
+  }
+
+  public boolean hasOperatingSystem() {
+    return operatingSystem.isSet();
   }
 
   public String getBrowserVersion() {
@@ -34,12 +50,28 @@ public class BaselineOverride {
     this.browserVersion = JSOptional.ofNullable(v);
   }
 
+  public void clearBrowserVersion() {
+    this.browserVersion = JSOptional.unset();
+  }
+
+  public boolean hasBrowserVersion() {
+    return browserVersion.isSet();
+  }
+
   public String getDevice() {
     return device.orElse(null);
   }
 
   public void setDevice(String device) {
     this.device = JSOptional.ofNullable(device);
+  }
+
+  public void clearDevice() {
+    this.device = JSOptional.unset();
+  }
+
+  public boolean hasDevice() {
+    return device.isSet();
   }
 
   public String getName() {
@@ -50,12 +82,28 @@ public class BaselineOverride {
     this.name = JSOptional.ofNullable(name);
   }
 
+  public void clearName() {
+    this.name = JSOptional.unset();
+  }
+
+  public boolean hasName() {
+    return name.isSet();
+  }
+
   public String getOperatingSystemVersion() {
     return operatingSystemVersion.orElse(null);
   }
 
   public void setOperatingSystemVersion(String v) {
     this.operatingSystemVersion = JSOptional.ofNullable(v);
+  }
+
+  public void clearOperatingSystemVersion() {
+    this.operatingSystemVersion = JSOptional.unset();
+  }
+
+  public boolean hasOperatingSystemVersion() {
+    return operatingSystemVersion.isSet();
   }
 
   public String getSuiteName() {
@@ -66,12 +114,28 @@ public class BaselineOverride {
     this.suiteName = JSOptional.ofNullable(suiteName);
   }
 
+  public void clearSuiteName() {
+    this.suiteName = JSOptional.unset();
+  }
+
+  public boolean hasSuiteName() {
+    return suiteName.isSet();
+  }
+
   public String getTestName() {
     return testName.orElse(null);
   }
 
   public void setTestName(String testName) {
     this.testName = JSOptional.ofNullable(testName);
+  }
+
+  public void clearTestName() {
+    this.testName = JSOptional.unset();
+  }
+
+  public boolean hasTestName() {
+    return testName.isSet();
   }
 
   public static class Builder {
@@ -121,6 +185,46 @@ public class BaselineOverride {
 
     public Builder withTestName(String v) {
       this.testName = JSOptional.ofNullable(v);
+      return this;
+    }
+
+    public Builder clearBrowser() {
+      this.browser = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearOperatingSystem() {
+      this.operatingSystem = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearBrowserVersion() {
+      this.browserVersion = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearDevice() {
+      this.device = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearName() {
+      this.name = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearOperatingSystemVersion() {
+      this.operatingSystemVersion = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearSuiteName() {
+      this.suiteName = JSOptional.unset();
+      return this;
+    }
+
+    public Builder clearTestName() {
+      this.testName = JSOptional.unset();
       return this;
     }
 

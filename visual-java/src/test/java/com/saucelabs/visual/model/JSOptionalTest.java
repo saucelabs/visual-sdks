@@ -50,6 +50,7 @@ class JSOptionalTest {
     JSOptional<String> opt = JSOptional.ofNullable(null);
     assertTrue(opt.isNull());
     assertTrue(opt.isSet());
+    assertFalse(opt.isUnset());
   }
 
   @Test
