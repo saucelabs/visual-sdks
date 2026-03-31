@@ -52,6 +52,7 @@ public class VisualApi {
     private Boolean hideScrollBars;
     private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
+    private BaselineOverride baselineOverride;
     private RequestConfig requestConfig;
     private Boolean isSauceSession;
 
@@ -115,6 +116,11 @@ public class VisualApi {
       return this;
     }
 
+    public Builder withBaselineOverride(BaselineOverride baselineOverride) {
+      this.baselineOverride = baselineOverride;
+      return this;
+    }
+
     public Builder withRequestConfig(RequestConfig requestConfig) {
       this.requestConfig = requestConfig;
       return this;
@@ -152,6 +158,9 @@ public class VisualApi {
       if (this.diffingMethodTolerance != null) {
         api.setDiffingMethodTolerance(this.diffingMethodTolerance);
       }
+      if (this.baselineOverride != null) {
+        api.setBaselineOverride(this.baselineOverride);
+      }
       return api;
     }
   }
@@ -168,6 +177,7 @@ public class VisualApi {
   private Boolean hideScrollBars;
   private DiffingMethodSensitivity diffingMethodSensitivity;
   private DiffingMethodTolerance diffingMethodTolerance;
+  private BaselineOverride baselineOverride;
   private String sessionMetadataBlob;
   private final RemoteWebDriver driver;
   private Boolean isSauceSession;
@@ -395,6 +405,10 @@ public class VisualApi {
     this.diffingMethodTolerance = diffingMethodTolerance;
   }
 
+  public void setBaselineOverride(BaselineOverride baselineOverride) {
+    this.baselineOverride = baselineOverride;
+  }
+
   private String webdriverSessionInfo() {
     WebdriverSessionInfoQuery query =
         new WebdriverSessionInfoQuery(
@@ -597,6 +611,11 @@ public class VisualApi {
       input.setDiffingMethodTolerance(diffingMethodTolerance);
     }
 
+    BaselineOverride baselineOverride = getBaselineOverride(options);
+    if (baselineOverride != null) {
+      input.setBaselineOverride(baselineOverride);
+    }
+
     CreateSnapshotFromWebDriverMutation mutation = new CreateSnapshotFromWebDriverMutation(input);
     CreateSnapshotFromWebDriverMutation.Data check =
         this.client.execute(mutation, CreateSnapshotFromWebDriverMutation.Data.class);
@@ -739,6 +758,10 @@ public class VisualApi {
                     Optional.ofNullable(getDiffingMethodTolerance(options))
                         .map(DiffingMethodTolerance::asGraphQLType)
                         .orElse(null))
+                .withBaselineOverride(
+                    Optional.ofNullable(getBaselineOverride(options))
+                        .map(BaselineOverride::asGraphQLType)
+                        .orElse(null))
                 .withName(snapshotName)
                 .build());
     CreateSnapshotMutation.Data result =
@@ -846,6 +869,11 @@ public class VisualApi {
   private DiffingMethodTolerance getDiffingMethodTolerance(CheckOptions checkOptions) {
     DiffingMethodTolerance sensitivity = checkOptions.getDiffingMethodTolerance();
     return sensitivity != null ? sensitivity : this.diffingMethodTolerance;
+  }
+
+  private BaselineOverride getBaselineOverride(CheckOptions checkOptions) {
+    BaselineOverride baselineOverride = checkOptions.getBaselineOverride();
+    return baselineOverride != null ? baselineOverride : this.baselineOverride;
   }
 
   private WebElement getClipElement(CheckOptions checkOptions) {

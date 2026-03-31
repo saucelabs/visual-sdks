@@ -9,6 +9,18 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSAndDisplayScrollBa
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : {
+      "full_page_config" : {
+        "scroll_limit" : 0,
+        "scroll_option" : null,
+        "scroll_element" : null,
+        "hide_scroll_bars" : null,
+        "native_clip_selector" : null,
+        "delay_after_scroll_ms" : 0,
+        "disable_css_animation" : null,
+        "hide_after_first_scroll" : null
+      }
+    },
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",
@@ -32,6 +44,18 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithDefaultSetting
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : {
+      "full_page_config" : {
+        "scroll_limit" : 0,
+        "scroll_option" : null,
+        "scroll_element" : null,
+        "hide_scroll_bars" : null,
+        "native_clip_selector" : null,
+        "delay_after_scroll_ms" : 0,
+        "disable_css_animation" : null,
+        "hide_after_first_scroll" : null
+      }
+    },
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",
@@ -55,6 +79,18 @@ com.saucelabs.visual.integration.FullPageScreenshotIT.takeAFPSWithScrollLimit=[
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : {
+      "full_page_config" : {
+        "scroll_limit" : 0,
+        "scroll_option" : null,
+        "scroll_element" : null,
+        "hide_scroll_bars" : null,
+        "native_clip_selector" : null,
+        "delay_after_scroll_ms" : 0,
+        "disable_css_animation" : null,
+        "hide_after_first_scroll" : null
+      }
+    },
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",

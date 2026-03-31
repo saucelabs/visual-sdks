@@ -62,6 +62,7 @@ public class CheckOptions {
     this.hideScrollBars = builder.hideScrollBars;
     this.diffingMethodSensitivity = builder.diffingMethodSensitivity;
     this.diffingMethodTolerance = builder.diffingMethodTolerance;
+    this.baselineOverride = builder.baselineOverride;
   }
 
   public CheckOptions(
@@ -133,6 +134,7 @@ public class CheckOptions {
   private DiffingOptionsIn diffingOptions;
   private DiffingMethodSensitivity diffingMethodSensitivity;
   private DiffingMethodTolerance diffingMethodTolerance;
+  private BaselineOverride baselineOverride;
   private Boolean captureDom;
   private String clipSelector;
   private WebElement clipElement;
@@ -150,6 +152,7 @@ public class CheckOptions {
     private DiffingOptionsIn diffingOptions;
     private DiffingMethodSensitivity diffingMethodSensitivity;
     private DiffingMethodTolerance diffingMethodTolerance;
+    private BaselineOverride baselineOverride;
     private Boolean captureDom;
     private String clipSelector;
     private WebElement clipElement;
@@ -249,6 +252,11 @@ public class CheckOptions {
 
     public CheckOptions build() {
       return new CheckOptions(this);
+    }
+
+    public Builder withBaselineOverride(BaselineOverride baselineOverride) {
+      this.baselineOverride = baselineOverride;
+      return this;
     }
   }
 
@@ -370,5 +378,13 @@ public class CheckOptions {
 
   public void setDiffingMethodSensitivity(DiffingMethodSensitivity diffingMethodSensitivity) {
     this.diffingMethodSensitivity = diffingMethodSensitivity;
+  }
+
+  public BaselineOverride getBaselineOverride() {
+    return baselineOverride;
+  }
+
+  public void setBaselineOverride(BaselineOverride baselineOverride) {
+    this.baselineOverride = baselineOverride;
   }
 }

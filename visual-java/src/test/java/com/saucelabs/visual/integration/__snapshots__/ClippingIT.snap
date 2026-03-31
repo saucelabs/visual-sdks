@@ -9,6 +9,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToElementOnThePage=[
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : null,
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",
@@ -32,6 +33,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : null,
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",
@@ -55,6 +57,7 @@ com.saucelabs.visual.integration.ClippingIT.scrollToElementBeforeClipping=[
     "device" : "Desktop (1384x1007)",
     "devicePixelRatio" : 1,
     "hasDom" : true,
+    "metadata" : null,
     "diffs" : {
       "nodes" : [ {
         "status" : "EQUAL",

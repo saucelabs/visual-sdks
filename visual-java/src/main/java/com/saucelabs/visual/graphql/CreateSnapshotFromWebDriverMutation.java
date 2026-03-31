@@ -3,6 +3,7 @@ package com.saucelabs.visual.graphql;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.model.BaselineOverride;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
 import com.saucelabs.visual.model.DiffingMethodTolerance;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
@@ -52,6 +53,8 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
         diffingMethodSensitivity = Optional.empty();
 
     public Optional<DiffingMethodToleranceIn> diffingMethodTolerance = Optional.empty();
+
+    public Optional<BaselineOverrideIn> baselineOverride = Optional.empty();
 
     public CreateSnapshotFromWebDriverIn(
         String buildUuid,
@@ -131,6 +134,10 @@ public class CreateSnapshotFromWebDriverMutation implements GraphQLOperation {
     public void setDiffingMethodTolerance(DiffingMethodTolerance diffingMethodTolerance) {
       this.diffingMethodTolerance =
           Optional.of(diffingMethodTolerance).map(DiffingMethodTolerance::asGraphQLType);
+    }
+
+    public void setBaselineOverride(BaselineOverride baselineOverride) {
+      this.baselineOverride = Optional.of(baselineOverride).map(BaselineOverride::asGraphQLType);
     }
 
     public void setHideScrollBars(Boolean hideScrollBars) {
