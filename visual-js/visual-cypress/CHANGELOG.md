@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.10.1
+
+### Patch Changes
+
+- 421ff53: bump cypress versions
+
 ## 0.10.0
 
 ### Minor Changes
