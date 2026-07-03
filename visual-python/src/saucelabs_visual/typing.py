@@ -103,6 +103,11 @@ class FullPageConfig:
     """
     Limit the number of screenshots taken for scrolling and stitching. Default and max value is 10.
     """
+    scroll_element: Union[WebElement, None] = None
+    """
+    The element to scroll for full page screenshots. Required for native mobile apps (iOS/Android).
+    Pass a WebElement found via driver.find_element().
+    """
 
 
 class DiffingMethod(Enum):
