@@ -1,4 +1,4 @@
-from dataclasses import asdict
+from dataclasses import asdict, replace as dataclass_replace
 from datetime import datetime, timedelta
 from os import environ
 from time import sleep
@@ -16,7 +16,6 @@ from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod,
     DiffingMethodTolerance
 
 PKG_VERSION = '0.7.1'
-
 
 class SauceLabsVisual:
     _client: Client = None
@@ -341,7 +340,11 @@ class SauceLabsVisual:
                 for group in ignore_elements
                 for element in group.as_dict_array()
             ] if ignore_elements is not None else None,
-            "fullPageConfig": asdict(full_page_config) if full_page_config is not None else None,
+            "fullPageConfig": {
+                **asdict(dataclass_replace(full_page_config, scroll_element=None)),
+                **({"scrollElement": full_page_config.scroll_element.id}
+                   if full_page_config.scroll_element is not None else {}),
+            } if full_page_config is not None else None,
             "diffingMethod": (diffing_method or DiffingMethod.BALANCED).value,
             "diffingOptions": diffing_options,
             "diffingMethodSensitivity": diffing_method_sensitivity.value
