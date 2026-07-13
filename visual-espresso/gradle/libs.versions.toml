@@ -1,6 +1,7 @@
 [versions]
 agp = "8.5.2"
 apolloGraphQL = "3.8.5"
+kotlin = "2.4.0"
 jsoup = "1.18.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -11,6 +12,7 @@ uiautomator = "2.2.0"
 vanniktechMavenPublish = "0.30.0"
 
 [libraries]
+kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

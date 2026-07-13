@@ -55,6 +55,7 @@ String getProperty(String name, String defaultValue) {
 }
 
 dependencies {
+    implementation platform(libs.kotlin.bom)
     implementation libs.appcompat
     implementation libs.material
     implementation libs.junit
