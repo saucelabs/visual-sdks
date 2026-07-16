@@ -27,7 +27,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: ossrh
 
       - name: Set up Git
         if: ${{ steps.prep.outputs.tag_name == '' }}

@@ -74,7 +74,7 @@ ext {
 
 mavenPublishing {
     configure(new AndroidSingleVariantLibrary("release", true, true))
-    publishToMavenCentral(SonatypeHost.DEFAULT)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     coordinates(android.namespace, "${artifactName}", android.defaultConfig.versionName)
 
