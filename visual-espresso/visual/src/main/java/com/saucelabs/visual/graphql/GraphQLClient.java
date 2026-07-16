@@ -3,20 +3,19 @@ package com.saucelabs.visual.graphql;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import com.apollographql.apollo3.ApolloCall;
-import com.apollographql.apollo3.ApolloClient;
-import com.apollographql.apollo3.api.ApolloResponse;
-import com.apollographql.apollo3.api.Error;
-import com.apollographql.apollo3.api.Mutation;
-import com.apollographql.apollo3.api.Operation;
-import com.apollographql.apollo3.api.Query;
-import com.apollographql.apollo3.exception.ApolloHttpException;
-import com.apollographql.apollo3.rx3.Rx3Apollo;
+import com.apollographql.apollo.ApolloCall;
+import com.apollographql.apollo.ApolloClient;
+import com.apollographql.apollo.api.ApolloResponse;
+import com.apollographql.apollo.api.Error;
+import com.apollographql.apollo.api.Mutation;
+import com.apollographql.apollo.api.Operation;
+import com.apollographql.apollo.api.Query;
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.DataCenter;
 import com.saucelabs.visual.exception.VisualApiException;
 
-import io.reactivex.rxjava3.core.Single;
+import kotlin.coroutines.EmptyCoroutineContext;
+import kotlinx.coroutines.BuildersKt;
 
 public class GraphQLClient {
 
@@ -45,25 +44,22 @@ public class GraphQLClient {
     }
 
     public <D extends Query.Data> D executeQuery(Query<D> q) {
-        ApolloCall<D> call = client.query(q);
-        Single<ApolloResponse<D>> single = Rx3Apollo.single(call);
-        try {
-            ApolloResponse<D> response = single.blockingGet();
-            return handleResponse(response);
-        } catch (ApolloHttpException e) {
-            throw new VisualApiException(e.getMessage());
-        }
+        return handleResponse(executeBlocking(client.query(q)));
     }
 
-
     public <D extends Mutation.Data> D executeMutation(Mutation<D> m) {
-        ApolloCall<D> call = client.mutation(m);
-        Single<ApolloResponse<D>> single = Rx3Apollo.single(call);
+        return handleResponse(executeBlocking(client.mutation(m)));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <D extends Operation.Data> ApolloResponse<D> executeBlocking(ApolloCall<D> call) {
         try {
-            ApolloResponse<D> response = single.blockingGet();
-            return handleResponse(response);
-        } catch (ApolloHttpException e) {
-            throw new VisualApiException(e.getMessage());
+            return (ApolloResponse<D>) BuildersKt.runBlocking(
+                    EmptyCoroutineContext.INSTANCE,
+                    (scope, continuation) -> call.execute(continuation));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new VisualApiException("Interrupted while executing GraphQL call");
         }
     }
 
@@ -79,6 +75,8 @@ public class GraphQLClient {
                 message.append(error.getMessage());
             }
             throw new VisualApiException(message.toString());
+        } else if (response.exception != null) {
+            throw new VisualApiException(response.exception.getMessage());
         } else {
             throw new VisualApiException("Unexpected GraphQL error");
         }
