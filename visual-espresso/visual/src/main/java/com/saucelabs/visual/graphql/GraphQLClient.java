@@ -10,6 +10,7 @@ import com.apollographql.apollo.api.Error;
 import com.apollographql.apollo.api.Mutation;
 import com.apollographql.apollo.api.Operation;
 import com.apollographql.apollo.api.Query;
+import com.apollographql.apollo.exception.ApolloException;
 import com.saucelabs.visual.BuildConfig;
 import com.saucelabs.visual.DataCenter;
 import com.saucelabs.visual.exception.VisualApiException;
@@ -59,7 +60,10 @@ public class GraphQLClient {
                     (scope, continuation) -> call.execute(continuation));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new VisualApiException("Interrupted while executing GraphQL call");
+            throw new VisualApiException("Interrupted while executing GraphQL call", e);
+        } catch (ApolloException e) {
+            String message = e.getMessage() != null ? e.getMessage() : "GraphQL call failed";
+            throw new VisualApiException(message, e);
         }
     }
 
@@ -76,7 +80,10 @@ public class GraphQLClient {
             }
             throw new VisualApiException(message.toString());
         } else if (response.exception != null) {
-            throw new VisualApiException(response.exception.getMessage());
+            String message = response.exception.getMessage() != null
+                    ? response.exception.getMessage()
+                    : "GraphQL request failed";
+            throw new VisualApiException(message, response.exception);
         } else {
             throw new VisualApiException("Unexpected GraphQL error");
         }
