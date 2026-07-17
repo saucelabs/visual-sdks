@@ -1,7 +1,6 @@
 [versions]
-agp = "8.5.2"
-apolloGraphQL = "3.8.5"
-kotlin = "2.4.0"
+agp = "8.6.1"
+apolloGraphQL = "5.0.1"
 jsoup = "1.18.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -12,7 +11,6 @@ uiautomator = "2.2.0"
 vanniktechMavenPublish = "0.30.0"
 
 [libraries]
-kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -20,11 +18,10 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
-apollo-runtime = { group = "com.apollographql.apollo3", name = "apollo-runtime", version.ref = "apolloGraphQL" }
-apollo-rx3-support = { group = "com.apollographql.apollo3", name = "apollo-rx3-support", version.ref = "apolloGraphQL" }
+apollo-runtime = { group = "com.apollographql.apollo", name = "apollo-runtime", version.ref = "apolloGraphQL" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-apollographql = { id = "com.apollographql.apollo3", version.ref = "apolloGraphQL" }
+apollographql = { id = "com.apollographql.apollo", version.ref = "apolloGraphQL" }
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
