@@ -18,6 +18,8 @@ import {
 } from './types';
 import type { DiffStatus } from '@saucelabs/visual';
 
+export type { VisualBaselineOverride } from './types';
+
 declare global {
   namespace Cypress {
     interface Chainable<Subject = any> {
@@ -217,6 +219,7 @@ const sauceVisualCheckCommand = (
           diffingOptions: options?.diffingOptions,
           diffingMethodTolerance: options?.diffingMethodTolerance,
           diffingMethodSensitivity: options?.diffingMethodSensitivity,
+          baselineOverride: options?.baselineOverride,
           devicePixelRatio: win.devicePixelRatio,
           viewport: realViewport,
           dom: getDom() ?? undefined,
