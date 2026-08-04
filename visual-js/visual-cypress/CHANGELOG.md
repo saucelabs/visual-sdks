@@ -1,5 +1,11 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.10.2
+
+### Patch Changes
+
+- 7a5eb70: add baselineOverride support
+
 ## 0.10.1
 
 ### Patch Changes
