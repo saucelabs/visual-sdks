@@ -18,8 +18,6 @@ import {
 } from './types';
 import type { DiffStatus } from '@saucelabs/visual';
 
-export type { VisualBaselineOverride } from './types';
-
 declare global {
   namespace Cypress {
     interface Chainable<Subject = any> {

@@ -1,5 +1,5 @@
 ---
-"@saucelabs/cypress-visual-plugin": minor
+"@saucelabs/cypress-visual-plugin": patch
 ---
 
 add baselineOverride support

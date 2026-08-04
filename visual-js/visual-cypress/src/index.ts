@@ -504,5 +504,5 @@ export {
   DiffingMethodSensitivity,
   Browser,
   OperatingSystem,
+  type VisualBaselineOverride,
 };
-export type { VisualBaselineOverride };
