@@ -8,6 +8,7 @@
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
+  BaselineOverrideIn,
   Browser,
   BuildMode,
   DiffingMethod,
@@ -27,6 +28,7 @@ import {
   HasSauceConfig,
   SauceVisualOptions,
   ScreenshotMetadata,
+  VisualBaselineOverride,
 } from './types';
 import { Logger } from './logger';
 import { buildUrl } from './messages';
@@ -41,6 +43,17 @@ const asEnum = <T extends DiffingMethod | DiffingMethodSensitivity>(
 ): T => {
   return str as T;
 };
+
+/**
+ * Our public options accept plain strings for the API's enum fields since Cypress specs are
+ * evaluated in the browser and cannot import the enums at runtime. The shapes are otherwise
+ * identical, so this is a type-level coercion only: keys the user omitted stay omitted, and
+ * explicitly set `null` values are preserved.
+ */
+const asBaselineOverride = (
+  baselineOverride: VisualBaselineOverride | undefined,
+): BaselineOverrideIn | undefined =>
+  baselineOverride as BaselineOverrideIn | undefined;
 
 const {
   SAUCE_VISUAL_BUILD_NAME,
@@ -112,6 +125,7 @@ class CypressSauceVisual {
   private diffingOptions: DiffingOptionsIn | undefined;
   private diffingMethodTolerance?: DiffingMethodToleranceIn;
   private diffingMethodSensitivity?: DiffingMethodSensitivity;
+  private baselineOverride?: BaselineOverrideIn;
   private screenshotsMetadata: { [key: string]: ScreenshotMetadata } = {};
 
   private api: VisualApi;
@@ -144,6 +158,9 @@ class CypressSauceVisual {
       config.saucelabs?.diffingMethodSensitivity,
     );
     this.diffingMethodTolerance = config.saucelabs?.diffingMethodTolerance;
+    this.baselineOverride = asBaselineOverride(
+      config.saucelabs?.baselineOverride,
+    );
     this.domCaptureScript = this.api.domCaptureScript();
   }
 
@@ -348,6 +365,9 @@ Sauce Labs Visual: Unable to create new build.
         diffingMethodSensitivity: asEnum<DiffingMethodSensitivity>(
           metadata.diffingMethodSensitivity || this.diffingMethodSensitivity,
         ),
+        baselineOverride:
+          asBaselineOverride(metadata.baselineOverride) ||
+          this.baselineOverride,
         jobUrl: this.jobId ? this.region.jobUrl(this.jobId) : undefined,
       });
       logger.info(`    ${chalk.green('✔')} ${metadata.name} `);
@@ -482,4 +502,7 @@ export {
   CypressSauceVisual,
   DiffingMethod,
   DiffingMethodSensitivity,
+  Browser,
+  OperatingSystem,
+  type VisualBaselineOverride,
 };

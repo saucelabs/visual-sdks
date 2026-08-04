@@ -1,11 +1,27 @@
 import type {
+  BaselineOverrideIn,
+  Browser,
   DiffingMethod,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
   DiffingOptionsIn,
+  OperatingSystem,
   SauceRegion,
   SelectiveRegionOptions,
 } from '@saucelabs/visual';
+
+/**
+ * A browser-safe form of `BaselineOverrideIn`. Cypress specs run in the browser and cannot import
+ * runtime values such as the `Browser` and `OperatingSystem` enums, so those fields accept their
+ * string values instead.
+ */
+export type VisualBaselineOverride = Omit<
+  BaselineOverrideIn,
+  'browser' | 'operatingSystem'
+> & {
+  browser?: `${Browser}` | null;
+  operatingSystem?: `${OperatingSystem}` | null;
+};
 
 export interface SauceConfig {
   buildName: string;
@@ -21,6 +37,7 @@ export interface SauceConfig {
   diffingMethodSensitivity?:
     | DiffingMethodSensitivity
     | `${DiffingMethodSensitivity}`;
+  baselineOverride?: VisualBaselineOverride;
 }
 
 export interface HasSauceConfig {
@@ -56,6 +73,7 @@ export type ScreenshotMetadata = {
   diffingMethodSensitivity?:
     | DiffingMethodSensitivity
     | `${DiffingMethodSensitivity}`;
+  baselineOverride?: VisualBaselineOverride;
   viewport: SauceVisualViewport | undefined;
   devicePixelRatio: number;
   dom?: string;
@@ -89,6 +107,12 @@ export type VisualCheckOptions = {
    * diffing methods. Controls the various tolerance options all at once.
    */
   diffingMethodSensitivity?: `${DiffingMethodSensitivity}`;
+  /**
+   * One or more values to use as an override when locating the baseline for this snapshot. Omit a
+   * key to leave it alone; set a key to `null` to explicitly clear it. Used, among other things, to
+   * compare a snapshot against a baseline imported from Figma.
+   */
+  baselineOverride?: VisualBaselineOverride;
   /**
    * Specify what kind of checks needs to be done in a specific region
    */

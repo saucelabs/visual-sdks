@@ -217,6 +217,7 @@ const sauceVisualCheckCommand = (
           diffingOptions: options?.diffingOptions,
           diffingMethodTolerance: options?.diffingMethodTolerance,
           diffingMethodSensitivity: options?.diffingMethodSensitivity,
+          baselineOverride: options?.baselineOverride,
           devicePixelRatio: win.devicePixelRatio,
           viewport: realViewport,
           dom: getDom() ?? undefined,
