@@ -1,4 +1,4 @@
-from dataclasses import asdict, replace as dataclass_replace
+from dataclasses import asdict
 from datetime import datetime, timedelta
 from os import environ
 from time import sleep
@@ -11,6 +11,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 from saucelabs_visual.regions import Region
+from saucelabs_visual.utils import format_full_page_config
 from saucelabs_visual.typing import IgnoreRegion, FullPageConfig, DiffingMethod, BuildStatus, \
     DiffingOptions, IgnoreElementRegion, BuildMode, BaselineOverride, DiffingMethodSensitivity, \
     DiffingMethodTolerance
@@ -340,11 +341,7 @@ class SauceLabsVisual:
                 for group in ignore_elements
                 for element in group.as_dict_array()
             ] if ignore_elements is not None else None,
-            "fullPageConfig": {
-                **asdict(dataclass_replace(full_page_config, scroll_element=None)),
-                **({"scrollElement": full_page_config.scroll_element.id}
-                   if full_page_config.scroll_element is not None else {}),
-            } if full_page_config is not None else None,
+            "fullPageConfig": format_full_page_config(full_page_config),
             "diffingMethod": (diffing_method or DiffingMethod.BALANCED).value,
             "diffingOptions": diffing_options,
             "diffingMethodSensitivity": diffing_method_sensitivity.value

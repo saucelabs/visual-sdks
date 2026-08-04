@@ -1,5 +1,7 @@
-from saucelabs_visual.typing import IgnoreRegion
-from saucelabs_visual.utils import is_valid_ignore_region
+from unittest.mock import Mock
+
+from saucelabs_visual.typing import FullPageConfig, IgnoreRegion
+from saucelabs_visual.utils import format_full_page_config, is_valid_ignore_region
 
 
 class TestIsValidIgnoreRegion:
@@ -45,3 +47,25 @@ class TestIsValidIgnoreRegion:
             width=0,
         ))
         assert result is False
+
+
+class TestFormatFullPageConfig:
+    def test_none_config(self):
+        assert format_full_page_config(None) is None
+
+    def test_config_without_scroll_element(self):
+        result = format_full_page_config(FullPageConfig(scrollLimit=5))
+        assert result['scrollLimit'] == 5
+        assert 'scroll_element' not in result
+        assert 'scrollElement' not in result
+
+    def test_config_with_scroll_element(self):
+        element = Mock()
+        element.id = '1B000000-0000-0000-5803-000000000000'
+        result = format_full_page_config(FullPageConfig(
+            scrollLimit=10,
+            scroll_element=element,
+        ))
+        assert result['scrollElement'] == '1B000000-0000-0000-5803-000000000000'
+        assert result['scrollLimit'] == 10
+        assert 'scroll_element' not in result

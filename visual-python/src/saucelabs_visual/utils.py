@@ -1,6 +1,10 @@
+from dataclasses import asdict, replace as dataclass_replace
+from typing import Union
+
 from tabulate import tabulate
 
-from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus, DiffingOptions
+from saucelabs_visual.typing import IgnoreRegion, BuildMode, BuildStatus, DiffingOptions, \
+    FullPageConfig
 
 
 def ignore_region_from_dict(
@@ -44,6 +48,21 @@ def is_valid_ignore_region(region: IgnoreRegion) -> bool:
             region.y >= 0
     )
 
+
+def format_full_page_config(config: Union[FullPageConfig, None]) -> Union[dict, None]:
+    """
+    Formats a FullPageConfig instance into a dict payload accepted by the FullPageConfigIn
+    GraphQL type, mapping the scroll_element WebElement to its ID under 'scrollElement'.
+    :param config:
+    :return:
+    """
+    if config is None:
+        return None
+    payload = asdict(dataclass_replace(config, scroll_element=None))
+    payload.pop('scroll_element', None)
+    if config.scroll_element is not None:
+        payload['scrollElement'] = config.scroll_element.id
+    return payload
 
 def create_table_from_build_status(result: dict):
     status = result.get('result')
