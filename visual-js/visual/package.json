@@ -41,15 +41,15 @@
     "test": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --collect-coverage"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.14",
+    "@apollo/client": "^3.14.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "arktype": "^1.0.29-alpha",
-    "axios": "^1.7.4",
+    "axios": "^1.19.0",
     "chalk": "^4.0.0",
-    "cli-table3": "^0.6.3",
+    "cli-table3": "^0.6.5",
     "commander": "^12.0.0",
-    "exponential-backoff": "^3.1.1",
-    "proxy-agent": "^6.3.1"
+    "exponential-backoff": "^3.1.3",
+    "proxy-agent": "^6.5.0"
   },
   "tsup": {
     "entry": [
