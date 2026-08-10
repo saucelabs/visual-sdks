@@ -6,7 +6,7 @@ import { getSauceCredentials } from '../helpers/index.ts';
 // Get the Sauce Labs credentials
 const { sauceUsername, sauceAccessKey } = await getSauceCredentials();
 
-export const config: Options.Testrunner = {
+export const config: WebdriverIO.Config = {
   ...sharedConfig,
   //
   // =================
