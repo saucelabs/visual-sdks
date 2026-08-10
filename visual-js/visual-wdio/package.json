@@ -27,14 +27,14 @@
   },
   "dependencies": {
     "@saucelabs/visual": "^0.16.0",
-    "@wdio/globals": "8.10.5",
-    "@wdio/logger": "8.6.6",
-    "@wdio/types": "8.10.4",
-    "@wdio/utils": "8.10.4",
+    "@wdio/globals": "^8.46.0",
+    "@wdio/logger": "^8.38.0",
+    "@wdio/types": "^8.41.0",
+    "@wdio/utils": "^8.46.0",
     "arktype": "^1.0.29-alpha",
     "chalk": "^5.3.0",
     "exponential-backoff": "^3.1.1",
-    "webdriverio": "8.10.5"
+    "webdriverio": "^8.46.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
