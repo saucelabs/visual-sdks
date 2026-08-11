@@ -13,22 +13,19 @@ import type {
 export type WdioElement = WebdriverIO.Element;
 
 /**
- * Anything that resolves to a single element: an element, a promise of one, or
- * the chainable that `$()` returns in WebdriverIO 9.
+ * A single element, or the chainable that `$()` returns in WebdriverIO 9. Both
+ * answer to `elementId`: a resolved element reports the id itself, a chainable
+ * reports a promise of it. A promise of an element is not accepted — WebdriverIO
+ * 9 no longer converts a chainable to an element by awaiting it, so anything
+ * holding a promise (`getElement()`, an async page object) awaits it first.
  */
-export type WdioElementLike =
-  | WdioElement
-  | Promise<WdioElement>
-  | ChainablePromiseElement;
+export type WdioElementLike = WdioElement | ChainablePromiseElement;
 
 /**
- * Anything that resolves to a list of elements: elements, a promise of them, or
- * the chainable that `$$()` returns in WebdriverIO 9.
+ * A list of elements, or the chainable that `$$()` returns in WebdriverIO 9.
+ * As with {@link WdioElementLike}, a promise of a list is awaited by the caller.
  */
-export type WdioElementsLike =
-  | WdioElement[]
-  | Promise<WdioElement[]>
-  | ChainablePromiseArray;
+export type WdioElementsLike = WdioElement[] | ChainablePromiseArray;
 
 export type FullPageScreenshotWdioOptions =
   FullPageScreenshotOptions<WdioElementLike>;
@@ -60,46 +57,3 @@ export type ResolvedIgnorable =
   | WdioElement[]
   | RegionIn
   | IgnoreSelectorIn;
-
-/**
- * A chainable reports `elementId` as a promise of the id, where a resolved
- * element reports the id itself. Nothing else in either shape is a reliable
- * discriminator: the chainable proxy answers to every symbol and to both
- * `getElement` and `getElements`, so a `$()` chainable and a `$$()` one look
- * identical from the outside.
- */
-const isChainableElement = (value: unknown): value is ChainablePromiseElement =>
-  !isWdioElement(value) &&
-  typeof (value as ChainablePromiseElement | undefined)?.getElement ===
-    'function';
-
-/**
- * WebdriverIO 9 dropped `then` from the types of the chainables that `$()` and
- * `$$()` return. They do still resolve when awaited, but the type system no
- * longer says so, so unwrapping one that way costs a cast and leans on an
- * implementation detail. Reading `elementId` off the chainable avoids both: it
- * is declared as `Promise<string>`, and the single `await` below covers that,
- * a plain element, and a promise of one without asserting anything.
- */
-export function resolveElementId(element: WdioElementLike): Promise<string>;
-export function resolveElementId(
-  element: WdioElementLike | undefined,
-): Promise<string | undefined>;
-export async function resolveElementId(
-  element: WdioElementLike | undefined,
-): Promise<string | undefined> {
-  if (!element) return undefined;
-  if (isChainableElement(element)) return element.elementId;
-  return (await element).elementId;
-}
-
-/**
- * Unlike the id lookups above, this has to produce whole elements — callers
- * read `selector` off the result too — and it takes single elements and lists
- * alike, which the chainables cannot be told apart to unwrap individually. So
- * this one does await the chainable, which resolves it at runtime, and states
- * the resulting type that TypeScript cannot infer.
- */
-export const awaitIgnorable = async (
-  ignorable: Ignorable | Promise<RegionIn>,
-): Promise<ResolvedIgnorable> => (await ignorable) as ResolvedIgnorable;

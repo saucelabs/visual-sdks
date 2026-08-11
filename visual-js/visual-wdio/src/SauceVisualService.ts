@@ -32,8 +32,7 @@ import {
   FullPageScreenshotWdioOptions,
   Ignorable,
   isWdioElement,
-  awaitIgnorable,
-  resolveElementId,
+  ResolvedIgnorable,
   WdioElementLike,
 } from './guarded-types.js';
 
@@ -403,7 +402,12 @@ export default class SauceVisualService implements Services.ServiceInstance {
       ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
         if (isIgnoreRegion(element)) return [element];
 
-        const awaited = await awaitIgnorable(element);
+        // The mapping below reads whole elements, `selector` included, and this
+        // takes single elements and lists alike — which the `$()` and `$$()`
+        // chainables cannot be told apart to unwrap with `getElement()` or
+        // `getElements()` individually. So it awaits, which resolves either
+        // chainable, and states the type WebdriverIO 9 no longer infers.
+        const awaited = (await element) as ResolvedIgnorable;
         if (isIgnoreRegion(awaited)) return [awaited];
         if (isIgnoreSelectorType(awaited)) return [awaited];
 
@@ -427,7 +431,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const fullPageConfig = await getFullPageConfig<WdioElementLike>(
         this.fullPage,
         options.fullPage,
-        (el) => resolveElementId(el),
+        (el) => el.elementId,
       );
 
       const clipSelector = options.clipSelector ?? this.clipSelector;
@@ -438,8 +442,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const result = await api.createSnapshotFromWebDriver({
         captureDom: options.captureDom ?? this.captureDom,
         clipElement:
-          (await resolveElementId(options.clipElement)) ??
-          (await resolveElementId(this.clipElement)) ??
+          (await options.clipElement?.elementId) ??
+          (await this.clipElement?.elementId) ??
           clipElement,
         sessionId,
         jobId,
