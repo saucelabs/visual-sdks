@@ -31,8 +31,6 @@ import chalk from 'chalk';
 import {
   FullPageScreenshotWdioOptions,
   Ignorable,
-  isWdioElement,
-  ResolvedIgnorable,
   WdioElementLike,
 } from './guarded-types.js';
 
@@ -402,18 +400,22 @@ export default class SauceVisualService implements Services.ServiceInstance {
       ): Promise<Array<RegionIn | ElementIn | IgnoreSelectorIn>> => {
         if (isIgnoreRegion(element)) return [element];
 
-        // The mapping below reads whole elements, `selector` included, and this
-        // takes single elements and lists alike — which the `$()` and `$$()`
-        // chainables cannot be told apart to unwrap with `getElement()` or
-        // `getElements()` individually. So it awaits, which resolves either
-        // chainable, and states the type WebdriverIO 9 no longer infers.
-        const awaited = (await element) as ResolvedIgnorable;
+        const awaited = await element;
         if (isIgnoreRegion(awaited)) return [awaited];
         if (isIgnoreSelectorType(awaited)) return [awaited];
 
-        const wdioElements = isWdioElement(awaited) ? [awaited] : awaited;
+        if ('getElement' in awaited) {
+          return [
+            {
+              id: await awaited.elementId,
+              name: awaited.selector.toString(),
+            },
+          ];
+        }
 
-        return wdioElements.map((e) => ({
+        return (
+          'getElements' in awaited ? await awaited.getElements() : awaited
+        ).map((e) => ({
           id: e.elementId,
           name: e.selector.toString(),
         }));

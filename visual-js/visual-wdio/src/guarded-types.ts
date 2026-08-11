@@ -48,12 +48,3 @@ export type Ignorable =
   | WdioElementsLike
   | RegionIn
   | IgnoreSelectorIn;
-
-/**
- * An {@link Ignorable} once it has been awaited.
- */
-export type ResolvedIgnorable =
-  | WdioElement
-  | WdioElement[]
-  | RegionIn
-  | IgnoreSelectorIn;
