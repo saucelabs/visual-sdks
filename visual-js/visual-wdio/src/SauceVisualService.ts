@@ -1,4 +1,4 @@
-import type { Capabilities, Frameworks, Options, Services } from '@wdio/types';
+import type { Frameworks, Options, Services } from '@wdio/types';
 import { SevereServiceError } from 'webdriverio';
 import {
   BuildMode,
@@ -33,7 +33,6 @@ import {
   Ignorable,
   isWdioElement,
   awaitIgnorable,
-  resolveElement,
   resolveElementId,
   WdioElementLike,
 } from './guarded-types.js';
@@ -199,7 +198,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
 
   constructor(
     public options: SauceVisualServiceOptions,
-    _capabilities: Capabilities.RequestedStandaloneCapabilities,
+    _capabilities: unknown,
     public config: Options.Testrunner,
   ) {
     this.diffingMethod = options.diffingMethod;
@@ -224,7 +223,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
 
   async onPrepare(
     _config: Options.Testrunner,
-    _capabilities: Capabilities.TestrunnerCapabilities,
+    _capabilities: unknown,
   ): Promise<void> {
     log.info('Sauce Visual service started');
     const build = await this.getExternalBuild(this.apiClient);
@@ -274,8 +273,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
    * this browser object is passed in here for the first time
    */
   async before(
-    capabilities: Capabilities.RequestedStandaloneCapabilities,
-    specs: string[],
+    _capabilities: unknown,
+    _specs: string[],
     browser: WebdriverIO.Browser,
   ): Promise<void> {
     const buildId = process.env[VISUAL_BUILD_ID_KEY];
@@ -428,7 +427,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const fullPageConfig = await getFullPageConfig<WdioElementLike>(
         this.fullPage,
         options.fullPage,
-        async (el) => (await resolveElement(el)).elementId,
+        (el) => resolveElementId(el),
       );
 
       const clipSelector = options.clipSelector ?? this.clipSelector;
