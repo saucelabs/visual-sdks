@@ -28,7 +28,6 @@ const resolveForTest = async (itemPromise: string | Promise<RegionIn>) => {
   return [{ id: item }];
 };
 
-jest.mock('@wdio/logger', () => () => ({ default: jest.fn() }));
 jest.mock('chalk', () => ({ default: jest.fn() }));
 
 describe('utils', () => {

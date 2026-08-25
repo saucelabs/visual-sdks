@@ -1,10 +1,5 @@
-import type { Services } from '@wdio/types';
+import type { Frameworks, Options, Services } from '@wdio/types';
 import { SevereServiceError } from 'webdriverio';
-import type { Testrunner } from '@wdio/types/build/Options';
-import type {
-  RemoteCapabilities,
-  RemoteCapability,
-} from '@wdio/types/build/Capabilities';
 import {
   BuildMode,
   DiffingMethod,
@@ -36,10 +31,8 @@ import chalk from 'chalk';
 import {
   FullPageScreenshotWdioOptions,
   Ignorable,
-  isWdioElement,
-  WdioElement,
+  WdioElementLike,
 } from './guarded-types.js';
-import type { Test } from '@wdio/types/build/Frameworks';
 
 const clientVersion = 'PKG_VERSION';
 
@@ -101,7 +94,7 @@ export type SauceVisualServiceOptions = {
   diffingMethodTolerance?: DiffingMethodToleranceIn;
   captureDom?: boolean;
   clipSelector?: string;
-  clipElement?: WdioElement;
+  clipElement?: WdioElementLike;
   region?: SauceRegion;
   fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
@@ -138,7 +131,7 @@ export type CheckOptions = {
   /**
    * A WdioElement that we should crop the screenshot to. Takes priority over a clipSelector
    */
-  clipElement?: WdioElement;
+  clipElement?: WdioElementLike;
   /**
    * Whether we should take a snapshot of the DOM to compare with as a part of the diffing process.
    */
@@ -194,7 +187,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   diffingMethodTolerance: DiffingMethodToleranceIn | undefined | null;
   captureDom: boolean | undefined;
   clipSelector: string | undefined;
-  clipElement: WdioElement | undefined;
+  clipElement: WdioElementLike | undefined;
   fullPage?: FullPageScreenshotWdioOptions;
   apiClient: VisualApi;
   baselineOverride?: BaselineOverrideIn;
@@ -202,8 +195,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
 
   constructor(
     public options: SauceVisualServiceOptions,
-    _capabilities: RemoteCapability,
-    public config: Testrunner,
+    _capabilities: unknown,
+    public config: Options.Testrunner,
   ) {
     this.diffingMethod = options.diffingMethod;
     this.diffingMethodSensitivity = options.diffingMethodSensitivity;
@@ -226,8 +219,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
   }
 
   async onPrepare(
-    _config: Testrunner,
-    _capabilities: RemoteCapabilities,
+    _config: Options.Testrunner,
+    _capabilities: unknown,
   ): Promise<void> {
     log.info('Sauce Visual service started');
     const build = await this.getExternalBuild(this.apiClient);
@@ -263,7 +256,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
 
   async onComplete(
     _exitCode: number,
-    _config: Omit<Testrunner, 'capabilities'>,
+    _config: Omit<Options.Testrunner, 'capabilities'>,
   ) {
     const buildId = process.env[VISUAL_BUILD_ID_KEY] || '';
 
@@ -277,8 +270,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
    * this browser object is passed in here for the first time
    */
   async before(
-    capabilities: RemoteCapability,
-    specs: string[],
+    _capabilities: unknown,
+    _specs: string[],
     browser: WebdriverIO.Browser,
   ): Promise<void> {
     const buildId = process.env[VISUAL_BUILD_ID_KEY];
@@ -324,7 +317,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
     });
   }
 
-  private getTitleAndParent(test: Test): {
+  private getTitleAndParent(test: Frameworks.Test): {
     title: string | undefined;
     parent: string | undefined;
   } {
@@ -361,7 +354,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
   }
 
   // Mocha/Jasmine Only
-  beforeTest(test: Test, _context: any): void {
+  beforeTest(test: Frameworks.Test, _context: any): void {
     uploadedDiffIds = [];
     this.test = this.getTitleAndParent(test);
   }
@@ -411,9 +404,18 @@ export default class SauceVisualService implements Services.ServiceInstance {
         if (isIgnoreRegion(awaited)) return [awaited];
         if (isIgnoreSelectorType(awaited)) return [awaited];
 
-        const wdioElements = isWdioElement(awaited) ? [awaited] : awaited;
+        if ('getElement' in awaited) {
+          return [
+            {
+              id: await awaited.elementId,
+              name: awaited.selector.toString(),
+            },
+          ];
+        }
 
-        return wdioElements.map((e) => ({
+        return (
+          'getElements' in awaited ? await awaited.getElements() : awaited
+        ).map((e) => ({
           id: e.elementId,
           name: e.selector.toString(),
         }));
@@ -428,7 +430,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const sessionId = browser.sessionId;
       const jobId = (browser.capabilities as any)['jobUuid'] || sessionId;
 
-      const fullPageConfig = await getFullPageConfig<WdioElement>(
+      const fullPageConfig = await getFullPageConfig<WdioElementLike>(
         this.fullPage,
         options.fullPage,
         (el) => el.elementId,
@@ -442,8 +444,8 @@ export default class SauceVisualService implements Services.ServiceInstance {
       const result = await api.createSnapshotFromWebDriver({
         captureDom: options.captureDom ?? this.captureDom,
         clipElement:
-          options.clipElement?.elementId ??
-          this.clipElement?.elementId ??
+          (await options.clipElement?.elementId) ??
+          (await this.clipElement?.elementId) ??
           clipElement,
         sessionId,
         jobId,
