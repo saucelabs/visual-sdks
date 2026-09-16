@@ -8,7 +8,8 @@
     "visual-nightwatch",
     "visual-playwright",
     "visual-snapshots",
-    "visual-storybook"
+    "visual-storybook",
+    "visual-storybook-variants"
   ],
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
