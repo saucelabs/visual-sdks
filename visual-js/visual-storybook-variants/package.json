@@ -1,0 +1,103 @@
+{
+  "name": "@saucelabs/storybook-variants",
+  "version": "0.2.0",
+  "description": "Display multiple variations of a component automatically in a grid.",
+  "keywords": [
+    "storybook-addons",
+    "storybook",
+    "variants",
+    "visual-testing"
+  ],
+  "license": "MIT",
+  "author": "SauceLabs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./dist/index.js",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./manager": "./dist/manager.mjs",
+    "./preview": "./dist/preview.mjs",
+    "./package.json": "./package.json"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "*.js",
+    "*.d.ts"
+  ],
+  "scripts": {
+    "build": "tsup-node",
+    "build:watch": "npm run build -- --watch",
+    "start": "run-p build:watch 'storybook --quiet'",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.27.1",
+    "@storybook/addon-essentials": "7.6.6",
+    "@storybook/addon-interactions": "7.6.6",
+    "@storybook/addon-links": "7.6.6",
+    "@storybook/blocks": "7.6.6",
+    "@storybook/components": "7.6.6",
+    "@storybook/core-events": "7.6.6",
+    "@storybook/manager": "7.6.6",
+    "@storybook/manager-api": "7.6.6",
+    "@storybook/preview": "7.6.6",
+    "@storybook/preview-api": "7.6.6",
+    "@storybook/react": "7.6.6",
+    "@storybook/react-vite": "7.6.6",
+    "@storybook/testing-library": "^0.2.2",
+    "@storybook/theming": "7.6.6",
+    "@storybook/types": "7.6.6",
+    "@types/lodash": "4.14.202",
+    "@types/node": "^18.15.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "storybook": "7.6.6",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "bundler": {
+    "exportEntries": [
+      "src/index.ts"
+    ],
+    "managerEntries": [
+      "src/manager.ts"
+    ],
+    "previewEntries": [
+      "src/preview.ts"
+    ]
+  },
+  "storybook": {
+    "displayName": "Storybook Variants",
+    "supportedFrameworks": [
+      "react"
+    ],
+    "icon": "https://user-images.githubusercontent.com/321738/63501763-88dbf600-c4cc-11e9-96cd-94adadc2fd72.png"
+  },
+  "dependencies": {
+    "cartesian": "^1.0.1",
+    "lodash": "^4.17.0"
+  }
+}
