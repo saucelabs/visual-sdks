@@ -36,6 +36,7 @@ FILE_MAP=(
     ["@saucelabs/wdio-sauce-visual-service"]="visual-wdio/src/SauceVisualService.ts"
     ["@saucelabs/visual-snapshots"]="visual-snapshots/src/version.ts"
     ["@saucelabs/visual-playwright"]="visual-playwright/src/api.ts"
+    ["@saucelabs/storybook-variants"]="visual-storybook-variants/src/version.ts"
     # Add more mappings as needed
 )
 
