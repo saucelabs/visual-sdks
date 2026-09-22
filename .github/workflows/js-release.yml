@@ -15,11 +15,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - name: Setup Node 24.x
+        uses: actions/setup-node@v5
         with:
-          node-version: 20.x
+          node-version: 24.x
           registry-url: https://registry.npmjs.org
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}

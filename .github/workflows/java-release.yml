@@ -20,10 +20,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Maven Central Repository
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -47,7 +47,7 @@ jobs:
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
       - name: Sign and upload to Maven Central
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
@@ -73,7 +73,7 @@ jobs:
           echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
 
       - name: Github Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           fail_on_unmatched_files: true
           tag_name: ${{ steps.push_to_git.outputs.tag_name }}
