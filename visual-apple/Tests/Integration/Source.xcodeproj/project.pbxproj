@@ -1,0 +1,1058 @@
+// !$*UTF8*$!
+{
+	"archiveVersion" = 1;
+	"classes" = {
+	};
+	"objectVersion" = 56;
+	"objects" = {
+		2E1549FC2EA60C1F9AF14D20 = {
+			"isa" = "PBXGroup";
+			"children" = (
+				B9B477F03CDE84C91FBA59DD,
+				B376B9ED2EA4B69511281B5A,
+				AEE393CDE4B3FD9172EF5E0C,
+				5C9EC0D05EA5A0393154D0FB,
+				3967EEDDB433D751198274E3,
+			);
+			"sourceTree" = "<group>";
+		};
+		3967EEDDB433D751198274E3 = {
+			"isa" = "PBXGroup";
+			"children" = (
+				2245C1300354BF39AF141C0E,
+				096B633A5EAAB4B6D8B5C965,
+				F27F64D746A9862C8F2D5026,
+				31EE07973F35DFB39A6070D5,
+				56B519735816EF21907521D8,
+				6F5EC0D0EBA096C308556153,
+			);
+			"name" = "Products";
+			"sourceTree" = "<group>";
+		};
+		78309DD4D909BDBDE186B32A = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"GCC_OPTIMIZATION_LEVEL" = "0";
+				"ONLY_ACTIVE_ARCH" = "YES";
+				"ENABLE_TESTABILITY" = "YES";
+			};
+			"baseConfigurationReference" = 907D30109BE37F3EC75931FE;
+		};
+		B61118AEE79FA21A75462730 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"GCC_OPTIMIZATION_LEVEL" = "s";
+				"ONLY_ACTIVE_ARCH" = "NO";
+				"ENABLE_TESTABILITY" = "NO";
+			};
+			"baseConfigurationReference" = 907D30109BE37F3EC75931FE;
+		};
+		F35553D68E0A7A1E0C40704B = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				78309DD4D909BDBDE186B32A,
+				B61118AEE79FA21A75462730,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		23F90570BF107FB6F67C317E = {
+			"isa" = "PBXProject";
+			"attributes" = {
+				"LastUpgradeCheck" = "1520";
+			};
+			"buildConfigurationList" = F35553D68E0A7A1E0C40704B;
+			"compatibilityVersion" = "Xcode 14.0";
+			"developmentRegion" = "en";
+			"hasScannedForEncodings" = 0;
+			"knownRegions" = (
+				"en",
+				"Base",
+			);
+			"mainGroup" = 2E1549FC2EA60C1F9AF14D20;
+			"productRefGroup" = 3967EEDDB433D751198274E3;
+			"projectDirPath" = "";
+			"projectRoot" = "";
+			"targets" = (
+				A40B503899F833405C1C1900,
+				8AD49022A13DBC26226ED2DA,
+				BB12CE5B83D685E7C447DBAD,
+				077A6F9D8B950C67D0747C01,
+				4F59D18F1BB22DC8C54024D2,
+				CC2ABAEF782D85CE1C616D16,
+			);
+			"packageReferences" = (
+				AD0B563379E27AA27645948B,
+			);
+		};
+		AD0B563379E27AA27645948B = {
+			"isa" = "XCLocalSwiftPackageReference";
+			"relativePath" = "../..";
+		};
+		2245C1300354BF39AF141C0E = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = 0;
+			"path" = "SmokeHost-iOS.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		632B9CF41168BF9D10D79EA6 = {
+			"isa" = "PBXFileReference";
+			"path" = "Host/SmokeHost.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		F7FEAE2711F6EBC618E720C8 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 632B9CF41168BF9D10D79EA6;
+		};
+		D2E67AFB1AB116C5C9A428B0 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				F7FEAE2711F6EBC618E720C8,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		D66C941E0A9B20D209D10F4A = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				2481FAA4CF7D7883649A51DE,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		C166800FCAA56BD57FCA74D7 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "SmokeHost-iOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-ios";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		0FBFC4D3C0D6C89F7B130307 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "SmokeHost-iOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-ios";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		24B19C773B0863B655D065CC = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				C166800FCAA56BD57FCA74D7,
+				0FBFC4D3C0D6C89F7B130307,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		A40B503899F833405C1C1900 = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 24B19C773B0863B655D065CC;
+			"buildPhases" = (
+				D2E67AFB1AB116C5C9A428B0,
+				D66C941E0A9B20D209D10F4A,
+				BA239008E403691BE74CFDA5,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SmokeHost-iOS";
+			"productName" = "SmokeHost-iOS";
+			"productReference" = 2245C1300354BF39AF141C0E;
+			"productType" = "com.apple.product-type.application";
+			"packageProductDependencies" = (
+				CE807E64C71F9C99102E8B76,
+			);
+		};
+		096B633A5EAAB4B6D8B5C965 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = 0;
+			"path" = "ConsumerTests-iOS.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		C1A19EB1F358E62B0C0186DE = {
+			"isa" = "PBXFileReference";
+			"path" = "../SauceVisualTests/ObjectiveCBridgeTests.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		355E776907A6ACE2460D3D18 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = C1A19EB1F358E62B0C0186DE;
+		};
+		37FBAFD385F324197074C5CA = {
+			"isa" = "PBXFileReference";
+			"path" = "../SauceVisualTests/VisualSessionTests.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		4A4F3F259A320A46DD7966EF = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 37FBAFD385F324197074C5CA;
+		};
+		D9F525B648F2101F35E4B5A6 = {
+			"isa" = "PBXFileReference";
+			"path" = "ExampleTests.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		69E4853945ECFF3567A42CDD = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D9F525B648F2101F35E4B5A6;
+		};
+		BD5BD343EA15203AA6F1AFFA = {
+			"isa" = "PBXFileReference";
+			"path" = "ObjectiveCConsumerTests.m";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.c.objc";
+		};
+		32F0D8E11BF5DCA7E13AD788 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BD5BD343EA15203AA6F1AFFA;
+		};
+		180E8B4592932C290D7428A2 = {
+			"isa" = "PBXFileReference";
+			"path" = "../../Examples/Swift/Example.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		CC64B6433026F917A0D14FE9 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 180E8B4592932C290D7428A2;
+		};
+		422BFFAA9F63A40593892C84 = {
+			"isa" = "PBXFileReference";
+			"path" = "../../Examples/ObjectiveC/Example.m";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.c.objc";
+		};
+		EB1834377629203C179E868F = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 422BFFAA9F63A40593892C84;
+		};
+		C04CCFD1C17E9F8A2771E992 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				355E776907A6ACE2460D3D18,
+				4A4F3F259A320A46DD7966EF,
+				69E4853945ECFF3567A42CDD,
+				32F0D8E11BF5DCA7E13AD788,
+				CC64B6433026F917A0D14FE9,
+				EB1834377629203C179E868F,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		8357FE41CA1CDABDC54D6A8E = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				A50856E5051E607DA1DCEDDB,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		D30859CBD15757AEDF651E68 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "ConsumerTests-iOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-ios";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-iOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		8704057D94D69E649D996055 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "ConsumerTests-iOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-ios";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-iOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		6839DD8AD776D05979A80E02 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				D30859CBD15757AEDF651E68,
+				8704057D94D69E649D996055,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		8AD49022A13DBC26226ED2DA = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 6839DD8AD776D05979A80E02;
+			"buildPhases" = (
+				C04CCFD1C17E9F8A2771E992,
+				8357FE41CA1CDABDC54D6A8E,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+				C082EE22232381CE1D3BB3F7,
+			);
+			"name" = "ConsumerTests-iOS";
+			"productName" = "ConsumerTests-iOS";
+			"productReference" = 096B633A5EAAB4B6D8B5C965;
+			"productType" = "com.apple.product-type.bundle.unit-test";
+			"packageProductDependencies" = (
+				A0C2B24EEF97E037DA1F9E37,
+			);
+		};
+		10DF035CA7C5C6D8D2E1AD81 = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = 23F90570BF107FB6F67C317E;
+			"proxyType" = 1;
+			"remoteGlobalIDString" = A40B503899F833405C1C1900;
+			"remoteInfo" = "SmokeHost-iOS";
+		};
+		C082EE22232381CE1D3BB3F7 = {
+			"isa" = "PBXTargetDependency";
+			"target" = A40B503899F833405C1C1900;
+			"targetProxy" = 10DF035CA7C5C6D8D2E1AD81;
+		};
+		CE807E64C71F9C99102E8B76 = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		2481FAA4CF7D7883649A51DE = {
+			"isa" = "PBXBuildFile";
+			"productRef" = CE807E64C71F9C99102E8B76;
+		};
+		8DC9A8CD9542AD15A0B0D541 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = CE807E64C71F9C99102E8B76;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"CodeSignOnCopy",
+					"RemoveHeadersOnCopy",
+				);
+			};
+		};
+		BA239008E403691BE74CFDA5 = {
+			"isa" = "PBXCopyFilesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				8DC9A8CD9542AD15A0B0D541,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+			"dstPath" = "";
+			"dstSubfolderSpec" = 10;
+			"name" = "Embed Frameworks";
+		};
+		A0C2B24EEF97E037DA1F9E37 = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		A50856E5051E607DA1DCEDDB = {
+			"isa" = "PBXBuildFile";
+			"productRef" = A0C2B24EEF97E037DA1F9E37;
+		};
+		F27F64D746A9862C8F2D5026 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = 0;
+			"path" = "SmokeHost-tvOS.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		505BA25CE69432E35F143A37 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 632B9CF41168BF9D10D79EA6;
+		};
+		2329A46145FDDB9EFB89DA60 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				505BA25CE69432E35F143A37,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		4BD4456C34160522C5D05426 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				B7A02950B507C52301736AB0,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		CB9A358B17ACB124CE1C0226 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "SmokeHost-tvOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-tvos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		01E85A87671AEB5CD153E127 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "SmokeHost-tvOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-tvos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		65D2F46A92E1178C654B623F = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				CB9A358B17ACB124CE1C0226,
+				01E85A87671AEB5CD153E127,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		BB12CE5B83D685E7C447DBAD = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 65D2F46A92E1178C654B623F;
+			"buildPhases" = (
+				2329A46145FDDB9EFB89DA60,
+				4BD4456C34160522C5D05426,
+				A16A2F47FC5E67BB52B6297E,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SmokeHost-tvOS";
+			"productName" = "SmokeHost-tvOS";
+			"productReference" = F27F64D746A9862C8F2D5026;
+			"productType" = "com.apple.product-type.application";
+			"packageProductDependencies" = (
+				CDC27A8B92CA636C1E9CB8AE,
+			);
+		};
+		31EE07973F35DFB39A6070D5 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = 0;
+			"path" = "ConsumerTests-tvOS.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		739B92695A1121CFFBAF60DC = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = C1A19EB1F358E62B0C0186DE;
+		};
+		01C4D03543E92C93AFCBCA10 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 37FBAFD385F324197074C5CA;
+		};
+		DEC42BBE6881D294C9161410 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D9F525B648F2101F35E4B5A6;
+		};
+		1FF094180C0E6152E2100362 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BD5BD343EA15203AA6F1AFFA;
+		};
+		1B37065E90AF48C937D279A3 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 180E8B4592932C290D7428A2;
+		};
+		319E8F69759E7915D7E1776A = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 422BFFAA9F63A40593892C84;
+		};
+		2C8AF898E470FDD856D7A972 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				739B92695A1121CFFBAF60DC,
+				01C4D03543E92C93AFCBCA10,
+				DEC42BBE6881D294C9161410,
+				1FF094180C0E6152E2100362,
+				1B37065E90AF48C937D279A3,
+				319E8F69759E7915D7E1776A,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		0A0015BC29DA344CF10DE8F6 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				A9E08ACBCFE5D3387B4D9F14,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		D481C5D9887C723D036224A1 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "ConsumerTests-tvOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-tvos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		DF6C6254269F2FE90A61B37E = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "ConsumerTests-tvOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-tvos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		678F5CE3B8F87870F7CB9885 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				D481C5D9887C723D036224A1,
+				DF6C6254269F2FE90A61B37E,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		077A6F9D8B950C67D0747C01 = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 678F5CE3B8F87870F7CB9885;
+			"buildPhases" = (
+				2C8AF898E470FDD856D7A972,
+				0A0015BC29DA344CF10DE8F6,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+				F35891C95FB3E6CB71459FD3,
+			);
+			"name" = "ConsumerTests-tvOS";
+			"productName" = "ConsumerTests-tvOS";
+			"productReference" = 31EE07973F35DFB39A6070D5;
+			"productType" = "com.apple.product-type.bundle.unit-test";
+			"packageProductDependencies" = (
+				9B899CE3FC9AA6DA7A36E0AE,
+			);
+		};
+		3B2540B78ADB29ACDC768227 = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = 23F90570BF107FB6F67C317E;
+			"proxyType" = 1;
+			"remoteGlobalIDString" = BB12CE5B83D685E7C447DBAD;
+			"remoteInfo" = "SmokeHost-tvOS";
+		};
+		F35891C95FB3E6CB71459FD3 = {
+			"isa" = "PBXTargetDependency";
+			"target" = BB12CE5B83D685E7C447DBAD;
+			"targetProxy" = 3B2540B78ADB29ACDC768227;
+		};
+		CDC27A8B92CA636C1E9CB8AE = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		B7A02950B507C52301736AB0 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = CDC27A8B92CA636C1E9CB8AE;
+		};
+		A4DB479A9CE6B817DEF94294 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = CDC27A8B92CA636C1E9CB8AE;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"CodeSignOnCopy",
+					"RemoveHeadersOnCopy",
+				);
+			};
+		};
+		A16A2F47FC5E67BB52B6297E = {
+			"isa" = "PBXCopyFilesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				A4DB479A9CE6B817DEF94294,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+			"dstPath" = "";
+			"dstSubfolderSpec" = 10;
+			"name" = "Embed Frameworks";
+		};
+		9B899CE3FC9AA6DA7A36E0AE = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		A9E08ACBCFE5D3387B4D9F14 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = 9B899CE3FC9AA6DA7A36E0AE;
+		};
+		56B519735816EF21907521D8 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = 0;
+			"path" = "SmokeHost-macOS.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		BC433E64834F7A637CB356D6 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 632B9CF41168BF9D10D79EA6;
+		};
+		9AD7A5BEC446C0881ACB37B2 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				BC433E64834F7A637CB356D6,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		D3AD1944E44677544B7954D7 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				C4F84A653507B885CB214FC4,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		9B28BA3225F6F4A4D8D5C990 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "SmokeHost-macOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-macos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		37F134BE77CEF24F33BF69BC = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "SmokeHost-macOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.smokehost-macos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES" = "YES";
+				"ENABLE_APP_SANDBOX" = "NO";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_LSApplicationCategoryType" = "public.app-category.developer-tools";
+			};
+		};
+		7A74DE39B4C87367997E583C = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				9B28BA3225F6F4A4D8D5C990,
+				37F134BE77CEF24F33BF69BC,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		4F59D18F1BB22DC8C54024D2 = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 7A74DE39B4C87367997E583C;
+			"buildPhases" = (
+				9AD7A5BEC446C0881ACB37B2,
+				D3AD1944E44677544B7954D7,
+				E37AEFFD31EC2B462BE6394E,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SmokeHost-macOS";
+			"productName" = "SmokeHost-macOS";
+			"productReference" = 56B519735816EF21907521D8;
+			"productType" = "com.apple.product-type.application";
+			"packageProductDependencies" = (
+				DC82C7CE3AAA3FE0F68D06C1,
+			);
+		};
+		6F5EC0D0EBA096C308556153 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = 0;
+			"path" = "ConsumerTests-macOS.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		A28910C8461058F76376CF83 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = C1A19EB1F358E62B0C0186DE;
+		};
+		4632F6380E105EBAD8A250DC = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 37FBAFD385F324197074C5CA;
+		};
+		FACB98ED3BC44C02FE3857D5 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D9F525B648F2101F35E4B5A6;
+		};
+		D7F462B9C19CBEB477B63C8F = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BD5BD343EA15203AA6F1AFFA;
+		};
+		B47CD31F86F59B17FE052789 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 180E8B4592932C290D7428A2;
+		};
+		55B23D08C34EA9CCB22B3160 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 422BFFAA9F63A40593892C84;
+		};
+		B28D9280038D6A22C10A122F = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				A28910C8461058F76376CF83,
+				4632F6380E105EBAD8A250DC,
+				FACB98ED3BC44C02FE3857D5,
+				D7F462B9C19CBEB477B63C8F,
+				B47CD31F86F59B17FE052789,
+				55B23D08C34EA9CCB22B3160,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		68ECCCACF11591EA3F3296A7 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				2A6BEF59E35792DB4D831009,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		1D2B850B394FD8B28223B585 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "ConsumerTests-macOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-macos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-macOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		99C4FCDE13C25E309D7BE7B7 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "ConsumerTests-macOS";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple.source.consumertests-macos";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"TEST_TARGET_NAME" = "SmokeHost-macOS";
+				"GCC_PREPROCESSOR_DEFINITIONS" = (
+					"$(inherited)",
+					"SAUCEVISUAL_SOURCE_PACKAGE=1",
+				);
+			};
+		};
+		3E82D85BFEA31A7FFA30ADBE = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				1D2B850B394FD8B28223B585,
+				99C4FCDE13C25E309D7BE7B7,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		CC2ABAEF782D85CE1C616D16 = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 3E82D85BFEA31A7FFA30ADBE;
+			"buildPhases" = (
+				B28D9280038D6A22C10A122F,
+				68ECCCACF11591EA3F3296A7,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+				FF05CA4969DD6810D8FCF353,
+			);
+			"name" = "ConsumerTests-macOS";
+			"productName" = "ConsumerTests-macOS";
+			"productReference" = 6F5EC0D0EBA096C308556153;
+			"productType" = "com.apple.product-type.bundle.unit-test";
+			"packageProductDependencies" = (
+				3AAD6A4E73288B2251FE0C4F,
+			);
+		};
+		3872C35E5A5C0629ADE126A4 = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = 23F90570BF107FB6F67C317E;
+			"proxyType" = 1;
+			"remoteGlobalIDString" = 4F59D18F1BB22DC8C54024D2;
+			"remoteInfo" = "SmokeHost-macOS";
+		};
+		FF05CA4969DD6810D8FCF353 = {
+			"isa" = "PBXTargetDependency";
+			"target" = 4F59D18F1BB22DC8C54024D2;
+			"targetProxy" = 3872C35E5A5C0629ADE126A4;
+		};
+		DC82C7CE3AAA3FE0F68D06C1 = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		C4F84A653507B885CB214FC4 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = DC82C7CE3AAA3FE0F68D06C1;
+		};
+		22AD29754B8530353433BC87 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = DC82C7CE3AAA3FE0F68D06C1;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"CodeSignOnCopy",
+					"RemoveHeadersOnCopy",
+				);
+			};
+		};
+		E37AEFFD31EC2B462BE6394E = {
+			"isa" = "PBXCopyFilesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				22AD29754B8530353433BC87,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+			"dstPath" = "";
+			"dstSubfolderSpec" = 10;
+			"name" = "Embed Frameworks";
+		};
+		3AAD6A4E73288B2251FE0C4F = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"productName" = "SauceVisual";
+		};
+		2A6BEF59E35792DB4D831009 = {
+			"isa" = "PBXBuildFile";
+			"productRef" = 3AAD6A4E73288B2251FE0C4F;
+		};
+		907D30109BE37F3EC75931FE = {
+			"isa" = "PBXFileReference";
+			"path" = "../../Configuration/SDK.xcconfig";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "text.xcconfig";
+		};
+		B9B477F03CDE84C91FBA59DD = {
+			"isa" = "PBXGroup";
+			"name" = "Artifacts";
+			"sourceTree" = "<group>";
+			"children" = (
+				632B9CF41168BF9D10D79EA6,
+				D9F525B648F2101F35E4B5A6,
+				BD5BD343EA15203AA6F1AFFA,
+			);
+		};
+		5C9EC0D05EA5A0393154D0FB = {
+			"isa" = "PBXGroup";
+			"name" = "Tests";
+			"sourceTree" = "<group>";
+			"children" = (
+				C1A19EB1F358E62B0C0186DE,
+				37FBAFD385F324197074C5CA,
+			);
+		};
+		AEE393CDE4B3FD9172EF5E0C = {
+			"isa" = "PBXGroup";
+			"name" = "Examples";
+			"sourceTree" = "<group>";
+			"children" = (
+				180E8B4592932C290D7428A2,
+				422BFFAA9F63A40593892C84,
+			);
+		};
+		B376B9ED2EA4B69511281B5A = {
+			"isa" = "PBXGroup";
+			"name" = "Configuration";
+			"sourceTree" = "<group>";
+			"children" = (
+				907D30109BE37F3EC75931FE,
+			);
+		};
+	};
+	"rootObject" = 23F90570BF107FB6F67C317E;
+}
