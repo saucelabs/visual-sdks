@@ -1,0 +1,749 @@
+// !$*UTF8*$!
+{
+	"archiveVersion" = 1;
+	"classes" = {
+	};
+	"objectVersion" = 56;
+	"objects" = {
+		B0D5CEDC06D8470D5C8C1D06 = {
+			"isa" = "PBXGroup";
+			"children" = (
+				F3FC80964F6F4F19A38565E9,
+				12965F8E62AE1A8ADC5BB069,
+				B897E6CE6D37A476D6D35C0A,
+				10F26ECA719B1739CDE1BD9F,
+			);
+			"sourceTree" = "<group>";
+		};
+		10F26ECA719B1739CDE1BD9F = {
+			"isa" = "PBXGroup";
+			"children" = (
+				15D1D07168859DDE01F3E3BD,
+				144186E2F1EBDB064C3E6F98,
+				413BB987413E10D7B59787EC,
+			);
+			"name" = "Products";
+			"sourceTree" = "<group>";
+		};
+		6FA2E1F42F52756DFDF262B2 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"GCC_OPTIMIZATION_LEVEL" = "0";
+				"ONLY_ACTIVE_ARCH" = "YES";
+				"ENABLE_TESTABILITY" = "YES";
+			};
+			"baseConfigurationReference" = F428C010D7275DDB2A4A5C20;
+		};
+		004D30BB15109EEBD28ADED3 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"GCC_OPTIMIZATION_LEVEL" = "s";
+				"ONLY_ACTIVE_ARCH" = "NO";
+				"ENABLE_TESTABILITY" = "NO";
+			};
+			"baseConfigurationReference" = F428C010D7275DDB2A4A5C20;
+		};
+		BA59C740F2B659FA3C179B89 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				6FA2E1F42F52756DFDF262B2,
+				004D30BB15109EEBD28ADED3,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		FCC7F3E6513D62D0672A4A34 = {
+			"isa" = "PBXProject";
+			"attributes" = {
+				"LastUpgradeCheck" = "1520";
+			};
+			"buildConfigurationList" = BA59C740F2B659FA3C179B89;
+			"compatibilityVersion" = "Xcode 14.0";
+			"developmentRegion" = "en";
+			"hasScannedForEncodings" = 0;
+			"knownRegions" = (
+				"en",
+				"Base",
+			);
+			"mainGroup" = B0D5CEDC06D8470D5C8C1D06;
+			"productRefGroup" = 10F26ECA719B1739CDE1BD9F;
+			"projectDirPath" = "";
+			"projectRoot" = "";
+			"targets" = (
+				0F56F947AFF27CBAA8AA6B44,
+				E3241D83A53113B36E88536C,
+				212A943778A134236500907C,
+			);
+			"packageReferences" = (
+			);
+		};
+		15D1D07168859DDE01F3E3BD = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.framework";
+			"includeInIndex" = 0;
+			"path" = "SauceVisual.framework";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		D6E6FF5720949AFFC4B2C4F9 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/CheckpointReceipt.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		F0BA069DA055D94D6016C021 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D6E6FF5720949AFFC4B2C4F9;
+		};
+		BC34AC3D38B3BB1CFDFB6A01 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/ObjectiveC/VisualCheckpointReceipt.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		5F7C964C1E6C2EFDD69A22FD = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BC34AC3D38B3BB1CFDFB6A01;
+		};
+		164022786FB2E5BDD652D4EA = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/ObjectiveC/VisualClient.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		9B3FD77B151D8B80253AB137 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 164022786FB2E5BDD652D4EA;
+		};
+		B28D6D94D63F54A71FAEF6FC = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/ObjectiveC/VisualErrorCode.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		66ED07EFE79ABB5BF0B31ABB = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = B28D6D94D63F54A71FAEF6FC;
+		};
+		994000522683453070A82312 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/ObjectiveC/VisualOperation.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		A25DDE1F1760B909DF1749C0 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 994000522683453070A82312;
+		};
+		73FA4FA5FD1D630A701A7AB9 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/ObjectiveC/VisualSessionSummary.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		148EFCAFFB4F71E6FEAD2178 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 73FA4FA5FD1D630A701A7AB9;
+		};
+		4B2849F24CB44470BB0A4241 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/SessionSummary.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		FADC0013BEA60673BF4A5B62 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 4B2849F24CB44470BB0A4241;
+		};
+		053DC479AF1055AA0963FB17 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/VisualError.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		DB3AFD38FBFC0DCC9E6B4932 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 053DC479AF1055AA0963FB17;
+		};
+		FE51AAE9A0BFF413424EAD56 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/VisualSession.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		D3FBFD7CCEC65CFA316A03A5 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = FE51AAE9A0BFF413424EAD56;
+		};
+		1CAA6FA8E3BF20D8C775FAC2 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				F0BA069DA055D94D6016C021,
+				5F7C964C1E6C2EFDD69A22FD,
+				9B3FD77B151D8B80253AB137,
+				66ED07EFE79ABB5BF0B31ABB,
+				A25DDE1F1760B909DF1749C0,
+				148EFCAFFB4F71E6FEAD2178,
+				FADC0013BEA60673BF4A5B62,
+				DB3AFD38FBFC0DCC9E6B4932,
+				D3FBFD7CCEC65CFA316A03A5,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		2963ED1B95B79B9E4FEAC957 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		C9A229B5F8532D48D089F837 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		AC59025297D8660DCACFFCFF = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		EE1FA13D08596D75422BAE33 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				C9A229B5F8532D48D089F837,
+				AC59025297D8660DCACFFCFF,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		0F56F947AFF27CBAA8AA6B44 = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = EE1FA13D08596D75422BAE33;
+			"buildPhases" = (
+				69D2FDA3F895D0C890111393,
+				1CAA6FA8E3BF20D8C775FAC2,
+				2963ED1B95B79B9E4FEAC957,
+				CE928A4E735509EDECC5F625,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SauceVisual-iOS";
+			"productName" = "SauceVisual";
+			"productReference" = 15D1D07168859DDE01F3E3BD;
+			"productType" = "com.apple.product-type.framework";
+			"packageProductDependencies" = (
+			);
+		};
+		903D9EA5794391274900063A = {
+			"isa" = "PBXFileReference";
+			"path" = "Distribution/SauceVisual.h";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.c.h";
+		};
+		74A7923B1E7F456B42DFA354 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 903D9EA5794391274900063A;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"Public",
+				);
+			};
+		};
+		452887B6C8747AE6DBEF7AB3 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/Resources/PrivacyInfo.xcprivacy";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "text.xml";
+		};
+		926C1AB45678BA9176232015 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 452887B6C8747AE6DBEF7AB3;
+		};
+		69D2FDA3F895D0C890111393 = {
+			"isa" = "PBXHeadersBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				74A7923B1E7F456B42DFA354,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		CE928A4E735509EDECC5F625 = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				926C1AB45678BA9176232015,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		144186E2F1EBDB064C3E6F98 = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.framework";
+			"includeInIndex" = 0;
+			"path" = "SauceVisual.framework";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		34D536136117CFE0EE271AA5 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D6E6FF5720949AFFC4B2C4F9;
+		};
+		7D855294EBF51D4F1D8FB185 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BC34AC3D38B3BB1CFDFB6A01;
+		};
+		C0E3BF5BC0F161E6036BF7B9 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 164022786FB2E5BDD652D4EA;
+		};
+		987DC9D44E3ED7D9563327C1 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = B28D6D94D63F54A71FAEF6FC;
+		};
+		FD739017D8D387AFDB7D5800 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 994000522683453070A82312;
+		};
+		5B98C4167168AAA7FE8A4ADC = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 73FA4FA5FD1D630A701A7AB9;
+		};
+		49E6E6D0BC40F4CD1DC6A0EB = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 4B2849F24CB44470BB0A4241;
+		};
+		640A973A73D524AE1C756BCB = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 053DC479AF1055AA0963FB17;
+		};
+		BB3410B2CD344770B1FC9DF7 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = FE51AAE9A0BFF413424EAD56;
+		};
+		14F8B81FD842694C4B6D9D1F = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				34D536136117CFE0EE271AA5,
+				7D855294EBF51D4F1D8FB185,
+				C0E3BF5BC0F161E6036BF7B9,
+				987DC9D44E3ED7D9563327C1,
+				FD739017D8D387AFDB7D5800,
+				5B98C4167168AAA7FE8A4ADC,
+				49E6E6D0BC40F4CD1DC6A0EB,
+				640A973A73D524AE1C756BCB,
+				BB3410B2CD344770B1FC9DF7,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		4E4EA39CC63268BE169BB7A0 = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		48632B069B15DD1C134ED7C0 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		1BD5EDB858172384AAF636ED = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "appletvos";
+				"SUPPORTED_PLATFORMS" = "appletvos appletvsimulator";
+				"TARGETED_DEVICE_FAMILY" = "3";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		3883A63AA9FEA4412B569F35 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				48632B069B15DD1C134ED7C0,
+				1BD5EDB858172384AAF636ED,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		E3241D83A53113B36E88536C = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 3883A63AA9FEA4412B569F35;
+			"buildPhases" = (
+				19AF17DC2E37FBEFBB1F33D3,
+				14F8B81FD842694C4B6D9D1F,
+				4E4EA39CC63268BE169BB7A0,
+				1C96CB7002AD6F2ECBFAF429,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SauceVisual-tvOS";
+			"productName" = "SauceVisual";
+			"productReference" = 144186E2F1EBDB064C3E6F98;
+			"productType" = "com.apple.product-type.framework";
+			"packageProductDependencies" = (
+			);
+		};
+		2C79191BBB3CC2EB686039F3 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 903D9EA5794391274900063A;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"Public",
+				);
+			};
+		};
+		44B394D89D71C94ECE6E36BE = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 452887B6C8747AE6DBEF7AB3;
+		};
+		19AF17DC2E37FBEFBB1F33D3 = {
+			"isa" = "PBXHeadersBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				2C79191BBB3CC2EB686039F3,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		1C96CB7002AD6F2ECBFAF429 = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				44B394D89D71C94ECE6E36BE,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		413BB987413E10D7B59787EC = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.framework";
+			"includeInIndex" = 0;
+			"path" = "SauceVisual.framework";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		C895D865DC6B16EC05B2BC55 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = D6E6FF5720949AFFC4B2C4F9;
+		};
+		443D16176CE7E0F446483B2B = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = BC34AC3D38B3BB1CFDFB6A01;
+		};
+		7E0747D086E788718C8F7640 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 164022786FB2E5BDD652D4EA;
+		};
+		65E9EEB558651B260EF2D26F = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = B28D6D94D63F54A71FAEF6FC;
+		};
+		D6DE8041DB38352C36B4818B = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 994000522683453070A82312;
+		};
+		F3ADBA4C9848E98A319BA8EB = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 73FA4FA5FD1D630A701A7AB9;
+		};
+		46806EB655EB70173A8B9F8F = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 4B2849F24CB44470BB0A4241;
+		};
+		41422A1601ED717EB35A3AC2 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 053DC479AF1055AA0963FB17;
+		};
+		B98AAD7DE46D92C11406381A = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = FE51AAE9A0BFF413424EAD56;
+		};
+		F6E2DC010824A502D67FAF31 = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				C895D865DC6B16EC05B2BC55,
+				443D16176CE7E0F446483B2B,
+				7E0747D086E788718C8F7640,
+				65E9EEB558651B260EF2D26F,
+				D6DE8041DB38352C36B4818B,
+				F3ADBA4C9848E98A319BA8EB,
+				46806EB655EB70173A8B9F8F,
+				41422A1601ED717EB35A3AC2,
+				B98AAD7DE46D92C11406381A,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		A9FC502DD76624FF228D248D = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		E24367B50EA2F9840E6CA817 = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		9478152F4555310E5B80188F = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"PRODUCT_NAME" = "SauceVisual";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.saucelabs.visual.apple";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"LD_RUNPATH_SEARCH_PATHS" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				"PRODUCT_MODULE_NAME" = "SauceVisual";
+				"DEFINES_MODULE" = "YES";
+				"SKIP_INSTALL" = "NO";
+				"BUILD_LIBRARY_FOR_DISTRIBUTION" = "YES";
+				"SWIFT_INSTALL_OBJC_HEADER" = "YES";
+				"SWIFT_OBJC_INTERFACE_HEADER_NAME" = "SauceVisual-Swift.h";
+				"INSTALL_PATH" = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				"MACH_O_TYPE" = "mh_dylib";
+				"LD_DYLIB_INSTALL_NAME" = "@rpath/$(EXECUTABLE_PATH)";
+				"DYLIB_COMPATIBILITY_VERSION" = "1";
+				"DYLIB_CURRENT_VERSION" = "1";
+			};
+		};
+		2E5CFB35A4DE438AD5AF87B4 = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				E24367B50EA2F9840E6CA817,
+				9478152F4555310E5B80188F,
+			);
+			"defaultConfigurationIsVisible" = 0;
+			"defaultConfigurationName" = "Release";
+		};
+		212A943778A134236500907C = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = 2E5CFB35A4DE438AD5AF87B4;
+			"buildPhases" = (
+				8F498AF68A1835650E719DC3,
+				F6E2DC010824A502D67FAF31,
+				A9FC502DD76624FF228D248D,
+				D24D81C458570750EB3027D5,
+			);
+			"buildRules" = (
+			);
+			"dependencies" = (
+			);
+			"name" = "SauceVisual-macOS";
+			"productName" = "SauceVisual";
+			"productReference" = 413BB987413E10D7B59787EC;
+			"productType" = "com.apple.product-type.framework";
+			"packageProductDependencies" = (
+			);
+		};
+		109DE361271B5A3CCEE56A13 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 903D9EA5794391274900063A;
+			"settings" = {
+				"ATTRIBUTES" = (
+					"Public",
+				);
+			};
+		};
+		C1B11486E02D78B1212E43B8 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 452887B6C8747AE6DBEF7AB3;
+		};
+		8F498AF68A1835650E719DC3 = {
+			"isa" = "PBXHeadersBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				109DE361271B5A3CCEE56A13,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		D24D81C458570750EB3027D5 = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = 2147483647;
+			"files" = (
+				C1B11486E02D78B1212E43B8,
+			);
+			"runOnlyForDeploymentPostprocessing" = 0;
+		};
+		F428C010D7275DDB2A4A5C20 = {
+			"isa" = "PBXFileReference";
+			"path" = "Configuration/SDK.xcconfig";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "text.xcconfig";
+		};
+		B897E6CE6D37A476D6D35C0A = {
+			"isa" = "PBXGroup";
+			"name" = "Sources";
+			"sourceTree" = "<group>";
+			"children" = (
+				D6E6FF5720949AFFC4B2C4F9,
+				BC34AC3D38B3BB1CFDFB6A01,
+				164022786FB2E5BDD652D4EA,
+				B28D6D94D63F54A71FAEF6FC,
+				994000522683453070A82312,
+				73FA4FA5FD1D630A701A7AB9,
+				4B2849F24CB44470BB0A4241,
+				053DC479AF1055AA0963FB17,
+				FE51AAE9A0BFF413424EAD56,
+				452887B6C8747AE6DBEF7AB3,
+			);
+		};
+		12965F8E62AE1A8ADC5BB069 = {
+			"isa" = "PBXGroup";
+			"name" = "Distribution";
+			"sourceTree" = "<group>";
+			"children" = (
+				903D9EA5794391274900063A,
+			);
+		};
+		F3FC80964F6F4F19A38565E9 = {
+			"isa" = "PBXGroup";
+			"name" = "Configuration";
+			"sourceTree" = "<group>";
+			"children" = (
+				F428C010D7275DDB2A4A5C20,
+			);
+		};
+	};
+	"rootObject" = FCC7F3E6513D62D0672A4A34;
+}
