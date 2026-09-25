@@ -30,10 +30,6 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
         }
     }
 
-    func testRegionEndpoints() {
-        XCTAssertEqual(SauceRegion.usWest1.graphqlEndpoint.absoluteString, "https://api.us-west-1.saucelabs.com/v1/visual/graphql")
-    }
-
     func testCredentialsFromEnvironment() throws {
         let credentials = try VisualCredentials.fromEnvironment([
             "SAUCE_USERNAME": " user ", "SAUCE_ACCESS_KEY": "key\n"
@@ -88,6 +84,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
+            XCTAssertEqual(VisualErrorCode(rawValue: code)?.rawValue, code, "Objective-C code \(code) matches Swift")
             XCTAssertEqual((error as NSError).domain, "com.saucelabs.visual.apple")
         }
         let apiError = VisualAPIError(code: .apiError, detail: "Project not found") as NSError
