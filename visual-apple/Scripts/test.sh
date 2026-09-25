@@ -145,6 +145,15 @@ build_args=(
   -derivedDataPath "$run/DerivedData"
   CODE_SIGNING_ALLOWED=NO
 )
+# Simulator tests don't inherit this shell. xcodebuild passes TEST_RUNNER_<NAME> to them as <NAME>,
+# so forward each SAUCE_* variable (for example from CI secrets) unless a TEST_RUNNER_ value is already set.
+for name in SAUCE_USERNAME SAUCE_ACCESS_KEY SAUCE_REGION SAUCE_VISUAL_BUILD_NAME SAUCE_VISUAL_PROJECT \
+    SAUCE_VISUAL_BRANCH SAUCE_VISUAL_DEFAULT_BRANCH SAUCE_VISUAL_CUSTOM_ID SAUCE_VISUAL_BUILD_ID; do
+  runner_name="TEST_RUNNER_$name"
+  if [[ -z ${!runner_name:-} && -n ${!name:-} ]]; then
+    export "$runner_name=${!name}"
+  fi
+done
 if [[ $family == macos ]]; then
   destination="platform=macOS,arch=$(uname -m)"
 else

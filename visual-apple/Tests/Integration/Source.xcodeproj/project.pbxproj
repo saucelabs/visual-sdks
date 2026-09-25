@@ -224,16 +224,6 @@
 			"isa" = "PBXBuildFile";
 			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
-		37FBAFD385F324197074C5CA = {
-			"isa" = "PBXFileReference";
-			"path" = "../SauceVisualTests/VisualSessionTests.swift";
-			"sourceTree" = "<group>";
-			"lastKnownFileType" = "sourcecode.swift";
-		};
-		4A4F3F259A320A46DD7966EF = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 37FBAFD385F324197074C5CA;
-		};
 		D9F525B648F2101F35E4B5A6 = {
 			"isa" = "PBXFileReference";
 			"path" = "ExampleTests.swift";
@@ -279,7 +269,6 @@
 			"buildActionMask" = 2147483647;
 			"files" = (
 				355E776907A6ACE2460D3D18,
-				4A4F3F259A320A46DD7966EF,
 				69E4853945ECFF3567A42CDD,
 				32F0D8E11BF5DCA7E13AD788,
 				CC64B6433026F917A0D14FE9,
@@ -544,10 +533,6 @@
 			"isa" = "PBXBuildFile";
 			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
-		01C4D03543E92C93AFCBCA10 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 37FBAFD385F324197074C5CA;
-		};
 		DEC42BBE6881D294C9161410 = {
 			"isa" = "PBXBuildFile";
 			"fileRef" = D9F525B648F2101F35E4B5A6;
@@ -569,7 +554,6 @@
 			"buildActionMask" = 2147483647;
 			"files" = (
 				739B92695A1121CFFBAF60DC,
-				01C4D03543E92C93AFCBCA10,
 				DEC42BBE6881D294C9161410,
 				1FF094180C0E6152E2100362,
 				1B37065E90AF48C937D279A3,
@@ -836,10 +820,6 @@
 			"isa" = "PBXBuildFile";
 			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
-		4632F6380E105EBAD8A250DC = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 37FBAFD385F324197074C5CA;
-		};
 		FACB98ED3BC44C02FE3857D5 = {
 			"isa" = "PBXBuildFile";
 			"fileRef" = D9F525B648F2101F35E4B5A6;
@@ -861,7 +841,6 @@
 			"buildActionMask" = 2147483647;
 			"files" = (
 				A28910C8461058F76376CF83,
-				4632F6380E105EBAD8A250DC,
 				FACB98ED3BC44C02FE3857D5,
 				D7F462B9C19CBEB477B63C8F,
 				B47CD31F86F59B17FE052789,
@@ -1033,7 +1012,6 @@
 			"sourceTree" = "<group>";
 			"children" = (
 				C1A19EB1F358E62B0C0186DE,
-				37FBAFD385F324197074C5CA,
 			);
 		};
 		AEE393CDE4B3FD9172EF5E0C = {
