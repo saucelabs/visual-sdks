@@ -87,7 +87,7 @@ for index in 0 1 2 3 4; do
     esac
     [[ $actual_platform == "$macho" && ( $minimum == "$floor" || $minimum == "$floor.0" ) ]] || fail "Wrong platform/deployment target: $identifier/$arch"
     xcrun nm -arch "$arch" -gU "$binary" > "$work/$identifier-$arch-symbols.log"
-    for name in SLVClient SLVOperation SLVCheckpointReceipt SLVSessionSummary; do
+    for name in SLVClient SLVRegion SLVBuildOptions SLVBuild; do
       awk -v symbol="_OBJC_CLASS_\$_$name" '$NF==symbol {found=1} END {exit !found}' \
         "$work/$identifier-$arch-symbols.log" || fail "Missing Objective-C class $name"
     done
@@ -110,8 +110,9 @@ for index in 0 1 2 3 4; do
     [[ -s $framework/Headers/$name ]] || fail "Missing header: $name"
   done
   header="$framework/Headers/SauceVisual-Swift.h"
-  for symbol in SLVClient SLVOperation SLVCheckpointReceipt SLVSessionSummary SLVErrorCode \
-      initWithSessionName: maximumCheckpoints: error: recordCheckpointWithName: finishWithCompletion:; do
+  for symbol in SLVClient SLVRegion SLVBuildOptions SLVBuild SLVErrorCode \
+      initWithUsername: accessKey: region: options: error: initWithOptions: \
+      buildWithCompletion: finishWithCompletion: regionNamed:; do
     grep -Fq -- "$symbol" "$header" || fail "Missing public declaration: $symbol"
   done
   grep -Fq 'framework module SauceVisual' "$framework/Modules/module.modulemap" || fail 'Missing Clang module.'
