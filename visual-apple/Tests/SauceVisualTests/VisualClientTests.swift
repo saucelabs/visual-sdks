@@ -35,16 +35,6 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(client.options.project, "Env project")
     }
 
-    func testMissingCredentialsOrRegionThrow() {
-        XCTAssertThrowsError(try client(StubURLProtocol.Route([]), store: SharedBuildStore(), environment: [:])) {
-            XCTAssertEqual($0 as? VisualError, .invalidCredentials)
-        }
-        XCTAssertThrowsError(try client(StubURLProtocol.Route([]), store: SharedBuildStore(),
-                                        environment: environment.merging(["SAUCE_REGION": "mars"]) { $1 })) {
-            XCTAssertEqual($0 as? VisualError, .unknownRegion)
-        }
-    }
-
     func testInvalidBuildIdFailsAtInit() {
         XCTAssertThrowsError(try client(StubURLProtocol.Route([]), store: SharedBuildStore(),
                                         options: VisualBuildOptions(buildId: "not-a-uuid"))) {

@@ -4,7 +4,10 @@ import Foundation
 ///
 /// Every client in the process shares one build: the first call to `build()`
 /// creates it (or reuses the one named by `buildId` / `customId`), and later clients get the same
-/// build regardless of their own options. Call `finish()` once, after the last test.
+/// build regardless of their own options.
+///
+/// A build the SDK created is finished automatically when the XCTest bundle ends. A reused build is
+/// left open for whoever created it. Call `finish()` only to finish earlier.
 public actor VisualClient {
     public nonisolated let region: SauceRegion
     public nonisolated let options: VisualBuildOptions
@@ -23,6 +26,7 @@ public actor VisualClient {
             credentials: credentials, region: region, options: options, session: session,
             environment: ProcessInfo.processInfo.environment, store: .shared
         )
+        AutoFinish.register()
     }
 
     internal init(
@@ -61,17 +65,35 @@ public actor VisualClient {
 internal actor SharedBuildStore {
     static let shared = SharedBuildStore()
 
-    private var pending: Task<VisualBuild, Error>?
+    private var pending: Task<VisualAPI.Resolution, Error>?
+    /// The client configuration that resolved the build, used to finish it automatically.
+    private var owner: VisualAPI?
     private var finishing: Task<VisualBuild, Error>?
 
     func build(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualBuild {
         if finishing != nil { throw VisualError.buildAlreadyCompleted }
-        return try await resolve(api: api, options: options)
+        return try await resolve(api: api, options: options).build
     }
 
     func finish(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualBuild {
         if let finishing { return try await finishing.value }
-        let build = try await resolve(api: api, options: options)
+        let build = try await resolve(api: api, options: options).build
+        return try await finish(build, with: api)
+    }
+
+    /// Called when the test bundle ends. Finishes the build only if this process created it.
+    func finishCreatedBuild() async -> AutoFinish.Outcome {
+        guard let pending, let owner else { return .noBuild }
+        do {
+            let resolution = try await pending.value
+            guard resolution.created else { return .leftOpen(resolution.build) }
+            return .finished(try await finish(resolution.build, with: owner))
+        } catch {
+            return .failed(error)
+        }
+    }
+
+    private func finish(_ build: VisualBuild, with api: VisualAPI) async throws -> VisualBuild {
         // Another caller may have started finishing while this one waited.
         if let finishing { return try await finishing.value }
         let task = Task { try await api.finishBuild(build) }
@@ -86,14 +108,18 @@ internal actor SharedBuildStore {
     }
 
     /// The request runs in its own task, so one caller's cancellation does not fail the others.
-    private func resolve(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualBuild {
+    private func resolve(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualAPI.Resolution {
         if let pending { return try await pending.value }
         let task = Task { try await api.resolveBuild(options) }
         pending = task
+        owner = api
         do {
             return try await task.value
         } catch {
-            if pending == task { pending = nil }
+            if pending == task {
+                pending = nil
+                owner = nil
+            }
             throw error
         }
     }

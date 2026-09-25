@@ -1,4 +1,4 @@
-// Shared by the framework and hosted consumer projects.
+// Shared by the framework and the consumer test projects.
 SWIFT_VERSION = 5.0
 SWIFT_STRICT_CONCURRENCY = complete
 SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
@@ -10,6 +10,8 @@ ENABLE_USER_SCRIPT_SANDBOXING = YES
 SUPPORTS_MACCATALYST = NO
 IPHONEOS_DEPLOYMENT_TARGET = 15.0
 TVOS_DEPLOYMENT_TARGET = 15.0
-MACOSX_DEPLOYMENT_TARGET = 12.0
+// XCTest in Xcode 26 requires macOS 14. The SDK imports XCTest for the end-of-run hook.
+MACOSX_DEPLOYMENT_TARGET = 14.0
+ENABLE_TESTING_SEARCH_PATHS = YES
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1

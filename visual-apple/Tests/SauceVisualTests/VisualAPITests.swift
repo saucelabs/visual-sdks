@@ -31,7 +31,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         let options = VisualBuildOptions(
             name: "Build", project: "Project", branch: "feature", defaultBranch: "main"
         )
-        let created = try await api.resolveBuild(options)
+        let created = try await api.resolveBuild(options).build
 
         XCTAssertEqual(created.id, buildID)
         XCTAssertEqual(created.url, "https://visual.test/builds/\(buildID)")
@@ -48,7 +48,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testCustomIdLookupThenCreateKeepsCustomId() async throws {
         let (api, route) = try api([.json(["data": ["result": NSNull()]]), .json(build(customId: "ci-42"))])
-        let created = try await api.resolveBuild(VisualBuildOptions(name: "Build", customId: "ci-42"))
+        let created = try await api.resolveBuild(VisualBuildOptions(name: "Build", customId: "ci-42")).build
 
         XCTAssertEqual(created.customId, "ci-42")
         let bodies = route.bodies
@@ -62,7 +62,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testRunningBuildIsReusedById() async throws {
         let (api, route) = try api([.json(build())])
-        let reused = try await api.resolveBuild(VisualBuildOptions(buildId: buildID.uppercased()))
+        let reused = try await api.resolveBuild(VisualBuildOptions(buildId: buildID.uppercased())).build
 
         XCTAssertEqual(reused.id, buildID)
         XCTAssertEqual(route.bodies.count, 1)
@@ -71,7 +71,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testRunningBuildIsReusedByCustomId() async throws {
         let (api, route) = try api([.json(build(customId: "ci-42"))])
-        let reused = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42"))
+        let reused = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42")).build
 
         XCTAssertEqual(reused.customId, "ci-42")
         XCTAssertEqual(route.requests.count, 1)

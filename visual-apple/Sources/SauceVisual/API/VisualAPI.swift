@@ -21,15 +21,21 @@ internal struct VisualAPI: Sendable {
     /// `buildId` is checked first, then `customId`. A new build keeps the `customId`, so later runs
     /// with the same ID find it.
     /// - Throws: `VisualError.invalidBuildId`, `.buildAlreadyCompleted`, or `VisualAPIError`.
-    func resolveBuild(_ options: VisualBuildOptions) async throws -> VisualBuild {
+    func resolveBuild(_ options: VisualBuildOptions) async throws -> Resolution {
         if let buildId = options.buildId {
             guard let uuid = UUID(uuidString: buildId) else { throw VisualError.invalidBuildId }
-            if let existing = try await build(id: uuid) { return try Self.reusable(existing) }
+            if let existing = try await build(id: uuid) { return Resolution(build: try Self.reusable(existing), created: false) }
         }
         if let customId = options.customId, let existing = try await build(customId: customId) {
-            return try Self.reusable(existing)
+            return Resolution(build: try Self.reusable(existing), created: false)
         }
-        return try await createBuild(options)
+        return Resolution(build: try await createBuild(options), created: true)
+    }
+
+    /// `created` is false when an existing build was reused. Whoever created that build finishes it.
+    struct Resolution: Sendable {
+        let build: VisualBuild
+        let created: Bool
     }
 
     func createBuild(_ options: VisualBuildOptions) async throws -> VisualBuild {
