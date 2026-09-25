@@ -61,7 +61,7 @@ for index in 0 1 2 3 4; do
     ios/simulator) expected='arm64 x86_64'; macho=IOSSIMULATOR; floor=15.0;;
     tvos/) expected='arm64'; macho=TVOS; floor=15.0;;
     tvos/simulator) expected='arm64 x86_64'; macho=TVOSSIMULATOR; floor=15.0;;
-    macos/) expected='arm64 x86_64'; macho=MACOS; floor=12.0;;
+    macos/) expected='arm64 x86_64'; macho=MACOS; floor=14.0;;
     *) fail "Unexpected variant: $platform/$variant";;
   esac
   [[ $seen != *"|$platform/$variant|"* ]] || fail 'Duplicate platform variant.'
@@ -135,7 +135,9 @@ for index in 0 1 2 3 4; do
   awk '/^[[:space:]]+.*\(compatibility version/ {print $1}' "$work/$identifier-dependencies.log" > "$work/$identifier-paths.log"
   while IFS= read -r dependency; do
     case "$dependency" in
+      # XCTest is linked for the end-of-run hook. Every UI test runner embeds it.
       /System/Library/*|/usr/lib/*|@rpath/libswift*|"$expected_id") ;;
+      @rpath/XCTest.framework/XCTest|@rpath/libXCTestSwiftSupport.dylib) ;;
       *) fail "Unexpected dynamic dependency: $dependency";;
     esac
   done < "$work/$identifier-paths.log"
