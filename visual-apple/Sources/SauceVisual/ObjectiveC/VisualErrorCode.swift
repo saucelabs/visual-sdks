@@ -5,11 +5,12 @@
 /// The Swift error supplies the domain and message: this enum supplies the stable constants in the generated Objective-C header.
 @objc(SLVErrorCode)
 public enum VisualErrorCode: Int, Sendable {
-    case invalidSessionName = 1
-    case invalidCheckpointName = 2
-    case invalidCheckpointLimit = 3
-    case sessionFinished = 4
-    case checkpointLimitReached = 5
-    case cancelled = 6
+    case cancelled = 1
+    case invalidCredentials = 2
+    case unknownRegion = 3
+    case invalidBuildId = 4
+    case buildAlreadyCompleted = 5
+    case networkFailure = 6
+    case apiError = 7
 }
 #endif
