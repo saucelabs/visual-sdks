@@ -5,6 +5,16 @@
 	};
 	"objectVersion" = 56;
 	"objects" = {
+		A291D44BC4DA148307F5CA95 = {
+			"isa" = "PBXFileReference";
+			"path" = "SauceDemoTests.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		0E15536F909AE140E34FD86D = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = A291D44BC4DA148307F5CA95;
+		};
 		2E1549FC2EA60C1F9AF14D20 = {
 			"isa" = "PBXGroup";
 			"children" = (
@@ -124,7 +134,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				2481FAA4CF7D7883649A51DE,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -193,7 +202,6 @@
 			"buildPhases" = (
 				D2E67AFB1AB116C5C9A428B0,
 				D66C941E0A9B20D209D10F4A,
-				BA239008E403691BE74CFDA5,
 			);
 			"buildRules" = (
 			);
@@ -204,7 +212,6 @@
 			"productReference" = 2245C1300354BF39AF141C0E;
 			"productType" = "com.apple.product-type.application";
 			"packageProductDependencies" = (
-				CE807E64C71F9C99102E8B76,
 			);
 		};
 		096B633A5EAAB4B6D8B5C965 = {
@@ -213,16 +220,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-iOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		C1A19EB1F358E62B0C0186DE = {
-			"isa" = "PBXFileReference";
-			"path" = "../SauceVisualTests/ObjectiveCBridgeTests.swift";
-			"sourceTree" = "<group>";
-			"lastKnownFileType" = "sourcecode.swift";
-		};
-		355E776907A6ACE2460D3D18 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
 		D9F525B648F2101F35E4B5A6 = {
 			"isa" = "PBXFileReference";
@@ -268,11 +265,11 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				355E776907A6ACE2460D3D18,
 				69E4853945ECFF3567A42CDD,
 				32F0D8E11BF5DCA7E13AD788,
 				CC64B6433026F917A0D14FE9,
 				EB1834377629203C179E868F,
+				0E15536F909AE140E34FD86D,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -302,8 +299,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-iOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -329,8 +324,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-iOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -353,6 +346,7 @@
 			"buildPhases" = (
 				C04CCFD1C17E9F8A2771E992,
 				8357FE41CA1CDABDC54D6A8E,
+				BA239008E403691BE74CFDA5,
 			);
 			"buildRules" = (
 			);
@@ -362,7 +356,7 @@
 			"name" = "ConsumerTests-iOS";
 			"productName" = "ConsumerTests-iOS";
 			"productReference" = 096B633A5EAAB4B6D8B5C965;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 				A0C2B24EEF97E037DA1F9E37,
 			);
@@ -379,17 +373,9 @@
 			"target" = A40B503899F833405C1C1900;
 			"targetProxy" = 10DF035CA7C5C6D8D2E1AD81;
 		};
-		CE807E64C71F9C99102E8B76 = {
-			"isa" = "XCSwiftPackageProductDependency";
-			"productName" = "SauceVisual";
-		};
-		2481FAA4CF7D7883649A51DE = {
-			"isa" = "PBXBuildFile";
-			"productRef" = CE807E64C71F9C99102E8B76;
-		};
 		8DC9A8CD9542AD15A0B0D541 = {
 			"isa" = "PBXBuildFile";
-			"productRef" = CE807E64C71F9C99102E8B76;
+			"productRef" = A0C2B24EEF97E037DA1F9E37;
 			"settings" = {
 				"ATTRIBUTES" = (
 					"CodeSignOnCopy",
@@ -439,7 +425,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				B7A02950B507C52301736AB0,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -508,7 +493,6 @@
 			"buildPhases" = (
 				2329A46145FDDB9EFB89DA60,
 				4BD4456C34160522C5D05426,
-				A16A2F47FC5E67BB52B6297E,
 			);
 			"buildRules" = (
 			);
@@ -519,7 +503,6 @@
 			"productReference" = F27F64D746A9862C8F2D5026;
 			"productType" = "com.apple.product-type.application";
 			"packageProductDependencies" = (
-				CDC27A8B92CA636C1E9CB8AE,
 			);
 		};
 		31EE07973F35DFB39A6070D5 = {
@@ -528,10 +511,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-tvOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		739B92695A1121CFFBAF60DC = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
 		DEC42BBE6881D294C9161410 = {
 			"isa" = "PBXBuildFile";
@@ -553,7 +532,6 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				739B92695A1121CFFBAF60DC,
 				DEC42BBE6881D294C9161410,
 				1FF094180C0E6152E2100362,
 				1B37065E90AF48C937D279A3,
@@ -587,8 +565,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -614,8 +590,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -638,6 +612,7 @@
 			"buildPhases" = (
 				2C8AF898E470FDD856D7A972,
 				0A0015BC29DA344CF10DE8F6,
+				A16A2F47FC5E67BB52B6297E,
 			);
 			"buildRules" = (
 			);
@@ -647,7 +622,7 @@
 			"name" = "ConsumerTests-tvOS";
 			"productName" = "ConsumerTests-tvOS";
 			"productReference" = 31EE07973F35DFB39A6070D5;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 				9B899CE3FC9AA6DA7A36E0AE,
 			);
@@ -664,17 +639,9 @@
 			"target" = BB12CE5B83D685E7C447DBAD;
 			"targetProxy" = 3B2540B78ADB29ACDC768227;
 		};
-		CDC27A8B92CA636C1E9CB8AE = {
-			"isa" = "XCSwiftPackageProductDependency";
-			"productName" = "SauceVisual";
-		};
-		B7A02950B507C52301736AB0 = {
-			"isa" = "PBXBuildFile";
-			"productRef" = CDC27A8B92CA636C1E9CB8AE;
-		};
 		A4DB479A9CE6B817DEF94294 = {
 			"isa" = "PBXBuildFile";
-			"productRef" = CDC27A8B92CA636C1E9CB8AE;
+			"productRef" = 9B899CE3FC9AA6DA7A36E0AE;
 			"settings" = {
 				"ATTRIBUTES" = (
 					"CodeSignOnCopy",
@@ -724,7 +691,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				C4F84A653507B885CB214FC4,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -733,7 +699,6 @@
 			"name" = "Debug";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "SmokeHost-macOS";
@@ -759,7 +724,6 @@
 			"name" = "Release";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "SmokeHost-macOS";
@@ -795,7 +759,6 @@
 			"buildPhases" = (
 				9AD7A5BEC446C0881ACB37B2,
 				D3AD1944E44677544B7954D7,
-				E37AEFFD31EC2B462BE6394E,
 			);
 			"buildRules" = (
 			);
@@ -806,7 +769,6 @@
 			"productReference" = 56B519735816EF21907521D8;
 			"productType" = "com.apple.product-type.application";
 			"packageProductDependencies" = (
-				DC82C7CE3AAA3FE0F68D06C1,
 			);
 		};
 		6F5EC0D0EBA096C308556153 = {
@@ -815,10 +777,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-macOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		A28910C8461058F76376CF83 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = C1A19EB1F358E62B0C0186DE;
 		};
 		FACB98ED3BC44C02FE3857D5 = {
 			"isa" = "PBXBuildFile";
@@ -840,7 +798,6 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				A28910C8461058F76376CF83,
 				FACB98ED3BC44C02FE3857D5,
 				D7F462B9C19CBEB477B63C8F,
 				B47CD31F86F59B17FE052789,
@@ -861,7 +818,6 @@
 			"name" = "Debug";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "ConsumerTests-macOS";
@@ -875,8 +831,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-macOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -889,7 +843,6 @@
 			"name" = "Release";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "ConsumerTests-macOS";
@@ -903,8 +856,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-macOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -927,6 +878,7 @@
 			"buildPhases" = (
 				B28D9280038D6A22C10A122F,
 				68ECCCACF11591EA3F3296A7,
+				E37AEFFD31EC2B462BE6394E,
 			);
 			"buildRules" = (
 			);
@@ -936,7 +888,7 @@
 			"name" = "ConsumerTests-macOS";
 			"productName" = "ConsumerTests-macOS";
 			"productReference" = 6F5EC0D0EBA096C308556153;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 				3AAD6A4E73288B2251FE0C4F,
 			);
@@ -953,17 +905,9 @@
 			"target" = 4F59D18F1BB22DC8C54024D2;
 			"targetProxy" = 3872C35E5A5C0629ADE126A4;
 		};
-		DC82C7CE3AAA3FE0F68D06C1 = {
-			"isa" = "XCSwiftPackageProductDependency";
-			"productName" = "SauceVisual";
-		};
-		C4F84A653507B885CB214FC4 = {
-			"isa" = "PBXBuildFile";
-			"productRef" = DC82C7CE3AAA3FE0F68D06C1;
-		};
 		22AD29754B8530353433BC87 = {
 			"isa" = "PBXBuildFile";
-			"productRef" = DC82C7CE3AAA3FE0F68D06C1;
+			"productRef" = 3AAD6A4E73288B2251FE0C4F;
 			"settings" = {
 				"ATTRIBUTES" = (
 					"CodeSignOnCopy",
@@ -1003,6 +947,7 @@
 			"children" = (
 				632B9CF41168BF9D10D79EA6,
 				D9F525B648F2101F35E4B5A6,
+				A291D44BC4DA148307F5CA95,
 				BD5BD343EA15203AA6F1AFFA,
 			);
 		};
@@ -1011,7 +956,6 @@
 			"name" = "Tests";
 			"sourceTree" = "<group>";
 			"children" = (
-				C1A19EB1F358E62B0C0186DE,
 			);
 		};
 		AEE393CDE4B3FD9172EF5E0C = {

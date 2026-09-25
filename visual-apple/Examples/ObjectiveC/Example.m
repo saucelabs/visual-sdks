@@ -7,6 +7,7 @@
 
 // Credentials and region come from SAUCE_USERNAME, SAUCE_ACCESS_KEY, and SAUCE_REGION.
 // Completion is always on the main thread. Handle constructor errors separately.
+// The SDK finishes the build automatically when the test run ends.
 void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVBuild * _Nullable, NSError * _Nullable)) {
     NSError *error = nil;
     SLVClient *client = [[SLVClient alloc] initWithOptions:options error:&error];
@@ -20,7 +21,6 @@ void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVBuild 
             return;
         }
         NSLog(@"Sauce Visual build: %@", build.url ?: build.buildId);
-        // Call once, after the last test.
-        [client finishWithCompletion:completion];
+        completion(build, nil);
     }];
 }
