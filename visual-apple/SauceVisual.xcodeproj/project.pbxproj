@@ -5,6 +5,24 @@
 	};
 	"objectVersion" = 56;
 	"objects" = {
+		155856A87A5BA619A62735B2 = {
+			"isa" = "PBXFileReference";
+			"path" = "Sources/SauceVisual/AutoFinish.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		74060BEDB6721A6CA8C2B1EC = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 155856A87A5BA619A62735B2;
+		};
+		684ECCB36FF97C47B856E3F0 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 155856A87A5BA619A62735B2;
+		};
+		523B123144CA9075E82BCFF3 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 155856A87A5BA619A62735B2;
+		};
 		61365A619A5F8CD0A336A0BC = {
 			"isa" = "PBXFileReference";
 			"path" = "Sources/SauceVisual/ObjectiveC/VisualBuildBridge.swift";
@@ -268,6 +286,7 @@
 				F80B25EE89703CF92B3F3A60,
 				1DC7F732C49B730ABC28C891,
 				51DD91345EBFB39481103B45,
+				74060BEDB6721A6CA8C2B1EC,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -439,6 +458,7 @@
 				6193CE240A010464B37497E3,
 				5B67EFF1063BD013C106DB0B,
 				09E93D431FE2C5EA09A78E52,
+				684ECCB36FF97C47B856E3F0,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -598,6 +618,7 @@
 				EAA08470FB61E38552FF9D77,
 				3CFBF06EFBD414216D204EF7,
 				2E8CD38FE8F1F23C3068BD7C,
+				523B123144CA9075E82BCFF3,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -748,6 +769,7 @@
 				EB02ABBA7BB9BAF883E2A0F1,
 				05B12CF06F2A558D474D0D2B,
 				61365A619A5F8CD0A336A0BC,
+				155856A87A5BA619A62735B2,
 			);
 		};
 		12965F8E62AE1A8ADC5BB069 = {

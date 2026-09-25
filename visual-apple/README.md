@@ -1,24 +1,26 @@
 # SauceVisual for Apple platforms
 
-`SauceVisual` Swift and Objective-C SDK for iOS/iPadOS 15+, tvOS 15+, and macOS 12+.
+`SauceVisual` Swift and Objective-C SDK for XCUITest on iOS/iPadOS 15+, tvOS 15+, and macOS 14+.
 
-The SDK creates, reuses, and finishes Sauce Visual builds. Screenshot capture and visual comparisons are not yet implemented.
+The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests. Screenshot capture and visual comparisons are not yet implemented.
 
 Development and binary distribution use **Xcode 26.6 / Swift 6.3**. The package uses Swift 5 language mode and is also tested in Swift 6 language mode.
 
 ## Installation
 
+Add SauceVisual to your **UI test target only**, never to the app. XCUITest runs your tests in a separate runner process that drives the app from outside, so the app under test doesn't need the SDK. The SDK links XCTest, so an app that embeds it would not launch outside a test run.
+
 ### Swift Package Manager
 
-Add this checkout as a local package in Xcode and select the `SauceVisual` product.
+Add this checkout as a local package in Xcode, and add the `SauceVisual` product to the UI test target.
 See the [source consumer project](Tests/Integration/Source.xcodeproj) for an example.
 
 ### XCFramework
 
-Add `SauceVisual.xcframework` to the host app and choose **Embed & Sign**.
-The archive includes dSYMs, the consuming app signs the framework. See the [binary consumer project](Tests/Integration/Binary.xcodeproj) for an example.
+Add `SauceVisual.xcframework` to the UI test target and choose **Embed & Sign**.
+The archive includes dSYMs, the consuming test target signs the framework. See the [binary consumer project](Tests/Integration/Binary.xcodeproj) for an example.
 
-Both distributions provide a dynamic library. Embed it once in the host app, hosted test bundles should link the same copy.
+On macOS, UI tests need a signed runner (ad-hoc signing, **Sign to Run Locally**, is enough), and macOS may ask once to let Xcode control the computer under **Privacy & Security → Accessibility**.
 
 ## Credentials and region
 
@@ -50,11 +52,11 @@ let visual = try VisualClient(options: VisualBuildOptions(
 ))
 let build = try await visual.build()
 print(build.url ?? build.id)
-// After the last test:
-let finished = try await visual.finish()
 ```
 
-Every `VisualClient` in the process shares one build: the first `build()` creates it, or reuses the one named by `buildId` or `customId`. Call `finish()` once, after the last test. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
+Every `VisualClient` in the process shares one build: the first `build()` creates it, or reuses the one named by `buildId` or `customId`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
+
+**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build reused through `buildId` or `customId` is left open for whoever created it, for example a CI step. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
 
 To pass credentials in code instead: `VisualClient(credentials: VisualCredentials(username: "…", accessKey: "…"), region: .euCentral1)`.
 
