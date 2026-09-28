@@ -8,11 +8,11 @@
     "isolatedModules": true,
     "jsx": "react",
     "lib": ["es2020", "dom"],
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "noImplicitAny": true,
-    "rootDir": "./src",
     "skipLibCheck": true,
     "target": "ES2020"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", ".storybook/**/*", "tsup.config.ts"]
 }

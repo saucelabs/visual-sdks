@@ -2,12 +2,12 @@ import type {
   PartialStoryFn as StoryFunction,
   Renderer,
   StoryContext,
-} from '@storybook/types';
-import { useGlobals, useMemo } from '@storybook/preview-api';
+} from 'storybook/internal/types';
+import { useGlobals, useMemo } from 'storybook/preview-api';
 import { PARAM_KEY } from './constants';
 import cartesian from 'cartesian';
 import React, { HTMLAttributes } from 'react';
-import { sortBy } from 'lodash';
+import sortBy from 'lodash/sortBy';
 
 export const withGlobals = (
   StoryFn: StoryFunction<Renderer>,
@@ -36,7 +36,7 @@ export const withGlobals = (
       include
         .map((key) => {
           const argType = context.argTypes[key];
-          let values = [];
+          let values: readonly unknown[] = [];
 
           if (!argType) {
             return [key, values];

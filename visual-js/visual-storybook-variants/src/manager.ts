@@ -1,4 +1,4 @@
-import { addons, types } from '@storybook/manager-api';
+import { addons, types } from 'storybook/manager-api';
 import { ADDON_ID, TOOL_ID } from './constants';
 import { Tool } from './Tool';
 
@@ -12,7 +12,7 @@ addons.register(ADDON_ID, () => {
   // Register the tool
   addons.add(TOOL_ID, {
     type: types.TOOL,
-    title: 'My addon',
+    title: 'Variants',
     match: ({ viewMode }) => !!(viewMode && viewMode.match(/^(story)$/)),
     render: Tool,
   });

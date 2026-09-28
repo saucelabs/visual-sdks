@@ -1,9 +1,10 @@
 import React, { memo, useCallback } from 'react';
-import { useGlobals } from '@storybook/manager-api';
-import { IconButton, Icons } from '@storybook/components';
+import { useGlobals } from 'storybook/manager-api';
+import { IconButton } from 'storybook/internal/components';
+import { ComponentIcon } from '@storybook/icons';
 import { PARAM_KEY, TOOL_ID } from './constants';
 
-export const Tool = memo(function MyAddonSelector() {
+export const Tool = memo(function VariantsToggle() {
   const [globals, updateGlobals] = useGlobals();
 
   const isActive = [true, 'true'].includes(globals[PARAM_KEY]);
@@ -21,7 +22,7 @@ export const Tool = memo(function MyAddonSelector() {
       title="Toggle Variants"
       onClick={onToggle}
     >
-      <Icons icon="component" />
+      <ComponentIcon />
     </IconButton>
   );
 });
