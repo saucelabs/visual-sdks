@@ -1,19 +1,19 @@
 import Foundation
 
-/// Attributes applied when the build is created. Each `nil` field falls back to its environment variable.
+/// Build details. Anything left `nil` is read from its environment variable.
 public struct VisualBuildOptions: Hashable, Sendable {
     /// Build name shown in the Sauce Visual dashboard. Falls back to `SAUCE_VISUAL_BUILD_NAME`.
     public var name: String?
     /// Project to associate the build with. Falls back to `SAUCE_VISUAL_PROJECT`.
     public var project: String?
-    /// Current VCS branch. Falls back to `SAUCE_VISUAL_BRANCH`.
+    /// Your current git branch. Falls back to `SAUCE_VISUAL_BRANCH`.
     public var branch: String?
     /// Branch that baselines come from, usually `main`. Falls back to `SAUCE_VISUAL_DEFAULT_BRANCH`.
     public var defaultBranch: String?
-    /// Your own ID for the build. A running build with this ID is reused; otherwise a new
-    /// build is created with it. Falls back to `SAUCE_VISUAL_CUSTOM_ID`.
+    /// Your own build ID. A running build with this ID is reused, otherwise one is created with it.
+    /// Falls back to `SAUCE_VISUAL_CUSTOM_ID`.
     public var customId: String?
-    /// Existing Sauce Visual build UUID to add snapshots to. Falls back to `SAUCE_VISUAL_BUILD_ID`.
+    /// An existing build to add snapshots to. Falls back to `SAUCE_VISUAL_BUILD_ID`.
     public var buildId: String?
 
     public init(
@@ -32,7 +32,7 @@ public struct VisualBuildOptions: Hashable, Sendable {
         self.buildId = buildId
     }
 
-    /// Fills each `nil` or empty field from its environment variable, and trims every value.
+    /// Fills empty fields from the environment and trims whitespace.
     public func resolved(
         with environment: [String: String] = ProcessInfo.processInfo.environment
     ) -> VisualBuildOptions {

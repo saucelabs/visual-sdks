@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-/// Finishes the build this process created when the XCTest bundle ends, so tests never call `finish()`.
+/// Finishes the build when the tests end, so you never have to call `finish()`.
 internal enum AutoFinish {
     enum Outcome: Sendable {
         case noBuild
@@ -12,20 +12,6 @@ internal enum AutoFinish {
 
     /// Long enough for a slow network, short enough not to stall the run.
     static let timeout: TimeInterval = 60
-
-    private static let registration: Void = {
-        // XCTestObservationCenter must be used on the main thread.
-        DispatchQueue.main.async {
-            MainActor.assumeIsolated {
-                XCTestObservationCenter.shared.addTestObserver(Observer(store: .shared, timeout: timeout))
-            }
-        }
-    }()
-
-    /// Registers the observer once per process. Safe to call from any thread.
-    static func register() {
-        _ = registration
-    }
 
     static func message(for outcome: Outcome) -> String? {
         switch outcome {
@@ -50,7 +36,7 @@ internal enum AutoFinish {
             super.init()
         }
 
-        /// XCTest exits after this returns, so wait here for the network call.
+        /// XCTest exits right after this returns, so wait here for the request to finish.
         func testBundleDidFinish(_ testBundle: Bundle) {
             let store = self.store
             let done = DispatchSemaphore(value: 0)

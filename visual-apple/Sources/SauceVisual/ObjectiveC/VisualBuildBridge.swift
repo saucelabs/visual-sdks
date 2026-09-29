@@ -1,7 +1,8 @@
 #if canImport(ObjectiveC)
 import Foundation
+import XCTest
 
-/// Objective-C representation of a `SauceRegion`.
+/// A Sauce Labs data center, for Objective-C.
 @objc(SLVRegion)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualRegion: NSObject, Sendable {
@@ -39,7 +40,7 @@ public final class VisualRegion: NSObject, Sendable {
     public override var hash: Int { value.hashValue }
 }
 
-/// Objective-C build attributes. `nil` fields fall back to their `SAUCE_VISUAL_*` environment variable.
+/// Build details for Objective-C. Anything `nil` is read from its `SAUCE_VISUAL_*` environment variable.
 @objc(SLVBuildOptions)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualBuildConfiguration: NSObject, Sendable {
@@ -57,7 +58,7 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
         super.init()
     }
 
-    /// Every attribute from the environment.
+    /// Reads every value from the environment.
     @objc public override convenience init() {
         self.init(VisualBuildOptions())
     }
@@ -72,11 +73,11 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
     }
 }
 
-/// Objective-C representation of a Sauce Visual build.
+/// A Sauce Visual build, for Objective-C.
 @objc(SLVBuild)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualBuildRecord: NSObject, Sendable {
-    /// Build UUID. Named `buildId` because `id` is reserved in Objective-C.
+    /// The build's ID. Not called `id`, which Objective-C reserves.
     @objc public let buildId: String
     @objc public let name: String?
     @objc public let project: String?
@@ -99,11 +100,82 @@ public final class VisualBuildRecord: NSObject, Sendable {
     }
 }
 
-/// Objective-C facade over `VisualClient`. Every client in the process shares one build.
-///
-/// Entry points may be called from any thread. Completion is invoked once on MainActor, never inline,
-/// with either a build or an NSError, never both. The shared request is not cancellable, because
-/// other clients may be waiting for it.
+/// A Sauce Visual snapshot, for Objective-C.
+@objc(SLVSnapshot)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public final class VisualSnapshotRecord: NSObject, Sendable {
+    /// The snapshot's ID. Not called `id`, which Objective-C reserves.
+    @objc public let snapshotId: String
+    @objc public let name: String
+    @objc public let buildId: String
+    @objc public let testName: String?
+    @objc public let suiteName: String?
+
+    internal init(_ value: VisualSnapshot) {
+        snapshotId = value.id
+        name = value.name
+        buildId = value.buildId
+        testName = value.testName
+        suiteName = value.suiteName
+        super.init()
+    }
+}
+
+/// How screenshots are compared. `Balanced` is the default.
+@objc(SLVDiffingMethod)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public enum VisualDiffingMethodCode: Int, Sendable {
+    case balanced = 0
+    case simple = 1
+    case experimental = 2
+
+    internal var value: DiffingMethod {
+        switch self {
+        case .balanced: return .balanced
+        case .simple: return .simple
+        case .experimental: return .experimental
+        }
+    }
+}
+
+/// Options for one check, for Objective-C. Don't change them while the check runs.
+@objc(SLVCheckOptions)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
+    /// Defaults to the running test's method name.
+    @objc public var testName: String?
+    /// Defaults to the running test's class name.
+    @objc public var suiteName: String?
+    /// Areas to leave out of the comparison, as `CGRect` values in points.
+    @objc public var ignoreRegions: [NSValue] = []
+    /// Elements to leave out of the comparison. Each must exist when the check runs.
+    @objc public var ignoreElements: [XCUIElement] = []
+    @objc public var diffingMethod: VisualDiffingMethodCode = .balanced
+
+    internal var value: VisualCheckOptions {
+        VisualCheckOptions(
+            testName: testName,
+            suiteName: suiteName,
+            ignoreRegions: ignoreRegions.map { value in
+                #if os(macOS)
+                return value.rectValue
+                #else
+                return value.cgRectValue
+                #endif
+            },
+            ignoreElements: ignoreElements,
+            diffingMethod: diffingMethod.value
+        )
+    }
+}
+
+/// Carries options to the main actor, where the check reads the elements.
+private struct MainActorOptions: @unchecked Sendable {
+    let value: VisualCheckOptions
+}
+
+/// Takes Sauce Visual snapshots from Objective-C. Call it from any thread;
+/// each completion runs once on the main thread, with either a result or an error.
 @objc(SLVClient)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualObjCClient: NSObject, Sendable {
@@ -113,7 +185,7 @@ public final class VisualObjCClient: NSObject, Sendable {
     @objc public var region: VisualRegion { VisualRegion(client.region) }
     @objc public var options: VisualBuildConfiguration { VisualBuildConfiguration(client.options) }
 
-    /// `nil` arguments come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// Anything `nil` is read from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
     /// - Throws: `SLVErrorCodeInvalidCredentials`, `SLVErrorCodeUnknownRegion`, or `SLVErrorCodeInvalidBuildId`.
     @objc(initWithUsername:accessKey:region:options:error:)
     public init(
@@ -131,13 +203,13 @@ public final class VisualObjCClient: NSObject, Sendable {
         super.init()
     }
 
-    /// Everything from the environment.
+    /// Reads credentials and region from the environment.
     @objc(initWithOptions:error:)
     public convenience init(options: VisualBuildConfiguration?) throws {
         try self.init(username: nil, accessKey: nil, region: nil, options: options)
     }
 
-    /// Creates or reuses the shared build.
+    /// The shared build, created if needed.
     @objc(buildWithCompletion:)
     public func build(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) {
         let client = self.client
@@ -151,7 +223,38 @@ public final class VisualObjCClient: NSObject, Sendable {
         }
     }
 
-    /// Finishes the shared build. Repeated calls return the same build.
+    /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
+    @objc(sauceVisualCheckWithName:completion:)
+    public func sauceVisualCheck(
+        name: String, completion: @escaping @MainActor @Sendable (VisualSnapshotRecord?, NSError?) -> Void
+    ) {
+        sauceVisualCheck(name: name, options: nil, completion: completion)
+    }
+
+    /// Like `sauceVisualCheckWithName:completion:`, with options such as areas to ignore.
+    @objc(sauceVisualCheckWithName:options:completion:)
+    public func sauceVisualCheck(
+        name: String, options: VisualCheckConfiguration?,
+        completion: @escaping @MainActor @Sendable (VisualSnapshotRecord?, NSError?) -> Void
+    ) {
+        let client = self.client
+        // Read the test's names now, while it is certainly still running.
+        var value = options?.value ?? VisualCheckOptions()
+        let test = CurrentTest.shared.identity.overriding(testName: value.testName, suiteName: value.suiteName)
+        value.testName = test.testName
+        value.suiteName = test.suiteName
+        let request = MainActorOptions(value: value)
+        Task { @MainActor in
+            do {
+                let snapshot = try await client.sauceVisualCheck(name, options: request.value)
+                completion(VisualSnapshotRecord(snapshot), nil)
+            } catch {
+                completion(nil, bridgeToNSError(error))
+            }
+        }
+    }
+
+    /// Finishes the build early. You don't need to: the SDK finishes it when the tests end.
     @objc(finishWithCompletion:)
     public func finish(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) {
         let client = self.client
