@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 import SauceVisual
 
-// Test-only: no mutable instance state, XCTest owns its synchronization.
+// `@unchecked Sendable` is safe: the tests keep no shared state.
 final class ConfigurationTests: XCTestCase, @unchecked Sendable {
     func testDefaultRegionIsUSWest1() throws {
         XCTAssertEqual(SauceRegion.default, .usWest1)
@@ -80,7 +80,8 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
     func testErrorCodesAreStable() {
         let codes: [(VisualError, Int)] = [
             (.cancelled, 1), (.invalidCredentials, 2), (.unknownRegion, 3), (.invalidBuildId, 4),
-            (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7)
+            (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
+            (.invalidSnapshotName, 8), (.elementNotFound, 9)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
@@ -102,6 +103,9 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (VisualError.buildAlreadyCompleted, "The Sauce Visual build is already finished. Start a new build to add snapshots."),
             (VisualError.networkFailure, "Could not reach the Sauce Visual API."),
             (VisualError.apiError, "The Sauce Visual API returned an error."),
+            (VisualError.invalidSnapshotName, "Invalid snapshot name. Give the snapshot a name that is not empty."),
+            (VisualError.elementNotFound,
+             "An element in the check options doesn't exist. Wait for it before the check, or remove it."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),
              "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualAPIError(code: .apiError, detail: "Project not found"),

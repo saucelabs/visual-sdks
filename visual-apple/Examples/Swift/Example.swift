@@ -1,17 +1,14 @@
 import SauceVisual
 
-/// Compiled on every platform by the consumer UI tests, and run by the live test.
-///
-/// Credentials and region come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, and `SAUCE_REGION`.
-/// In CI, `branch` usually comes from `SAUCE_VISUAL_BRANCH` instead of code.
-/// The SDK finishes the build automatically when the test run ends.
+/// Takes one snapshot. Credentials come from `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY`,
+/// and the SDK creates and finishes the build for you.
 func runSwiftExample(
     _ options: VisualBuildOptions = VisualBuildOptions(
         name: "Checkout flow", project: "Example app", branch: "feature-checkout", defaultBranch: "main"
     )
-) async throws -> VisualBuild {
+) async throws -> VisualSnapshot {
     let visual = try VisualClient(options: options)
-    let build = try await visual.build()
-    print("Sauce Visual build: \(build.url ?? build.id)")
-    return build
+    let snapshot = try await visual.sauceVisualCheck("Home screen")
+    print("Sauce Visual build: \(snapshot.buildId)")
+    return snapshot
 }
