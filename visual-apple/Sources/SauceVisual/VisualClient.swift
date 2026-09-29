@@ -1,12 +1,11 @@
 import Foundation
 
-/// Creates, reuses, and finishes the Sauce Visual build for this test run.
+/// Takes Sauce Visual snapshots in your UI tests. All clients share one build per test run,
+/// which the SDK creates on the first check.
 ///
-/// Every client in the process shares one build: the first call to `build()`
-/// creates it (or reuses the one named by `buildId` / `customId`). The build belongs to that client's
-/// region, credentials, and build options. Later clients must use the same ones, and then share the
-/// first client's connection. A client with a different configuration throws
-/// `VisualError.conflictingConfiguration`.
+/// The build belongs to the first client's region, credentials, and build options. Later clients must use
+/// the same ones, and then share the first client's connection. A client with a different configuration
+/// throws `VisualError.conflictingConfiguration`.
 ///
 /// The build is finished automatically when the XCTest bundle ends only if this process created it
 /// without a `buildId` or `customId`. A build named by either ID may be shared by several workers, so it
@@ -18,8 +17,9 @@ public actor VisualClient {
     private let configuration: BuildConfiguration
     private let api: VisualAPI
     private let store: SharedBuildStore
+    private let device: DeviceInfo
 
-    /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// Anything you leave out is read from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
     /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, or `.invalidBuildId`.
     public init(
         credentials: VisualCredentials? = nil,
@@ -31,7 +31,8 @@ public actor VisualClient {
             credentials: credentials, region: region, options: options, session: session,
             environment: ProcessInfo.processInfo.environment, store: .shared
         )
-        AutoFinish.register()
+        // Usually already done when the SDK loads; this is a fallback.
+        TestObservation.register()
     }
 
     internal init(
@@ -51,18 +52,48 @@ public actor VisualClient {
         self.configuration = BuildConfiguration(endpoint: region.graphqlEndpoint, credentials: credentials, options: options)
         self.api = VisualAPI(region: region, credentials: credentials, session: session)
         self.store = store
+        self.device = DeviceInfo.current(environment)
     }
 
-    /// The shared build, created on first use. Concurrent first calls make one request.
-    /// A failed attempt is not cached, so a later call retries.
+    /// The shared build, created if needed. Only useful to read its ID or link before the first check.
+    /// Concurrent first calls make one request, and a failed attempt is retried by the next call.
     /// - Throws: `VisualError.buildAlreadyCompleted` after `finish()`, `.conflictingConfiguration`,
-    ///   `.invalidBuildId`, or `VisualAPIError`.
+    ///   `.invalidBuildId`, `.buildNotFound`, or `VisualAPIError`.
     public func build() async throws -> VisualBuild {
         try await store.run(configuration, api: api).build
     }
 
-    /// Finishes the shared build. Repeated calls return the same result without another request.
-    /// Snapshots cannot be added afterwards.
+    /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.elementNotFound`, `.buildAlreadyCompleted`,
+    ///   `.conflictingConfiguration`, or `VisualAPIError`.
+    @MainActor
+    @discardableResult
+    public func sauceVisualCheck(
+        _ name: String, options: VisualCheckOptions = VisualCheckOptions()
+    ) async throws -> VisualSnapshot {
+        let name = try Self.snapshotName(name)
+        // Screenshot first, so it shows the screen as it was when you called the check.
+        let screenshot = Screenshot.capture()
+        let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
+        return try await check(name: name, png: screenshot.png, request: request)
+    }
+
+    /// Uploads through the API of the client that owns the build, so the snapshot goes to that build's
+    /// account and region.
+    internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
+        let name = try Self.snapshotName(name)
+        let run = try await store.run(configuration, api: api)
+        return try await run.api.createSnapshot(name: name, png: png, device: device, request: request, in: run.build)
+    }
+
+    private static func snapshotName(_ name: String) throws -> String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw VisualError.invalidSnapshotName }
+        return trimmed
+    }
+
+    /// Finishes the build early. You don't need to call this for a build the SDK finishes automatically.
+    /// Repeated calls return the same result without another request.
     /// - Throws: `VisualError.conflictingConfiguration`, `VisualAPIError`, or any error from creating the build.
     public func finish() async throws -> VisualBuild {
         try await store.finish(configuration, api: api)
@@ -130,14 +161,14 @@ internal actor SharedBuildStore {
     }
 
     private func finish(_ build: VisualBuild, with api: VisualAPI) async throws -> VisualBuild {
-        // Another caller may have started finishing while this one waited.
+        // Another call may have started finishing meanwhile.
         if let finishing { return try await finishing.value }
         let task = Task { try await api.finishBuild(build) }
         finishing = task
         do {
             return try await task.value
         } catch {
-            // Allow a retry, for example after a network failure.
+            // Let a later call retry, for example after a network error.
             if finishing == task { finishing = nil }
             throw error
         }

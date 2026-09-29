@@ -1,6 +1,7 @@
+import CryptoKit
 import Foundation
 
-/// Sauce Visual build operations.
+/// Sauce Visual build and snapshot operations.
 internal struct VisualAPI: Sendable {
     let transport: GraphQLTransport
 
@@ -95,20 +96,76 @@ internal struct VisualAPI: Sendable {
         )
     }
 
+    /// Uploads the screenshot, then creates snapshot `name` from it.
+    /// - Throws: `VisualAPIError`, or `CancellationError`.
+    func createSnapshot(
+        name: String, png: Data, device: DeviceInfo, request: SnapshotRequest, in build: VisualBuild
+    ) async throws -> VisualSnapshot {
+        let upload = try await createSnapshotUpload(buildId: build.id)
+        guard let url = upload.imageUploadUrl.flatMap(URL.init(string:)) else {
+            throw VisualAPIError(code: .apiError, detail: "No image upload URL.")
+        }
+        try await uploadImage(png, to: url)
+        let test = request.test
+        let input = GraphQL.SnapshotIn(
+            buildId: build.id,
+            uploadId: upload.id,
+            name: name,
+            testName: test.testName,
+            suiteName: test.suiteName,
+            operatingSystem: device.operatingSystem,
+            operatingSystemVersion: device.operatingSystemVersion,
+            device: device.device,
+            ignoreRegions: request.regions.isEmpty ? nil : request.regions.map(GraphQL.RegionIn.init),
+            diffingMethod: request.diffingMethod.rawValue,
+            diffingOptions: request.diffingOptions.map(GraphQL.DiffingOptionsIn.init),
+            diffingMethodSensitivity: request.diffingMethodSensitivity?.rawValue,
+            diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init)
+        )
+        let result = try await transport.execute(
+            Self.createSnapshotMutation, variables: GraphQL.Input(input: input), as: GraphQL.SnapshotResult.self
+        )
+        let snapshot = try Self.require(result)
+        return VisualSnapshot(
+            id: snapshot.id, name: name, buildId: build.id, testName: test.testName, suiteName: test.suiteName
+        )
+    }
+
+    private func createSnapshotUpload(buildId: String) async throws -> GraphQL.SnapshotUploadResult {
+        let result = try await transport.execute(
+            Self.createSnapshotUploadMutation, variables: GraphQL.Input(input: GraphQL.SnapshotUploadIn(buildId: buildId)),
+            as: GraphQL.SnapshotUploadResult.self
+        )
+        return try Self.require(result)
+    }
+
+    /// The upload URL already grants access, so no credentials are sent. The MD5 catches corrupted uploads.
+    func uploadImage(_ png: Data, to url: URL) async throws {
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("image/png", forHTTPHeaderField: "Content-Type")
+        request.setValue(Data(Insecure.MD5.hash(data: png)).base64EncodedString(), forHTTPHeaderField: "Content-MD5")
+        request.httpBody = png
+        let (_, status) = try await GraphQLTransport.send(request, with: transport.session)
+        guard (200..<300).contains(status) else {
+            throw VisualAPIError(code: .apiError, detail: "Screenshot upload failed with HTTP \(status).", statusCode: status)
+        }
+    }
+
     private static func reusable(_ existing: GraphQL.BuildResponse) throws -> VisualBuild {
         guard !existing.isCompleted else { throw VisualError.buildAlreadyCompleted }
         return existing.build
     }
 
     /// Mutations must return a value. GraphQL errors are already thrown by the transport.
-    private static func require(_ result: GraphQL.BuildResponse?) throws -> GraphQL.BuildResponse {
+    private static func require<Result>(_ result: Result?) throws -> Result {
         guard let result else { throw VisualAPIError(code: .apiError, detail: "Empty result.") }
         return result
     }
 
     // MARK: - GraphQL request and response shapes
 
-    /// The exact JSON the API sends and receives. Users only see `VisualBuildOptions` and `VisualBuild`.
+    /// The exact JSON the API sends and receives. Users only see the public models, such as `VisualBuild` and `VisualSnapshot`.
     private enum GraphQL {
         struct Input<Value: Encodable & Sendable>: Encodable, Sendable {
             let input: Value
@@ -124,6 +181,87 @@ internal struct VisualAPI: Sendable {
 
         struct FinishBuildIn: Encodable, Sendable {
             let uuid: String
+        }
+
+        struct SnapshotUploadIn: Encodable, Sendable {
+            let buildId: String
+        }
+
+        struct SnapshotIn: Encodable, Sendable {
+            let buildId: String
+            let uploadId: String
+            let name: String
+            let testName: String?
+            let suiteName: String?
+            let operatingSystem: String
+            let operatingSystemVersion: String
+            let device: String?
+            let ignoreRegions: [RegionIn]?
+            let diffingMethod: String
+            let diffingOptions: DiffingOptionsIn?
+            let diffingMethodSensitivity: String?
+            let diffingMethodTolerance: DiffingMethodToleranceIn?
+        }
+
+        struct RegionIn: Encodable, Sendable {
+            let x: Int
+            let y: Int
+            let width: Int
+            let height: Int
+            let name: String?
+            /// `nil` ignores the region.
+            let diffingOptions: DiffingOptionsIn?
+
+            init(_ region: PixelRegion) {
+                x = region.x
+                y = region.y
+                width = region.width
+                height = region.height
+                name = region.name
+                diffingOptions = region.diffingOptions.map(DiffingOptionsIn.init)
+            }
+        }
+
+        /// Sends every flag, so an option you left out means "don't report" rather than the default.
+        struct DiffingOptionsIn: Encodable, Sendable {
+            let content: Bool
+            let dimensions: Bool
+            let position: Bool
+            let structure: Bool
+            let style: Bool
+            let visual: Bool
+
+            init(_ options: DiffingOptions) {
+                content = options.contains(.content)
+                dimensions = options.contains(.dimensions)
+                position = options.contains(.position)
+                structure = options.contains(.structure)
+                style = options.contains(.style)
+                visual = options.contains(.visual)
+            }
+        }
+
+        struct DiffingMethodToleranceIn: Encodable, Sendable {
+            let color: Double?
+            let brightness: Double?
+            let antiAliasing: Double?
+            let minChangeSize: Int?
+
+            init(_ tolerance: DiffingMethodTolerance) {
+                color = tolerance.color
+                brightness = tolerance.brightness
+                antiAliasing = tolerance.antiAliasing
+                minChangeSize = tolerance.minChangeSize
+            }
+        }
+
+        struct SnapshotUploadResult: Decodable, Sendable {
+            let id: String
+            let imageUploadUrl: String?
+        }
+
+        struct SnapshotResult: Decodable, Sendable {
+            let id: String
         }
 
         /// `mode` is only fetched when looking up a build to reuse; `finishBuild` returns just a few fields.
@@ -164,6 +302,22 @@ internal struct VisualAPI: Sendable {
     mutation finishBuild($input: FinishBuildIn!) {
         result: finishBuild(input: $input) {
             id name status url
+        }
+    }
+    """
+
+    static let createSnapshotUploadMutation = """
+    mutation createSnapshotUpload($input: SnapshotUploadIn!) {
+        result: createSnapshotUpload(input: $input) {
+            id imageUploadUrl
+        }
+    }
+    """
+
+    static let createSnapshotMutation = """
+    mutation createSnapshot($input: SnapshotIn!) {
+        result: createSnapshot(input: $input) {
+            id
         }
     }
     """

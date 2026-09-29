@@ -1,8 +1,7 @@
 import Foundation
 
-/// Serves canned HTTP responses to a `URLSession` without touching the network.
-///
-/// Each session gets its own route, keyed by a header, so tests stay independent.
+/// Answers `URLSession` requests with canned responses, without using the network.
+/// Each session gets its own queue of replies, so tests don't affect each other.
 final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     struct Reply: Sendable {
         var status: Int = 200
@@ -68,7 +67,7 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
             client?.urlProtocol(self, didFailWithError: URLError(.unsupportedURL))
             return
         }
-        // URLSession moves the body into a stream before the protocol sees it.
+        // URLSession turns the body into a stream, so read it back.
         var captured = request
         captured.httpBody = request.httpBody ?? request.httpBodyStream.map(Self.read)
         let reply = route.next(for: captured)
@@ -99,7 +98,7 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 }
 
 extension NSLock {
-    /// `NSLocking.withLock` needs macOS 13 / iOS 16; the package supports older systems.
+    /// Like `NSLocking.withLock`, which needs iOS 16 and macOS 13.
     func locked<T>(_ body: () throws -> T) rethrows -> T {
         lock()
         defer { unlock() }
