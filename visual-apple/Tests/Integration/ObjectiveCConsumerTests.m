@@ -50,6 +50,7 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqual(options.ignoreRegions.count, 0u);
     XCTAssertEqual(options.ignoreElements.count, 0u);
     XCTAssertNil(options.testName);
+    XCTAssertNil(options.clipElement);
     CGRect statusBar = CGRectMake(0, 0, 402, 62);
 #if TARGET_OS_OSX
     options.ignoreRegions = @[[NSValue valueWithRect:statusBar]];
