@@ -9,7 +9,7 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     private static let site = URL(string: "https://www.saucedemo.com")!
 
     /// One client for the whole class. Missing credentials fail each test instead of crashing the run.
-    private static let client = Result { try VisualClient() }
+    private static let client = Result { try VisualClient(options: liveBuildOptions) }
     private var visual: VisualClient { get throws { try Self.client.get() } }
 
     override func setUp() {
@@ -29,6 +29,13 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         XCTAssertNotNil(UUID(uuidString: snapshot.buildId))
         XCTAssertEqual(snapshot.suiteName, "SauceDemoTests")
         XCTAssertEqual(snapshot.testName, "testLoginPage")
+    }
+
+    @MainActor
+    func testLoginButton() async throws {
+        openLoginPage()
+        let button = page.buttons["Login"]
+        try await visual.sauceVisualCheck("Login button", options: VisualCheckOptions(clipElement: button))
     }
 
     @MainActor

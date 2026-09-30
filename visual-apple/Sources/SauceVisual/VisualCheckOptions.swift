@@ -9,6 +9,8 @@ public struct VisualCheckOptions {
     public var testName: String?
     /// Defaults to the running test's class name.
     public var suiteName: String?
+    /// Snapshot only this element instead of the whole screen. Only its on-screen part is kept.
+    public var clipElement: XCUIElement?
     /// Areas to leave out of the comparison.
     public var ignoreRegions: [CGRect]
     /// Elements to leave out of the comparison. Each must exist when the check runs.
@@ -27,6 +29,7 @@ public struct VisualCheckOptions {
     public init(
         testName: String? = nil,
         suiteName: String? = nil,
+        clipElement: XCUIElement? = nil,
         ignoreRegions: [CGRect] = [],
         ignoreElements: [XCUIElement] = [],
         regions: [SelectiveRegion] = [],
@@ -37,6 +40,7 @@ public struct VisualCheckOptions {
     ) {
         self.testName = testName
         self.suiteName = suiteName
+        self.clipElement = clipElement
         self.ignoreRegions = ignoreRegions
         self.ignoreElements = ignoreElements
         self.regions = regions
@@ -136,9 +140,11 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
 
 // MARK: - Resolution
 
-/// What a check sends besides the image, with elements already turned into pixel rectangles.
+/// What a check needs besides the screenshot, with elements already turned into pixel rectangles.
 internal struct SnapshotRequest: Hashable, Sendable {
     var test = TestIdentity()
+    /// The part of the screenshot to keep, in pixels. `nil` keeps the whole screen.
+    var clip: CGRect?
     var regions: [PixelRegion] = []
     var diffingMethod: DiffingMethod = .balanced
     var diffingOptions: DiffingOptions?
@@ -155,27 +161,45 @@ internal struct PixelRegion: Hashable, Sendable {
     let name: String?
     let diffingOptions: DiffingOptions?
 
-    /// Converts points to pixels and clips to the image. `nil` when the area is off screen.
-    init?(_ rect: CGRect, scale: CGFloat, imageSize: CGSize, name: String?, diffingOptions: DiffingOptions?) {
-        guard rect.width.isFinite, rect.height.isFinite, !rect.isNull else { return nil }
-        let pixels = CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)
-            .integral
-            .intersection(CGRect(origin: .zero, size: imageSize))
-        guard !pixels.isNull, pixels.width > 0, pixels.height > 0 else { return nil }
-        self.x = Int(pixels.minX)
-        self.y = Int(pixels.minY)
+    /// Converts screen points to pixels inside `image`, the uploaded part of the screen in pixels.
+    /// `nil` when the area is outside it.
+    init?(_ rect: CGRect, scale: CGFloat, in image: CGRect, name: String?, diffingOptions: DiffingOptions?) {
+        guard let pixels = Self.pixels(rect, scale: scale, in: image) else { return nil }
+        self.x = Int(pixels.minX - image.minX)
+        self.y = Int(pixels.minY - image.minY)
         self.width = Int(pixels.width)
         self.height = Int(pixels.height)
         self.name = name
         self.diffingOptions = diffingOptions
     }
+
+    /// Scales `rect` to whole pixels and clips it to `bounds`. `nil` when nothing is left.
+    static func pixels(_ rect: CGRect, scale: CGFloat, in bounds: CGRect) -> CGRect? {
+        guard rect.width.isFinite, rect.height.isFinite, !rect.isNull else { return nil }
+        let pixels = CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)
+            .integral
+            .intersection(bounds)
+        guard !pixels.isNull, pixels.width > 0, pixels.height > 0 else { return nil }
+        return pixels
+    }
 }
 
 extension VisualCheckOptions {
     /// Reads element frames, which XCUI only allows on the main actor.
-    /// - Throws: `VisualError.elementNotFound` when an element doesn't exist.
+    /// - Throws: `VisualError.elementNotFound`, or `.clipElementOffScreen`.
     @MainActor
     func resolve(running test: TestIdentity, screenshot: Screenshot.Capture) throws -> SnapshotRequest {
+        let screen = CGRect(origin: .zero, size: screenshot.pixelSize)
+        var clip: CGRect?
+        if let clipElement {
+            guard clipElement.exists else { throw VisualError.elementNotFound }
+            guard let pixels = PixelRegion.pixels(clipElement.frame, scale: screenshot.scale, in: screen) else {
+                throw VisualError.clipElementOffScreen
+            }
+            clip = pixels
+        }
+        // Regions are relative to the uploaded image, so to the clip element when there is one.
+        let image = clip ?? screen
         func pixels(_ area: SelectiveRegion.Area, name: String?, options: DiffingOptions?) throws -> PixelRegion? {
             let rect: CGRect
             switch area {
@@ -185,7 +209,7 @@ extension VisualCheckOptions {
                 guard element.exists else { throw VisualError.elementNotFound }
                 rect = element.frame
             }
-            let region = PixelRegion(rect, scale: screenshot.scale, imageSize: screenshot.pixelSize, name: name, diffingOptions: options)
+            let region = PixelRegion(rect, scale: screenshot.scale, in: image, name: name, diffingOptions: options)
             if region == nil {
                 // Not an error, since elements can scroll away, but tell the user nothing was ignored.
                 print("Sauce Visual: skipped region \(name.map { "\"\($0)\" " } ?? "")at \(rect), which is outside the screenshot.")
@@ -206,6 +230,7 @@ extension VisualCheckOptions {
         }
         return SnapshotRequest(
             test: test.overriding(testName: testName, suiteName: suiteName),
+            clip: clip,
             regions: resolved,
             diffingMethod: diffingMethod ?? .balanced,
             diffingOptions: diffingOptions,
