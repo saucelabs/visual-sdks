@@ -14,6 +14,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case invalidSnapshotName = 10
     case elementNotFound = 11
     case invalidCheckOptions = 12
+    case clipElementOffScreen = 13
+    case screenshotFailed = 14
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -44,6 +46,10 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
         case .invalidCheckOptions:
             return "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."
+        case .clipElementOffScreen:
+            return "The clip element is off screen. Scroll it into view before the check."
+        case .screenshotFailed:
+            return "Could not process the screenshot."
         }
     }
 
