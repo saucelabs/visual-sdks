@@ -13,6 +13,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case buildNotFound = 9
     case invalidSnapshotName = 10
     case elementNotFound = 11
+    case clipElementOffScreen = 12
+    case screenshotFailed = 13
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -41,6 +43,10 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Invalid snapshot name. Give the snapshot a name that is not empty."
         case .elementNotFound:
             return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
+        case .clipElementOffScreen:
+            return "The clip element is off screen. Scroll it into view before the check."
+        case .screenshotFailed:
+            return "Could not process the screenshot."
         }
     }
 
