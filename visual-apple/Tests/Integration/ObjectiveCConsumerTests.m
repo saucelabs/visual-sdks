@@ -49,6 +49,13 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqual(options.ignoreElements.count, 0u);
     XCTAssertNil(options.testName);
     XCTAssertNil(options.clipElement);
+    XCTAssertNil(options.baselineOverride);
+    SLVBaselineOverride *baseline = [[SLVBaselineOverride alloc] init];
+    XCTAssertEqual(baseline.operatingSystem, SLVOperatingSystemNotSet);
+    baseline.name = @"Login page";
+    baseline.operatingSystem = SLVOperatingSystemIos;
+    options.baselineOverride = baseline;
+    XCTAssertEqualObjects(options.baselineOverride.name, @"Login page");
     CGRect statusBar = CGRectMake(0, 0, 402, 62);
 #if TARGET_OS_OSX
     options.ignoreRegions = @[[NSValue valueWithRect:statusBar]];
@@ -58,6 +65,20 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     options.diffingMethod = SLVDiffingMethodSimple;
     XCTAssertEqual(options.ignoreRegions.count, 1u);
     XCTAssertEqual(options.diffingMethod, SLVDiffingMethodSimple);
+}
+
+- (void)testClientKeepsBaselineOverride {
+    SLVBaselineOverride *baseline = [[SLVBaselineOverride alloc] init];
+    baseline.device = @"iPhone 17";
+    baseline.operatingSystem = SLVOperatingSystemIos;
+    SLVClient *client = [[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
+                                                    options:nil baselineOverride:baseline error:nil];
+    XCTAssertEqualObjects(client.baselineOverride.device, @"iPhone 17");
+    XCTAssertEqual(client.baselineOverride.operatingSystem, SLVOperatingSystemIos);
+    XCTAssertNil(client.baselineOverride.name);
+    SLVClient *plain = [[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
+                                                   options:nil error:nil];
+    XCTAssertNil(plain.baselineOverride);
 }
 
 - (void)testClientKeepsOptions {

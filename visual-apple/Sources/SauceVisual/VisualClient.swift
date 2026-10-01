@@ -5,6 +5,8 @@ import Foundation
 public actor VisualClient {
     public nonisolated let region: SauceRegion
     public nonisolated let options: VisualBuildOptions
+    /// Used for every check that doesn't set its own.
+    public nonisolated let baselineOverride: BaselineOverride?
     private let api: VisualAPI
     private let store: SharedBuildStore
     private let device: DeviceInfo
@@ -15,11 +17,12 @@ public actor VisualClient {
         credentials: VisualCredentials? = nil,
         region: SauceRegion? = nil,
         options: VisualBuildOptions = VisualBuildOptions(),
+        baselineOverride: BaselineOverride? = nil,
         session: URLSession = .shared
     ) throws {
         try self.init(
-            credentials: credentials, region: region, options: options, session: session,
-            environment: ProcessInfo.processInfo.environment, store: .shared
+            credentials: credentials, region: region, options: options, baselineOverride: baselineOverride,
+            session: session, environment: ProcessInfo.processInfo.environment, store: .shared
         )
         // Usually already done when the SDK loads; this is a fallback.
         TestObservation.register()
@@ -29,6 +32,7 @@ public actor VisualClient {
         credentials: VisualCredentials?,
         region: SauceRegion?,
         options: VisualBuildOptions,
+        baselineOverride: BaselineOverride? = nil,
         session: URLSession,
         environment: [String: String],
         store: SharedBuildStore
@@ -39,6 +43,7 @@ public actor VisualClient {
         if let buildId = options.buildId, UUID(uuidString: buildId) == nil { throw VisualError.invalidBuildId }
         self.region = region
         self.options = options
+        self.baselineOverride = baselineOverride
         self.api = VisualAPI(region: region, credentials: credentials, session: session)
         self.store = store
         self.device = DeviceInfo.current(environment)
@@ -68,6 +73,8 @@ public actor VisualClient {
         let name = try Self.snapshotName(name)
         // Crop here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
         let png = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
+        var request = request
+        request.baselineOverride = request.baselineOverride ?? baselineOverride
         let build = try await build()
         return try await api.createSnapshot(name: name, png: png, device: device, request: request, in: build)
     }
