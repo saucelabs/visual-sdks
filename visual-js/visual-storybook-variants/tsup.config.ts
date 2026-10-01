@@ -1,7 +1,7 @@
 import { defineConfig, type Options } from "tsup";
 import { readFile } from "fs/promises";
-import { globalPackages as globalManagerPackages } from "@storybook/manager/globals";
-import { globalPackages as globalPreviewPackages } from "@storybook/preview/globals";
+import { globalPackages as globalManagerPackages } from "storybook/internal/manager/globals";
+import { globalPackages as globalPreviewPackages } from "storybook/internal/preview/globals";
 
 // The current browsers supported by Storybook v7
 const BROWSER_TARGET: Options['target'] = ["chrome100", "safari15", "firefox91"];
@@ -87,6 +87,9 @@ export default defineConfig(async (options) => {
       target: BROWSER_TARGET,
       platform: "browser",
       external: globalPreviewPackages,
+      // cartesian (and its xtend dependency) and lodash are CommonJS-only. Vite's dev server does not pre-bundle
+      // CommonJS imported from inside an installed addon, so bundle them here instead
+      noExternal: ["cartesian", "xtend", /^lodash/],
     });
   }
 

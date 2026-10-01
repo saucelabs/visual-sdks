@@ -1,0 +1,37 @@
+name: storybook-variants (build)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-js/visual-storybook-variants/**'
+      - .github/workflows/js-build.yml
+      - .github/workflows/storybook-variants-build.yml
+  pull_request:
+    paths:
+      - 'visual-js/visual-storybook-variants/**'
+      - .github/workflows/js-build.yml
+      - .github/workflows/storybook-variants-build.yml
+
+defaults:
+  run:
+    working-directory: visual-js
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Node 24.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+      - name: Install
+        run: npm install
+      - name: Build addon
+        run: npm run build --workspace visual-storybook-variants
+      - name: Build demo Storybook
+        run: npm run build-storybook --workspace visual-storybook-variants
+        env:
+          STORYBOOK_DISABLE_TELEMETRY: 1
