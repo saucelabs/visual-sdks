@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import XCTest
 
 /// A snapshot added to the build. Its comparison result appears in the Sauce Visual dashboard.
@@ -109,6 +110,21 @@ internal enum Screenshot {
     static func capture() -> Capture {
         let screenshot = XCUIScreen.main.screenshot()
         return capture(png: screenshot.pngRepresentation, pointWidth: screenshot.image.size.width)
+    }
+
+    /// Cuts `rect`, in pixels, out of a PNG and returns it as a new PNG.
+    /// - Throws: `VisualError.screenshotFailed` when the image can't be read or written.
+    static func crop(_ png: Data, to rect: CGRect) throws -> Data {
+        guard let source = CGImageSourceCreateWithData(png as CFData, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+              let cropped = image.cropping(to: rect) else { throw VisualError.screenshotFailed }
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, "public.png" as CFString, 1, nil) else {
+            throw VisualError.screenshotFailed
+        }
+        CGImageDestinationAddImage(destination, cropped, nil)
+        guard CGImageDestinationFinalize(destination) else { throw VisualError.screenshotFailed }
+        return output as Data
     }
 
     /// Reads the image size from the PNG header, which works the same on every platform.

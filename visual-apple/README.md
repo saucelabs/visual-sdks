@@ -61,6 +61,7 @@ Pass `VisualCheckOptions` to change how a snapshot is compared. Every field is o
 
 ```swift
 try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
+    clipElement: app.otherElements["cart"],                            // snapshot only this element
     ignoreRegions: [CGRect(x: 0, y: 0, width: 402, height: 62)],        // points, like XCUIElement.frame
     ignoreElements: [app.staticTexts["timestamp"]],                     // must exist at the check
     regions: [.detectChanges(in: app.images["logo"], [.visual])],       // compare this area with its own rules
@@ -73,6 +74,7 @@ try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
 | Option | Purpose |
 |---|---|
 | `testName`, `suiteName` | Override the names taken from the running test |
+| `clipElement` | Snapshot only this element. Parts off screen are cut off, and an element entirely off screen throws `VisualError.clipElementOffScreen`. Ignore regions still use screen coordinates |
 | `ignoreRegions`, `ignoreElements` | Areas and elements left out of the comparison. A missing element throws `VisualError.elementNotFound` |
 | `regions` | `SelectiveRegion.ignoreChanges(in:)` or `.detectChanges(in:_:)` for a rectangle or element |
 | `diffingMethod` | `.balanced` (default), `.simple`, or `.experimental` |
@@ -112,7 +114,7 @@ checkOptions.ignoreElements = @[app.staticTexts[@"timestamp"]];
 }];
 ```
 
-`SLVCheckOptions` covers the test and suite names, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, and `diffingMethod`. Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
+`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, and `diffingMethod`. Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
 
 ## Development
 

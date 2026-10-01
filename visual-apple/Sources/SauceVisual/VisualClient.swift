@@ -51,7 +51,7 @@ public actor VisualClient {
     }
 
     /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.elementNotFound`, `.buildAlreadyCompleted`, or `VisualAPIError`.
+    /// - Throws: `VisualError`, such as `.elementNotFound` or `.clipElementOffScreen`, or `VisualAPIError`.
     @MainActor
     @discardableResult
     public func sauceVisualCheck(
@@ -66,6 +66,8 @@ public actor VisualClient {
 
     internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
         let name = try Self.snapshotName(name)
+        // Crop here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
+        let png = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
         let build = try await build()
         return try await api.createSnapshot(name: name, png: png, device: device, request: request, in: build)
     }
