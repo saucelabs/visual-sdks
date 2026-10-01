@@ -132,6 +132,75 @@ public enum VisualDiffingMethodCode: Int, Sendable {
     }
 }
 
+/// Operating systems for a baseline override, for Objective-C. `NotSet` keeps the snapshot's own.
+@objc(SLVOperatingSystem)
+public enum VisualOperatingSystemCode: Int, Sendable {
+    case notSet = 0
+    case ios = 1
+    case macos = 2
+    case android = 3
+    case windows = 4
+    case linux = 5
+    case unknown = 6
+
+    internal var value: OperatingSystem? {
+        switch self {
+        case .notSet: return nil
+        case .ios: return .ios
+        case .macos: return .macos
+        case .android: return .android
+        case .windows: return .windows
+        case .linux: return .linux
+        case .unknown: return .unknown
+        }
+    }
+
+    internal init(_ value: OperatingSystem?) {
+        switch value {
+        case nil: self = .notSet
+        case .ios: self = .ios
+        case .macos: self = .macos
+        case .android: self = .android
+        case .windows: self = .windows
+        case .linux: self = .linux
+        case .unknown: self = .unknown
+        }
+    }
+}
+
+/// Values used instead of the snapshot's own when looking up its baseline, for Objective-C.
+/// Properties left `nil` keep the snapshot's own value.
+@objc(SLVBaselineOverride)
+public final class VisualBaselineOverride: NSObject, @unchecked Sendable {
+    @objc public var name: String?
+    @objc public var testName: String?
+    @objc public var suiteName: String?
+    @objc public var device: String?
+    @objc public var operatingSystem: VisualOperatingSystemCode = .notSet
+    @objc public var operatingSystemVersion: String?
+
+    @objc public override init() {
+        super.init()
+    }
+
+    internal convenience init(_ value: BaselineOverride) {
+        self.init()
+        name = value.name
+        testName = value.testName
+        suiteName = value.suiteName
+        device = value.device
+        operatingSystem = VisualOperatingSystemCode(value.operatingSystem)
+        operatingSystemVersion = value.operatingSystemVersion
+    }
+
+    internal var value: BaselineOverride {
+        BaselineOverride(
+            name: name, testName: testName, suiteName: suiteName, device: device,
+            operatingSystem: operatingSystem.value, operatingSystemVersion: operatingSystemVersion
+        )
+    }
+}
+
 /// Options for one check, for Objective-C. Don't change them while the check runs.
 @objc(SLVCheckOptions)
 public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
@@ -146,6 +215,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
     /// Elements to leave out of the comparison. Each must exist when the check runs.
     @objc public var ignoreElements: [XCUIElement] = []
     @objc public var diffingMethod: VisualDiffingMethodCode = .balanced
+    /// Compare against another snapshot's baseline.
+    @objc public var baselineOverride: VisualBaselineOverride?
 
     internal var value: VisualCheckOptions {
         VisualCheckOptions(
@@ -160,7 +231,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
                 #endif
             },
             ignoreElements: ignoreElements,
-            diffingMethod: diffingMethod.value
+            diffingMethod: diffingMethod.value,
+            baselineOverride: baselineOverride?.value
         )
     }
 }
@@ -179,12 +251,16 @@ public final class VisualObjCClient: NSObject, Sendable {
     @objc public static var errorDomain: String { VisualError.errorDomain }
     @objc public var region: VisualRegion { VisualRegion(client.region) }
     @objc public var options: VisualBuildConfiguration { VisualBuildConfiguration(client.options) }
+    /// Used for every check that doesn't set its own. A copy: changing it has no effect.
+    @objc public var baselineOverride: VisualBaselineOverride? { client.baselineOverride.map(VisualBaselineOverride.init) }
 
     /// Anything `nil` is read from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// `baselineOverride` applies to every check that doesn't set its own.
     /// - Throws: `SLVErrorCodeInvalidCredentials`, `SLVErrorCodeUnknownRegion`, or `SLVErrorCodeInvalidBuildId`.
-    @objc(initWithUsername:accessKey:region:options:error:)
+    @objc(initWithUsername:accessKey:region:options:baselineOverride:error:)
     public init(
-        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?
+        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?,
+        baselineOverride: VisualBaselineOverride?
     ) throws {
         let credentials: VisualCredentials?
         if username == nil && accessKey == nil {
@@ -193,9 +269,18 @@ public final class VisualObjCClient: NSObject, Sendable {
             credentials = try VisualCredentials(username: username ?? "", accessKey: accessKey ?? "")
         }
         client = try VisualClient(
-            credentials: credentials, region: region?.value, options: options?.value ?? VisualBuildOptions()
+            credentials: credentials, region: region?.value, options: options?.value ?? VisualBuildOptions(),
+            baselineOverride: baselineOverride?.value
         )
         super.init()
+    }
+
+    /// Like `initWithUsername:accessKey:region:options:baselineOverride:error:`, without a baseline override.
+    @objc(initWithUsername:accessKey:region:options:error:)
+    public convenience init(
+        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?
+    ) throws {
+        try self.init(username: username, accessKey: accessKey, region: region, options: options, baselineOverride: nil)
     }
 
     /// Reads credentials and region from the environment.

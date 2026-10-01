@@ -25,6 +25,8 @@ public struct VisualCheckOptions {
     public var diffingMethodSensitivity: DiffingMethodSensitivity?
     /// Detailed thresholds for the `.balanced` method. Leave `nil` for the default.
     public var diffingMethodTolerance: DiffingMethodTolerance?
+    /// Compare against another snapshot's baseline. Replaces the client's override for this check.
+    public var baselineOverride: BaselineOverride?
 
     public init(
         testName: String? = nil,
@@ -36,7 +38,8 @@ public struct VisualCheckOptions {
         diffingMethod: DiffingMethod? = nil,
         diffingOptions: DiffingOptions? = nil,
         diffingMethodSensitivity: DiffingMethodSensitivity? = nil,
-        diffingMethodTolerance: DiffingMethodTolerance? = nil
+        diffingMethodTolerance: DiffingMethodTolerance? = nil,
+        baselineOverride: BaselineOverride? = nil
     ) {
         self.testName = testName
         self.suiteName = suiteName
@@ -48,6 +51,7 @@ public struct VisualCheckOptions {
         self.diffingOptions = diffingOptions
         self.diffingMethodSensitivity = diffingMethodSensitivity
         self.diffingMethodTolerance = diffingMethodTolerance
+        self.baselineOverride = baselineOverride
     }
 }
 
@@ -138,6 +142,47 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
     }
 }
 
+/// Values used instead of the snapshot's own when looking up its baseline. Fields left `nil` keep
+/// the snapshot's own value. Baselines also match on test and suite names, so set those to use another test's.
+public struct BaselineOverride: Hashable, Sendable {
+    public var name: String?
+    public var testName: String?
+    public var suiteName: String?
+    public var device: String?
+    public var operatingSystem: OperatingSystem?
+    public var operatingSystemVersion: String?
+
+    public init(
+        name: String? = nil,
+        testName: String? = nil,
+        suiteName: String? = nil,
+        device: String? = nil,
+        operatingSystem: OperatingSystem? = nil,
+        operatingSystemVersion: String? = nil
+    ) {
+        self.name = name
+        self.testName = testName
+        self.suiteName = suiteName
+        self.device = device
+        self.operatingSystem = operatingSystem
+        self.operatingSystemVersion = operatingSystemVersion
+    }
+
+    /// True when nothing is overridden.
+    var isEmpty: Bool { self == BaselineOverride() }
+}
+
+/// Operating systems the Sauce Visual API knows.
+public enum OperatingSystem: String, Hashable, Sendable {
+    case ios = "IOS"
+    case macos = "MACOS"
+    case android = "ANDROID"
+    case windows = "WINDOWS"
+    case linux = "LINUX"
+    /// For example tvOS, which the API doesn't list.
+    case unknown = "UNKNOWN"
+}
+
 // MARK: - Resolution
 
 /// What a check needs besides the screenshot, with elements already turned into pixel rectangles.
@@ -150,6 +195,8 @@ internal struct SnapshotRequest: Hashable, Sendable {
     var diffingOptions: DiffingOptions?
     var diffingMethodSensitivity: DiffingMethodSensitivity?
     var diffingMethodTolerance: DiffingMethodTolerance?
+    /// `nil` falls back to the client's override.
+    var baselineOverride: BaselineOverride?
 }
 
 /// A region in screenshot pixels, as the API expects.
@@ -235,7 +282,8 @@ extension VisualCheckOptions {
             diffingMethod: diffingMethod ?? .balanced,
             diffingOptions: diffingOptions,
             diffingMethodSensitivity: diffingMethodSensitivity,
-            diffingMethodTolerance: diffingMethodTolerance
+            diffingMethodTolerance: diffingMethodTolerance,
+            baselineOverride: baselineOverride
         )
     }
 }

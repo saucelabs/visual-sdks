@@ -68,7 +68,7 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         let device = DeviceInfo.current(environment)
         XCTAssertEqual(snapshotInput, [
             "buildId": buildID, "uploadId": uploadID, "name": "Login",
-            "operatingSystem": device.operatingSystem, "operatingSystemVersion": device.operatingSystemVersion,
+            "operatingSystem": device.operatingSystem.rawValue, "operatingSystemVersion": device.operatingSystemVersion,
             "device": "iPhone 15 Pro", "diffingMethod": "BALANCED"
         ])
     }
@@ -184,11 +184,11 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(simulator.operatingSystemVersion.hasPrefix("\(version.majorVersion).\(version.minorVersion)"))
         XCTAssertNotNil(DeviceInfo.current([:]).device, "Falls back to the hardware model")
         #if os(macOS)
-        XCTAssertEqual(simulator.operatingSystem, "MACOS")
+        XCTAssertEqual(simulator.operatingSystem, .macos)
         #elseif os(iOS)
-        XCTAssertEqual(simulator.operatingSystem, "IOS")
+        XCTAssertEqual(simulator.operatingSystem, .ios)
         #else
-        XCTAssertEqual(simulator.operatingSystem, "UNKNOWN")
+        XCTAssertEqual(simulator.operatingSystem, .unknown)
         #endif
     }
 }
