@@ -1,0 +1,126 @@
+import Foundation
+
+/// Creates, reuses, and finishes the Sauce Visual build for this test run.
+///
+/// Every client in the process shares one build: the first call to `build()`
+/// creates it (or reuses the one named by `buildId` / `customId`), and later clients get the same
+/// build regardless of their own options.
+///
+/// A build the SDK created is finished automatically when the XCTest bundle ends. A reused build is
+/// left open for whoever created it. Call `finish()` only to finish earlier.
+public actor VisualClient {
+    public nonisolated let region: SauceRegion
+    public nonisolated let options: VisualBuildOptions
+    private let api: VisualAPI
+    private let store: SharedBuildStore
+
+    /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, or `.invalidBuildId`.
+    public init(
+        credentials: VisualCredentials? = nil,
+        region: SauceRegion? = nil,
+        options: VisualBuildOptions = VisualBuildOptions(),
+        session: URLSession = .shared
+    ) throws {
+        try self.init(
+            credentials: credentials, region: region, options: options, session: session,
+            environment: ProcessInfo.processInfo.environment, store: .shared
+        )
+        AutoFinish.register()
+    }
+
+    internal init(
+        credentials: VisualCredentials?,
+        region: SauceRegion?,
+        options: VisualBuildOptions,
+        session: URLSession,
+        environment: [String: String],
+        store: SharedBuildStore
+    ) throws {
+        let credentials = try credentials ?? VisualCredentials.fromEnvironment(environment)
+        let region = try region ?? SauceRegion.fromEnvironment(environment)
+        let options = options.resolved(with: environment)
+        if let buildId = options.buildId, UUID(uuidString: buildId) == nil { throw VisualError.invalidBuildId }
+        self.region = region
+        self.options = options
+        self.api = VisualAPI(region: region, credentials: credentials, session: session)
+        self.store = store
+    }
+
+    /// The shared build, created on first use. Concurrent first calls make one request.
+    /// A failed attempt is not cached, so a later call retries.
+    /// - Throws: `VisualError.buildAlreadyCompleted` after `finish()`, `.invalidBuildId`, or `VisualAPIError`.
+    public func build() async throws -> VisualBuild {
+        try await store.build(api: api, options: options)
+    }
+
+    /// Finishes the shared build. Repeated calls return the same result without another request.
+    /// Snapshots cannot be added afterwards.
+    /// - Throws: `VisualAPIError`, or any error from creating the build.
+    public func finish() async throws -> VisualBuild {
+        try await store.finish(api: api, options: options)
+    }
+}
+
+internal actor SharedBuildStore {
+    static let shared = SharedBuildStore()
+
+    private var pending: Task<VisualAPI.Resolution, Error>?
+    /// The client configuration that resolved the build, used to finish it automatically.
+    private var owner: VisualAPI?
+    private var finishing: Task<VisualBuild, Error>?
+
+    func build(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualBuild {
+        if finishing != nil { throw VisualError.buildAlreadyCompleted }
+        return try await resolve(api: api, options: options).build
+    }
+
+    func finish(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualBuild {
+        if let finishing { return try await finishing.value }
+        let build = try await resolve(api: api, options: options).build
+        return try await finish(build, with: api)
+    }
+
+    /// Called when the test bundle ends. Finishes the build only if this process created it.
+    func finishCreatedBuild() async -> AutoFinish.Outcome {
+        guard let pending, let owner else { return .noBuild }
+        do {
+            let resolution = try await pending.value
+            guard resolution.created else { return .leftOpen(resolution.build) }
+            return .finished(try await finish(resolution.build, with: owner))
+        } catch {
+            return .failed(error)
+        }
+    }
+
+    private func finish(_ build: VisualBuild, with api: VisualAPI) async throws -> VisualBuild {
+        // Another caller may have started finishing while this one waited.
+        if let finishing { return try await finishing.value }
+        let task = Task { try await api.finishBuild(build) }
+        finishing = task
+        do {
+            return try await task.value
+        } catch {
+            // Allow a retry, for example after a network failure.
+            if finishing == task { finishing = nil }
+            throw error
+        }
+    }
+
+    /// The request runs in its own task, so one caller's cancellation does not fail the others.
+    private func resolve(api: VisualAPI, options: VisualBuildOptions) async throws -> VisualAPI.Resolution {
+        if let pending { return try await pending.value }
+        let task = Task { try await api.resolveBuild(options) }
+        pending = task
+        owner = api
+        do {
+            return try await task.value
+        } catch {
+            if pending == task {
+                pending = nil
+                owner = nil
+            }
+            throw error
+        }
+    }
+}

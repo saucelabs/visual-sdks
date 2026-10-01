@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "SauceVisual",
-    platforms: [.iOS(.v15), .tvOS(.v15), .macOS(.v12)],
+    platforms: [.iOS(.v15), .tvOS(.v15), .macOS(.v14)],
     products: [.library(name: "SauceVisual", type: .dynamic, targets: ["SauceVisual"])],
     targets: [
         .target(
