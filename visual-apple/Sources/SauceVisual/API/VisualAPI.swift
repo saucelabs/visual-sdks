@@ -99,14 +99,15 @@ internal struct VisualAPI: Sendable {
             name: name,
             testName: test.testName,
             suiteName: test.suiteName,
-            operatingSystem: device.operatingSystem,
+            operatingSystem: device.operatingSystem.rawValue,
             operatingSystemVersion: device.operatingSystemVersion,
             device: device.device,
             ignoreRegions: request.regions.isEmpty ? nil : request.regions.map(GraphQL.RegionIn.init),
             diffingMethod: request.diffingMethod.rawValue,
             diffingOptions: request.diffingOptions.map(GraphQL.DiffingOptionsIn.init),
             diffingMethodSensitivity: request.diffingMethodSensitivity?.rawValue,
-            diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init)
+            diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init),
+            baselineOverride: request.baselineOverride.flatMap { $0.isEmpty ? nil : GraphQL.BaselineOverrideIn($0) }
         )
         let response = try await transport.execute(
             Self.createSnapshotMutation, variables: GraphQL.Input(input: input), as: GraphQL.SnapshotResult.self
@@ -190,6 +191,26 @@ internal struct VisualAPI: Sendable {
             let diffingOptions: DiffingOptionsIn?
             let diffingMethodSensitivity: String?
             let diffingMethodTolerance: DiffingMethodToleranceIn?
+            let baselineOverride: BaselineOverrideIn?
+        }
+
+        /// Fields left `nil` are omitted, so the snapshot's own value is used for them.
+        struct BaselineOverrideIn: Encodable, Sendable {
+            let name: String?
+            let testName: String?
+            let suiteName: String?
+            let device: String?
+            let operatingSystem: String?
+            let operatingSystemVersion: String?
+
+            init(_ value: BaselineOverride) {
+                name = value.name
+                testName = value.testName
+                suiteName = value.suiteName
+                device = value.device
+                operatingSystem = value.operatingSystem?.rawValue
+                operatingSystemVersion = value.operatingSystemVersion
+            }
         }
 
         struct RegionIn: Encodable, Sendable {
