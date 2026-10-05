@@ -4,7 +4,7 @@
 
 Add support for Storybook 10.
 
-**Breaking:** this release requires Storybook 10. Storybook 7 is no longer supported — stay on `0.2.x` if you cannot upgrade yet.
+**Breaking:** this release requires Storybook 10. Storybook 7 is no longer supported — stay on `0.2.x` if you can't upgrade to Storybook 10 yet.
 
 - `storybook@^10.0.0` and `react@^18.0.0 || ^19.0.0` are now declared as peer dependencies (React was previously used but undeclared).
 - The toolbar toggle now uses `@storybook/icons`, replacing the `Icons` component removed in Storybook 8.
