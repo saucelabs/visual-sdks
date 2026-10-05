@@ -39,7 +39,7 @@ internal struct VisualAPI: Sendable {
     }
 
     func createBuild(_ options: VisualBuildOptions) async throws -> VisualBuild {
-        let input = BuildIn(
+        let input = GraphQL.BuildIn(
             name: options.name,
             project: options.project,
             branch: options.branch,
@@ -47,28 +47,29 @@ internal struct VisualAPI: Sendable {
             customId: options.customId
         )
         let response = try await transport.execute(
-            Self.createBuildMutation, variables: Input(input: input), as: BuildResult.self
+            Self.createBuildMutation, variables: GraphQL.Input(input: input), as: GraphQL.BuildResponse.self
         )
         return try Self.require(response).build
     }
 
-    func build(id: UUID) async throws -> ExistingBuild? {
+    private func build(id: UUID) async throws -> GraphQL.BuildResponse? {
         let response = try await transport.execute(
-            Self.buildQuery, variables: Input(input: id.uuidString.lowercased()), as: BuildResult.self
+            Self.buildQuery, variables: GraphQL.Input(input: id.uuidString.lowercased()), as: GraphQL.BuildResponse.self
         )
-        return response.result.map(ExistingBuild.init)
+        return response.result
     }
 
-    func build(customId: String) async throws -> ExistingBuild? {
+    private func build(customId: String) async throws -> GraphQL.BuildResponse? {
         let response = try await transport.execute(
-            Self.buildByCustomIdQuery, variables: Input(input: customId), as: BuildResult.self
+            Self.buildByCustomIdQuery, variables: GraphQL.Input(input: customId), as: GraphQL.BuildResponse.self
         )
-        return response.result.map(ExistingBuild.init)
+        return response.result
     }
 
     func finishBuild(_ build: VisualBuild) async throws -> VisualBuild {
         let response = try await transport.execute(
-            Self.finishBuildMutation, variables: Input(input: FinishBuildIn(uuid: build.id)), as: BuildResult.self
+            Self.finishBuildMutation, variables: GraphQL.Input(input: GraphQL.FinishBuildIn(uuid: build.id)),
+            as: GraphQL.BuildResponse.self
         )
         let finished = try Self.require(response)
         return VisualBuild(
@@ -83,23 +84,15 @@ internal struct VisualAPI: Sendable {
         )
     }
 
-    struct ExistingBuild: Sendable {
-        let build: VisualBuild
-        let isCompleted: Bool
-
-        init(_ result: BuildResult) {
-            build = result.build
-            isCompleted = result.mode == "COMPLETED"
-        }
-    }
-
-    private static func reusable(_ existing: ExistingBuild) throws -> VisualBuild {
+    private static func reusable(_ existing: GraphQL.BuildResponse) throws -> VisualBuild {
         guard !existing.isCompleted else { throw VisualError.buildAlreadyCompleted }
         return existing.build
     }
 
     /// Mutations must return a value. GraphQL errors explain a missing one.
-    private static func require(_ response: GraphQLTransport.Response<BuildResult>) throws -> BuildResult {
+    private static func require(
+        _ response: GraphQLTransport.Response<GraphQL.BuildResponse>
+    ) throws -> GraphQL.BuildResponse {
         guard let result = response.result else {
             let detail = response.errorMessages.isEmpty ? "Empty result." : response.errorMessages.joined(separator: ", ")
             throw VisualAPIError(code: .apiError, detail: detail)
@@ -107,40 +100,47 @@ internal struct VisualAPI: Sendable {
         return result
     }
 
-    // MARK: - Wire types
+    // MARK: - GraphQL request and response shapes
 
-    private struct Input<Value: Encodable & Sendable>: Encodable, Sendable {
-        let input: Value
-    }
+    /// The exact JSON the API sends and receives. Users only see `VisualBuildOptions` and `VisualBuild`.
+    private enum GraphQL {
+        struct Input<Value: Encodable & Sendable>: Encodable, Sendable {
+            let input: Value
+        }
 
-    private struct BuildIn: Encodable, Sendable {
-        let name: String?
-        let project: String?
-        let branch: String?
-        let defaultBranch: String?
-        let customId: String?
-    }
+        struct BuildIn: Encodable, Sendable {
+            let name: String?
+            let project: String?
+            let branch: String?
+            let defaultBranch: String?
+            let customId: String?
+        }
 
-    private struct FinishBuildIn: Encodable, Sendable {
-        let uuid: String
-    }
+        struct FinishBuildIn: Encodable, Sendable {
+            let uuid: String
+        }
 
-    struct BuildResult: Decodable, Sendable {
-        let id: String
-        let name: String?
-        let project: String?
-        let branch: String?
-        let defaultBranch: String?
-        let status: String?
-        let url: String?
-        let customId: String?
-        let mode: String?
+        /// `mode` is only fetched when looking up a build to reuse; `finishBuild` returns just a few fields.
+        struct BuildResponse: Decodable, Sendable {
+            let id: String
+            let name: String?
+            let project: String?
+            let branch: String?
+            let defaultBranch: String?
+            let status: String?
+            let url: String?
+            let customId: String?
+            let mode: String?
 
-        var build: VisualBuild {
-            VisualBuild(
-                id: id, name: name, project: project, branch: branch, defaultBranch: defaultBranch,
-                status: status, url: url, customId: customId
-            )
+            /// A finished build can't take more snapshots, so it isn't reused.
+            var isCompleted: Bool { mode == "COMPLETED" }
+
+            var build: VisualBuild {
+                VisualBuild(
+                    id: id, name: name, project: project, branch: branch, defaultBranch: defaultBranch,
+                    status: status, url: url, customId: customId
+                )
+            }
         }
     }
 
