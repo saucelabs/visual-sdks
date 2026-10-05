@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'visual-js/.changeset/**'
+  workflow_dispatch:
 
 defaults:
   run:
@@ -24,8 +25,10 @@ jobs:
         with:
           node-version: 24.x
           registry-url: https://registry.npmjs.org
+      # npm 11.5.1+ supports Trusted Publishing. npm 12 changed `npm info --json` to return a list,
+      # which changesets reads as "never published", so it tries to republish every package.
       - name: Update npm to a version that supports Trusted Publishing
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
