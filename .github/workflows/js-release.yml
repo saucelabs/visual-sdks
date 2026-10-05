@@ -14,6 +14,9 @@ defaults:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
       - name: Setup Node 24.x
@@ -21,6 +24,8 @@ jobs:
         with:
           node-version: 24.x
           registry-url: https://registry.npmjs.org
+      - name: Update npm to a version that supports Trusted Publishing
+        run: npm install -g npm@latest
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
@@ -36,7 +41,5 @@ jobs:
         run: |
           npx changeset version
           npx changeset publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
       - name: Push to git
         run: git push --follow-tags
