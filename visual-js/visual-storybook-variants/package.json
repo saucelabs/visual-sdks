@@ -1,6 +1,6 @@
 {
   "name": "@saucelabs/storybook-variants",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Display multiple variations of a component automatically in a grid.",
   "keywords": [
     "storybook-addons",
