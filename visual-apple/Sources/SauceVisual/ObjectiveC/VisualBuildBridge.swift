@@ -3,6 +3,7 @@ import Foundation
 
 /// Objective-C representation of a `SauceRegion`.
 @objc(SLVRegion)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualRegion: NSObject, Sendable {
     internal let value: SauceRegion
 
@@ -39,6 +40,7 @@ public final class VisualRegion: NSObject, Sendable {
 
 /// Objective-C build attributes. `nil` fields fall back to their `SAUCE_VISUAL_*` environment variable.
 @objc(SLVBuildOptions)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualBuildConfiguration: NSObject, Sendable {
     internal let value: VisualBuildOptions
 
@@ -71,6 +73,7 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
 
 /// Objective-C representation of a Sauce Visual build.
 @objc(SLVBuild)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualBuildRecord: NSObject, Sendable {
     /// Build UUID. Named `buildId` because `id` is reserved in Objective-C.
     @objc public let buildId: String
@@ -101,6 +104,7 @@ public final class VisualBuildRecord: NSObject, Sendable {
 /// with either a build or an NSError, never both. The shared request is not cancellable, because
 /// other clients may be waiting for it.
 @objc(SLVClient)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualObjCClient: NSObject, Sendable {
     private let client: VisualClient
 
