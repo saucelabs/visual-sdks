@@ -9,6 +9,11 @@
     "visual-testing"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saucelabs/visual-sdks.git",
+    "directory": "visual-js/visual-storybook-variants"
+  },
   "author": "SauceLabs",
   "exports": {
     ".": {
