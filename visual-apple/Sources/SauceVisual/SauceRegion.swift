@@ -30,6 +30,12 @@ public struct SauceRegion: Hashable, Sendable {
         graphqlEndpoint: URL(string: "https://api.eu-central-1.saucelabs.com/v1/visual/graphql")!
     )
 
+    public static let asiaSouth2 = SauceRegion(
+        name: "asia-south-2",
+        aliases: ["asia"],
+        graphqlEndpoint: URL(string: "https://api.asia-south-2.saucelabs.com/v1/visual/graphql")!
+    )
+
     public static let staging = SauceRegion(
         name: "staging",
         aliases: ["us-west-4-jeh6"],
@@ -39,7 +45,7 @@ public struct SauceRegion: Hashable, Sendable {
     /// Used when no region is given and `SAUCE_REGION` is unset or empty.
     public static let `default` = usWest1
 
-    public static let all: [SauceRegion] = [usWest1, usEast4, euCentral1, staging]
+    public static let all: [SauceRegion] = [usWest1, usEast4, euCentral1, asiaSouth2, staging]
 
     /// Looks up a region by name or alias. An empty name returns `default`.
     /// - Throws: `VisualError.unknownRegion`.

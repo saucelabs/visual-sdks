@@ -15,6 +15,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             "us-west-1": .usWest1, "us": .usWest1, "us-west-4-i3er": .usWest1, "US-WEST-1": .usWest1,
             "us-east-4": .usEast4, "us-east-4-cm5i": .usEast4,
             "eu-central-1": .euCentral1, "eu": .euCentral1, "eu-west-3-lnbf": .euCentral1,
+            "asia-south-2": .asiaSouth2, "asia": .asiaSouth2,
             "staging": .staging, "us-west-4-jeh6": .staging
         ]
         for (name, region) in expected {
