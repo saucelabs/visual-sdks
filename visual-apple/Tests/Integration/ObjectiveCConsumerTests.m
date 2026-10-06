@@ -37,6 +37,8 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     NSError *error = nil;
     XCTAssertEqualObjects(SLVRegion.defaultRegion.name, @"us-west-1");
     XCTAssertEqualObjects([SLVRegion regionNamed:@"eu" error:&error].name, @"eu-central-1");
+    XCTAssertEqualObjects([SLVRegion regionNamed:@"asia" error:&error].name, @"asia-south-2");
+    XCTAssertEqualObjects(SLVRegion.asiaSouth2.graphqlEndpoint.host, @"api.asia-south-2.saucelabs.com");
     XCTAssertNil(error);
     XCTAssertNil([SLVRegion regionNamed:@"mars" error:&error]);
     XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
