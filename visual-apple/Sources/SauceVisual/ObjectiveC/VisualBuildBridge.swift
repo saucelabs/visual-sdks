@@ -24,6 +24,7 @@ public final class VisualRegion: NSObject, Sendable {
     @objc public static var usWest1: VisualRegion { VisualRegion(.usWest1) }
     @objc public static var usEast4: VisualRegion { VisualRegion(.usEast4) }
     @objc public static var euCentral1: VisualRegion { VisualRegion(.euCentral1) }
+    @objc public static var asiaSouth2: VisualRegion { VisualRegion(.asiaSouth2) }
     @objc public static var staging: VisualRegion { VisualRegion(.staging) }
     /// `us-west-1`.
     @objc public static var defaultRegion: VisualRegion { VisualRegion(.default) }

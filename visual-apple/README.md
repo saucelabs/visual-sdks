@@ -29,7 +29,7 @@ The SDK reads the same environment variables as the other Sauce Visual SDKs:
 | Variable | Purpose |
 |---|---|
 | `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY` | Sauce Labs credentials (required) |
-| `SAUCE_REGION` | `us-west-1` (default), `us-east-4`, `eu-central-1`, or `staging` |
+| `SAUCE_REGION` | `us-west-1` (default), `us-east-4`, `eu-central-1`, `asia-south-2`, or `staging` |
 | `SAUCE_VISUAL_BUILD_NAME`, `SAUCE_VISUAL_PROJECT`, `SAUCE_VISUAL_BRANCH`, `SAUCE_VISUAL_DEFAULT_BRANCH` | Build attributes |
 | `SAUCE_VISUAL_CUSTOM_ID`, `SAUCE_VISUAL_BUILD_ID` | Reuse a running build |
 
