@@ -44,7 +44,7 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
                 .detectChanges(in: CGRect(x: 10, y: 100, width: 50, height: 50), [.visual], name: "logo"),
                 .ignoreChanges(in: CGRect(x: 0, y: 900, width: 10, height: 10), name: "off screen")
             ],
-            diffingMethod: .simple,
+            diffingMethod: .experimental,
             diffingOptions: .all.subtracting(.style),
             diffingMethodSensitivity: .high,
             diffingMethodTolerance: DiffingMethodTolerance(color: 0.1, minChangeSize: 3)
@@ -57,7 +57,7 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
             region(0, 0, 1206, 60),
             region(30, 300, 150, 150, name: "logo", diffingOptions: [.visual])
         ], "The off-screen region is dropped")
-        XCTAssertEqual(request.diffingMethod, .simple)
+        XCTAssertEqual(request.diffingMethod, .experimental)
         XCTAssertEqual(request.diffingOptions, [.content, .dimensions, .position, .structure, .visual])
         XCTAssertEqual(request.diffingMethodSensitivity, .high)
         XCTAssertEqual(request.diffingMethodTolerance, DiffingMethodTolerance(color: 0.1, minChangeSize: 3))

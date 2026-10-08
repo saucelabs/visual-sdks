@@ -9,7 +9,7 @@ public actor VisualClient {
     private let store: SharedBuildStore
     private let device: DeviceInfo
 
-    /// Anything you leave out is read from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
     /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, or `.invalidBuildId`.
     public init(
         credentials: VisualCredentials? = nil,
@@ -57,23 +57,14 @@ public actor VisualClient {
     public func sauceVisualCheck(
         _ name: String, options: VisualCheckOptions = VisualCheckOptions()
     ) async throws -> VisualSnapshot {
-        let name = try Self.snapshotName(name)
-        // Screenshot first, so it shows the screen as it was when you called the check.
-        let screenshot = Screenshot.capture()
-        let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
-        return try await check(name: name, png: screenshot.png, request: request)
+        let prepared = try SnapshotCapture.prepare(name, options: options)
+        return try await check(name: prepared.name, png: prepared.png, request: prepared.request)
     }
 
+    /// Uploads a prepared snapshot to the shared build. `name` is already validated by `SnapshotCapture`.
     internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
-        let name = try Self.snapshotName(name)
         let build = try await build()
         return try await api.createSnapshot(name: name, png: png, device: device, request: request, in: build)
-    }
-
-    private static func snapshotName(_ name: String) throws -> String {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw VisualError.invalidSnapshotName }
-        return trimmed
     }
 
     /// Finishes the build early. You don't need to call this: the SDK finishes it when the tests end.

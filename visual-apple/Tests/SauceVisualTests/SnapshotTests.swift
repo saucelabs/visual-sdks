@@ -46,7 +46,7 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
 
     func testCheckReservesUploadsThenCreatesSnapshot() async throws {
         let route = StubURLProtocol.Route([created, upload(), stored, snapshot])
-        let result = try await client(route).check(name: "  Login ", png: png)
+        let result = try await client(route).check(name: "Login", png: png)
 
         XCTAssertEqual(result, VisualSnapshot(id: snapshotID, name: "Login", buildId: buildID))
         let requests = route.requests
@@ -110,13 +110,18 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(route.requests.count, 7)
     }
 
-    func testEmptyNameFailsWithoutRequest() async throws {
+    func testSnapshotNamesAreTrimmed() throws {
+        XCTAssertEqual(try SnapshotCapture.validName("  Login \n"), "Login")
+    }
+
+    func testEmptyNameFailsBeforeScreenshotOrRequest() async throws {
         let route = StubURLProtocol.Route([])
         let client = try client(route)
         for name in ["", "  \n"] {
-            await XCTAssertThrowsErrorAsync(try await client.check(name: name, png: png)) {
+            XCTAssertThrowsError(try SnapshotCapture.validName(name)) {
                 XCTAssertEqual($0 as? VisualError, .invalidSnapshotName)
             }
+            // Unit tests have no screen to capture, so reaching the screenshot would fail differently.
             await XCTAssertThrowsErrorAsync(try await client.sauceVisualCheck(name)) {
                 XCTAssertEqual($0 as? VisualError, .invalidSnapshotName)
             }

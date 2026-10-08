@@ -40,7 +40,7 @@ public final class VisualRegion: NSObject, Sendable {
     public override var hash: Int { value.hashValue }
 }
 
-/// Build details for Objective-C. Anything `nil` is read from its `SAUCE_VISUAL_*` environment variable.
+/// Objective-C build attributes. `nil` fields fall back to their `SAUCE_VISUAL_*` environment variable.
 @objc(SLVBuildOptions)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public final class VisualBuildConfiguration: NSObject, Sendable {
@@ -126,13 +126,12 @@ public final class VisualSnapshotRecord: NSObject, Sendable {
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
 public enum VisualDiffingMethodCode: Int, Sendable {
     case balanced = 0
-    case simple = 1
+    // 1 was Simple, which isn't offered. The value isn't reused, so codes stay stable.
     case experimental = 2
 
     internal var value: DiffingMethod {
         switch self {
         case .balanced: return .balanced
-        case .simple: return .simple
         case .experimental: return .experimental
         }
     }
@@ -185,7 +184,7 @@ public final class VisualObjCClient: NSObject, Sendable {
     @objc public var region: VisualRegion { VisualRegion(client.region) }
     @objc public var options: VisualBuildConfiguration { VisualBuildConfiguration(client.options) }
 
-    /// Anything `nil` is read from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// `nil` arguments come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
     /// - Throws: `SLVErrorCodeInvalidCredentials`, `SLVErrorCodeUnknownRegion`, or `SLVErrorCodeInvalidBuildId`.
     @objc(initWithUsername:accessKey:region:options:error:)
     public init(

@@ -84,9 +84,8 @@ public struct SelectiveRegion {
     }
 }
 
+/// How screenshots are compared. The older pixel-by-pixel `SIMPLE` method isn't offered.
 public enum DiffingMethod: String, Hashable, Sendable {
-    /// Pixel by pixel.
-    case simple = "SIMPLE"
     /// Ignores anti-aliasing and tiny rendering differences. Recommended.
     case balanced = "BALANCED"
     case experimental = "EXPERIMENTAL"

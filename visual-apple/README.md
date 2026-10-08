@@ -75,7 +75,7 @@ try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
 | `testName`, `suiteName` | Override the names taken from the running test |
 | `ignoreRegions`, `ignoreElements` | Areas and elements left out of the comparison. A missing element throws `VisualError.elementNotFound` |
 | `regions` | `SelectiveRegion.ignoreChanges(in:)` or `.detectChanges(in:_:)` for a rectangle or element |
-| `diffingMethod` | `.balanced` (default), `.simple`, or `.experimental` |
+| `diffingMethod` | `.balanced` (default) or `.experimental` |
 | `diffingOptions` | Kinds of change to report: `.visual`, `.position`, `.dimensions`, and `.content`, `.structure`, `.style`, which need an element tree the SDK doesn't upload yet |
 | `diffingMethodSensitivity`, `diffingMethodTolerance` | How strictly `.balanced` compares pixels |
 
