@@ -3,12 +3,14 @@ export type SauceRegion =
   | 'eu-central-1'
   | 'us-west-1'
   | 'us-east-4'
+  | 'asia-south-2'
   /**
    * The following regions need to be mentioned as they are legit sauce regions.
    * It will throw errors in case it targets a region which is not supported.
    */
   | 'us'
   | 'eu'
+  | 'asia'
   | 'apac'
   | 'apac-southeast-1'
   | 'us-east-1';
@@ -62,6 +64,12 @@ export const regions: VisualApiRegion[] = [
     aliases: ['eu', 'eu-west-3-lnbf'],
     graphqlEndpoint: 'https://api.eu-central-1.saucelabs.com/v1/visual/graphql',
     jobUrlTemplate: 'https://app.eu-central-1.saucelabs.com/tests/JOB_ID',
+  }),
+  new VisualApiRegion({
+    name: 'asia-south-2',
+    aliases: ['asia'],
+    graphqlEndpoint: 'https://api.asia-south-2.saucelabs.com/v1/visual/graphql',
+    jobUrlTemplate: 'https://app.asia-south-2.saucelabs.com/tests/JOB_ID',
   }),
   new VisualApiRegion({
     name: 'us-west-1',

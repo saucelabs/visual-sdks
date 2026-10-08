@@ -22,7 +22,7 @@ export const accessKeyOption = new Option(
 
 export const regionOption = new Option(
   "-r, --region <region>",
-  "The region you'd like to run your Visual tests in. Defaults to 'us-west-1' if not supplied. Can be one of the following: 'eu-central-1', 'us-west-1' or 'us-east-4'." +
+  "The region you'd like to run your Visual tests in. Defaults to 'us-west-1' if not supplied. Can be one of the following: 'eu-central-1', 'us-west-1', 'us-east-4' or 'asia-south-2'." +
     EOL +
     "If not provided, SAUCE_REGION environment variable will be used."
 )

@@ -17,7 +17,7 @@ const regionParser = (
 
 export const regionOption = new Option(
   '-r, --region <region>',
-  'The Sauce Labs region. Options: us-west-1, eu-central-1',
+  'The Sauce Labs region. Options: us-west-1, us-east-4, eu-central-1, asia-south-2',
 )
   .default(VisualApiRegion.fromName('us-west-1'), 'us-west-1')
   .argParser(regionParser);
