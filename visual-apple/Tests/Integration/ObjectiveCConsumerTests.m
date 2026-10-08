@@ -56,9 +56,9 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
 #else
     options.ignoreRegions = @[[NSValue valueWithCGRect:statusBar]];
 #endif
-    options.diffingMethod = SLVDiffingMethodSimple;
+    options.diffingMethod = SLVDiffingMethodExperimental;
     XCTAssertEqual(options.ignoreRegions.count, 1u);
-    XCTAssertEqual(options.diffingMethod, SLVDiffingMethodSimple);
+    XCTAssertEqual(options.diffingMethod, SLVDiffingMethodExperimental);
 }
 
 - (void)testClientKeepsOptions {
