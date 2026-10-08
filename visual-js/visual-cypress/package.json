@@ -7,6 +7,11 @@
   "types": "build/index.d.ts",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saucelabs/visual-sdks.git",
+    "directory": "visual-js/visual-cypress"
+  },
   "files": [
     "build",
     "README.md"

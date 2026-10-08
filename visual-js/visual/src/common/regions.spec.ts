@@ -44,6 +44,19 @@ describe('regions', () => {
       expect(region).toBeDefined();
     });
 
+    test('finds asia-south-2 by name and alias', () => {
+      for (const name of ['asia-south-2', 'asia']) {
+        const region = VisualApiRegion.fromName(name);
+        expect(region.name).toBe('asia-south-2');
+        expect(region.graphqlEndpoint).toBe(
+          'https://api.asia-south-2.saucelabs.com/v1/visual/graphql',
+        );
+        expect(region.jobUrl('4242')).toBe(
+          'https://app.asia-south-2.saucelabs.com/tests/4242',
+        );
+      }
+    });
+
     test('finds existing region by alias', () => {
       expect(() => {
         VisualApiRegion.fromName('zz');
@@ -68,6 +81,10 @@ describe('regions', () => {
       {
         input: 'ondemand.eu-central-1.saucelabs.com',
         region: 'eu-central-1',
+      },
+      {
+        input: 'ondemand.asia-south-2.saucelabs.com',
+        region: 'asia-south-2',
       },
       {
         input: 'ondemand.staging.saucelabs.net',

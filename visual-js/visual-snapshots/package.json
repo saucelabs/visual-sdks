@@ -4,6 +4,11 @@
   "version": "0.3.0",
   "main": "./lib/index.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saucelabs/visual-sdks.git",
+    "directory": "visual-js/visual-snapshots"
+  },
   "bin": "./lib/index.js",
   "files": [
     "lib",

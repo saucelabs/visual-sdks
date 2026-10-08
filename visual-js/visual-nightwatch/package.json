@@ -5,6 +5,11 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saucelabs/visual-sdks.git",
+    "directory": "visual-js/visual-nightwatch"
+  },
   "engines": {
     "node": "^16.13 || >=18"
   },
