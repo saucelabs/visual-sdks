@@ -143,8 +143,22 @@ build_args=(
   -project "$root/Tests/Integration/$project.xcodeproj"
   -scheme "Consumer-$scheme"
   -derivedDataPath "$run/DerivedData"
-  CODE_SIGNING_ALLOWED=NO
 )
+if [[ $family == macos ]]; then
+  # macOS kills unsigned UI test runners. Ad-hoc signing needs no Apple account.
+  build_args+=(CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=)
+else
+  build_args+=(CODE_SIGNING_ALLOWED=NO)
+fi
+# Simulator tests don't inherit this shell. xcodebuild passes TEST_RUNNER_<NAME> to them as <NAME>,
+# so forward each SAUCE_* variable (for example from CI secrets) unless a TEST_RUNNER_ value is already set.
+for name in SAUCE_USERNAME SAUCE_ACCESS_KEY SAUCE_REGION SAUCE_VISUAL_BUILD_NAME SAUCE_VISUAL_PROJECT \
+    SAUCE_VISUAL_BRANCH SAUCE_VISUAL_DEFAULT_BRANCH SAUCE_VISUAL_CUSTOM_ID SAUCE_VISUAL_BUILD_ID; do
+  runner_name="TEST_RUNNER_$name"
+  if [[ -z ${!runner_name:-} && -n ${!name:-} ]]; then
+    export "$runner_name=${!name}"
+  fi
+done
 if [[ $family == macos ]]; then
   destination="platform=macOS,arch=$(uname -m)"
 else
@@ -168,3 +182,8 @@ xcodebuild "${build_args[@]}" test \
 xcrun xcresulttool get test-results summary \
   --path "$run/TestResults.xcresult" --compact > "$run/results.json"
 validate_results "$run/results.json"
+
+# The SDK finishes the build it created after the last test, and its message confirms that ran.
+if grep -q 'Sauce Visual build:' "$run/tests.log"; then
+  grep -q 'Sauce Visual: finished build' "$run/tests.log" || fail 'The build was not finished automatically after the last test.'
+fi
