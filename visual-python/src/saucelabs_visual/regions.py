@@ -61,6 +61,12 @@ regions = [
         job_url_template='https://app.eu-central-1.saucelabs.com/tests/{JOB_ID}',
     ),
     Region(
+        name="asia-south-2",
+        aliases=["asia"],
+        graphql_endpoint='https://api.asia-south-2.saucelabs.com/v1/visual/graphql',
+        job_url_template='https://app.asia-south-2.saucelabs.com/tests/{JOB_ID}',
+    ),
+    Region(
         name="us-west-1",
         aliases=['us', 'us-west-4-i3er'],
         graphql_endpoint='https://api.us-west-1.saucelabs.com/v1/visual/graphql',
