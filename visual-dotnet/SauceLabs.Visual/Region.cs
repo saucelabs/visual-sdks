@@ -53,6 +53,7 @@ namespace SauceLabs.Visual
                 "us-west-1" => UsWest1,
                 "us-east-4" => UsEast4,
                 "eu-central-1" => EuCentral1,
+                "asia-south-2" => AsiaSouth2,
                 "staging" => Staging,
                 _ => throw new VisualClientException($"Unknown region {name}")
             };
@@ -86,6 +87,7 @@ namespace SauceLabs.Visual
         public static Region UsWest1 => new Region("us-west-1", "https://api.us-west-1.saucelabs.com/v1/visual/graphql");
         public static Region UsEast4 => new Region("us-east-4", "https://api.us-east-4.saucelabs.com/v1/visual/graphql");
         public static Region EuCentral1 => new Region("eu-central-1", "https://api.eu-central-1.saucelabs.com/v1/visual/graphql");
+        public static Region AsiaSouth2 => new Region("asia-south-2", "https://api.asia-south-2.saucelabs.com/v1/visual/graphql");
         public static Region Staging => new Region("staging", "https://api.staging.saucelabs.net/v1/visual/graphql");
     }
 }
