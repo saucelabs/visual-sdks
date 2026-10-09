@@ -3,7 +3,7 @@ import XCTest
 import SauceVisual
 
 final class ExampleTests: XCTestCase, @unchecked Sendable {
-    /// The app under test does not link the SDK, so it must launch on its own.
+    /// The app under test doesn't include the SDK, so check it launches on its own.
     @MainActor
     func testAppUnderTestLaunches() {
         let app = XCUIApplication()
@@ -13,26 +13,22 @@ final class ExampleTests: XCTestCase, @unchecked Sendable {
     }
 }
 
-/// Creates a real build while driving the app under test. Needs credentials, and fails without them.
-/// `Scripts/test.sh` forwards `SAUCE_*` from your shell or CI, and checks the build was finished
-/// automatically after the last test:
-///
-///     SAUCE_REGION=us-west-1 SAUCE_USERNAME=… SAUCE_ACCESS_KEY=… Scripts/test.sh source iphone
+/// Takes a real snapshot, so it needs credentials:
+/// `SAUCE_USERNAME=… SAUCE_ACCESS_KEY=… Scripts/test.sh source iphone`
 final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
     @MainActor
-    func testSwiftExampleCreatesBuild() async throws {
+    func testSwiftExampleChecksScreen() async throws {
         let app = XCUIApplication()
         app.launch()
-        let build = try await runSwiftExample(VisualBuildOptions(
+        let snapshot = try await runSwiftExample(VisualBuildOptions(
             name: "Apple SDK consumer live test", project: "visual-apple",
-            branch: "feat/visual-apple-build-creation", defaultBranch: "main"
+            branch: "feat/visual-apple-snapshot", defaultBranch: "main"
         ))
-        XCTAssertNotNil(UUID(uuidString: build.id))
-        XCTAssertEqual(build.name, "Apple SDK consumer live test")
-        XCTAssertEqual(build.project, "visual-apple")
-        XCTAssertEqual(build.branch, "feat/visual-apple-build-creation")
-        XCTAssertEqual(build.defaultBranch, "main")
-        XCTAssertEqual(build.status, "RUNNING", "Open until the test run ends")
+        XCTAssertNotNil(UUID(uuidString: snapshot.id))
+        XCTAssertNotNil(UUID(uuidString: snapshot.buildId))
+        XCTAssertEqual(snapshot.name, "Home screen")
+        XCTAssertEqual(snapshot.suiteName, "LiveBuildConsumerTests")
+        XCTAssertEqual(snapshot.testName, "testSwiftExampleChecksScreen")
         app.terminate()
     }
 }

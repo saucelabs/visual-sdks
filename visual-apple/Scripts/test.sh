@@ -150,8 +150,8 @@ if [[ $family == macos ]]; then
 else
   build_args+=(CODE_SIGNING_ALLOWED=NO)
 fi
-# Simulator tests don't inherit this shell. xcodebuild passes TEST_RUNNER_<NAME> to them as <NAME>,
-# so forward each SAUCE_* variable (for example from CI secrets) unless a TEST_RUNNER_ value is already set.
+# Tests on a simulator don't see this shell's variables, so pass each SAUCE_* on as TEST_RUNNER_SAUCE_*,
+# which xcodebuild hands to the tests without the prefix.
 for name in SAUCE_USERNAME SAUCE_ACCESS_KEY SAUCE_REGION SAUCE_VISUAL_BUILD_NAME SAUCE_VISUAL_PROJECT \
     SAUCE_VISUAL_BRANCH SAUCE_VISUAL_DEFAULT_BRANCH SAUCE_VISUAL_CUSTOM_ID SAUCE_VISUAL_BUILD_ID; do
   runner_name="TEST_RUNNER_$name"
@@ -164,9 +164,15 @@ if [[ $family == macos ]]; then
 else
   udid=$(select_simulator "$run" "$platform" "$device_prefix" "${build_args[@]}")
   destination="platform=$platform,id=$udid"
+  if [[ $platform == 'iOS Simulator' ]]; then
+    # Pin the status bar, so its clock and battery don't differ between snapshots. tvOS has no status bar.
+    xcrun simctl bootstatus "$udid" -b > "$run/status-bar.log" 2>&1 || fail 'Could not boot the simulator.'
+    xcrun simctl status_bar "$udid" override --time 9:41 --batteryState charged --batteryLevel 100 \
+      --wifiBars 3 >> "$run/status-bar.log" 2>&1 || fail 'Could not pin the simulator status bar.'
+  fi
 fi
 
-# pipefail preserves xcodebuild failures.
+# pipefail keeps xcodebuild's exit status through tee.
 printf 'Distribution: %s; destination: %s\n' "$distribution" "$destination" | tee "$run/destination.log"
 xcodebuild "${build_args[@]}" test \
   -configuration Debug \
@@ -183,7 +189,7 @@ xcrun xcresulttool get test-results summary \
   --path "$run/TestResults.xcresult" --compact > "$run/results.json"
 validate_results "$run/results.json"
 
-# The SDK finishes the build it created after the last test, and its message confirms that ran.
+# Check the SDK printed that it finished the build after the last test.
 if grep -q 'Sauce Visual build:' "$run/tests.log"; then
   grep -q 'Sauce Visual: finished build' "$run/tests.log" || fail 'The build was not finished automatically after the last test.'
 fi

@@ -1,9 +1,7 @@
 import Foundation
 
-/// A failure reported by, or while reaching, the Sauce Visual API.
-///
-/// `code` is the stable `VisualError`. `detail` carries the server or transport message and never
-/// contains credentials.
+/// An error from the Sauce Visual API or the network. `code` is the `VisualError`,
+/// `detail` the server's message. Neither ever contains your credentials.
 public struct VisualAPIError: Error, Hashable, Sendable, CustomNSError, LocalizedError, CustomStringConvertible {
     public let code: VisualError
     public let detail: String?

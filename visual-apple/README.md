@@ -2,7 +2,7 @@
 
 `SauceVisual` Swift and Objective-C SDK for XCUITest on iOS/iPadOS 15+, tvOS 15+, and macOS 14+.
 
-The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests. Screenshot capture and visual comparisons are not yet implemented.
+The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests, and uploads full-screen screenshots for comparison. Ignore regions, element clipping, and other check options are not yet implemented.
 
 Development and binary distribution use **Xcode 26.6 / Swift 6.3**. The package uses Swift 5 language mode and is also tested in Swift 6 language mode.
 
@@ -50,11 +50,38 @@ import SauceVisual
 let visual = try VisualClient(options: VisualBuildOptions(
     name: "Checkout", project: "iOS app", branch: "feature-checkout", defaultBranch: "main"
 ))
-let build = try await visual.build()
-print(build.url ?? build.id)
+
+// In a UI test, after driving the app to the screen you want to compare:
+try await visual.sauceVisualCheck("Checkout page")
 ```
 
-Every `VisualClient` in the process shares one build: the first `build()` creates it, or reuses the one named by `buildId` or `customId`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
+`sauceVisualCheck(_:options:)` screenshots the whole screen and adds it to the shared build, creating the build if needed. The snapshot records the running test's class as its suite name and the test method as its test name, so the dashboard groups snapshots by test. It runs on the main actor, like the XCUI APIs.
+
+Pass `VisualCheckOptions` to change how a snapshot is compared. Every field is optional:
+
+```swift
+try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
+    ignoreRegions: [CGRect(x: 0, y: 0, width: 402, height: 62)],        // points, like XCUIElement.frame
+    ignoreElements: [app.staticTexts["timestamp"]],                     // must exist at the check
+    regions: [.detectChanges(in: app.images["logo"], [.visual])],       // compare this area with its own rules
+    diffingMethod: .balanced,                                           // the default
+    diffingMethodSensitivity: .high,
+    diffingMethodTolerance: DiffingMethodTolerance(minChangeSize: 3)
+))
+```
+
+| Option | Purpose |
+|---|---|
+| `testName`, `suiteName` | Override the names taken from the running test |
+| `ignoreRegions`, `ignoreElements` | Areas and elements left out of the comparison. A missing element throws `VisualError.elementNotFound` |
+| `regions` | `SelectiveRegion.ignoreChanges(in:)` or `.detectChanges(in:_:)` for a rectangle or element |
+| `diffingMethod` | `.balanced` (default) or `.experimental` |
+| `diffingOptions` | Kinds of change to report: `.visual`, `.position`, `.dimensions`, and `.content`, `.structure`, `.style`, which need an element tree the SDK doesn't upload yet |
+| `diffingMethodSensitivity`, `diffingMethodTolerance` | How strictly `.balanced` compares pixels |
+
+Rectangles are in points and converted to screenshot pixels. Parts outside the screen are clipped. Snapshots are compared with the baseline that has the same name, device, and OS version. On tvOS, the operating system is reported as `UNKNOWN`, because the API has no tvOS value.
+
+Every `VisualClient` in the process shares one build: the first check creates it, or reuses the one named by `buildId` or `customId`. To get the build before the first check, for example to log its link, call `try await visual.build()`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
 
 **You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build reused through `buildId` or `customId` is left open for whoever created it, for example a CI step. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
 
@@ -76,16 +103,16 @@ if (visual == nil) {
     return;
 }
 
-[visual buildWithCompletion:^(SLVBuild *build, NSError *failure) {
+SLVCheckOptions *checkOptions = [[SLVCheckOptions alloc] init];
+checkOptions.ignoreElements = @[app.staticTexts[@"timestamp"]];
+[visual sauceVisualCheckWithName:@"Checkout page" options:checkOptions completion:^(SLVSnapshot *snapshot, NSError *failure) {
     if (failure != nil) {
-        NSLog(@"Build failed: %@", failure.localizedDescription);
-        return;
+        NSLog(@"Check failed: %@", failure.localizedDescription);
     }
-    NSLog(@"Sauce Visual build: %@", build.url);
 }];
 ```
 
-Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
+`SLVCheckOptions` covers the test and suite names, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, and `diffingMethod`. Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
 
 ## Development
 

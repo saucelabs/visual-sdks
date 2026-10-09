@@ -1,7 +1,6 @@
 import Foundation
 
-/// Stable, non-sensitive failures. Codes are public API: never renumber or reuse one; add new codes at the end.
-/// Cancellation of a Swift call throws `CancellationError`, the Objective-C adapter maps it to `.cancelled`.
+/// SDK errors. The codes are public: never renumber or reuse one, and add new codes at the end.
 public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, CustomStringConvertible {
     case cancelled = 1
     case invalidCredentials = 2
@@ -10,6 +9,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case buildAlreadyCompleted = 5
     case networkFailure = 6
     case apiError = 7
+    case invalidSnapshotName = 8
+    case elementNotFound = 9
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -30,6 +31,10 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Could not reach the Sauce Visual API."
         case .apiError:
             return "The Sauce Visual API returned an error."
+        case .invalidSnapshotName:
+            return "Invalid snapshot name. Give the snapshot a name that is not empty."
+        case .elementNotFound:
+            return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
         }
     }
 
