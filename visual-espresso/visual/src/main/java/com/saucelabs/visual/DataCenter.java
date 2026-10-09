@@ -8,6 +8,7 @@ public enum DataCenter {
     US_WEST_1("https://api.us-west-1.saucelabs.com/v1/visual/graphql"),
     US_EAST_4("https://api.us-east-4.saucelabs.com/v1/visual/graphql"),
     EU_CENTRAL_1("https://api.eu-central-1.saucelabs.com/v1/visual/graphql"),
+    ASIA_SOUTH_2("https://api.asia-south-2.saucelabs.com/v1/visual/graphql"),
     STAGING("https://api.staging.saucelabs.net/v1/visual/graphql");
 
     public final String endpoint;
@@ -27,6 +28,8 @@ public enum DataCenter {
                 return EU_CENTRAL_1;
             case "us-east-4":
                 return US_EAST_4;
+            case "asia-south-2":
+                return ASIA_SOUTH_2;
             case "staging":
                 return STAGING;
             default:
