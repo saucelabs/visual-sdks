@@ -151,23 +151,24 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
     }
 }
 
-/// Values used instead of the snapshot's own when looking up its baseline. Fields left `nil` keep
-/// the snapshot's own value. Baselines also match on test and suite names, so set those to use another test's.
+/// Values used instead of the snapshot's own when looking up its baseline. Each field has three states:
+/// `nil` (unset) keeps the snapshot's own value, `.value(x)` matches `x`, and `.null` matches baselines with no value.
+/// Baselines also match on test and suite names, so set those to use another test's.
 public struct BaselineOverride: Hashable, Sendable {
-    public var name: String?
-    public var testName: String?
-    public var suiteName: String?
-    public var device: String?
-    public var operatingSystem: OperatingSystem?
-    public var operatingSystemVersion: String?
+    public var name: BaselineValue<String>?
+    public var testName: BaselineValue<String>?
+    public var suiteName: BaselineValue<String>?
+    public var device: BaselineValue<String>?
+    public var operatingSystem: BaselineValue<OperatingSystem>?
+    public var operatingSystemVersion: BaselineValue<String>?
 
     public init(
-        name: String? = nil,
-        testName: String? = nil,
-        suiteName: String? = nil,
-        device: String? = nil,
-        operatingSystem: OperatingSystem? = nil,
-        operatingSystemVersion: String? = nil
+        name: BaselineValue<String>? = nil,
+        testName: BaselineValue<String>? = nil,
+        suiteName: BaselineValue<String>? = nil,
+        device: BaselineValue<String>? = nil,
+        operatingSystem: BaselineValue<OperatingSystem>? = nil,
+        operatingSystemVersion: BaselineValue<String>? = nil
     ) {
         self.name = name
         self.testName = testName
@@ -179,6 +180,38 @@ public struct BaselineOverride: Hashable, Sendable {
 
     /// True when nothing is overridden.
     var isEmpty: Bool { self == BaselineOverride() }
+}
+
+/// A baseline override field that is set: either a value to match, or `.null` to match baselines without one.
+/// String fields accept a literal directly: `name: "Login page"`.
+public enum BaselineValue<Wrapped: Hashable & Sendable>: Hashable, Sendable {
+    case value(Wrapped)
+    /// Sent as `null`, matching baselines that have no value for this field.
+    case null
+
+    func map<T>(_ transform: (Wrapped) -> T) -> BaselineValue<T> {
+        switch self {
+        case .value(let value): return .value(transform(value))
+        case .null: return .null
+        }
+    }
+}
+
+extension BaselineValue: ExpressibleByUnicodeScalarLiteral, ExpressibleByExtendedGraphemeClusterLiteral,
+    ExpressibleByStringLiteral where Wrapped == String {
+    public init(stringLiteral value: String) {
+        self = .value(value)
+    }
+}
+
+/// Lets the operating system be written directly: `operatingSystem: .ios` instead of `.value(.ios)`.
+extension BaselineValue where Wrapped == OperatingSystem {
+    public static var ios: Self { .value(.ios) }
+    public static var macos: Self { .value(.macos) }
+    public static var android: Self { .value(.android) }
+    public static var windows: Self { .value(.windows) }
+    public static var linux: Self { .value(.linux) }
+    public static var unknown: Self { .value(.unknown) }
 }
 
 /// Operating systems the Sauce Visual API knows.

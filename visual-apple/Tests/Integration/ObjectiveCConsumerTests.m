@@ -78,6 +78,13 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqualObjects(client.baselineOverride.device, @"iPhone 17");
     XCTAssertEqual(client.baselineOverride.operatingSystem, SLVOperatingSystemIos);
     XCTAssertNil(client.baselineOverride.name);
+    XCTAssertFalse([client.baselineOverride matchesNullFor:SLVBaselineOverrideFieldName]);
+
+    [baseline matchNullFor:SLVBaselineOverrideFieldSuiteName];
+    SLVClient *withNull = [[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
+                                                      options:nil baselineOverride:baseline error:nil];
+    XCTAssertTrue([withNull.baselineOverride matchesNullFor:SLVBaselineOverrideFieldSuiteName]);
+    XCTAssertNil(withNull.baselineOverride.suiteName);
     SLVClient *plain = [[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
                                                    options:nil error:nil];
     XCTAssertNil(plain.baselineOverride);
