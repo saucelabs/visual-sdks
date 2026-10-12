@@ -174,6 +174,18 @@ public enum VisualOperatingSystemCode: Int, Sendable {
     }
 }
 
+/// Baseline override fields, for `-[SLVBaselineOverride matchNullFor:]`.
+@objc(SLVBaselineOverrideField)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public enum VisualBaselineOverrideField: Int, Sendable {
+    case name = 0
+    case testName = 1
+    case suiteName = 2
+    case device = 3
+    case operatingSystem = 4
+    case operatingSystemVersion = 5
+}
+
 /// Values used instead of the snapshot's own when looking up its baseline, for Objective-C.
 /// Properties left `nil` keep the snapshot's own value.
 @objc(SLVBaselineOverride)
@@ -185,26 +197,57 @@ public final class VisualBaselineOverride: NSObject, @unchecked Sendable {
     @objc public var device: String?
     @objc public var operatingSystem: VisualOperatingSystemCode = .notSet
     @objc public var operatingSystemVersion: String?
+    /// Fields sent as `null`, matching baselines that have no value for them. Overrides any value set.
+    private var nullFields = Set<VisualBaselineOverrideField>()
 
     @objc public override init() {
         super.init()
     }
 
+    /// Sends `field` as `null`, matching baselines that have no value for it.
+    @objc(matchNullFor:)
+    public func matchNull(for field: VisualBaselineOverrideField) {
+        nullFields.insert(field)
+    }
+
+    /// Whether `field` is sent as `null`.
+    @objc(matchesNullFor:)
+    public func matchesNull(for field: VisualBaselineOverrideField) -> Bool {
+        nullFields.contains(field)
+    }
+
     internal convenience init(_ value: BaselineOverride) {
         self.init()
-        name = value.name
-        testName = value.testName
-        suiteName = value.suiteName
-        device = value.device
-        operatingSystem = VisualOperatingSystemCode(value.operatingSystem)
-        operatingSystemVersion = value.operatingSystemVersion
+        name = read(value.name, .name)
+        testName = read(value.testName, .testName)
+        suiteName = read(value.suiteName, .suiteName)
+        device = read(value.device, .device)
+        if case .value(let system)? = value.operatingSystem { operatingSystem = VisualOperatingSystemCode(system) }
+        if case .null? = value.operatingSystem { nullFields.insert(.operatingSystem) }
+        operatingSystemVersion = read(value.operatingSystemVersion, .operatingSystemVersion)
     }
 
     internal var value: BaselineOverride {
         BaselineOverride(
-            name: name, testName: testName, suiteName: suiteName, device: device,
-            operatingSystem: operatingSystem.value, operatingSystemVersion: operatingSystemVersion
+            name: field(name, .name),
+            testName: field(testName, .testName),
+            suiteName: field(suiteName, .suiteName),
+            device: field(device, .device),
+            operatingSystem: nullFields.contains(.operatingSystem) ? .null : operatingSystem.value.map { .value($0) },
+            operatingSystemVersion: field(operatingSystemVersion, .operatingSystemVersion)
         )
+    }
+
+    private func field(_ value: String?, _ key: VisualBaselineOverrideField) -> BaselineValue<String>? {
+        nullFields.contains(key) ? .null : value.map { .value($0) }
+    }
+
+    private func read(_ value: BaselineValue<String>?, _ key: VisualBaselineOverrideField) -> String? {
+        switch value {
+        case .value(let string)?: return string
+        case .null?: nullFields.insert(key); return nil
+        case nil: return nil
+        }
     }
 }
 
