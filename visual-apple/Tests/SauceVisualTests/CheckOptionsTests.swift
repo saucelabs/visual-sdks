@@ -132,6 +132,30 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
                        ["name": "Login page", "device": "iPhone 17", "operatingSystem": "IOS"])
     }
 
+    func testOperatingSystemShortcutsAreValues() {
+        let shortcuts: [BaselineValue<OperatingSystem>] = [.ios, .macos, .android, .windows, .linux, .unknown]
+        let values: [BaselineValue<OperatingSystem>] = [
+            .value(.ios), .value(.macos), .value(.android), .value(.windows), .value(.linux), .value(.unknown)
+        ]
+        XCTAssertEqual(shortcuts, values)
+        XCTAssertNotEqual(BaselineValue<OperatingSystem>.null, .unknown, "UNKNOWN is a value, not null")
+    }
+
+    func testBaselineOverrideHasThreeStatesPerField() async throws {
+        // Set fields are sent, `.null` fields are sent as null, unset fields are left out.
+        let request = SnapshotRequest(baselineOverride: BaselineOverride(
+            name: "Login page", device: .null, operatingSystem: .null, operatingSystemVersion: .value("26.5")
+        ))
+        let input = try await snapshotInput(for: request)
+        let sent = try XCTUnwrap(input["baselineOverride"] as? [String: Any])
+        XCTAssertEqual(Set(sent.keys), ["name", "device", "operatingSystem", "operatingSystemVersion"])
+        XCTAssertEqual(sent["name"] as? String, "Login page")
+        XCTAssertEqual(sent["operatingSystemVersion"] as? String, "26.5")
+        XCTAssertTrue(sent["device"] is NSNull, "Sent as null")
+        XCTAssertTrue(sent["operatingSystem"] is NSNull, "Sent as null")
+        XCTAssertNil(sent["testName"], "Unset fields are left out")
+    }
+
     func testCheckOverrideReplacesTheClientOverride() async throws {
         let client = BaselineOverride(device: "iPad Pro 13-inch (M5)", operatingSystemVersion: "26.5")
         let fromClient = try await snapshotInput(for: SnapshotRequest(), clientOverride: client)
