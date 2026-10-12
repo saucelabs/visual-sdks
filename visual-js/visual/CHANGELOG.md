@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.17.0
+
+### Minor Changes
+
+- f55033a: Add the Asia region, `asia-south-2` (alias `asia`). WebdriverIO sessions on `ondemand.asia-south-2.saucelabs.com` now use it automatically.
+
 ## 0.16.0
 
 ### Minor Changes
