@@ -40,9 +40,9 @@ jobs:
       - name: Upgrade & Build new version
         id: upgrade
         run: |
-          current_version=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          current_version=$(./mvnw -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
           new_version=$(./scripts/bump_version.sh -c $current_version -r ${{ github.event.inputs.releaseType }})
-          mvn -q versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version
+          ./mvnw -q versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version
 
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
 
@@ -52,13 +52,16 @@ jobs:
           gpg_private_key: ${{ secrets.MVN_CENTRAL_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
+      # Uses the wrapper's Maven 3.9: the runner's Maven 3.10 leaves maven-metadata-local.xml in the
+      # bundle, and Central rejects it ("Bundle has content that does NOT have a .pom file").
       - name: Release to Maven repo
         run: |
-          mvn -P release -Dgpg.passphrase="${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}" \
+          ./mvnw -P release -Dgpg.passphrase="$MVN_CENTRAL_GPG_PASSPHRASE" \
               -Drevision=${{ steps.upgrade.outputs.version }} deploy
         env:
           MVN_CENTRAL_USERNAME: ${{ secrets.MVN_CENTRAL_USERNAME }}
           MVN_CENTRAL_PASSWORD: ${{ secrets.MVN_CENTRAL_PASSWORD }}
+          MVN_CENTRAL_GPG_PASSPHRASE: ${{ secrets.MVN_CENTRAL_GPG_PASSPHRASE }}
 
       - name: Push new version to Git
         id: push_to_git

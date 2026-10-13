@@ -6,7 +6,7 @@
 
   <groupId>com.saucelabs.visual</groupId>
   <artifactId>java-client</artifactId>
-  <version>0.20.0</version>
+  <version>0.21.0</version>
   <name>visual-java-client</name>
   <description>Java library to interact with Sauce Visual</description>
 
@@ -343,7 +343,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.8.0</version>
+            <version>0.11.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
