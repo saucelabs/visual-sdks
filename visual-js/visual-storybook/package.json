@@ -1,7 +1,7 @@
 {
   "name": "@saucelabs/visual-storybook",
   "description": "Storybook Plugin / Bootstrapper for Sauce Labs Visual",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "module": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -47,8 +47,8 @@
     "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --collect-coverage"
   },
   "dependencies": {
-    "@saucelabs/visual": "^0.16.0",
-    "@saucelabs/visual-playwright": "^0.7.0",
+    "@saucelabs/visual": "^0.17.0",
+    "@saucelabs/visual-playwright": "^0.7.1",
     "@storybook/test-runner": ">=0.24.0",
     "exponential-backoff": "^3.1.1"
   },
