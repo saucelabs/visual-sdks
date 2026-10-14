@@ -81,7 +81,8 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
     func testErrorCodesAreStable() {
         let codes: [(VisualError, Int)] = [
             (.cancelled, 1), (.invalidCredentials, 2), (.unknownRegion, 3), (.invalidBuildId, 4),
-            (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7)
+            (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
+            (.conflictingConfiguration, 8), (.buildNotFound, 9)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)

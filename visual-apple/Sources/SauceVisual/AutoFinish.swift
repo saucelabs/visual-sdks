@@ -2,6 +2,7 @@ import Foundation
 import XCTest
 
 /// Finishes the build this process created when the XCTest bundle ends, so tests never call `finish()`.
+/// Builds named by `buildId` or `customId` are left open for whoever coordinates the workers.
 internal enum AutoFinish {
     enum Outcome: Sendable {
         case noBuild
@@ -32,7 +33,7 @@ internal enum AutoFinish {
         case .noBuild:
             return nil
         case .leftOpen(let build):
-            return "Sauce Visual: left build \(build.url ?? build.id) open, because this run did not create it."
+            return "Sauce Visual: left build \(build.url ?? build.id) open, because it is named by a build ID or custom ID. Finish it once every worker is done."
         case .finished(let build):
             return "Sauce Visual: finished build \(build.url ?? build.id) (\(build.status ?? "unknown"))."
         case .failed(let error):
@@ -55,7 +56,7 @@ internal enum AutoFinish {
             let store = self.store
             let done = DispatchSemaphore(value: 0)
             Task.detached {
-                if let message = AutoFinish.message(for: await store.finishCreatedBuild()) { print(message) }
+                if let message = AutoFinish.message(for: await store.finishOwnedBuild()) { print(message) }
                 done.signal()
             }
             if done.wait(timeout: .now() + timeout) == .timedOut {

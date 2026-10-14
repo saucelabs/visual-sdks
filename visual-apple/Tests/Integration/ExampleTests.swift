@@ -13,6 +13,13 @@ final class ExampleTests: XCTestCase, @unchecked Sendable {
     }
 }
 
+/// The build every live test adds to. Every client in a test process must use the same options, or the
+/// SDK throws `conflictingConfiguration`.
+let liveBuildOptions = VisualBuildOptions(
+    name: "Apple SDK consumer live test", project: "visual-apple",
+    branch: "feat/visual-apple-build-creation", defaultBranch: "main"
+)
+
 /// Creates a real build while driving the app under test. Needs credentials, and fails without them.
 /// `Scripts/test.sh` forwards `SAUCE_*` from your shell or CI, and checks the build was finished
 /// automatically after the last test:
@@ -23,10 +30,7 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
     func testSwiftExampleCreatesBuild() async throws {
         let app = XCUIApplication()
         app.launch()
-        let build = try await runSwiftExample(VisualBuildOptions(
-            name: "Apple SDK consumer live test", project: "visual-apple",
-            branch: "feat/visual-apple-build-creation", defaultBranch: "main"
-        ))
+        let build = try await runSwiftExample(liveBuildOptions)
         XCTAssertNotNil(UUID(uuidString: build.id))
         XCTAssertEqual(build.name, "Apple SDK consumer live test")
         XCTAssertEqual(build.project, "visual-apple")

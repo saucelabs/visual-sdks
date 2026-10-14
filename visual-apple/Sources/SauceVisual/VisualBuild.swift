@@ -14,6 +14,7 @@ public struct VisualBuildOptions: Hashable, Sendable {
     /// build is created with it. Falls back to `SAUCE_VISUAL_CUSTOM_ID`.
     public var customId: String?
     /// Existing Sauce Visual build UUID to add snapshots to. Falls back to `SAUCE_VISUAL_BUILD_ID`.
+    /// If no build has this ID, `build()` throws `VisualError.buildNotFound` rather than creating one.
     public var buildId: String?
 
     public init(
@@ -52,6 +53,9 @@ public struct VisualBuildOptions: Hashable, Sendable {
             buildId: pick(buildId, "SAUCE_VISUAL_BUILD_ID")
         )
     }
+
+    /// Whether the build is named by an ID, so other workers may share it.
+    internal var namesBuild: Bool { buildId != nil || customId != nil }
 }
 
 public struct VisualBuild: Hashable, Sendable {

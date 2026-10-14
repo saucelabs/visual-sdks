@@ -54,9 +54,9 @@ let build = try await visual.build()
 print(build.url ?? build.id)
 ```
 
-Every `VisualClient` in the process shares one build: the first `build()` creates it, or reuses the one named by `buildId` or `customId`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
+Every `VisualClient` in the process shares one build: the first `build()` creates it, or reuses the one named by `buildId` or `customId`. A `buildId` must name an existing build, otherwise `build()` throws `VisualError.buildNotFound`; a `customId` with no running build creates one with that ID. Every client must use the same region, credentials, and build options, otherwise it throws `VisualError.conflictingConfiguration`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
 
-**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build reused through `buildId` or `customId` is left open for whoever created it, for example a CI step. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
+**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build named by `buildId` or `customId` is always left open, even when this run created it, because other workers may still be adding snapshots to it. Finish it from the step that knows every worker is done, for example a CI step after all test jobs. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
 
 To pass credentials in code instead: `VisualClient(credentials: VisualCredentials(username: "…", accessKey: "…"), region: .euCentral1)`.
 

@@ -12,5 +12,7 @@ public enum VisualErrorCode: Int, Sendable {
     case buildAlreadyCompleted = 5
     case networkFailure = 6
     case apiError = 7
+    case conflictingConfiguration = 8
+    case buildNotFound = 9
 }
 #endif

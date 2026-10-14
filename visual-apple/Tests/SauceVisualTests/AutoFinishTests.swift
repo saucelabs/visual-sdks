@@ -26,7 +26,7 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         let route = StubURLProtocol.Route([reply(status: "RUNNING"), reply(status: "EQUAL")])
         _ = try await client(route, store, VisualBuildOptions(name: "Build")).build()
 
-        guard case .finished(let build) = await store.finishCreatedBuild() else { return XCTFail("Not finished") }
+        guard case .finished(let build) = await store.finishOwnedBuild() else { return XCTFail("Not finished") }
         XCTAssertEqual(build.status, "EQUAL")
         XCTAssertTrue((route.bodies.last?["query"] as? String)?.contains("finishBuild") == true)
     }
@@ -36,12 +36,23 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         let route = StubURLProtocol.Route([reply(status: "RUNNING")])
         _ = try await client(route, store, VisualBuildOptions(customId: "ci-42")).build()
 
-        guard case .leftOpen = await store.finishCreatedBuild() else { return XCTFail("Should stay open") }
+        guard case .leftOpen = await store.finishOwnedBuild() else { return XCTFail("Should stay open") }
         XCTAssertEqual(route.requests.count, 1, "No finishBuild request")
     }
 
+    func testLeavesNewCustomIdBuildOpen() async throws {
+        let store = SharedBuildStore()
+        // No build has this custom ID yet, so this worker creates it. Others may still join it.
+        let route = StubURLProtocol.Route([.json(["data": ["result": NSNull()]]), reply(status: "RUNNING")])
+        _ = try await client(route, store, VisualBuildOptions(customId: "ci-42")).build()
+
+        guard case .leftOpen = await store.finishOwnedBuild() else { return XCTFail("Should stay open") }
+        XCTAssertTrue((route.bodies.last?["query"] as? String)?.contains("createBuild") == true, "This worker created it")
+        XCTAssertEqual(route.requests.count, 2, "No finishBuild request")
+    }
+
     func testNothingToFinishWithoutBuild() async {
-        guard case .noBuild = await SharedBuildStore().finishCreatedBuild() else { return XCTFail("Expected no build") }
+        guard case .noBuild = await SharedBuildStore().finishOwnedBuild() else { return XCTFail("Expected no build") }
     }
 
     func testFailedCreationIsNotFinished() async throws {
@@ -49,7 +60,7 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         let route = StubURLProtocol.Route([.failure(.cannotConnectToHost)])
         _ = try? await client(route, store, VisualBuildOptions()).build()
 
-        guard case .noBuild = await store.finishCreatedBuild() else { return XCTFail("Expected no build") }
+        guard case .noBuild = await store.finishOwnedBuild() else { return XCTFail("Expected no build") }
     }
 
     func testManualFinishIsNotRepeated() async throws {
@@ -58,7 +69,7 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         let visual = try client(route, store, VisualBuildOptions())
         _ = try await visual.finish()
 
-        guard case .finished = await store.finishCreatedBuild() else { return XCTFail("Not finished") }
+        guard case .finished = await store.finishOwnedBuild() else { return XCTFail("Not finished") }
         XCTAssertEqual(route.requests.count, 2, "createBuild and one finishBuild")
     }
 
@@ -75,6 +86,8 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
     func testMessages() throws {
         let build = VisualBuild(id: buildID, status: "UNAPPROVED", url: "https://app.saucelabs.com/visual/builds/\(buildID)")
         XCTAssertNil(AutoFinish.message(for: .noBuild))
+        XCTAssertEqual(AutoFinish.message(for: .leftOpen(build)),
+                       "Sauce Visual: left build https://app.saucelabs.com/visual/builds/\(buildID) open, because it is named by a build ID or custom ID. Finish it once every worker is done.")
         XCTAssertEqual(AutoFinish.message(for: .finished(build)),
                        "Sauce Visual: finished build https://app.saucelabs.com/visual/builds/\(buildID) (UNAPPROVED).")
         XCTAssertEqual(AutoFinish.message(for: .failed(VisualError.networkFailure)),
