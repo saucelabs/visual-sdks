@@ -15,18 +15,17 @@ internal struct GraphQLTransport: Sendable {
         self.session = session
     }
 
-    struct Response<Result: Decodable & Sendable>: Sendable {
-        let result: Result?
-        let errorMessages: [String]
-    }
-
     /// Sends one operation whose root field is aliased as `result`.
-    /// - Throws: `VisualAPIError` for transport, HTTP, and decoding failures, or `CancellationError`.
+    ///
+    /// Returns `nil` only when the server answered with an explicit `"result": null` and no errors, so a
+    /// lookup miss can't be confused with a failed or malformed response.
+    /// - Throws: `VisualAPIError` for transport and HTTP failures, any GraphQL error (even next to a
+    ///   partial result), a response without a `result` field, or `CancellationError`.
     func execute<Variables: Encodable & Sendable, Result: Decodable & Sendable>(
         _ query: String,
         variables: Variables,
         as _: Result.Type
-    ) async throws -> Response<Result> {
+    ) async throws -> Result? {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -67,10 +66,13 @@ internal struct GraphQLTransport: Sendable {
         } catch {
             throw VisualAPIError(code: .apiError, detail: "Unexpected response format.", statusCode: status)
         }
-        return Response(
-            result: envelope.data?.result,
-            errorMessages: envelope.errors?.map(\.message) ?? []
-        )
+        if let errors = envelope.errors, !errors.isEmpty {
+            throw VisualAPIError(code: .apiError, detail: errors.map(\.message).joined(separator: ", "), statusCode: status)
+        }
+        guard let payload = envelope.data, payload.hasResult else {
+            throw VisualAPIError(code: .apiError, detail: "The response has no result.", statusCode: status)
+        }
+        return payload.result
     }
 
     /// A short reason for common failures. System messages can be missing or only show the error number.
@@ -94,7 +96,19 @@ internal struct GraphQLTransport: Sendable {
     }
 
     private struct Envelope<Result: Decodable>: Decodable {
-        struct Payload: Decodable { let result: Result? }
+        /// Tells a missing `result` field apart from an explicit `null`.
+        struct Payload: Decodable {
+            let hasResult: Bool
+            let result: Result?
+
+            private enum CodingKeys: String, CodingKey { case result }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                hasResult = container.contains(.result)
+                result = hasResult ? try container.decode(Result?.self, forKey: .result) : nil
+            }
+        }
         struct GraphQLError: Decodable { let message: String }
         let data: Payload?
         let errors: [GraphQLError]?

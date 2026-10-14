@@ -9,7 +9,7 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     @MainActor
     func testLoginAndLogoutInSafari() async throws {
         let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
-        let build = try await VisualClient().build()
+        let build = try await VisualClient(options: liveBuildOptions).build()
         XCTAssertNotNil(UUID(uuidString: build.id))
 
         guard #available(iOS 16.4, *) else { return XCTFail("Opening a URL from a UI test needs iOS 16.4.") }
