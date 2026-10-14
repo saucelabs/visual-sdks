@@ -18,24 +18,37 @@ internal struct VisualAPI: Sendable {
 
     /// Reuses the build named by `buildId` or `customId`, otherwise creates one.
     ///
-    /// `buildId` is checked first, then `customId`. A new build keeps the `customId`, so later runs
-    /// with the same ID find it.
-    /// - Throws: `VisualError.invalidBuildId`, `.buildAlreadyCompleted`, or `VisualAPIError`.
+    /// A `buildId` must name an existing build: it is never replaced by a new one. Otherwise a running
+    /// build with the `customId` is reused, or a new build is created with it, so later runs with the same
+    /// ID find it. A lookup only counts as a miss when the API returns an explicit `null` without errors.
+    /// - Throws: `VisualError.invalidBuildId`, `.buildNotFound`, `.buildAlreadyCompleted`, or `VisualAPIError`.
     func resolveBuild(_ options: VisualBuildOptions) async throws -> Resolution {
         if let buildId = options.buildId {
             guard let uuid = UUID(uuidString: buildId) else { throw VisualError.invalidBuildId }
-            if let existing = try await build(id: uuid) { return Resolution(build: try Self.reusable(existing), created: false) }
+            guard let existing = try await build(id: uuid) else { throw VisualError.buildNotFound }
+            return .reused(try Self.reusable(existing))
         }
         if let customId = options.customId, let existing = try await build(customId: customId) {
-            return Resolution(build: try Self.reusable(existing), created: false)
+            return .reused(try Self.reusable(existing))
         }
-        return Resolution(build: try await createBuild(options), created: true)
+        let build = try await createBuild(options)
+        // Other workers may join a build named by an ID, so creating it does not make this worker the finisher.
+        return Resolution(build: build, created: true, ownsFinish: !options.namesBuild)
     }
 
-    /// `created` is false when an existing build was reused. Whoever created that build finishes it.
+    /// Creating a build and finishing it are separate: whoever knows that every worker is done
+    /// finishes a shared build, and that may not be the worker that created it.
     struct Resolution: Sendable {
         let build: VisualBuild
+        /// This worker created the build, rather than reusing an existing one.
         let created: Bool
+        /// This worker finishes the build when its tests end. True only for a build it created without a
+        /// `buildId` or `customId`, since no other worker can be adding to that one.
+        let ownsFinish: Bool
+
+        static func reused(_ build: VisualBuild) -> Resolution {
+            Resolution(build: build, created: false, ownsFinish: false)
+        }
     }
 
     func createBuild(_ options: VisualBuildOptions) async throws -> VisualBuild {
@@ -46,32 +59,30 @@ internal struct VisualAPI: Sendable {
             defaultBranch: options.defaultBranch,
             customId: options.customId
         )
-        let response = try await transport.execute(
+        let result = try await transport.execute(
             Self.createBuildMutation, variables: GraphQL.Input(input: input), as: GraphQL.BuildResponse.self
         )
-        return try Self.require(response).build
+        return try Self.require(result).build
     }
 
     private func build(id: UUID) async throws -> GraphQL.BuildResponse? {
-        let response = try await transport.execute(
+        try await transport.execute(
             Self.buildQuery, variables: GraphQL.Input(input: id.uuidString.lowercased()), as: GraphQL.BuildResponse.self
         )
-        return response.result
     }
 
     private func build(customId: String) async throws -> GraphQL.BuildResponse? {
-        let response = try await transport.execute(
+        try await transport.execute(
             Self.buildByCustomIdQuery, variables: GraphQL.Input(input: customId), as: GraphQL.BuildResponse.self
         )
-        return response.result
     }
 
     func finishBuild(_ build: VisualBuild) async throws -> VisualBuild {
-        let response = try await transport.execute(
+        let result = try await transport.execute(
             Self.finishBuildMutation, variables: GraphQL.Input(input: GraphQL.FinishBuildIn(uuid: build.id)),
             as: GraphQL.BuildResponse.self
         )
-        let finished = try Self.require(response)
+        let finished = try Self.require(result)
         return VisualBuild(
             id: build.id,
             name: finished.name ?? build.name,
@@ -89,14 +100,9 @@ internal struct VisualAPI: Sendable {
         return existing.build
     }
 
-    /// Mutations must return a value. GraphQL errors explain a missing one.
-    private static func require(
-        _ response: GraphQLTransport.Response<GraphQL.BuildResponse>
-    ) throws -> GraphQL.BuildResponse {
-        guard let result = response.result else {
-            let detail = response.errorMessages.isEmpty ? "Empty result." : response.errorMessages.joined(separator: ", ")
-            throw VisualAPIError(code: .apiError, detail: detail)
-        }
+    /// Mutations must return a value. GraphQL errors are already thrown by the transport.
+    private static func require(_ result: GraphQL.BuildResponse?) throws -> GraphQL.BuildResponse {
+        guard let result else { throw VisualAPIError(code: .apiError, detail: "Empty result.") }
         return result
     }
 

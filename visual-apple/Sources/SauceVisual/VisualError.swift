@@ -10,6 +10,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case buildAlreadyCompleted = 5
     case networkFailure = 6
     case apiError = 7
+    case conflictingConfiguration = 8
+    case buildNotFound = 9
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -30,6 +32,10 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Could not reach the Sauce Visual API."
         case .apiError:
             return "The Sauce Visual API returned an error."
+        case .conflictingConfiguration:
+            return "Another Sauce Visual client in this process uses a different region, credentials, or build options. Every client in a test run must use the same ones."
+        case .buildNotFound:
+            return "No Sauce Visual build has this build ID. Check the buildId option or SAUCE_VISUAL_BUILD_ID."
         }
     }
 

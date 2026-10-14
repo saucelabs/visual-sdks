@@ -31,8 +31,11 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         let options = VisualBuildOptions(
             name: "Build", project: "Project", branch: "feature", defaultBranch: "main"
         )
-        let created = try await api.resolveBuild(options).build
+        let resolution = try await api.resolveBuild(options)
+        let created = resolution.build
 
+        XCTAssertTrue(resolution.created)
+        XCTAssertTrue(resolution.ownsFinish, "An unnamed build is only this worker's")
         XCTAssertEqual(created.id, buildID)
         XCTAssertEqual(created.url, "https://visual.test/builds/\(buildID)")
         let request = try XCTUnwrap(route.requests.first)
@@ -48,8 +51,11 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testCustomIdLookupThenCreateKeepsCustomId() async throws {
         let (api, route) = try api([.json(["data": ["result": NSNull()]]), .json(build(customId: "ci-42"))])
-        let created = try await api.resolveBuild(VisualBuildOptions(name: "Build", customId: "ci-42")).build
+        let resolution = try await api.resolveBuild(VisualBuildOptions(name: "Build", customId: "ci-42"))
+        let created = resolution.build
 
+        XCTAssertTrue(resolution.created)
+        XCTAssertFalse(resolution.ownsFinish, "Other workers may join a custom-ID build")
         XCTAssertEqual(created.customId, "ci-42")
         let bodies = route.bodies
         XCTAssertEqual(bodies.count, 2)
@@ -71,8 +77,11 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testRunningBuildIsReusedByCustomId() async throws {
         let (api, route) = try api([.json(build(customId: "ci-42"))])
-        let reused = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42")).build
+        let resolution = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42"))
+        let reused = resolution.build
 
+        XCTAssertFalse(resolution.created)
+        XCTAssertFalse(resolution.ownsFinish)
         XCTAssertEqual(reused.customId, "ci-42")
         XCTAssertEqual(route.requests.count, 1)
     }
@@ -94,10 +103,41 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(route.requests.isEmpty)
     }
 
-    func testMissingBuildIdFallsBackToCreate() async throws {
-        let (api, route) = try api([.json(["data": ["result": NSNull()]]), .json(build())])
-        _ = try await api.resolveBuild(VisualBuildOptions(buildId: buildID))
-        XCTAssertTrue((route.bodies.last?["query"] as? String)?.contains("createBuild") == true)
+    func testUnknownBuildIdIsRejectedInsteadOfReplaced() async throws {
+        let (api, route) = try api([.json(["data": ["result": NSNull()]])])
+        await XCTAssertThrowsErrorAsync(try await api.resolveBuild(VisualBuildOptions(customId: "ci-42", buildId: buildID))) {
+            XCTAssertEqual($0 as? VisualError, .buildNotFound)
+        }
+        XCTAssertEqual(route.requests.count, 1, "No custom ID lookup and no createBuild")
+    }
+
+    /// Only an explicit, error-free `null` is a miss. Anything else must not fall through to `createBuild`.
+    func testFailedOrMalformedLookupDoesNotCreateABuild() async throws {
+        let responses: [(String, [String: Any])] = [
+            ("denied", ["data": ["result": NSNull()], "errors": [["message": "Not allowed"]]]),
+            ("partial result with errors", build().merging(["errors": [["message": "Partial"]]]) { $1 }),
+            ("empty object", [:]),
+            ("null data", ["data": NSNull()]),
+            ("no result field", ["data": [String: Any]()])
+        ]
+        for (label, response) in responses {
+            for options in [VisualBuildOptions(customId: "ci-42"), VisualBuildOptions(buildId: buildID)] {
+                let (api, route) = try api([.json(response), .json(build())])
+                await XCTAssertThrowsErrorAsync(try await api.resolveBuild(options)) {
+                    XCTAssertEqual(($0 as? VisualAPIError)?.code, .apiError, label)
+                }
+                XCTAssertEqual(route.requests.count, 1, "\(label): no createBuild")
+            }
+        }
+    }
+
+    func testGraphQLErrorsNextToAResultAreNotIgnored() async throws {
+        var response = build()
+        response["errors"] = [["message": "Partial"], ["message": "Failure"]]
+        let (api, _) = try api([.json(response)])
+        await XCTAssertThrowsErrorAsync(try await api.createBuild(VisualBuildOptions())) {
+            XCTAssertEqual(($0 as? VisualAPIError)?.detail, "Partial, Failure")
+        }
     }
 
     func testFinishBuildUpdatesStatus() async throws {

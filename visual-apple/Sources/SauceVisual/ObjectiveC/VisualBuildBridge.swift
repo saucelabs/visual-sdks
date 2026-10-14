@@ -99,7 +99,8 @@ public final class VisualBuildRecord: NSObject, Sendable {
     }
 }
 
-/// Objective-C facade over `VisualClient`. Every client in the process shares one build.
+/// Objective-C facade over `VisualClient`. Every client in the process shares one build and must use the same
+/// region, credentials, and build options.
 ///
 /// Entry points may be called from any thread. Completion is invoked once on MainActor, never inline,
 /// with either a build or an NSError, never both. The shared request is not cancellable, because
