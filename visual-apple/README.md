@@ -78,9 +78,30 @@ try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
 | `ignoreRegions`, `ignoreElements` | Areas and elements left out of the comparison. A missing element throws `VisualError.elementNotFound` |
 | `regions` | `SelectiveRegion.ignoreChanges(in:)` or `.detectChanges(in:_:)` for a rectangle or element |
 | `diffingMethod` | `.balanced` (default) or `.experimental` |
-| `diffingOptions` | Kinds of change to report: `.visual`, `.position`, `.dimensions`, and `.content`, `.structure`, `.style`, which need an element tree the SDK doesn't upload yet |
+| `diffingOptions` | Kinds of change to report: `.visual`, `.position`, `.dimensions`, and, with `captureDom`, `.content`, `.structure`, `.style` |
 | `diffingMethodSensitivity`, `diffingMethodTolerance` | How strictly `.balanced` compares pixels |
 | `baselineOverride` | Compare against another snapshot's baseline, for example `BaselineOverride(operatingSystemVersion: "26.5")` to keep comparing against iOS 26.5 baselines after the simulator moves to a newer iOS. Each field has three states: leave it out to keep the snapshot's own value, set a value (`operatingSystemVersion: "26.5"`, `operatingSystem: .ios`), or use `.null` to match baselines that have no value for that field (`device: .null`). Baselines also match on the test and suite names, so to compare with a snapshot from another test, override `testName` too. Set it for every check with `VisualClient(baselineOverride:)`; a check's own override replaces it |
+| `captureDom` | Also upload the element tree, so the dashboard shows which element changed. Off by default. See [Element tree](#element-tree-dom) |
+
+### Element tree (DOM)
+
+Turn on `captureDom` to upload the screen's element tree with the snapshot. The dashboard then shows which element changed, and `diffingOptions` can compare text, structure, and style.
+
+```swift
+// The whole screen of your app
+try await visual.sauceVisualCheck("Cart", options: VisualCheckOptions(captureDom: true))
+
+// One section, reporting only text and layout changes
+try await visual.sauceVisualCheck("Order summary", options: VisualCheckOptions(
+    clipElement: app.otherElements["orderSummary"],
+    diffingOptions: [.content, .position, .dimensions],
+    captureDom: true
+))
+```
+
+- The tree comes from the app under test, or from `clipElement` when set.
+- In Safari or a web view, it holds the page's accessibility elements, not its HTML. Clip to the web view to capture it.
+- If the tree can't be read, the snapshot is uploaded without it and a warning is printed.
 
 Rectangles are in points and converted to screenshot pixels. Parts outside the screen are clipped. Snapshots are compared with the baseline that has the same name, device, and OS version. On tvOS, the operating system is reported as `UNKNOWN`, because the API has no tvOS value.
 
@@ -116,6 +137,7 @@ if (visual == nil) {
 
 SLVCheckOptions *checkOptions = [[SLVCheckOptions alloc] init];
 checkOptions.ignoreElements = @[app.staticTexts[@"timestamp"]];
+checkOptions.captureDom = YES;
 [visual sauceVisualCheckWithName:@"Checkout page" options:checkOptions completion:^(SLVSnapshot *snapshot, NSError *failure) {
     if (failure != nil) {
         NSLog(@"Check failed: %@", failure.localizedDescription);
@@ -123,7 +145,7 @@ checkOptions.ignoreElements = @[app.staticTexts[@"timestamp"]];
 }];
 ```
 
-`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
+`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, `captureDom`, and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
 
 ## Development
 

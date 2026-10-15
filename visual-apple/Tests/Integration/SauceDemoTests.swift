@@ -34,6 +34,14 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         try await visual.sauceVisualCheck("Login page (override)", options: options)
     }
 
+    /// Safari isn't the app under test, so the DOM comes from clipping to the web view: its subtree is
+    /// Safari's accessibility view of the page.
+    @MainActor
+    func testLoginPageWithDom() async throws {
+        try openLoginPage()
+        try await visual.sauceVisualCheck("Login page (DOM)", options: VisualCheckOptions(clipElement: page, captureDom: true))
+    }
+
     @MainActor
     func testLoginButton() async throws {
         try openLoginPage()
