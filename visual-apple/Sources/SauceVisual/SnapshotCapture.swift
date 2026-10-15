@@ -21,8 +21,37 @@ internal enum SnapshotCapture {
         try options.validate()
         // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
-        let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
+        var request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
+        if options.captureDom {
+            request.dom = dom(clipElement: options.clipElement, clip: request.clip, screenshot: screenshot)
+        }
         return Prepared(name: name, png: screenshot.png, request: request)
+    }
+
+    /// Read right after the screenshot, so both show the same moment. Problems only print a warning.
+    @MainActor
+    private static func dom(clipElement: XCUIElement?, clip: CGRect?, screenshot: Screenshot.Capture) -> DomSnapshot? {
+        let scale = screenshot.scale
+        let screen = CGRect(x: 0, y: 0, width: screenshot.pixelSize.width / scale, height: screenshot.pixelSize.height / scale)
+        // A clip's subtree lines up with the cropped image.
+        let element: XCUIElement
+        if let clipElement {
+            element = clipElement
+        } else {
+            let app = XCUIApplication()
+            guard app.state == .runningForeground else {
+                print("Sauce Visual: skipped the DOM, because the app under test isn't in front.")
+                return nil
+            }
+            element = app
+        }
+        let origin = clip.map { CGPoint(x: $0.minX / scale, y: $0.minY / scale) } ?? .zero
+        do {
+            return try DomCapture.capture(element, origin: origin, screen: screen, devicePixelRatio: Double(scale))
+        } catch {
+            print("Sauce Visual: could not read the element tree, so the snapshot has no DOM. \(error)")
+            return nil
+        }
     }
 
     /// The name without surrounding whitespace.
