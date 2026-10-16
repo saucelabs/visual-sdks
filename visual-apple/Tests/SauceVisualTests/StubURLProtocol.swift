@@ -7,6 +7,20 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         var status: Int = 200
         var body: Data
         var error: URLError?
+        /// Holds the reply until the test opens the gate.
+        var gate: Gate?
+        /// Answers with a redirect to this URL.
+        var redirect: URL?
+
+        static func redirect(to url: URL, status: Int = 307) -> Reply {
+            Reply(status: status, body: Data(), redirect: url)
+        }
+
+        func held(by gate: Gate) -> Reply {
+            var reply = self
+            reply.gate = gate
+            return reply
+        }
 
         static func json(_ object: Any, status: Int = 200) -> Reply {
             // Test fixtures are valid JSON objects.
@@ -15,6 +29,30 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 
         static func failure(_ code: URLError.Code) -> Reply {
             Reply(body: Data(), error: URLError(code))
+        }
+    }
+
+    /// Keeps one request in flight, to test what happens meanwhile.
+    final class Gate: @unchecked Sendable {
+        private let arrived = DispatchSemaphore(value: 0)
+        private let opened = DispatchSemaphore(value: 0)
+
+        /// Waits until the held request reaches the stub.
+        func waitForRequest() async {
+            await withCheckedContinuation { continuation in
+                DispatchQueue.global().async {
+                    self.arrived.wait()
+                    continuation.resume()
+                }
+            }
+        }
+
+        func open() { opened.signal() }
+
+        /// Gives up after 10 seconds, so a test that fails before opening the gate doesn't block a thread forever.
+        fileprivate func hold() {
+            arrived.signal()
+            _ = opened.wait(timeout: .now() + 10)
         }
     }
 
@@ -50,12 +88,17 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 
     /// A session whose requests are answered by `route`.
     static func session(_ route: Route) -> URLSession {
+        URLSession(configuration: configuration(route))
+    }
+
+    /// A configuration whose requests are answered by `route`, for code that builds its own session.
+    static func configuration(_ route: Route, headers: [String: String] = [:]) -> URLSessionConfiguration {
         let id = UUID().uuidString
         lock.locked { routes[id] = route }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubURLProtocol.self]
-        configuration.httpAdditionalHeaders = [header: id]
-        return URLSession(configuration: configuration)
+        configuration.httpAdditionalHeaders = headers.merging([header: id]) { $1 }
+        return configuration
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -71,6 +114,24 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         var captured = request
         captured.httpBody = request.httpBody ?? request.httpBodyStream.map(Self.read)
         let reply = route.next(for: captured)
+        guard let gate = reply.gate else { return respond(reply) }
+        // Wait off the loading thread, so other requests aren't blocked.
+        DispatchQueue.global().async {
+            gate.hold()
+            self.respond(reply)
+        }
+    }
+
+    private func respond(_ reply: Reply) {
+        if let redirect = reply.redirect {
+            let response = HTTPURLResponse(url: request.url!, statusCode: reply.status, httpVersion: "HTTP/1.1",
+                                           headerFields: ["Location": redirect.absoluteString])!
+            client?.urlProtocol(self, wasRedirectedTo: URLRequest(url: redirect), redirectResponse: response)
+            // Reached only when the redirect is refused: the redirect response is then the final one.
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
         if let error = reply.error {
             client?.urlProtocol(self, didFailWithError: error)
             return
