@@ -65,8 +65,8 @@ public actor VisualClient {
     }
 
     /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.elementNotFound`, `.buildAlreadyCompleted`,
-    ///   `.conflictingConfiguration`, or `VisualAPIError`.
+    /// - Throws: `VisualError`, such as `.elementNotFound`, `.clipElementOffScreen`, or `.conflictingConfiguration`,
+    ///   or `VisualAPIError`.
     @MainActor
     @discardableResult
     public func sauceVisualCheck(
@@ -80,6 +80,8 @@ public actor VisualClient {
     /// The upload goes through the API of the client that owns the build, so it reaches that build's
     /// account and region.
     internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
+        // Crop here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
+        let png = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
         let device = self.device
         // Admitted for the whole upload, so finishing waits until the snapshot is created or has failed.
         return try await store.check(configuration, api: api) { run in

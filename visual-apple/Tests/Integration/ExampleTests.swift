@@ -13,10 +13,10 @@ final class ExampleTests: XCTestCase, @unchecked Sendable {
     }
 }
 
-/// The build every live test adds to. Every client in a test process must use the same options, or the
-/// SDK throws `conflictingConfiguration`.
+/// The build every live test adds to. The timestamp is fixed for the run, so each run gets its own name.
+/// Every client in a test process must use the same options, or the SDK throws `conflictingConfiguration`.
 let liveBuildOptions = VisualBuildOptions(
-    name: "Apple SDK consumer live test", project: "visual-apple",
+    name: "Apple SDK consumer live test - \(Int(Date().timeIntervalSince1970))", project: "visual-apple",
     branch: "feat/visual-apple-snapshot", defaultBranch: "main"
 )
 

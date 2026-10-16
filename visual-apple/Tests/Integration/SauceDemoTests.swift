@@ -32,6 +32,13 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     }
 
     @MainActor
+    func testLoginButton() async throws {
+        openLoginPage()
+        let button = page.buttons["Login"]
+        try await visual.sauceVisualCheck("Login button", options: VisualCheckOptions(clipElement: button))
+    }
+
+    @MainActor
     func testWrongPasswordShowsError() async throws {
         openLoginPage()
         logIn(password: "wrong_password")
