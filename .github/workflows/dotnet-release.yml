@@ -81,15 +81,6 @@ jobs:
           git push
           git push origin "dotnet-$newVersion"
 
-      - name: commit & push version
-        run: |
-          $newVersion = "${{ steps.upgrade.outputs.version }}"
-          git add ./SauceLabs.Visual/SauceLabs.Visual.csproj
-          git commit -m "[release] dotnet-$newVersion"
-          git tag "dotnet-$newVersion"
-          git push
-          git push origin "dotnet-$newVersion"
-
       - name: Github Release
         uses: softprops/action-gh-release@v3
         with:
