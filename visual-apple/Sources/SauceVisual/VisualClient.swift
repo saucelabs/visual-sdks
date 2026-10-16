@@ -1,12 +1,11 @@
 import Foundation
 
-/// Creates, reuses, and finishes the Sauce Visual build for this test run.
+/// Takes Sauce Visual snapshots in your UI tests. All clients share one build per test run,
+/// which the SDK creates on the first check.
 ///
-/// Every client in the process shares one build: the first call to `build()`
-/// creates it (or reuses the one named by `buildId` / `customId`). The build belongs to that client's
-/// region, credentials, and build options. Later clients must use the same ones, and then share the
-/// first client's connection. A client with a different configuration throws
-/// `VisualError.conflictingConfiguration`.
+/// The build belongs to the first client's region, credentials, and build options. Later clients must use
+/// the same ones, and then share the first client's connection. A client with a different configuration
+/// throws `VisualError.conflictingConfiguration`.
 ///
 /// The build is finished automatically when the XCTest bundle ends only if this process created it
 /// without a `buildId` or `customId`. A build named by either ID may be shared by several workers, so it
@@ -18,6 +17,7 @@ public actor VisualClient {
     private let configuration: BuildConfiguration
     private let api: VisualAPI
     private let store: SharedBuildStore
+    private let device: DeviceInfo
 
     /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
     /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, or `.invalidBuildId`.
@@ -31,7 +31,8 @@ public actor VisualClient {
             credentials: credentials, region: region, options: options, session: session,
             environment: ProcessInfo.processInfo.environment, store: .shared
         )
-        AutoFinish.register()
+        // Usually already done when the SDK loads; this is a fallback.
+        TestObservation.register()
     }
 
     internal init(
@@ -40,7 +41,8 @@ public actor VisualClient {
         options: VisualBuildOptions,
         session: URLSession,
         environment: [String: String],
-        store: SharedBuildStore
+        store: SharedBuildStore,
+        uploader: PresignedUploader = .shared
     ) throws {
         let credentials = try credentials ?? VisualCredentials.fromEnvironment(environment)
         let region = try region ?? SauceRegion.fromEnvironment(environment)
@@ -49,20 +51,45 @@ public actor VisualClient {
         self.region = region
         self.options = options
         self.configuration = BuildConfiguration(endpoint: region.graphqlEndpoint, credentials: credentials, options: options)
-        self.api = VisualAPI(region: region, credentials: credentials, session: session)
+        self.api = VisualAPI(region: region, credentials: credentials, session: session, uploader: uploader)
         self.store = store
+        self.device = DeviceInfo.current(environment)
     }
 
-    /// The shared build, created on first use. Concurrent first calls make one request.
-    /// A failed attempt is not cached, so a later call retries.
+    /// The shared build, created if needed. Only useful to read its ID or link before the first check.
+    /// Concurrent first calls make one request, and a failed attempt is retried by the next call.
     /// - Throws: `VisualError.buildAlreadyCompleted` after `finish()`, `.conflictingConfiguration`,
-    ///   `.invalidBuildId`, or `VisualAPIError`.
+    ///   `.invalidBuildId`, `.buildNotFound`, or `VisualAPIError`.
     public func build() async throws -> VisualBuild {
         try await store.run(configuration, api: api).build
     }
 
-    /// Finishes the shared build. Repeated calls return the same result without another request.
-    /// Snapshots cannot be added afterwards.
+    /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.elementNotFound`, `.buildAlreadyCompleted`,
+    ///   `.conflictingConfiguration`, or `VisualAPIError`.
+    @MainActor
+    @discardableResult
+    public func sauceVisualCheck(
+        _ name: String, options: VisualCheckOptions = VisualCheckOptions()
+    ) async throws -> VisualSnapshot {
+        let prepared = try SnapshotCapture.prepare(name, options: options)
+        return try await check(name: prepared.name, png: prepared.png, request: prepared.request)
+    }
+
+    /// Uploads a prepared snapshot to the shared build. `name` is already validated by `SnapshotCapture`.
+    /// The upload goes through the API of the client that owns the build, so it reaches that build's
+    /// account and region.
+    internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
+        let device = self.device
+        // Admitted for the whole upload, so finishing waits until the snapshot is created or has failed.
+        return try await store.check(configuration, api: api) { run in
+            try await run.api.createSnapshot(name: name, png: png, device: device, request: request, in: run.build)
+        }
+    }
+
+    /// Finishes the build early. You don't need to call this for a build the SDK finishes automatically.
+    /// New checks are refused from the moment it's called; checks already running are waited for.
+    /// Repeated calls return the same result without another request.
     /// - Throws: `VisualError.conflictingConfiguration`, `VisualAPIError`, or any error from creating the build.
     public func finish() async throws -> VisualBuild {
         try await store.finish(configuration, api: api)
@@ -90,17 +117,39 @@ internal actor SharedBuildStore {
     private var owner: (configuration: BuildConfiguration, api: VisualAPI)?
     private var pending: Task<VisualAPI.Resolution, Error>?
     private var finishing: Task<VisualBuild, Error>?
+    /// Set when finishing starts. Later checks are refused; already admitted ones may still complete.
+    private(set) var isClosed = false
+    /// Admitted checks that haven't ended yet, and the finish calls waiting for them.
+    private var activeChecks = 0
+    private var drainWaiters: [CheckedContinuation<Void, Never>] = []
 
     func run(_ configuration: BuildConfiguration, api: VisualAPI) async throws -> Run {
         let api = try ownerAPI(for: configuration, api)
-        if finishing != nil { throw VisualError.buildAlreadyCompleted }
+        if isClosed { throw VisualError.buildAlreadyCompleted }
         return Run(build: try await resolve(configuration.options, with: api).build, api: api)
+    }
+
+    /// Runs `body` with the build as one admitted check. Finishing waits until it ends, whether it
+    /// succeeds or fails. A check admitted while the build is still being created may still complete.
+    func check<T: Sendable>(
+        _ configuration: BuildConfiguration, api: VisualAPI, _ body: @Sendable (Run) async throws -> T
+    ) async throws -> T {
+        let api = try ownerAPI(for: configuration, api)
+        if isClosed { throw VisualError.buildAlreadyCompleted }
+        // Admitted before the first suspension, so a finish that starts meanwhile waits for it.
+        activeChecks += 1
+        defer { endCheck() }
+        let build = try await resolve(configuration.options, with: api).build
+        return try await body(Run(build: build, api: api))
     }
 
     func finish(_ configuration: BuildConfiguration, api: VisualAPI) async throws -> VisualBuild {
         let api = try ownerAPI(for: configuration, api)
+        // Closed before the first suspension, so no check is admitted after finishing starts.
+        isClosed = true
         if let finishing { return try await finishing.value }
         let build = try await resolve(configuration.options, with: api).build
+        await drainChecks()
         return try await finish(build, with: api)
     }
 
@@ -110,9 +159,11 @@ internal actor SharedBuildStore {
     /// See `VisualAPI.Resolution.ownsFinish`.
     func finishOwnedBuild() async -> AutoFinish.Outcome {
         guard let pending, let owner else { return .noBuild }
+        isClosed = true
         do {
             let resolution = try await pending.value
             guard resolution.ownsFinish else { return .leftOpen(resolution.build) }
+            await drainChecks()
             return .finished(try await finish(resolution.build, with: owner.api))
         } catch {
             return .failed(error)
@@ -129,15 +180,30 @@ internal actor SharedBuildStore {
         return owner.api
     }
 
+    private func endCheck() {
+        activeChecks -= 1
+        guard activeChecks == 0 else { return }
+        let waiters = drainWaiters
+        drainWaiters = []
+        waiters.forEach { $0.resume() }
+    }
+
+    /// Waits until every admitted check has ended.
+    private func drainChecks() async {
+        while activeChecks > 0 {
+            await withCheckedContinuation { drainWaiters.append($0) }
+        }
+    }
+
     private func finish(_ build: VisualBuild, with api: VisualAPI) async throws -> VisualBuild {
-        // Another caller may have started finishing while this one waited.
+        // Another call may have started finishing meanwhile.
         if let finishing { return try await finishing.value }
         let task = Task { try await api.finishBuild(build) }
         finishing = task
         do {
             return try await task.value
         } catch {
-            // Allow a retry, for example after a network failure.
+            // Let a later call retry, for example after a network error.
             if finishing == task { finishing = nil }
             throw error
         }
