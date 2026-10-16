@@ -5,6 +5,16 @@
 	};
 	"objectVersion" = 56;
 	"objects" = {
+		4287F0F0B8E7E0441839C2E8 = {
+			"isa" = "PBXFileReference";
+			"path" = "SauceDemoTests.swift";
+			"sourceTree" = "<group>";
+			"lastKnownFileType" = "sourcecode.swift";
+		};
+		AA549E9FE9B3F3BB61C0A7B3 = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = 4287F0F0B8E7E0441839C2E8;
+		};
 		54ACA42ED0449532B5F5C496 = {
 			"isa" = "PBXGroup";
 			"children" = (
@@ -119,7 +129,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				2057683AA545A178FE48705D,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -188,7 +197,6 @@
 			"buildPhases" = (
 				0251A736A264CB1B3FF89A0F,
 				2DA0C76CE6885F46FE3954F8,
-				B9E4890D865673778A1C443B,
 			);
 			"buildRules" = (
 			);
@@ -207,26 +215,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-iOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		3F97D6868D91E6AACA0D1EFE = {
-			"isa" = "PBXFileReference";
-			"path" = "../SauceVisualTests/ObjectiveCBridgeTests.swift";
-			"sourceTree" = "<group>";
-			"lastKnownFileType" = "sourcecode.swift";
-		};
-		947A1C4E0D8C78D51ACAA780 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 3F97D6868D91E6AACA0D1EFE;
-		};
-		B78F2E79CF8CDA9838A4448A = {
-			"isa" = "PBXFileReference";
-			"path" = "../SauceVisualTests/VisualSessionTests.swift";
-			"sourceTree" = "<group>";
-			"lastKnownFileType" = "sourcecode.swift";
-		};
-		B25FD56DC84C4747B0F78F27 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = B78F2E79CF8CDA9838A4448A;
 		};
 		35B01D9F67725CC2B5B6F52A = {
 			"isa" = "PBXFileReference";
@@ -272,12 +260,11 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				947A1C4E0D8C78D51ACAA780,
-				B25FD56DC84C4747B0F78F27,
 				87410927A4CD1B8B44C262A1,
 				F345E85E60A5655EF6B8A695,
 				8A456E592442DA1B8EC7EEB7,
 				7A3648C2317CC1279FAEBE14,
+				AA549E9FE9B3F3BB61C0A7B3,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -307,8 +294,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-iOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -334,8 +319,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-iOS.app/SmokeHost-iOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-iOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -358,6 +341,7 @@
 			"buildPhases" = (
 				55EE1BB9D8AB54A0A0E7EDF2,
 				92CF0E5782035903428AF357,
+				B9E4890D865673778A1C443B,
 			);
 			"buildRules" = (
 			);
@@ -367,7 +351,7 @@
 			"name" = "ConsumerTests-iOS";
 			"productName" = "ConsumerTests-iOS";
 			"productReference" = 709916E9A86D32E20F71EC99;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 			);
 		};
@@ -388,10 +372,6 @@
 			"path" = "../../dist/SauceVisual.xcframework";
 			"sourceTree" = "<group>";
 			"lastKnownFileType" = "wrapper.xcframework";
-		};
-		2057683AA545A178FE48705D = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = EE0A86D352F37C4AC31D53AE;
 		};
 		A7DABF5E199FF31E64359C9C = {
 			"isa" = "PBXBuildFile";
@@ -441,7 +421,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				332F26E4402DCAA06B64E6B4,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -510,7 +489,6 @@
 			"buildPhases" = (
 				AE95885336C5B77BA7D023EC,
 				559EF1FA730E4368D71611A0,
-				C13C56713D1EA92F45311196,
 			);
 			"buildRules" = (
 			);
@@ -529,14 +507,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-tvOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		FDB7E443160A266A746645EC = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 3F97D6868D91E6AACA0D1EFE;
-		};
-		B857C5BC885414DC5F48B3E2 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = B78F2E79CF8CDA9838A4448A;
 		};
 		F0710D5B39209127C2135271 = {
 			"isa" = "PBXBuildFile";
@@ -558,8 +528,6 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				FDB7E443160A266A746645EC,
-				B857C5BC885414DC5F48B3E2,
 				F0710D5B39209127C2135271,
 				946C5602091BE775AF611B16,
 				D483E36522A5D495EABBF02A,
@@ -593,8 +561,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -620,8 +586,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-tvOS.app/SmokeHost-tvOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-tvOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -644,6 +608,7 @@
 			"buildPhases" = (
 				AA6A674924528225B26E4969,
 				73B3DC043A0511C1929AC69D,
+				C13C56713D1EA92F45311196,
 			);
 			"buildRules" = (
 			);
@@ -653,7 +618,7 @@
 			"name" = "ConsumerTests-tvOS";
 			"productName" = "ConsumerTests-tvOS";
 			"productReference" = F4D060F4010252C65EC15F16;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 			);
 		};
@@ -668,10 +633,6 @@
 			"isa" = "PBXTargetDependency";
 			"target" = 942D3286A57A1CFE64B68B68;
 			"targetProxy" = EBDA426BEA41E0428302700F;
-		};
-		332F26E4402DCAA06B64E6B4 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = EE0A86D352F37C4AC31D53AE;
 		};
 		6E3BF6B1BA70E509DFD31196 = {
 			"isa" = "PBXBuildFile";
@@ -721,7 +682,6 @@
 			"isa" = "PBXFrameworksBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				512DFBBE3A5E96C0E8C0D35A,
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
 		};
@@ -730,7 +690,6 @@
 			"name" = "Debug";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "SmokeHost-macOS";
@@ -756,7 +715,6 @@
 			"name" = "Release";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "SmokeHost-macOS";
@@ -792,7 +750,6 @@
 			"buildPhases" = (
 				31057C6E23C67FC058051931,
 				B610940114683EA871C22B77,
-				EA58C3038C76E09694450DD3,
 			);
 			"buildRules" = (
 			);
@@ -811,14 +768,6 @@
 			"includeInIndex" = 0;
 			"path" = "ConsumerTests-macOS.xctest";
 			"sourceTree" = "BUILT_PRODUCTS_DIR";
-		};
-		B6165AB10A2D9C59D5E13893 = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = 3F97D6868D91E6AACA0D1EFE;
-		};
-		7CC0E5F87121DB35CE59AABC = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = B78F2E79CF8CDA9838A4448A;
 		};
 		754B2D3EBA8D1643F84639D8 = {
 			"isa" = "PBXBuildFile";
@@ -840,8 +789,6 @@
 			"isa" = "PBXSourcesBuildPhase";
 			"buildActionMask" = 2147483647;
 			"files" = (
-				B6165AB10A2D9C59D5E13893,
-				7CC0E5F87121DB35CE59AABC,
 				754B2D3EBA8D1643F84639D8,
 				68B1490655F030C0105C75E4,
 				8DE34F8B916E9F1D80F764F9,
@@ -862,7 +809,6 @@
 			"name" = "Debug";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "ConsumerTests-macOS";
@@ -876,8 +822,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-macOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -890,7 +834,6 @@
 			"name" = "Release";
 			"buildSettings" = {
 				"SDKROOT" = "macosx";
-				/* Test host/bundle floor for modern XCTest; SDK remains macOS 12. */
 				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
 				"SUPPORTED_PLATFORMS" = "macosx";
 				"PRODUCT_NAME" = "ConsumerTests-macOS";
@@ -904,8 +847,6 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/SmokeHost-macOS.app/Contents/MacOS/SmokeHost-macOS";
-				"BUNDLE_LOADER" = "$(TEST_HOST)";
 				"TEST_TARGET_NAME" = "SmokeHost-macOS";
 				"GCC_PREPROCESSOR_DEFINITIONS" = (
 					"$(inherited)",
@@ -928,6 +869,7 @@
 			"buildPhases" = (
 				8595D44FC6F9A37D1F62DF49,
 				337DA16DD723A5195AE87FA5,
+				EA58C3038C76E09694450DD3,
 			);
 			"buildRules" = (
 			);
@@ -937,7 +879,7 @@
 			"name" = "ConsumerTests-macOS";
 			"productName" = "ConsumerTests-macOS";
 			"productReference" = D002F1CDFB8C4E8653EA8207;
-			"productType" = "com.apple.product-type.bundle.unit-test";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 			"packageProductDependencies" = (
 			);
 		};
@@ -952,10 +894,6 @@
 			"isa" = "PBXTargetDependency";
 			"target" = 5B873DF6C201A2A8E5156214;
 			"targetProxy" = 692E9E35D35D9B01F89D0034;
-		};
-		512DFBBE3A5E96C0E8C0D35A = {
-			"isa" = "PBXBuildFile";
-			"fileRef" = EE0A86D352F37C4AC31D53AE;
 		};
 		85135131E1AD90AF863B4110 = {
 			"isa" = "PBXBuildFile";
@@ -995,6 +933,7 @@
 			"children" = (
 				F3F2392F290F20DE8AC6F4FD,
 				35B01D9F67725CC2B5B6F52A,
+				4287F0F0B8E7E0441839C2E8,
 				DB02FDDB8B4B274B75003B19,
 				EE0A86D352F37C4AC31D53AE,
 			);
@@ -1004,8 +943,6 @@
 			"name" = "Tests";
 			"sourceTree" = "<group>";
 			"children" = (
-				3F97D6868D91E6AACA0D1EFE,
-				B78F2E79CF8CDA9838A4448A,
 			);
 		};
 		6A36E2C0321CDDFBDDFB771C = {
