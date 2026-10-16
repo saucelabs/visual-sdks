@@ -30,6 +30,7 @@ jobs:
     runs-on: windows-latest
     needs:
       - checks
+    environment: production
     permissions:
       id-token: write
       contents: write
@@ -69,7 +70,7 @@ jobs:
         run: |
           $version = "${{ steps.upgrade.outputs.version }}"
           $apiKey = "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: commit & push version
         run: |
