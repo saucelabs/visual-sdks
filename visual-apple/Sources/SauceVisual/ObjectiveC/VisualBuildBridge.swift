@@ -268,6 +268,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
     @objc public var diffingMethod: VisualDiffingMethodCode = .balanced
     /// Compare against another snapshot's baseline.
     @objc public var baselineOverride: VisualBaselineOverride?
+    /// Also upload the element tree of the app under test, or of `clipElement`. Off by default.
+    @objc public var captureDom = false
 
     internal var value: VisualCheckOptions {
         VisualCheckOptions(
@@ -283,7 +285,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
             },
             ignoreElements: ignoreElements,
             diffingMethod: diffingMethod.value,
-            baselineOverride: baselineOverride?.value
+            baselineOverride: baselineOverride?.value,
+            captureDom: captureDom
         )
     }
 }

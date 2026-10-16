@@ -27,6 +27,8 @@ public struct VisualCheckOptions {
     public var diffingMethodTolerance: DiffingMethodTolerance?
     /// Compare against another snapshot's baseline. Replaces the client's override for this check.
     public var baselineOverride: BaselineOverride?
+    /// Also upload the element tree of the app under test, or of `clipElement`. Off by default.
+    public var captureDom: Bool
 
     public init(
         testName: String? = nil,
@@ -39,7 +41,8 @@ public struct VisualCheckOptions {
         diffingOptions: DiffingOptions? = nil,
         diffingMethodSensitivity: DiffingMethodSensitivity? = nil,
         diffingMethodTolerance: DiffingMethodTolerance? = nil,
-        baselineOverride: BaselineOverride? = nil
+        baselineOverride: BaselineOverride? = nil,
+        captureDom: Bool = false
     ) {
         self.testName = testName
         self.suiteName = suiteName
@@ -52,6 +55,7 @@ public struct VisualCheckOptions {
         self.diffingMethodSensitivity = diffingMethodSensitivity
         self.diffingMethodTolerance = diffingMethodTolerance
         self.baselineOverride = baselineOverride
+        self.captureDom = captureDom
     }
 }
 
@@ -99,8 +103,7 @@ public enum DiffingMethod: String, Hashable, Sendable {
     case experimental = "EXPERIMENTAL"
 }
 
-/// Kinds of change to report. Only `visual`, `dimensions`, and `position` apply for now;
-/// the others need an element tree, which the SDK doesn't upload yet.
+/// Kinds of change to report. `content`, `structure`, and `style` need `captureDom`.
 public struct DiffingOptions: OptionSet, Hashable, Sendable {
     public let rawValue: Int
     public init(rawValue: Int) { self.rawValue = rawValue }
@@ -229,6 +232,8 @@ internal struct SnapshotRequest: Hashable, Sendable {
     var diffingMethodTolerance: DiffingMethodTolerance?
     /// `nil` falls back to the client's override.
     var baselineOverride: BaselineOverride?
+    /// Set when `captureDom` is on and the tree could be read.
+    var dom: DomSnapshot?
 }
 
 /// A region in screenshot pixels, as the API expects.
