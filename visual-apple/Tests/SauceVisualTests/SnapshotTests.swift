@@ -36,7 +36,8 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
     private func client(_ route: StubURLProtocol.Route, store: SharedBuildStore = SharedBuildStore()) throws -> VisualClient {
         try VisualClient(
             credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"),
-            session: StubURLProtocol.session(route), environment: environment, store: store
+            session: StubURLProtocol.session(route), environment: environment, store: store,
+            uploader: PresignedUploader(configuration: StubURLProtocol.configuration(route))
         )
     }
 
@@ -56,6 +57,160 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(result.buildId, buildID)
         XCTAssertEqual(owner.requests.count, 4)
         XCTAssertEqual(other.requests.count, 0)
+    }
+
+    // MARK: - Presigned uploads
+
+    func testUploadsDoNotUseTheAPISession() async throws {
+        let api = StubURLProtocol.Route([created, upload(), snapshot])
+        let storage = StubURLProtocol.Route([stored])
+        let apiSession = URLSession(configuration: StubURLProtocol.configuration(
+            api, headers: ["Authorization": "Bearer customer-token", "X-Proxy-Auth": "secret"]
+        ))
+        let visual = try VisualClient(
+            credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"), session: apiSession,
+            environment: environment, store: SharedBuildStore(),
+            uploader: PresignedUploader(configuration: StubURLProtocol.configuration(storage))
+        )
+        _ = try await visual.check(name: "Login", png: png)
+
+        XCTAssertEqual(api.requests.first?.value(forHTTPHeaderField: "X-Proxy-Auth"), "secret", "The API session's headers apply to API calls")
+        // What the storage service receives:
+        let put = try XCTUnwrap(storage.requests.first)
+        XCTAssertEqual(storage.requests.count, 1)
+        XCTAssertEqual(put.url, uploadURL)
+        XCTAssertNil(put.value(forHTTPHeaderField: "Authorization"))
+        XCTAssertNil(put.value(forHTTPHeaderField: "X-Proxy-Auth"))
+        XCTAssertNil(put.value(forHTTPHeaderField: "Cookie"))
+        XCTAssertEqual(put.value(forHTTPHeaderField: "Content-Type"), "image/png")
+        XCTAssertNotNil(put.value(forHTTPHeaderField: "Content-MD5"))
+    }
+
+    func testInvalidUploadURLsAreRejectedBeforeUploading() async throws {
+        let invalid = [
+            "http://storage.test/upload", "ftp://storage.test/upload", "/upload", "storage.test/upload",
+            "https://user:pass@storage.test/upload", "https://user@storage.test/upload", "https:///upload", "not a url"
+        ]
+        for url in invalid {
+            let route = StubURLProtocol.Route([created, upload(url: url)])
+            await XCTAssertThrowsErrorAsync(try await client(route).check(name: "Login", png: png)) {
+                XCTAssertEqual(($0 as? VisualAPIError)?.detail, "The API returned an invalid screenshot upload URL.", url)
+            }
+            XCTAssertEqual(route.requests.count, 2, "\(url): nothing uploaded")
+        }
+    }
+
+    func testUploadURLRules() throws {
+        for url in ["https://storage.test/upload?signature=abc", "HTTPS://storage.test/upload",
+                    "http://localhost:4443/upload", "http://127.0.0.1/upload", "http://[::1]:9000/upload"] {
+            XCTAssertNoThrow(try PresignedUploader.validated(url, kind: .screenshot), url)
+        }
+        XCTAssertThrowsError(try PresignedUploader.validated(nil, kind: .screenshot))
+        XCTAssertThrowsError(try PresignedUploader.validated("http://localhost.storage.test/upload", kind: .screenshot))
+    }
+
+    func testUploadsTimeOutLikeTheJSSDK() async throws {
+        let configuration = PresignedUploader(configuration: .ephemeral).session.configuration
+        XCTAssertEqual(configuration.timeoutIntervalForRequest, 10)
+        XCTAssertEqual(configuration.timeoutIntervalForResource, 10, "The whole upload, not just idle time")
+
+        let route = StubURLProtocol.Route([created, upload(), .failure(.timedOut)])
+        await XCTAssertThrowsErrorAsync(try await client(route).check(name: "Login", png: png)) {
+            let error = $0 as? VisualAPIError
+            XCTAssertEqual(error?.code, .networkFailure)
+            XCTAssertEqual(error?.detail, "Screenshot upload failed. The request timed out.")
+        }
+    }
+
+    func testUploadRedirectsAreNotFollowed() async throws {
+        let elsewhere = URL(string: "https://elsewhere.test/collect")!
+        let route = StubURLProtocol.Route([created, upload(), .redirect(to: elsewhere), stored, snapshot])
+        await XCTAssertThrowsErrorAsync(try await client(route).check(name: "Login", png: png)) {
+            XCTAssertEqual(($0 as? VisualAPIError)?.statusCode, 307)
+        }
+        XCTAssertEqual(route.requests.count, 3, "The redirect target never receives the file")
+        XCTAssertFalse(route.requests.contains { $0.url == elsewhere })
+    }
+
+    // MARK: - Finishing waits for admitted checks
+
+    private func waitUntilClosed(_ store: SharedBuildStore) async {
+        while await !store.isClosed { await Task.yield() }
+    }
+
+    private func queries(_ route: StubURLProtocol.Route) -> [String] {
+        route.bodies.map { $0["query"] as? String ?? "" }
+    }
+
+    func testFinishWaitsForAnUploadInFlight() async throws {
+        let store = SharedBuildStore()
+        let gate = StubURLProtocol.Gate()
+        let route = StubURLProtocol.Route([created, upload(), stored.held(by: gate), snapshot, finished])
+        let visual = try client(route, store: store)
+
+        let check = Task { try await visual.check(name: "Login", png: png) }
+        await gate.waitForRequest() // The screenshot PUT is in flight.
+        let finish = Task { try await visual.finish() }
+        await waitUntilClosed(store)
+
+        await XCTAssertThrowsErrorAsync(try await visual.check(name: "Too late", png: png)) {
+            XCTAssertEqual($0 as? VisualError, .buildAlreadyCompleted, "No check is admitted once finishing starts")
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(route.requests.count, 3, "finishBuild waits for the admitted check")
+
+        gate.open()
+        let result = try await check.value
+        let finishedBuild = try await finish.value
+        XCTAssertEqual(result.id, snapshotID)
+        XCTAssertEqual(finishedBuild.status, "EQUAL")
+        XCTAssertTrue(queries(route)[3].contains("createSnapshot("))
+        XCTAssertTrue(queries(route)[4].contains("finishBuild"), "Finished after the snapshot was created")
+    }
+
+    func testFinishWaitsForAFailingCheck() async throws {
+        let store = SharedBuildStore()
+        let gate = StubURLProtocol.Gate()
+        let failedUpload = StubURLProtocol.Reply(status: 500, body: Data()).held(by: gate)
+        let route = StubURLProtocol.Route([created, upload(), failedUpload, finished])
+        let visual = try client(route, store: store)
+
+        let check = Task { try await visual.check(name: "Login", png: png) }
+        await gate.waitForRequest()
+        let finish = Task { try await visual.finish() }
+        await waitUntilClosed(store)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(route.requests.count, 3, "finishBuild waits while the check is still running")
+
+        gate.open()
+        await XCTAssertThrowsErrorAsync(try await check.value) {
+            XCTAssertEqual(($0 as? VisualAPIError)?.code, .apiError)
+        }
+        let finishedBuild = try await finish.value
+        XCTAssertEqual(finishedBuild.status, "EQUAL", "A failed check is released too")
+        XCTAssertEqual(route.requests.count, 4)
+        XCTAssertTrue(queries(route)[3].contains("finishBuild"))
+    }
+
+    func testCheckAdmittedWhileCreatingTheBuildStillCompletes() async throws {
+        let store = SharedBuildStore()
+        let gate = StubURLProtocol.Gate()
+        let route = StubURLProtocol.Route([created.held(by: gate), upload(), stored, snapshot, finished])
+        let visual = try client(route, store: store)
+
+        let check = Task { try await visual.check(name: "Login", png: png) }
+        await gate.waitForRequest() // createBuild is in flight, and the check is already admitted.
+        let finish = Task { try await visual.finish() }
+        await waitUntilClosed(store)
+
+        gate.open()
+        let result = try await check.value
+        let finishedBuild = try await finish.value
+        XCTAssertEqual(result.id, snapshotID)
+        XCTAssertEqual(finishedBuild.status, "EQUAL")
+        XCTAssertEqual(route.requests.count, 5)
+        XCTAssertTrue(queries(route)[3].contains("createSnapshot("))
+        XCTAssertTrue(queries(route)[4].contains("finishBuild"))
     }
 
     func testCheckReservesUploadsThenCreatesSnapshot() async throws {
