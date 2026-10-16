@@ -65,8 +65,8 @@ internal struct TestIdentity: Hashable, Sendable {
 
 /// Device details sent with every snapshot. Baselines are matched per device and OS version.
 internal struct DeviceInfo: Hashable, Sendable {
-    /// `IOS`, `MACOS`, or `UNKNOWN` on tvOS, which the API doesn't list.
-    let operatingSystem: String
+    /// `.unknown` on tvOS, which the API doesn't list.
+    let operatingSystem: OperatingSystem
     let operatingSystemVersion: String
     let device: String?
 
@@ -77,13 +77,13 @@ internal struct DeviceInfo: Hashable, Sendable {
         return DeviceInfo(operatingSystem: operatingSystem, operatingSystemVersion: versionString, device: device(environment))
     }
 
-    private static var operatingSystem: String {
+    private static var operatingSystem: OperatingSystem {
         #if os(macOS)
-        return "MACOS"
+        return .macos
         #elseif os(iOS)
-        return "IOS"
+        return .ios
         #else
-        return "UNKNOWN"
+        return .unknown
         #endif
     }
 

@@ -125,10 +125,57 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(regions[1]["diffingOptions"] as? [String: Bool], flags(visual: true, position: true))
     }
 
+    func testBaselineOverrideSendsOnlyTheFieldsSet() async throws {
+        let request = SnapshotRequest(baselineOverride: BaselineOverride(name: "Login page", device: "iPhone 17", operatingSystem: .ios))
+        let input = try await snapshotInput(for: request)
+        XCTAssertEqual(input["baselineOverride"] as? [String: String],
+                       ["name": "Login page", "device": "iPhone 17", "operatingSystem": "IOS"])
+    }
+
+    func testOperatingSystemShortcutsAreValues() {
+        let shortcuts: [BaselineValue<OperatingSystem>] = [.ios, .macos, .android, .windows, .linux, .unknown]
+        let values: [BaselineValue<OperatingSystem>] = [
+            .value(.ios), .value(.macos), .value(.android), .value(.windows), .value(.linux), .value(.unknown)
+        ]
+        XCTAssertEqual(shortcuts, values)
+        XCTAssertNotEqual(BaselineValue<OperatingSystem>.null, .unknown, "UNKNOWN is a value, not null")
+    }
+
+    func testBaselineOverrideHasThreeStatesPerField() async throws {
+        // Set fields are sent, `.null` fields are sent as null, unset fields are left out.
+        let request = SnapshotRequest(baselineOverride: BaselineOverride(
+            name: "Login page", device: .null, operatingSystem: .null, operatingSystemVersion: .value("26.5")
+        ))
+        let input = try await snapshotInput(for: request)
+        let sent = try XCTUnwrap(input["baselineOverride"] as? [String: Any])
+        XCTAssertEqual(Set(sent.keys), ["name", "device", "operatingSystem", "operatingSystemVersion"])
+        XCTAssertEqual(sent["name"] as? String, "Login page")
+        XCTAssertEqual(sent["operatingSystemVersion"] as? String, "26.5")
+        XCTAssertTrue(sent["device"] is NSNull, "Sent as null")
+        XCTAssertTrue(sent["operatingSystem"] is NSNull, "Sent as null")
+        XCTAssertNil(sent["testName"], "Unset fields are left out")
+    }
+
+    func testCheckOverrideReplacesTheClientOverride() async throws {
+        let client = BaselineOverride(device: "iPad Pro 13-inch (M5)", operatingSystemVersion: "26.5")
+        let fromClient = try await snapshotInput(for: SnapshotRequest(), clientOverride: client)
+        XCTAssertEqual(fromClient["baselineOverride"] as? [String: String],
+                       ["device": "iPad Pro 13-inch (M5)", "operatingSystemVersion": "26.5"], "Used when the check sets none")
+
+        let check = BaselineOverride(name: "Login page")
+        let fromCheck = try await snapshotInput(for: SnapshotRequest(baselineOverride: check), clientOverride: client)
+        XCTAssertEqual(fromCheck["baselineOverride"] as? [String: String], ["name": "Login page"], "Replaced, not merged")
+    }
+
+    func testEmptyBaselineOverrideIsNotSent() async throws {
+        let input = try await snapshotInput(for: SnapshotRequest(baselineOverride: BaselineOverride()))
+        XCTAssertNil(input["baselineOverride"])
+    }
+
     func testDefaultRequestSendsNoOptionalFields() async throws {
         let input = try await snapshotInput(for: SnapshotRequest())
         XCTAssertEqual(input["diffingMethod"] as? String, "BALANCED")
-        for key in ["ignoreRegions", "diffingOptions", "diffingMethodSensitivity", "diffingMethodTolerance"] {
+        for key in ["ignoreRegions", "diffingOptions", "diffingMethodSensitivity", "diffingMethodTolerance", "baselineOverride"] {
             XCTAssertNil(input[key], "\(key) is left to the server")
         }
     }
@@ -186,14 +233,18 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
     }
 
     /// Runs a check against stubbed responses and returns the `createSnapshot` input.
-    private func snapshotInput(for request: SnapshotRequest) async throws -> [String: Any] {
-        let route = try await runCheck(png: Data("png".utf8), request: request)
+    private func snapshotInput(
+        for request: SnapshotRequest, clientOverride: BaselineOverride? = nil
+    ) async throws -> [String: Any] {
+        let route = try await runCheck(png: Data("png".utf8), request: request, clientOverride: clientOverride)
         let body = route.bodies[3]
         return try XCTUnwrap((body["variables"] as? [String: Any])?["input"] as? [String: Any])
     }
 
     /// Runs a check against stubbed responses and returns the recorded requests.
-    private func runCheck(png: Data, request: SnapshotRequest) async throws -> StubURLProtocol.Route {
+    private func runCheck(
+        png: Data, request: SnapshotRequest, clientOverride: BaselineOverride? = nil
+    ) async throws -> StubURLProtocol.Route {
         let route = StubURLProtocol.Route([
             .json(["data": ["result": ["id": buildID, "name": "Build", "status": "RUNNING"]]]),
             .json(["data": ["result": ["id": uploadID, "imageUploadUrl": "https://storage.test/upload"]]]),
@@ -201,7 +252,7 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
             .json(["data": ["result": ["id": "16fd2706-8baf-433b-82eb-8c7fada847da", "name": "Login"]]])
         ])
         let client = try VisualClient(
-            credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"),
+            credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"), baselineOverride: clientOverride,
             session: StubURLProtocol.session(route), environment: environment, store: SharedBuildStore(),
             uploader: PresignedUploader(configuration: StubURLProtocol.configuration(route))
         )
