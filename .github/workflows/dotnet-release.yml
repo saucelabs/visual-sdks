@@ -30,6 +30,7 @@ jobs:
     runs-on: windows-latest
     needs:
       - checks
+    environment: production
     permissions:
       id-token: write
       contents: write
@@ -46,16 +47,10 @@ jobs:
           git config --global user.name "sauce-visual-bot"
           git config --global user.email "visual@saucelabs.com"
 
-      - name: upgrade & push version
+      - name: bump version
         id: upgrade
         run: |
           $newVersion = .\scripts\UpdateVersion.ps1 -project .\SauceLabs.Visual\SauceLabs.Visual.csproj -releaseType ${{ github.event.inputs.releaseType }}
-          git add ./SauceLabs.Visual/SauceLabs.Visual.csproj
-          git commit -m "[release] dotnet-$newVersion"
-          git tag "dotnet-$newVersion"
-          git push
-          git push origin "dotnet-$newVersion"
-
           "tag_name=dotnet-$newVersion" | Out-File -Append $Env:GITHUB_OUTPUT
           "version=$newVersion" | Out-File -Append $Env:GITHUB_OUTPUT
 
@@ -75,7 +70,16 @@ jobs:
         run: |
           $version = "${{ steps.upgrade.outputs.version }}"
           $apiKey = "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
-          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+          dotnet nuget push .\SauceLabs.Visual\bin\Release\SauceLabs.Visual.$version.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: commit & push version
+        run: |
+          $newVersion = "${{ steps.upgrade.outputs.version }}"
+          git add ./SauceLabs.Visual/SauceLabs.Visual.csproj
+          git commit -m "[release] dotnet-$newVersion"
+          git tag "dotnet-$newVersion"
+          git push
+          git push origin "dotnet-$newVersion"
 
       - name: Github Release
         uses: softprops/action-gh-release@v3
