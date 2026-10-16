@@ -1,20 +1,24 @@
-import CryptoKit
 import Foundation
 
 /// Sauce Visual build and snapshot operations.
 internal struct VisualAPI: Sendable {
     let transport: GraphQLTransport
+    /// Kept apart from `transport`, so the API session's configuration never reaches storage uploads.
+    let uploader: PresignedUploader
 
-    init(transport: GraphQLTransport) {
+    init(transport: GraphQLTransport, uploader: PresignedUploader = .shared) {
         self.transport = transport
+        self.uploader = uploader
     }
 
-    init(region: SauceRegion, credentials: VisualCredentials, session: URLSession = .shared) {
-        self.init(transport: GraphQLTransport(
-            endpoint: region.graphqlEndpoint,
-            credentials: credentials,
-            session: session
-        ))
+    init(
+        region: SauceRegion, credentials: VisualCredentials, session: URLSession = .shared,
+        uploader: PresignedUploader = .shared
+    ) {
+        self.init(
+            transport: GraphQLTransport(endpoint: region.graphqlEndpoint, credentials: credentials, session: session),
+            uploader: uploader
+        )
     }
 
     /// Reuses the build named by `buildId` or `customId`, otherwise creates one.
@@ -144,10 +148,7 @@ internal struct VisualAPI: Sendable {
         name: String, png: Data, device: DeviceInfo, request: SnapshotRequest, in build: VisualBuild
     ) async throws -> VisualSnapshot {
         let upload = try await createSnapshotUpload(buildId: build.id)
-        guard let url = upload.imageUploadUrl.flatMap(URL.init(string:)) else {
-            throw VisualAPIError(code: .apiError, detail: "No image upload URL.")
-        }
-        try await uploadImage(png, to: url)
+        try await uploader.upload(png, as: .screenshot, to: upload.imageUploadUrl)
         let test = request.test
         let input = GraphQL.SnapshotIn(
             buildId: build.id,
@@ -179,19 +180,6 @@ internal struct VisualAPI: Sendable {
             as: GraphQL.SnapshotUploadResult.self
         )
         return try Self.require(result)
-    }
-
-    /// The upload URL already grants access, so no credentials are sent. The MD5 catches corrupted uploads.
-    func uploadImage(_ png: Data, to url: URL) async throws {
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("image/png", forHTTPHeaderField: "Content-Type")
-        request.setValue(Data(Insecure.MD5.hash(data: png)).base64EncodedString(), forHTTPHeaderField: "Content-MD5")
-        request.httpBody = png
-        let (_, status) = try await GraphQLTransport.send(request, with: transport.session)
-        guard (200..<300).contains(status) else {
-            throw VisualAPIError(code: .apiError, detail: "Screenshot upload failed with HTTP \(status).", statusCode: status)
-        }
     }
 
     private static func reusable(_ existing: GraphQL.BuildResponse) throws -> VisualBuild {

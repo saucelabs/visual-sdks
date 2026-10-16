@@ -125,7 +125,8 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         ])
         let client = try VisualClient(
             credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"),
-            session: StubURLProtocol.session(route), environment: environment, store: SharedBuildStore()
+            session: StubURLProtocol.session(route), environment: environment, store: SharedBuildStore(),
+            uploader: PresignedUploader(configuration: StubURLProtocol.configuration(route))
         )
         _ = try await client.check(name: "Login", png: Data("png".utf8), request: request)
         let body = route.bodies[3]
