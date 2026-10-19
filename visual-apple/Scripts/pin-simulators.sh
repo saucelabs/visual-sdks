@@ -41,13 +41,30 @@ for device in json.load(sys.stdin)["devices"].get(runtime, []):
     udid=$(xcrun simctl create "$device" "$device" "$runtime") || fail "Could not create $device on $runtime."
   fi
   printf 'SIMULATOR_UDID_%s=%s\n' "$family" "$udid"
+  eval "pinned_$family=\$udid"
   if [[ -n ${GITHUB_ENV:-} ]]; then
     printf 'SIMULATOR_UDID_%s=%s\n' "$family" "$udid" >> "$GITHUB_ENV"
   fi
 }
+
+sim_udid() { eval "printf '%s' \"\${pinned_$1}\""; }
 
 ios_runtime=$(runtime_id iOS "$ios_version" PIN_IOS_VERSION)
 tvos_runtime=$(runtime_id tvOS "$tvos_version" PIN_TVOS_VERSION)
 pin IPHONE "$iphone" "$ios_runtime"
 pin IPAD "$ipad" "$ios_runtime"
 pin TVOS "$tvos" "$tvos_runtime"
+
+# On a fresh CI machine the first boot and first Safari launch are slow enough to time out the live
+# Safari test, so do both before the tests start. Skipped locally, where simulators are already warm.
+warm_up() {
+  local udid=$1
+  xcrun simctl boot "$udid" 2>/dev/null || true
+  xcrun simctl bootstatus "$udid" -b > /dev/null || fail "Simulator $udid did not boot."
+  xcrun simctl openurl "$udid" https://www.saucedemo.com || true
+  sleep 15
+  xcrun simctl terminate "$udid" com.apple.mobilesafari 2>/dev/null || true
+}
+if [[ -n ${CI:-} ]]; then
+  for udid in "$(sim_udid IPHONE)" "$(sim_udid IPAD)"; do warm_up "$udid"; done
+fi

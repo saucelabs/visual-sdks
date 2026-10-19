@@ -17,14 +17,16 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         let page = safari.webViews.firstMatch
 
         let username = page.textFields["Username"]
-        XCTAssertTrue(username.waitForExistence(timeout: 60), "Login page did not load")
+        // Stop at the first step that fails: carrying on only runs into the time limit, which restarts the
+        // runner and leaves the build open.
+        guard username.waitForExistence(timeout: 60) else { return XCTFail("Login page did not load") }
         type("standard_user", into: username)
         XCTAssertEqual(username.value as? String, "standard_user", "Username not entered")
         type("secret_sauce", into: page.secureTextFields["Password"])
         page.buttons["Login"].tap()
         dismissSavePasswordPrompt(in: safari)
 
-        XCTAssertTrue(page.staticTexts["Products"].waitForExistence(timeout: 30), "Not logged in")
+        guard page.staticTexts["Products"].waitForExistence(timeout: 30) else { return XCTFail("Not logged in") }
 
         page.buttons["Open Menu"].tap()
         // Safari exposes the menu item as a button once the menu has slid in.
