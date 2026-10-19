@@ -1,0 +1,157 @@
+name: Apple (build)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-apple/**'
+      - .github/workflows/apple-build.yml
+  pull_request:
+    paths:
+      - 'visual-apple/**'
+      - .github/workflows/apple-build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+concurrency:
+  group: apple-build-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: visual-apple
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Validate native project and script syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n Scripts/test.sh
+          bash -n Scripts/build-xcframework.sh
+          plutil -lint SauceVisual.xcodeproj/project.pbxproj \
+            Tests/Integration/Source.xcodeproj/project.pbxproj \
+            Tests/Integration/Binary.xcodeproj/project.pbxproj
+
+      - name: Run package tests in Debug, Release, and Swift 6 language mode
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcrun swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift-debug.log
+          xcrun swift test -c release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift-release.log
+          xcrun swift test -Xswiftc -swift-version -Xswiftc 6 \
+            -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift6.log
+
+      - name: Test source-SPM consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for family in iphone ipad tvos macos; do
+            Scripts/test.sh source "$family"
+          done
+
+      - name: Build and inspect the XCFramework
+        run: Scripts/build-xcframework.sh
+
+      # Artifact paths are relative to the repository root, not the working directory.
+      - name: Upload candidate for independent binary validation
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-candidate
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          path: |
+            visual-apple/dist/*.xcframework.zip
+            visual-apple/dist/LICENSE
+
+      - name: Retain build and source-test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-build-results
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            visual-apple/build/**/*.log
+            visual-apple/build/**/results.json
+            visual-apple/build/**/TestResults.xcresult
+
+  validate-binary:
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: visual-apple-candidate
+          path: visual-apple/downloaded
+
+      - name: Unpack the candidate for binary-only consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          archives=(downloaded/*.xcframework.zip)
+          test "${#archives[@]}" -eq 1
+          test -f "${archives[0]}"
+          test -s downloaded/LICENSE
+          mkdir dist
+          ditto -x -k "${archives[0]}" dist
+          test -d dist/SauceVisual.xcframework
+          # Modify only the extracted test copy; retain the original ZIP for upload.
+          # Fresh DerivedData in each test run prevents cached SDK module reuse.
+          # This checks textual-interface import, not cross-compiler compatibility.
+          find dist/SauceVisual.xcframework -type f -name '*.swiftmodule' -delete
+
+      - name: Test independent binary consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          for family in iphone ipad tvos macos; do
+            Scripts/test.sh binary "$family"
+          done
+
+      - name: Upload accepted integration artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-integration
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
+            visual-apple/downloaded/*.xcframework.zip
+            visual-apple/downloaded/LICENSE
+
+      - name: Retain binary-validation results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-binary-results
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            visual-apple/build/**/*.log
+            visual-apple/build/**/results.json
+            visual-apple/build/**/TestResults.xcresult
