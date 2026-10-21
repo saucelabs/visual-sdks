@@ -83,6 +83,23 @@ class CreateBuildMutationTest {
   }
 
   @Test
+  void buildIn_defaultsCustomIdToNull() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn("buildName", "projectName", "branchName", "mainBranch");
+
+    assertNull(buildIn.getCustomId());
+  }
+
+  @Test
+  void buildIn_storesCustomIdWhenProvided() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn(
+            "buildName", "projectName", "branchName", "mainBranch", "my-custom-id");
+
+    assertEquals("my-custom-id", buildIn.getCustomId());
+  }
+
+  @Test
   @Disabled
   void executeRequest() {
     GraphQLClient client =
