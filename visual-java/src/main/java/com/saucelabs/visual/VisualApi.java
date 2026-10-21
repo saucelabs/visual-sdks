@@ -543,7 +543,8 @@ public class VisualApi {
                 buildAttributes.getName(),
                 buildAttributes.getProject(),
                 buildAttributes.getBranch(),
-                buildAttributes.getDefaultBranch()));
+                buildAttributes.getDefaultBranch(),
+                buildAttributes.getCustomId()));
     CreateBuildMutation.Data data = client.execute(mutation, CreateBuildMutation.Data.class);
     log.info(getStartupMessage(data.result.url));
     return new VisualBuild(
