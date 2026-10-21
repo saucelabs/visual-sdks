@@ -7,7 +7,6 @@ import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.BuildByCustomIdQuery;
 import com.saucelabs.visual.graphql.BuildQuery;
 import com.saucelabs.visual.graphql.type.BuildMode;
-import com.saucelabs.visual.utils.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +62,7 @@ public class VisualBuild {
   public static VisualBuild getBuildOnce(VisualApi api, BuildAttributes buildAttributes) {
     synchronized (VisualBuild.class) {
       if (build == null) {
-        VisualBuild externalBuild = getExternalBuild(api);
+        VisualBuild externalBuild = getExternalBuild(api, buildAttributes);
         if (externalBuild != null) {
           build = externalBuild;
         } else {
@@ -76,8 +75,13 @@ public class VisualBuild {
   }
 
   public static VisualBuild getExternalBuild(VisualApi api) {
-    if (isNotBlank(EnvironmentVariables.BUILD_ID)) {
-      BuildQuery.Result build = api.getBuildById(EnvironmentVariables.BUILD_ID);
+    return getExternalBuild(api, new BuildAttributes(null, null, null, null, null, null));
+  }
+
+  public static VisualBuild getExternalBuild(VisualApi api, BuildAttributes buildAttributes) {
+    String buildId = buildAttributes.getBuildId();
+    if (isNotBlank(buildId)) {
+      BuildQuery.Result build = api.getBuildById(buildId);
       if (build != null) {
         if (build.mode == BuildMode.COMPLETED) {
           log.error(
@@ -88,8 +92,9 @@ public class VisualBuild {
             build.id, build.name, build.project, build.branch, build.defaultBranch, build.url);
       }
     }
-    if (isNotBlank(EnvironmentVariables.CUSTOM_ID)) {
-      BuildByCustomIdQuery.Result build = api.getBuildByCustomId(EnvironmentVariables.CUSTOM_ID);
+    String customId = buildAttributes.getCustomId();
+    if (isNotBlank(customId)) {
+      BuildByCustomIdQuery.Result build = api.getBuildByCustomId(customId);
       if (build != null) {
         if (build.mode == BuildMode.COMPLETED) {
           log.error(
