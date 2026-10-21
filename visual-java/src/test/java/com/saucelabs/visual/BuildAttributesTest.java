@@ -29,8 +29,7 @@ class BuildAttributesTest {
 
   @Test
   void getBuildId_andGetCustomId_areIndependent() {
-    BuildAttributes attrs =
-        new BuildAttributes("name", "project", "branch", "main", "bid", "cid");
+    BuildAttributes attrs = new BuildAttributes("name", "project", "branch", "main", "bid", "cid");
 
     assertEquals("bid", attrs.getBuildId());
     assertEquals("cid", attrs.getCustomId());

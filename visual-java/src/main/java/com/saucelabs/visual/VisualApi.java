@@ -34,7 +34,8 @@ public class VisualApi {
   private static final Pattern sauceRegionRegex = Pattern.compile("saucelabs.(com|net)");
 
   private static String resolveEndpoint() {
-    return DataCenter.fromSauceRegion(EnvironmentVariableProvider.DEFAULT.getSauceRegion()).endpoint;
+    return DataCenter.fromSauceRegion(EnvironmentVariableProvider.DEFAULT.getSauceRegion())
+        .endpoint;
   }
 
   /** Creates a VisualApi instance using builder style */
@@ -497,7 +498,15 @@ public class VisualApi {
         List<String> tags,
         String buildId,
         String customId) {
-      this(name, project, branch, defaultBranch, tags, buildId, customId, EnvironmentVariableProvider.DEFAULT);
+      this(
+          name,
+          project,
+          branch,
+          defaultBranch,
+          tags,
+          buildId,
+          customId,
+          EnvironmentVariableProvider.DEFAULT);
     }
 
     public BuildAttributes(
@@ -524,8 +533,7 @@ public class VisualApi {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
       }
-      return valueOrDefault(
-          valueOrDefault(name, env.getBuildName()), env.getBuildNameDeprecated());
+      return valueOrDefault(valueOrDefault(name, env.getBuildName()), env.getBuildNameDeprecated());
     }
 
     public String getProject() {
