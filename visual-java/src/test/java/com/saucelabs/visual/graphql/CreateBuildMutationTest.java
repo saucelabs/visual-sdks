@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,7 +37,8 @@ class CreateBuildMutationTest {
                         "projectName",
                         "branchName",
                         "defaultBranchName",
-                        Arrays.asList("smoke", "nightly"))))
+                        Arrays.asList("smoke", "nightly"),
+                        null)))
             .get("variables")
             .get("input");
     assertEquals("[\"smoke\",\"nightly\"]", input.get("tags").toString());
@@ -48,6 +52,23 @@ class CreateBuildMutationTest {
             .get("variables")
             .get("input");
     assertTrue(withoutTags.get("tags").isNull());
+  }
+
+  @Test
+  void buildIn_defaultsCustomIdToNull() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn("buildName", "projectName", "branchName", "mainBranch");
+
+    assertNull(buildIn.getCustomId());
+  }
+
+  @Test
+  void buildIn_storesCustomIdWhenProvided() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn(
+            "buildName", "projectName", "branchName", "mainBranch", Arrays.asList("smoke", "nightly"), "my-custom-id");
+
+    assertEquals("my-custom-id", buildIn.getCustomId());
   }
 
   @Test
