@@ -53,8 +53,7 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("explicit-custom-id"))
         .thenReturn(customIdQueryResult("resolved-custom-build-id", BuildMode.RUNNING));
 
-    BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -69,8 +68,7 @@ class VisualBuildTest {
     when(api.getBuildById("explicit-build-id"))
         .thenReturn(buildQueryResult("explicit-build-id", BuildMode.COMPLETED));
 
-    BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, "explicit-build-id", null);
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, "explicit-build-id", null);
 
     assertThrows(VisualApiException.class, () -> VisualBuild.getExternalBuild(api, attrs));
   }
@@ -81,8 +79,7 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("explicit-custom-id"))
         .thenReturn(customIdQueryResult("resolved-build-id", BuildMode.COMPLETED));
 
-    BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
 
     assertThrows(VisualApiException.class, () -> VisualBuild.getExternalBuild(api, attrs));
   }
