@@ -1,0 +1,265 @@
+name: Apple (build)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'visual-apple/**'
+      - .github/workflows/apple-build.yml
+  pull_request:
+    paths:
+      - 'visual-apple/**'
+      - .github/workflows/apple-build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+concurrency:
+  group: apple-build-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: visual-apple
+
+# Each device family runs in its own job, so no runner boots more than one simulator.
+# Once the package tests pass, the XCFramework builds alongside the source tests, and only the binary tests wait for it.
+jobs:
+  package-tests:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Validate native project and script syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n Scripts/test.sh
+          bash -n Scripts/build-xcframework.sh
+          bash -n Scripts/pin-simulators.sh
+          bash -n Scripts/check-xcodeproj-sources.sh
+          plutil -lint SauceVisual.xcodeproj/project.pbxproj \
+            Tests/Integration/Source.xcodeproj/project.pbxproj \
+            Tests/Integration/Binary.xcodeproj/project.pbxproj
+          # The XCFramework is built from the Xcode project, which lists source files by hand.
+          Scripts/check-xcodeproj-sources.sh
+
+      - name: Run package tests in Debug, Release, and Swift 6 language mode
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcrun swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift-debug.log
+          xcrun swift test -c release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift-release.log
+          xcrun swift test -Xswiftc -swift-version -Xswiftc 6 \
+            -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+            2>&1 | tee build/swift6.log
+
+      - name: Retain package-test logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-package-results
+          if-no-files-found: warn
+          retention-days: 7
+          path: visual-apple/build/*.log
+
+  source-tests:
+    name: source-tests (${{ matrix.family }})
+    needs: package-tests
+    runs-on: macos-26
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [iphone, ipad, tvos, macos]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # Same devices and OS versions on every run, so snapshots keep matching their baselines.
+      - name: Pin simulators
+        if: matrix.family != 'macos'
+        run: Scripts/pin-simulators.sh
+
+      - name: Test source-SPM consumer
+        shell: bash
+        # Only the consumer tests get credentials: their live tests create real Sauce Visual builds.
+        env:
+          FAMILY: ${{ matrix.family }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          # The Safari test runs locally only: on CI it is slow and flaky on a fresh simulator.
+          SKIP_SAFARI_TESTS: "1"
+        run: |
+          set -euo pipefail
+          [[ -n ${SAUCE_USERNAME:-} && -n ${SAUCE_ACCESS_KEY:-} ]] || {
+            echo "::error::The live consumer tests need the SAUCE_USERNAME and SAUCE_ACCESS_KEY secrets, which pull requests from forks don't get."
+            exit 1
+          }
+          case $FAMILY in
+            iphone) udid=${SIMULATOR_UDID_IPHONE:-} ;;
+            ipad) udid=${SIMULATOR_UDID_IPAD:-} ;;
+            tvos) udid=${SIMULATOR_UDID_TVOS:-} ;;
+            *) udid= ;;
+          esac
+          SIMULATOR_UDID=$udid Scripts/test.sh source "$FAMILY"
+
+      # DerivedData is never uploaded: xcodebuild stores the environment, including the access key, in it.
+      - name: Retain source-test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-source-results-${{ matrix.family }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            visual-apple/build/**/*.log
+            visual-apple/build/**/results.json
+            visual-apple/build/**/TestResults.xcresult
+            !visual-apple/build/**/DerivedData/**
+
+  xcframework:
+    needs: package-tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Build and inspect the XCFramework
+        run: Scripts/build-xcframework.sh
+
+      # Artifact paths are relative to the repository root, not the working directory.
+      - name: Upload candidate for independent binary validation
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-candidate
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          path: |
+            visual-apple/dist/*.xcframework.zip
+            visual-apple/dist/LICENSE
+
+      - name: Retain XCFramework build logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-xcframework-results
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            visual-apple/build/**/*.log
+            !visual-apple/build/**/DerivedData*/**
+
+  validate-binary:
+    name: validate-binary (${{ matrix.family }})
+    needs: xcframework
+    runs-on: macos-26
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [iphone, ipad, tvos, macos]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: visual-apple-candidate
+          path: visual-apple/downloaded
+
+      - name: Unpack the candidate for binary-only consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          archives=(downloaded/*.xcframework.zip)
+          test "${#archives[@]}" -eq 1
+          test -f "${archives[0]}"
+          test -s downloaded/LICENSE
+          mkdir dist
+          ditto -x -k "${archives[0]}" dist
+          test -d dist/SauceVisual.xcframework
+          # Modify only the extracted test copy; retain the original ZIP for upload.
+          # Fresh DerivedData in each test run prevents cached SDK module reuse.
+          # This checks textual-interface import, not cross-compiler compatibility.
+          find dist/SauceVisual.xcframework -type f -name '*.swiftmodule' -delete
+
+      # Same devices and OS versions on every run, so snapshots keep matching their baselines.
+      - name: Pin simulators
+        if: matrix.family != 'macos'
+        run: Scripts/pin-simulators.sh
+
+      - name: Test independent binary consumer
+        shell: bash
+        # Only the consumer tests get credentials: their live tests create real Sauce Visual builds.
+        env:
+          FAMILY: ${{ matrix.family }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          # The Safari test runs locally only: on CI it is slow and flaky on a fresh simulator.
+          SKIP_SAFARI_TESTS: "1"
+        run: |
+          set -euo pipefail
+          [[ -n ${SAUCE_USERNAME:-} && -n ${SAUCE_ACCESS_KEY:-} ]] || {
+            echo "::error::The live consumer tests need the SAUCE_USERNAME and SAUCE_ACCESS_KEY secrets, which pull requests from forks don't get."
+            exit 1
+          }
+          case $FAMILY in
+            iphone) udid=${SIMULATOR_UDID_IPHONE:-} ;;
+            ipad) udid=${SIMULATOR_UDID_IPAD:-} ;;
+            tvos) udid=${SIMULATOR_UDID_TVOS:-} ;;
+            *) udid= ;;
+          esac
+          SIMULATOR_UDID=$udid Scripts/test.sh binary "$FAMILY"
+
+      - name: Retain binary-validation results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-binary-results-${{ matrix.family }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            visual-apple/build/**/*.log
+            visual-apple/build/**/results.json
+            visual-apple/build/**/TestResults.xcresult
+            !visual-apple/build/**/DerivedData/**
+
+  # Publishes the candidate only once every check has passed: package, all source families, all binary families.
+  accept:
+    needs: [package-tests, source-tests, validate-binary]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: visual-apple-candidate
+          path: candidate
+
+      - name: Upload accepted integration artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-apple-integration
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
+            candidate/*.xcframework.zip
+            candidate/LICENSE
