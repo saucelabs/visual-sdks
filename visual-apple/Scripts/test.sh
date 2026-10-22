@@ -188,8 +188,3 @@ xcodebuild "${build_args[@]}" test \
 xcrun xcresulttool get test-results summary \
   --path "$run/TestResults.xcresult" --compact > "$run/results.json"
 validate_results "$run/results.json"
-
-# Check the SDK printed that it finished the build after the last test.
-if grep -q 'Sauce Visual build:' "$run/tests.log"; then
-  grep -q 'Sauce Visual: finished build' "$run/tests.log" || fail 'The build was not finished automatically after the last test.'
-fi

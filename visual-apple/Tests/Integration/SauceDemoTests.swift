@@ -12,18 +12,13 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     private static let client = Result { try VisualClient(options: liveBuildOptions) }
     private var visual: VisualClient { get throws { try Self.client.get() } }
 
-    override func setUp() {
-        // Stop at the first failure, so no test uploads a snapshot of the wrong page.
-        continueAfterFailure = false
-    }
-
     override func tearDown() async throws {
         await MainActor.run { Self.safari.terminate() }
     }
 
     @MainActor
     func testLoginPage() async throws {
-        openLoginPage()
+        try openLoginPage()
 
         let snapshot = try await visual.sauceVisualCheck("Login page")
         XCTAssertNotNil(UUID(uuidString: snapshot.buildId))
@@ -33,18 +28,18 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
 
     @MainActor
     func testWrongPasswordShowsError() async throws {
-        openLoginPage()
-        logIn(password: "wrong_password")
+        try openLoginPage()
+        try logIn(password: "wrong_password")
 
         let error = page.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'Epic sadface'")).firstMatch
-        XCTAssertTrue(error.waitForExistence(timeout: 10), "No login error shown")
+        try requireExists(error, timeout: 10, "No login error shown")
         try await visual.sauceVisualCheck("Login error")
     }
 
     @MainActor
     func testLoginShowsProducts() async throws {
-        openLoginPage()
-        openProductsPage()
+        try openLoginPage()
+        try openProductsPage()
         // Product descriptions change, so leave the first one out of the comparison.
         let description = page.staticTexts.containing(NSPredicate(format: "label BEGINSWITH 'carry.allTheThings()'")).firstMatch
         try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(ignoreElements: [description]))
@@ -52,14 +47,13 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
 
     @MainActor
     func testMenuLogsOut() async throws {
-        openLoginPage()
-        openProductsPage()
+        try openLoginPage()
+        try openProductsPage()
 
         page.buttons["Open Menu"].tap()
         // The menu item becomes tappable once the menu has slid in.
         let logout = page.buttons["Logout"]
-        let opened = expectation(for: NSPredicate(format: "isHittable == true"), evaluatedWith: logout)
-        await fulfillment(of: [opened], timeout: 10)
+        try requireHittable(logout, timeout: 10, "Menu did not open")
         try await visual.sauceVisualCheck("Menu")
 
         logout.tap()
@@ -68,6 +62,18 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
 
     // MARK: - Steps
 
+    /// Thrown when the screen isn't ready, so the test stops before uploading the wrong one. Unlike
+    /// `continueAfterFailure = false`, this needs no Objective-C exception to unwind async Swift code.
+    private enum PreparationError: Error, CustomStringConvertible {
+        case requiredElementMissing(String)
+
+        var description: String {
+            switch self {
+            case .requiredElementMissing(let reason): return reason
+            }
+        }
+    }
+
     @MainActor
     private static var safari: XCUIApplication { XCUIApplication(bundleIdentifier: "com.apple.mobilesafari") }
 
@@ -75,48 +81,65 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     private var page: XCUIElement { Self.safari.webViews.firstMatch }
 
     @MainActor
-    private func open(_ url: URL) {
-        guard #available(iOS 16.4, *) else { return XCTFail("Opening a URL from a UI test needs iOS 16.4.") }
+    private func open(_ url: URL) throws {
+        guard #available(iOS 16.4, *) else {
+            throw PreparationError.requiredElementMissing("Opening a URL from a UI test needs iOS 16.4.")
+        }
         Self.safari.open(url)
     }
 
     @MainActor
-    private func openLoginPage() {
-        open(Self.site)
+    private func openLoginPage() throws {
+        try open(Self.site)
         // Wait for the button to be tappable: the fields appear before the page is drawn.
-        waitUntilHittable(page.buttons["Login"], timeout: 60, "Login page did not load")
+        try requireHittable(page.buttons["Login"], timeout: 60, "Login page did not load")
     }
 
     /// Reloads the products page after logging in, to undo Safari's zoom into the login fields.
     @MainActor
-    private func openProductsPage() {
-        logIn()
-        XCTAssertTrue(page.staticTexts["Products"].waitForExistence(timeout: 30), "Not logged in")
-        open(Self.site.appendingPathComponent("inventory.html"))
-        waitUntilHittable(page.buttons["Open Menu"], timeout: 30, "Products page did not reload")
+    private func openProductsPage() throws {
+        try logIn()
+        try requireExists(page.staticTexts["Products"], timeout: 30, "Not logged in")
+        try open(Self.site.appendingPathComponent("inventory.html"))
+        try requireHittable(page.buttons["Open Menu"], timeout: 30, "Products page did not reload")
     }
 
     @MainActor
-    private func waitUntilHittable(_ element: XCUIElement, timeout: TimeInterval, _ message: String) {
+    private func requireExists(_ element: XCUIElement, timeout: TimeInterval, _ reason: String) throws {
+        try Task.checkCancellation()
+        guard element.waitForExistence(timeout: timeout) else {
+            throw PreparationError.requiredElementMissing(reason)
+        }
+        try Task.checkCancellation()
+    }
+
+    @MainActor
+    private func requireHittable(_ element: XCUIElement, timeout: TimeInterval, _ reason: String) throws {
+        try Task.checkCancellation()
         let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: element)
-        XCTAssertEqual(XCTWaiter().wait(for: [hittable], timeout: timeout), .completed, message)
+        guard XCTWaiter().wait(for: [hittable], timeout: timeout) == .completed else {
+            throw PreparationError.requiredElementMissing(reason)
+        }
+        try Task.checkCancellation()
     }
 
     @MainActor
-    private func logIn(username: String = "standard_user", password: String = "secret_sauce") {
+    private func logIn(username: String = "standard_user", password: String = "secret_sauce") throws {
         let field = page.textFields["Username"]
-        type(username, into: field)
-        XCTAssertEqual(field.value as? String, username, "Username not entered")
-        type(password, into: page.secureTextFields["Password"])
+        try type(username, into: field)
+        guard field.value as? String == username else {
+            throw PreparationError.requiredElementMissing("Username not entered")
+        }
+        try type(password, into: page.secureTextFields["Password"])
         page.buttons["Login"].tap()
         dismissSavePasswordPrompt()
     }
 
     /// Web fields accept typing only once Safari shows the keyboard for them.
     @MainActor
-    private func type(_ text: String, into field: XCUIElement) {
+    private func type(_ text: String, into field: XCUIElement) throws {
         field.tap()
-        XCTAssertTrue(Self.safari.keyboards.firstMatch.waitForExistence(timeout: 10), "Keyboard did not appear")
+        try requireExists(Self.safari.keyboards.firstMatch, timeout: 10, "Keyboard did not appear")
         field.typeText(text)
     }
 

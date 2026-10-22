@@ -11,10 +11,12 @@ internal enum SnapshotCapture {
     }
 
     /// Runs on the main actor, because XCUI only allows screenshots and element frames there.
-    /// - Throws: `VisualError.invalidSnapshotName`, or `.elementNotFound`.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, or `.elementNotFound`.
     @MainActor
     static func prepare(_ name: String, options: VisualCheckOptions) throws -> Prepared {
         let name = try validName(name)
+        // Caller input is checked before the screenshot or any request.
+        try options.diffingMethodTolerance?.validate()
         // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
         let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)

@@ -33,9 +33,13 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         .json(["data": ["result": ["id": snapshotID]]])
     }
 
-    private func client(_ route: StubURLProtocol.Route, store: SharedBuildStore = SharedBuildStore()) throws -> VisualClient {
+    private func client(
+        _ route: StubURLProtocol.Route,
+        store: SharedBuildStore = SharedBuildStore(),
+        options: VisualBuildOptions = VisualBuildOptions(name: "Build")
+    ) throws -> VisualClient {
         try VisualClient(
-            credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"),
+            credentials: nil, region: nil, options: options,
             session: StubURLProtocol.session(route), environment: environment, store: store,
             uploader: PresignedUploader(configuration: StubURLProtocol.configuration(route))
         )
@@ -168,6 +172,32 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(queries(route)[4].contains("finishBuild"), "Finished after the snapshot was created")
     }
 
+    func testCleanupWaitsForAnUploadButLeavesACustomIdBuildOpen() async throws {
+        let store = SharedBuildStore()
+        let gate = StubURLProtocol.Gate()
+        // The lookup misses, so this process creates the build, but other workers may still join it.
+        let miss = StubURLProtocol.Reply.json(["data": ["result": NSNull()]])
+        let route = StubURLProtocol.Route([miss, created, upload(), stored.held(by: gate), snapshot])
+        let visual = try client(route, store: store, options: VisualBuildOptions(name: "Build", customId: "run-1"))
+
+        let check = Task { try await visual.check(name: "Login", png: png) }
+        await gate.waitForRequest() // The screenshot PUT is in flight.
+        let cleanup = Task {
+            let outcome = await store.finishOwnedBuild()
+            return (outcome, route.requests.count)
+        }
+        await waitUntilClosed(store)
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        gate.open()
+        let result = try await check.value
+        let (outcome, requestsWhenDone) = await cleanup.value
+        XCTAssertEqual(result.id, snapshotID)
+        XCTAssertEqual(requestsWhenDone, 5, "Cleanup returns only after the admitted check created its snapshot")
+        guard case .leftOpen = outcome else { return XCTFail("A customId build stays open") }
+        XCTAssertFalse(queries(route).contains { $0.contains("finishBuild") }, "The remote build is not finished")
+    }
+
     func testFinishWaitsForAFailingCheck() async throws {
         let store = SharedBuildStore()
         let gate = StubURLProtocol.Gate()
@@ -281,6 +311,24 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
 
     func testSnapshotNamesAreTrimmed() throws {
         XCTAssertEqual(try SnapshotCapture.validName("  Login \n"), "Login")
+    }
+
+    func testInvalidToleranceFailsBeforeScreenshotOrRequest() async throws {
+        let route = StubURLProtocol.Route([created, upload(), stored, snapshot])
+        let client = try client(route)
+        let tolerance = DiffingMethodTolerance(color: .nan)
+        // Unit tests have no screen to capture, so reaching the screenshot would fail differently.
+        await XCTAssertThrowsErrorAsync(
+            try await client.sauceVisualCheck("Login", options: VisualCheckOptions(diffingMethodTolerance: tolerance))
+        ) {
+            XCTAssertEqual($0 as? VisualError, .invalidCheckOptions)
+        }
+        // The internal boundary checks too, for requests that skip `SnapshotCapture`.
+        let request = SnapshotRequest(diffingMethodTolerance: DiffingMethodTolerance(minChangeSize: -1))
+        await XCTAssertThrowsErrorAsync(try await client.check(name: "Login", png: png, request: request)) {
+            XCTAssertEqual($0 as? VisualError, .invalidCheckOptions)
+        }
+        XCTAssertTrue(route.requests.isEmpty, "No build, upload, or snapshot request")
     }
 
     func testEmptyNameFailsBeforeScreenshotOrRequest() async throws {

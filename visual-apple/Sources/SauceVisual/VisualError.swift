@@ -13,6 +13,7 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case buildNotFound = 9
     case invalidSnapshotName = 10
     case elementNotFound = 11
+    case invalidCheckOptions = 12
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -41,6 +42,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Invalid snapshot name. Give the snapshot a name that is not empty."
         case .elementNotFound:
             return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
+        case .invalidCheckOptions:
+            return "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."
         }
     }
 
