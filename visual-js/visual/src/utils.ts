@@ -228,6 +228,7 @@ export const getEnvOpts = (): VisualEnvOpts => {
     SAUCE_VISUAL_DEFAULT_BRANCH,
     SAUCE_VISUAL_BUILD_ID,
     SAUCE_VISUAL_CUSTOM_ID,
+    SAUCE_VISUAL_TAGS,
   } = process.env;
 
   if (SAUCE_BUILD_NAME) {
@@ -264,6 +265,7 @@ export const getEnvOpts = (): VisualEnvOpts => {
     buildName:
       SAUCE_VISUAL_BUILD_NAME || SAUCE_BUILD_NAME || 'Sauce Visual Build',
     customId: SAUCE_VISUAL_CUSTOM_ID ?? null,
+    tags: SAUCE_VISUAL_TAGS?.split(',') ?? [],
   };
 };
 
