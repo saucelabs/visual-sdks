@@ -55,7 +55,8 @@ export class VisualPlaywright {
   }
 
   public async createBuild() {
-    const { buildName, project, branch, customId, defaultBranch, tags } = getOpts();
+    const { buildName, project, branch, customId, defaultBranch, tags } =
+      getOpts();
     const build = await this.api.createBuild({
       name: buildName,
       branch,

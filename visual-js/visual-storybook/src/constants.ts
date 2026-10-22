@@ -13,4 +13,5 @@ export const DEFAULT_OPTS: VisualOpts = {
   region: 'us-west-1',
   buildName: 'Storybook Build',
   customId: null,
+  tags: null,
 };

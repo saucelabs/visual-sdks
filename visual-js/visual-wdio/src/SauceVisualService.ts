@@ -193,7 +193,6 @@ export default class SauceVisualService implements Services.ServiceInstance {
   apiClient: VisualApi;
   baselineOverride?: BaselineOverrideIn;
   hideScrollBars?: boolean;
-  tags?: string[];
 
   constructor(
     public options: SauceVisualServiceOptions,
@@ -218,7 +217,6 @@ export default class SauceVisualService implements Services.ServiceInstance {
         userAgent: `visual-wdio/${clientVersion}`,
       },
     );
-    this.tags = options.tags;
   }
 
   async onPrepare(

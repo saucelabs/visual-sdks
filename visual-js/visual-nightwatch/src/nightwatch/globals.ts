@@ -5,6 +5,7 @@ import {
   ensureError,
   getApi,
   isSkipMode,
+  parseTags,
   VisualConfig,
 } from '@saucelabs/visual';
 import { buildUrlMessage, validateSauce } from '../utils/api';
@@ -77,7 +78,7 @@ const globals: NightwatchInternalGlobals & {
         project: project || SAUCE_VISUAL_PROJECT,
         branch: branch || SAUCE_VISUAL_BRANCH,
         defaultBranch: defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH,
-        tags: tags || SAUCE_VISUAL_TAGS?.split(','),
+        tags: tags || parseTags(SAUCE_VISUAL_TAGS),
       };
       try {
         ({ id: visualBuildId, url: visualBuildUrl } = await getApi(
