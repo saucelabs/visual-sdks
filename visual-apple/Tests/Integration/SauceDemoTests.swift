@@ -17,16 +17,14 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         let page = safari.webViews.firstMatch
 
         let username = page.textFields["Username"]
-        // Stop at the first step that fails: carrying on only runs into the time limit, which restarts the
-        // runner and leaves the build open.
-        guard username.waitForExistence(timeout: 60) else { return XCTFail("Login page did not load") }
-        type("standard_user", into: username)
+        XCTAssertTrue(username.waitForExistence(timeout: 60), "Login page did not load")
+        type("standard_user", into: username, in: safari)
         XCTAssertEqual(username.value as? String, "standard_user", "Username not entered")
-        type("secret_sauce", into: page.secureTextFields["Password"])
+        type("secret_sauce", into: page.secureTextFields["Password"], in: safari)
         page.buttons["Login"].tap()
         dismissSavePasswordPrompt(in: safari)
 
-        guard page.staticTexts["Products"].waitForExistence(timeout: 30) else { return XCTFail("Not logged in") }
+        XCTAssertTrue(page.staticTexts["Products"].waitForExistence(timeout: 30), "Not logged in")
 
         page.buttons["Open Menu"].tap()
         // Safari exposes the menu item as a button once the menu has slid in.
@@ -39,20 +37,12 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         safari.terminate()
     }
 
-    /// Web fields accept typing only once they have keyboard focus. The keyboard stays up between fields,
-    /// so wait for the field itself, and tap again on slow simulators where the first tap is missed.
+    /// Web fields accept typing only once Safari shows the keyboard for them.
     @MainActor
-    private func type(_ text: String, into field: XCUIElement) {
-        let focused = NSPredicate(format: "hasKeyboardFocus == true")
-        for _ in 1...3 {
-            field.tap()
-            let waiter = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: focused, object: field)], timeout: 5)
-            if waiter == .completed {
-                field.typeText(text)
-                return
-            }
-        }
-        XCTFail("\(field.label) field never got keyboard focus")
+    private func type(_ text: String, into field: XCUIElement, in safari: XCUIApplication) {
+        field.tap()
+        XCTAssertTrue(safari.keyboards.firstMatch.waitForExistence(timeout: 10), "Keyboard did not appear")
+        field.typeText(text)
     }
 
     /// Safari may offer to save the password after logging in.
