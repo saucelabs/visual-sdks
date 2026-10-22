@@ -71,8 +71,8 @@ public actor VisualClient {
     }
 
     /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.elementNotFound`, `.buildAlreadyCompleted`,
-    ///   `.conflictingConfiguration`, or `VisualAPIError`.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, `.elementNotFound`,
+    ///   `.buildAlreadyCompleted`, `.conflictingConfiguration`, or `VisualAPIError`.
     @MainActor
     @discardableResult
     public func sauceVisualCheck(
@@ -86,6 +86,8 @@ public actor VisualClient {
     /// The upload goes through the API of the client that owns the build, so it reaches that build's
     /// account and region.
     internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
+        // Also checked here, for requests that don't come through `SnapshotCapture`.
+        try request.diffingMethodTolerance?.validate()
         let device = self.device
         // Admitted for the whole upload, so finishing waits until the snapshot is created or has failed.
         return try await store.check(configuration, api: api) { run in
@@ -177,18 +179,18 @@ internal actor SharedBuildStore {
         return try await finish(build, with: api)
     }
 
-    /// Called when the test bundle ends. Finishes the build only if this worker owns finishing it, which is
-    /// not the same as having created it: a build named by `buildId` or `customId` may still have other
-    /// workers uploading, so it is left open for the step that knows they are all done.
-    /// See `VisualAPI.Resolution.ownsFinish`.
+    /// Called when the test bundle ends. Always waits for this process's admitted checks, then finishes the
+    /// build only if this worker owns finishing it, which is not the same as having created it: a build named
+    /// by `buildId` or `customId` may still have other workers uploading, so it is left open for the step
+    /// that knows they are all done. See `VisualAPI.Resolution.ownsFinish`.
     func finishOwnedBuild() async -> AutoFinish.Outcome {
         if pending == nil, let uncertainCreation { return .failed(uncertainCreation) }
         guard let pending, let owner else { return .noBuild }
         isClosed = true
         do {
             let resolution = try await pending.value
-            guard resolution.ownsFinish else { return .leftOpen(resolution.build) }
             await drainChecks()
+            guard resolution.ownsFinish else { return .leftOpen(resolution.build) }
             return .finished(try await finish(resolution.build, with: owner.api))
         } catch let error as VisualAPI.UncertainCreation {
             return .failed(error.underlying)

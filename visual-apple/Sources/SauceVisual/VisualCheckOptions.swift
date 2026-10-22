@@ -131,6 +131,16 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
         self.antiAliasing = antiAliasing
         self.minChangeSize = minChangeSize
     }
+
+    /// Checks the ranges the API documents, so a bad value fails before any upload. NaN and infinity
+    /// fall outside the range too.
+    /// - Throws: `VisualError.invalidCheckOptions`.
+    internal func validate() throws {
+        let fractions = [color, brightness, antiAliasing].compactMap { $0 }
+        guard fractions.allSatisfy((0...1).contains), (minChangeSize ?? 0) >= 0 else {
+            throw VisualError.invalidCheckOptions
+        }
+    }
 }
 
 // MARK: - Resolution

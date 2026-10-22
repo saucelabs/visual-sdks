@@ -63,6 +63,23 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(request.diffingMethodTolerance, DiffingMethodTolerance(color: 0.1, minChangeSize: 3))
     }
 
+    func testToleranceOutsideTheDocumentedRangesIsRejected() {
+        let invalid: [(String, DiffingMethodTolerance)] = [
+            ("NaN color", DiffingMethodTolerance(color: .nan)),
+            ("infinite brightness", DiffingMethodTolerance(brightness: .infinity)),
+            ("negative anti-aliasing", DiffingMethodTolerance(antiAliasing: -0.1)),
+            ("color above 1", DiffingMethodTolerance(color: 1.1)),
+            ("negative minChangeSize", DiffingMethodTolerance(minChangeSize: -1))
+        ]
+        for (label, tolerance) in invalid {
+            XCTAssertThrowsError(try tolerance.validate(), label) {
+                XCTAssertEqual($0 as? VisualError, .invalidCheckOptions, label)
+            }
+        }
+        XCTAssertNoThrow(try DiffingMethodTolerance().validate())
+        XCTAssertNoThrow(try DiffingMethodTolerance(color: 0, brightness: 1, antiAliasing: 0.5, minChangeSize: 0).validate())
+    }
+
     @MainActor
     func testDefaultOptionsUseTheRunningTestAndBalanced() throws {
         let running = TestIdentity(testName: "testSomething", suiteName: "Suite")

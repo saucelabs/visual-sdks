@@ -82,7 +82,8 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
         let codes: [(VisualError, Int)] = [
             (.cancelled, 1), (.invalidCredentials, 2), (.unknownRegion, 3), (.invalidBuildId, 4),
             (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
-            (.conflictingConfiguration, 8), (.buildNotFound, 9), (.invalidSnapshotName, 10), (.elementNotFound, 11)
+            (.conflictingConfiguration, 8), (.buildNotFound, 9), (.invalidSnapshotName, 10), (.elementNotFound, 11),
+            (.invalidCheckOptions, 12)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
@@ -107,6 +108,8 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (VisualError.invalidSnapshotName, "Invalid snapshot name. Give the snapshot a name that is not empty."),
             (VisualError.elementNotFound,
              "An element in the check options doesn't exist. Wait for it before the check, or remove it."),
+            (VisualError.invalidCheckOptions,
+             "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),
              "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualAPIError(code: .apiError, detail: "Project not found"),
