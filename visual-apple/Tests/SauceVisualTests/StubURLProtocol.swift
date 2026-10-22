@@ -8,6 +8,8 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         var status: Int = 200
         var body: Data
         var error: URLError?
+        /// Seconds to wait before answering, so a test can act while the request is in flight.
+        var delay: TimeInterval = 0
 
         static func json(_ object: Any, status: Int = 200) -> Reply {
             // Test fixtures are valid JSON objects.
@@ -16,6 +18,12 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 
         static func failure(_ code: URLError.Code) -> Reply {
             Reply(body: Data(), error: URLError(code))
+        }
+
+        func delayed(by seconds: TimeInterval) -> Reply {
+            var reply = self
+            reply.delay = seconds
+            return reply
         }
     }
 
@@ -72,6 +80,11 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         var captured = request
         captured.httpBody = request.httpBody ?? request.httpBodyStream.map(Self.read)
         let reply = route.next(for: captured)
+        guard reply.delay > 0 else { return answer(with: reply) }
+        DispatchQueue.global().asyncAfter(deadline: .now() + reply.delay) { self.answer(with: reply) }
+    }
+
+    private func answer(with reply: Reply) {
         if let error = reply.error {
             client?.urlProtocol(self, didFailWithError: error)
             return

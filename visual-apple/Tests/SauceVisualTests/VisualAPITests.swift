@@ -136,7 +136,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         response["errors"] = [["message": "Partial"], ["message": "Failure"]]
         let (api, _) = try api([.json(response)])
         await XCTAssertThrowsErrorAsync(try await api.createBuild(VisualBuildOptions())) {
-            XCTAssertEqual(($0 as? VisualAPIError)?.detail, "Partial, Failure")
+            XCTAssertEqual(($0 as? VisualAPIError)?.detail, "The GraphQL operation failed.")
         }
     }
 
@@ -155,12 +155,15 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(input, ["uuid": buildID])
     }
 
-    func testGraphQLErrorsAreReported() async throws {
-        let (api, _) = try api([.json(["data": NSNull(), "errors": [["message": "Project not found"]]])])
+    func testGraphQLErrorsAreReportedWithoutServerText() async throws {
+        let message = "Project 'internal-payments' not found for user jane@example.com"
+        let (api, _) = try api([.json(["data": NSNull(), "errors": [["message": message]]])])
         await XCTAssertThrowsErrorAsync(try await api.createBuild(VisualBuildOptions())) {
             let error = $0 as? VisualAPIError
             XCTAssertEqual(error?.code, .apiError)
-            XCTAssertEqual(error?.detail, "Project not found")
+            XCTAssertEqual(error?.detail, "The GraphQL operation failed.")
+            XCTAssertFalse("\($0)".contains("internal-payments"))
+            XCTAssertFalse(($0 as NSError).localizedDescription.contains("jane@example.com"))
         }
     }
 
@@ -192,6 +195,52 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         await XCTAssertThrowsErrorAsync(try await api.createBuild(VisualBuildOptions())) {
             XCTAssertEqual("\($0)", "Could not reach the Sauce Visual API. Could not connect to the server.")
         }
+    }
+
+    func testFailuresSayWhetherTheServiceMayHaveAppliedTheRequest() async throws {
+        let cases: [(String, StubURLProtocol.Reply, Bool)] = [
+            ("cannot connect", .failure(.cannotConnectToHost), false),
+            ("host not found", .failure(.cannotFindHost), false),
+            ("unauthorized", StubURLProtocol.Reply(status: 401, body: Data()), false),
+            ("bad request", StubURLProtocol.Reply(status: 400, body: Data()), false),
+            ("GraphQL error", .json(["errors": [["message": "Invalid input"]]]), false),
+            ("timeout", .failure(.timedOut), true),
+            ("connection lost", .failure(.networkConnectionLost), true),
+            ("server error", StubURLProtocol.Reply(status: 502, body: Data()), true),
+            ("unreadable response", StubURLProtocol.Reply(body: Data("<html>".utf8)), true),
+            ("no result", .json(["data": [:]]), true),
+            ("GraphQL error next to a result", .json(["data": build()["data"]!, "errors": [["message": "Partial"]]]), true)
+        ]
+        for (label, reply, expected) in cases {
+            let (api, _) = try api([reply])
+            await XCTAssertThrowsErrorAsync(try await api.createBuild(VisualBuildOptions())) {
+                XCTAssertEqual(($0 as? VisualAPIError)?.mayHaveBeenApplied, expected, label)
+            }
+        }
+    }
+
+    func testOnlyAnUncertainCreateIsMarkedUncertain() async throws {
+        let (timedOut, _) = try api([.failure(.timedOut)])
+        await XCTAssertThrowsErrorAsync(try await timedOut.resolveBuild(VisualBuildOptions())) {
+            XCTAssertTrue($0 is VisualAPI.UncertainCreation, "\($0)")
+        }
+        let (refused, _) = try api([.failure(.cannotConnectToHost)])
+        await XCTAssertThrowsErrorAsync(try await refused.resolveBuild(VisualBuildOptions())) {
+            XCTAssertTrue($0 is VisualAPIError, "\($0)")
+        }
+        // A failed lookup creates nothing, whatever the reason.
+        let (lookup, route) = try api([.failure(.timedOut)])
+        await XCTAssertThrowsErrorAsync(try await lookup.resolveBuild(VisualBuildOptions(customId: "run-1"))) {
+            XCTAssertTrue($0 is VisualAPIError, "\($0)")
+        }
+        XCTAssertEqual(route.requests.count, 1)
+    }
+
+    func testErrorsCompareByWhatCallersSee() {
+        let sent = VisualAPIError(code: .networkFailure, detail: "Lost.", mayHaveBeenApplied: true)
+        let unsent = VisualAPIError(code: .networkFailure, detail: "Lost.", mayHaveBeenApplied: false)
+        XCTAssertEqual(sent, unsent)
+        XCTAssertEqual(Set([sent, unsent]).count, 1)
     }
 
     func testCancellationIsNotReportedAsNetworkFailure() async throws {

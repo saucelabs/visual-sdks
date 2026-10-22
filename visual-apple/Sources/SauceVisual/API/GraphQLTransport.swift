@@ -35,7 +35,7 @@ internal struct GraphQLTransport: Sendable {
         do {
             request.httpBody = try JSONEncoder().encode(Body(query: query, variables: variables))
         } catch {
-            throw VisualAPIError(code: .apiError, detail: "Could not encode the request.")
+            throw VisualAPIError(code: .apiError, detail: "Could not encode the request.", mayHaveBeenApplied: false)
         }
 
         let data: Data
@@ -47,17 +47,23 @@ internal struct GraphQLTransport: Sendable {
         } catch let error as URLError where error.code == .cancelled {
             throw CancellationError()
         } catch let error as URLError {
-            throw VisualAPIError(code: .networkFailure, detail: Self.describe(error))
+            throw VisualAPIError(
+                code: .networkFailure, detail: Self.describe(error), mayHaveBeenApplied: !Self.neverSent(error)
+            )
         } catch {
             throw VisualAPIError(code: .networkFailure)
         }
 
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         if status == 401 || status == 403 {
-            throw VisualAPIError(code: .invalidCredentials, statusCode: status)
+            throw VisualAPIError(code: .invalidCredentials, statusCode: status, mayHaveBeenApplied: false)
         }
         guard (200..<300).contains(status) else {
-            throw VisualAPIError(code: .apiError, detail: "HTTP \(status).", statusCode: status)
+            // A 4xx refuses the request. A 5xx may come after the server already applied it.
+            throw VisualAPIError(
+                code: .apiError, detail: "HTTP \(status).", statusCode: status,
+                mayHaveBeenApplied: !(400..<500).contains(status)
+            )
         }
 
         let envelope: Envelope<Result>
@@ -67,12 +73,30 @@ internal struct GraphQLTransport: Sendable {
             throw VisualAPIError(code: .apiError, detail: "Unexpected response format.", statusCode: status)
         }
         if let errors = envelope.errors, !errors.isEmpty {
-            throw VisualAPIError(code: .apiError, detail: errors.map(\.message).joined(separator: ", "), statusCode: status)
+            // Server messages are left out: they become NSError text, which apps and CI logs print.
+            throw VisualAPIError(
+                code: .apiError, detail: "The GraphQL operation failed.", statusCode: status,
+                mayHaveBeenApplied: envelope.data?.result != nil
+            )
         }
         guard let payload = envelope.data, payload.hasResult else {
             throw VisualAPIError(code: .apiError, detail: "The response has no result.", statusCode: status)
         }
         return payload.result
+    }
+
+    /// Failures that happen before the request is sent, so the server never saw it.
+    private static func neverSent(_ error: URLError) -> Bool {
+        switch error.code {
+        case .notConnectedToInternet, .cannotFindHost, .dnsLookupFailed, .cannotConnectToHost, .badURL,
+             .unsupportedURL, .secureConnectionFailed, .serverCertificateUntrusted, .serverCertificateHasBadDate,
+             .serverCertificateNotYetValid, .serverCertificateHasUnknownRoot, .clientCertificateRejected,
+             .clientCertificateRequired, .appTransportSecurityRequiresSecureConnection, .dataNotAllowed,
+             .internationalRoamingOff, .callIsActive:
+            return true
+        default:
+            return false
+        }
     }
 
     /// A short reason for common failures. System messages can be missing or only show the error number.
@@ -109,7 +133,8 @@ internal struct GraphQLTransport: Sendable {
                 result = hasResult ? try container.decode(Result?.self, forKey: .result) : nil
             }
         }
-        struct GraphQLError: Decodable { let message: String }
+        /// Only the presence of errors is used, never their text.
+        struct GraphQLError: Decodable {}
         let data: Payload?
         let errors: [GraphQLError]?
     }
