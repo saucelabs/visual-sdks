@@ -16,6 +16,22 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         .json(["data": ["result": ["id": buildID, "name": "Build", "status": "EQUAL", "url": "http://build"]]])
     }
 
+    /// The build as a lookup returns it, with `mode` saying whether it is still running.
+    private func lookup(mode: String, status: String = "RUNNING") -> StubURLProtocol.Reply {
+        .json(["data": ["result": [
+            "id": buildID, "name": "Build", "status": status, "url": "http://build", "mode": mode, "customId": "run-1"
+        ]]])
+    }
+
+    private var miss: StubURLProtocol.Reply { .json(["data": ["result": NSNull()]]) }
+
+    /// The operations sent, in order, for example `["createBuild", "finishBuild"]`.
+    private func operations(_ route: StubURLProtocol.Route) -> [String] {
+        route.bodies.compactMap { body in
+            (body["query"] as? String)?.split { !$0.isLetter }.dropFirst().first.map(String.init)
+        }
+    }
+
     private func client(
         _ route: StubURLProtocol.Route,
         store: SharedBuildStore,
@@ -40,6 +56,19 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
                                         options: VisualBuildOptions(buildId: "not-a-uuid"))) {
             XCTAssertEqual($0 as? VisualError, .invalidBuildId)
         }
+    }
+
+    func testBuildIdSpellingsShareOneBuild() async throws {
+        let store = SharedBuildStore()
+        let route = StubURLProtocol.Route([lookup(mode: "RUNNING")])
+        let upper = try client(route, store: store, options: VisualBuildOptions(buildId: buildID.uppercased()))
+        let lower = try client(StubURLProtocol.Route([]), store: store, options: VisualBuildOptions(buildId: buildID))
+
+        XCTAssertEqual(upper.options.buildId, buildID)
+        let first = try await upper.build()
+        let second = try await lower.build()
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(route.requests.count, 1)
     }
 
     func testConcurrentCallsAcrossClientsShareOneBuild() async throws {
@@ -104,7 +133,7 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         let store = SharedBuildStore()
         let failing = try client(StubURLProtocol.Route([.failure(.cannotConnectToHost)]), store: store)
         let route = StubURLProtocol.Route([created])
-        let other = try client(route, store: store, options: VisualBuildOptions(name: "Other build"))
+        let other = try self.client(route, store: store, options: VisualBuildOptions(name: "Other build"))
 
         await XCTAssertThrowsErrorAsync(try await failing.build()) {
             XCTAssertEqual(($0 as? VisualAPIError)?.code, .networkFailure)
@@ -153,15 +182,155 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue((route.bodies[1]["query"] as? String)?.contains("finishBuild") == true)
     }
 
-    func testFailedFinishCanBeRetried() async throws {
-        let route = StubURLProtocol.Route([created, .failure(.timedOut), finished])
+    // MARK: - Cancellation
+
+    func testPreCancelledCallerStartsNothing() async throws {
+        let store = SharedBuildStore()
+        let route = StubURLProtocol.Route([created])
+        let client = try client(route, store: store)
+
+        let build = await Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await client.build()
+        }.result
+        let finish = await Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await client.finish()
+        }.result
+
+        for result in [build, finish] {
+            XCTAssertThrowsError(try result.get()) { XCTAssertTrue($0 is CancellationError, "\($0)") }
+        }
+        XCTAssertEqual(route.requests.count, 0)
+        // Nothing was bound or closed, so another configuration can still create the build.
+        let other = try self.client(route, store: store, options: VisualBuildOptions(name: "Other build"))
+        let created = try await other.build()
+        XCTAssertEqual(created.id, buildID)
+    }
+
+    func testCancelledWaiterDoesNotCancelTheSharedCreation() async throws {
+        let route = StubURLProtocol.Route([created.delayed(by: 0.5)])
+        let client = try client(route, store: SharedBuildStore())
+
+        let waiters = (0..<4).map { _ in Task { try await client.build() } }
+        let cancelled = Task { try await client.build() }
+        // Cancel one caller once every caller is waiting on the request in flight.
+        while route.requests.isEmpty { try await Task.sleep(nanoseconds: 10_000_000) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        cancelled.cancel()
+
+        let result = await cancelled.result
+        XCTAssertThrowsError(try result.get()) { XCTAssertTrue($0 is CancellationError, "\($0)") }
+        for waiter in waiters {
+            let build = try await waiter.value
+            XCTAssertEqual(build.id, buildID)
+        }
+        XCTAssertEqual(route.requests.count, 1)
+    }
+
+    // MARK: - Creation whose outcome is unknown
+
+    func testUncertainCreationNeverCreatesASecondBuild() async throws {
+        let uncertain: [(String, StubURLProtocol.Reply)] = [
+            // The service creates the build, then the response is lost on the way back.
+            ("connection lost", .failure(.networkConnectionLost)),
+            ("timeout", .failure(.timedOut)),
+            ("server error", StubURLProtocol.Reply(status: 502, body: Data()))
+        ]
+        for (label, reply) in uncertain {
+            let store = SharedBuildStore()
+            let route = StubURLProtocol.Route([reply])
+            let client = try client(route, store: store)
+
+            var first: Error?
+            await XCTAssertThrowsErrorAsync(try await client.build()) { first = $0 }
+            // Later calls get the same failure without another request.
+            await XCTAssertThrowsErrorAsync(try await client.build()) {
+                XCTAssertEqual($0 as? VisualAPIError, first as? VisualAPIError, label)
+            }
+            guard case .failed = await store.finishOwnedBuild() else { return XCTFail("Expected the failure: \(label)") }
+            // The configuration stays bound, so another one can't create a build either.
+            let other = try self.client(StubURLProtocol.Route([created]), store: store, options: VisualBuildOptions(name: "Other build"))
+            await XCTAssertThrowsErrorAsync(try await other.build()) {
+                XCTAssertEqual($0 as? VisualError, .conflictingConfiguration, label)
+            }
+            XCTAssertEqual(operations(route), ["createBuild"], label)
+        }
+    }
+
+    func testLostCreateResponseWithCustomIdIsFoundByLookup() async throws {
+        let options = VisualBuildOptions(name: "Build", customId: "run-1")
+        // The lookup misses, the service creates the build, then the response is lost on the way back.
+        let route = StubURLProtocol.Route([miss, .failure(.networkConnectionLost), lookup(mode: "RUNNING")])
+        let client = try client(route, store: SharedBuildStore(), options: options)
+
+        await XCTAssertThrowsErrorAsync(try await client.build()) {
+            XCTAssertEqual(($0 as? VisualAPIError)?.code, .networkFailure)
+        }
+        let build = try await client.build()
+        XCTAssertEqual(build.id, buildID)
+        XCTAssertEqual(operations(route), ["buildByCustomId", "createBuild", "buildByCustomId"])
+    }
+
+    func testUncertainCreationWithCustomIdIsNotCreatedAgainWhenNotFound() async throws {
+        let store = SharedBuildStore()
+        let options = VisualBuildOptions(name: "Build", customId: "run-1")
+        let route = StubURLProtocol.Route([miss, .failure(.timedOut), miss])
+        let client = try client(route, store: store, options: options)
+
+        for _ in 0..<2 {
+            await XCTAssertThrowsErrorAsync(try await client.build()) {
+                XCTAssertEqual(($0 as? VisualAPIError)?.detail, "The request timed out.")
+            }
+        }
+        let other = try self.client(StubURLProtocol.Route([created]), store: store, options: VisualBuildOptions(name: "Other build"))
+        await XCTAssertThrowsErrorAsync(try await other.build()) {
+            XCTAssertEqual($0 as? VisualError, .conflictingConfiguration)
+        }
+        XCTAssertEqual(operations(route), ["buildByCustomId", "createBuild", "buildByCustomId"])
+    }
+
+    // MARK: - Finishing
+
+    func testFailedFinishKeepsAdmissionClosedAndIsRetried() async throws {
+        // The request never reached the service, so it is sent again as it was.
+        let route = StubURLProtocol.Route([created, .failure(.cannotConnectToHost), finished])
         let client = try client(route, store: SharedBuildStore())
 
         await XCTAssertThrowsErrorAsync(try await client.finish()) {
             XCTAssertEqual(($0 as? VisualAPIError)?.code, .networkFailure)
         }
+        await XCTAssertThrowsErrorAsync(try await client.build()) {
+            XCTAssertEqual($0 as? VisualError, .buildAlreadyCompleted)
+        }
         let finishedBuild = try await client.finish()
         XCTAssertEqual(finishedBuild.status, "EQUAL")
-        XCTAssertEqual(route.requests.count, 3)
+        XCTAssertEqual(operations(route), ["createBuild", "finishBuild", "finishBuild"])
+    }
+
+    func testLostFinishResponseIsReconciledInsteadOfResent() async throws {
+        // The service finishes the build, then the response is lost on the way back.
+        let route = StubURLProtocol.Route([created, .failure(.networkConnectionLost), lookup(mode: "COMPLETED", status: "EQUAL")])
+        let client = try client(route, store: SharedBuildStore())
+
+        await XCTAssertThrowsErrorAsync(try await client.finish()) {
+            XCTAssertEqual(($0 as? VisualAPIError)?.code, .networkFailure)
+        }
+        await XCTAssertThrowsErrorAsync(try await client.build()) {
+            XCTAssertEqual($0 as? VisualError, .buildAlreadyCompleted)
+        }
+        let finishedBuild = try await client.finish()
+        XCTAssertEqual(finishedBuild.status, "EQUAL")
+        XCTAssertEqual(operations(route), ["createBuild", "finishBuild", "build"])
+    }
+
+    func testUncertainFinishIsSentAgainWhileTheBuildIsStillRunning() async throws {
+        let route = StubURLProtocol.Route([created, .failure(.timedOut), lookup(mode: "RUNNING"), finished])
+        let client = try client(route, store: SharedBuildStore())
+
+        await XCTAssertThrowsErrorAsync(try await client.finish())
+        let finishedBuild = try await client.finish()
+        XCTAssertEqual(finishedBuild.status, "EQUAL")
+        XCTAssertEqual(operations(route), ["createBuild", "finishBuild", "build", "finishBuild"])
     }
 }

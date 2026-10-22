@@ -58,6 +58,14 @@ Every `VisualClient` in the process shares one build: the first `build()` create
 
 **You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build named by `buildId` or `customId` is always left open, even when this run created it, because other workers may still be adding snapshots to it. Finish it from the step that knows every worker is done, for example a CI step after all test jobs. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
 
+**Failed requests.** If a request to create or finish the build fails before the service sees it, for example when there is no connection, the next call simply tries again. When the outcome is unknown, for example after a timeout, the service may have applied it, so the SDK never repeats it blindly:
+
+- Creating a build named by `customId`: the next call looks the build up by that ID.
+- Creating any other build: every later call fails with the same error, so a second build is never created.
+- Finishing: the next `finish()` checks the build first, and finishes it again only if it is still running.
+
+Once finishing starts, no more snapshots are accepted, even if finishing fails.
+
 To pass credentials in code instead: `VisualClient(credentials: VisualCredentials(username: "…", accessKey: "…"), region: .euCentral1)`.
 
 ## Objective-C

@@ -21,7 +21,8 @@ internal struct VisualAPI: Sendable {
     /// A `buildId` must name an existing build: it is never replaced by a new one. Otherwise a running
     /// build with the `customId` is reused, or a new build is created with it, so later runs with the same
     /// ID find it. A lookup only counts as a miss when the API returns an explicit `null` without errors.
-    /// - Throws: `VisualError.invalidBuildId`, `.buildNotFound`, `.buildAlreadyCompleted`, or `VisualAPIError`.
+    /// - Throws: `VisualError.invalidBuildId`, `.buildNotFound`, `.buildAlreadyCompleted`, `VisualAPIError`, or
+    ///   `UncertainCreation` when `createBuild` failed after the server may have created the build.
     func resolveBuild(_ options: VisualBuildOptions) async throws -> Resolution {
         if let buildId = options.buildId {
             guard let uuid = UUID(uuidString: buildId) else { throw VisualError.invalidBuildId }
@@ -31,7 +32,13 @@ internal struct VisualAPI: Sendable {
         if let customId = options.customId, let existing = try await build(customId: customId) {
             return .reused(try Self.reusable(existing))
         }
-        let build = try await createBuild(options)
+        let build: VisualBuild
+        do {
+            build = try await createBuild(options)
+        } catch {
+            if Self.mayHaveBeenApplied(error) { throw UncertainCreation(underlying: error) }
+            throw error
+        }
         // Other workers may join a build named by an ID, so creating it does not make this worker the finisher.
         return Resolution(build: build, created: true, ownsFinish: !options.namesBuild)
     }
@@ -49,6 +56,37 @@ internal struct VisualAPI: Sendable {
         static func reused(_ build: VisualBuild) -> Resolution {
             Resolution(build: build, created: false, ownsFinish: false)
         }
+    }
+
+    /// `createBuild` failed, but the server may still have created the build, for example when the
+    /// response was lost. Only lookups may follow, so a second build is never created.
+    struct UncertainCreation: Error {
+        let underlying: Error
+    }
+
+    /// Finds the build an uncertain creation with this `customId` may have made. Never creates one.
+    /// - Returns: The build, or `nil` when the service has no running build with this ID.
+    /// - Throws: `VisualError.buildAlreadyCompleted` or `VisualAPIError`.
+    func reconcileCreation(customId: String) async throws -> Resolution? {
+        guard let existing = try await build(customId: customId) else { return nil }
+        return .reused(try Self.reusable(existing))
+    }
+
+    /// Finishes a build whose last `finishBuild` may have been applied. Looks the build up first, and
+    /// sends `finishBuild` again only while the service still reports it running.
+    /// - Throws: `VisualError.buildNotFound` or `VisualAPIError`.
+    func reconcileFinish(_ build: VisualBuild) async throws -> VisualBuild {
+        guard let id = UUID(uuidString: build.id), let current = try await self.build(id: id) else {
+            throw VisualError.buildNotFound
+        }
+        guard current.isCompleted else { return try await finishBuild(build) }
+        return Self.updated(build, with: current)
+    }
+
+    /// True unless the error shows the request changed nothing on the server. An interrupted request
+    /// (`CancellationError` included) may already have been sent.
+    static func mayHaveBeenApplied(_ error: Error) -> Bool {
+        (error as? VisualAPIError)?.mayHaveBeenApplied ?? true
     }
 
     func createBuild(_ options: VisualBuildOptions) async throws -> VisualBuild {
@@ -82,15 +120,19 @@ internal struct VisualAPI: Sendable {
             Self.finishBuildMutation, variables: GraphQL.Input(input: GraphQL.FinishBuildIn(uuid: build.id)),
             as: GraphQL.BuildResponse.self
         )
-        let finished = try Self.require(result)
-        return VisualBuild(
+        return Self.updated(build, with: try Self.require(result))
+    }
+
+    /// The build with the name, status, and URL the service reports now.
+    private static func updated(_ build: VisualBuild, with current: GraphQL.BuildResponse) -> VisualBuild {
+        VisualBuild(
             id: build.id,
-            name: finished.name ?? build.name,
+            name: current.name ?? build.name,
             project: build.project,
             branch: build.branch,
             defaultBranch: build.defaultBranch,
-            status: finished.status ?? build.status,
-            url: finished.url ?? build.url,
+            status: current.status ?? build.status,
+            url: current.url ?? build.url,
             customId: build.customId
         )
     }
