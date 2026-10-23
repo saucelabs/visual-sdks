@@ -27,16 +27,22 @@ public class VisualApi {
     }
 
     VisualBuild createBuild(BuildAttributes buildAttributes) {
-        BuildIn input = BuildIn.builder()
-                .name(buildAttributes.name)
-                .branch(buildAttributes.branch)
-                .project(buildAttributes.project)
-                .defaultBranch(buildAttributes.defaultBranch)
-                .build();
-        CreateBuildMutation m = CreateBuildMutation.builder().input(input).build();
+        CreateBuildMutation m = CreateBuildMutation.builder().input(buildInput(buildAttributes)).build();
         CreateBuildMutation.Data d = graphQLClient.executeMutation(m);
         Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", d.result.url));
         return new VisualBuild(d);
+    }
+
+    static BuildIn buildInput(BuildAttributes buildAttributes) {
+        BuildIn.Builder builder = BuildIn.builder()
+                .name(buildAttributes.name)
+                .branch(buildAttributes.branch)
+                .project(buildAttributes.project)
+                .defaultBranch(buildAttributes.defaultBranch);
+        if (buildAttributes.tags != null) {
+            builder.tags(buildAttributes.tags);
+        }
+        return builder.build();
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement, View scrollView) {
