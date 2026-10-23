@@ -187,10 +187,11 @@ public enum VisualBaselineOverrideField: Int, Sendable {
 }
 
 /// Values used instead of the snapshot's own when looking up its baseline, for Objective-C.
-/// Properties left `nil` keep the snapshot's own value.
+/// Properties left `nil` keep the snapshot's own value. Not thread-safe: one thread owns it, and must not
+/// change it from another thread while a client or check is copying it. Later changes have no effect.
 @objc(SLVBaselineOverride)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
-public final class VisualBaselineOverride: NSObject, @unchecked Sendable {
+public final class VisualBaselineOverride: NSObject {
     @objc public var name: String?
     @objc public var testName: String?
     @objc public var suiteName: String?
@@ -251,10 +252,11 @@ public final class VisualBaselineOverride: NSObject, @unchecked Sendable {
     }
 }
 
-/// Options for one check, for Objective-C. Don't change them while the check runs.
+/// Options for one check, for Objective-C. Not thread-safe: one thread owns them, and must not change them
+/// from another thread while the check call is copying them. Later changes have no effect.
 @objc(SLVCheckOptions)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
-public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
+public final class VisualCheckConfiguration: NSObject {
     /// Defaults to the running test's method name.
     @objc public var testName: String?
     /// Defaults to the running test's class name.
