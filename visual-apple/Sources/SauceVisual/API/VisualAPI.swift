@@ -156,14 +156,15 @@ internal struct VisualAPI: Sendable {
             name: name,
             testName: test.testName,
             suiteName: test.suiteName,
-            operatingSystem: device.operatingSystem,
+            operatingSystem: device.operatingSystem.rawValue,
             operatingSystemVersion: device.operatingSystemVersion,
             device: device.device,
             ignoreRegions: request.regions.isEmpty ? nil : request.regions.map(GraphQL.RegionIn.init),
             diffingMethod: request.diffingMethod.rawValue,
             diffingOptions: request.diffingOptions.map(GraphQL.DiffingOptionsIn.init),
             diffingMethodSensitivity: request.diffingMethodSensitivity?.rawValue,
-            diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init)
+            diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init),
+            baselineOverride: request.baselineOverride.flatMap { $0.isEmpty ? nil : GraphQL.BaselineOverrideIn($0) }
         )
         let result = try await transport.execute(
             Self.createSnapshotMutation, variables: GraphQL.Input(input: input), as: GraphQL.SnapshotResult.self
@@ -231,6 +232,41 @@ internal struct VisualAPI: Sendable {
             let diffingOptions: DiffingOptionsIn?
             let diffingMethodSensitivity: String?
             let diffingMethodTolerance: DiffingMethodToleranceIn?
+            let baselineOverride: BaselineOverrideIn?
+        }
+
+        /// Fields left `nil` are omitted, so the snapshot's own value is used for them.
+        /// Unset fields are omitted, so the snapshot's own value is used; `.null` fields are sent as `null`.
+        struct BaselineOverrideIn: Encodable, Sendable {
+            let value: BaselineOverride
+
+            init(_ value: BaselineOverride) {
+                self.value = value
+            }
+
+            private enum CodingKeys: String, CodingKey {
+                case name, testName, suiteName, device, operatingSystem, operatingSystemVersion
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                try Self.encode(value.name, .name, in: &container)
+                try Self.encode(value.testName, .testName, in: &container)
+                try Self.encode(value.suiteName, .suiteName, in: &container)
+                try Self.encode(value.device, .device, in: &container)
+                try Self.encode(value.operatingSystem?.map(\.rawValue), .operatingSystem, in: &container)
+                try Self.encode(value.operatingSystemVersion, .operatingSystemVersion, in: &container)
+            }
+
+            private static func encode(
+                _ field: BaselineValue<String>?, _ key: CodingKeys, in container: inout KeyedEncodingContainer<CodingKeys>
+            ) throws {
+                switch field {
+                case nil: break
+                case .null?: try container.encodeNil(forKey: key)
+                case .value(let value)?: try container.encode(value, forKey: key)
+                }
+            }
         }
 
         struct RegionIn: Encodable, Sendable {
