@@ -9,6 +9,7 @@ import com.saucelabs.visual.graphql.BuildQuery;
 import com.saucelabs.visual.graphql.CreateBuildMutation;
 import com.saucelabs.visual.graphql.type.BuildMode;
 
+import java.util.List;
 import java.util.UUID;
 
 public class VisualBuild {
@@ -112,12 +113,18 @@ public class VisualBuild {
         public final String project;
         public final String branch;
         public final String defaultBranch;
+        public final List<String> tags;
 
         public BuildAttributes(String name, String project, String branch, String defaultBranch) {
+            this(name, project, branch, defaultBranch, null);
+        }
+
+        public BuildAttributes(String name, String project, String branch, String defaultBranch, List<String> tags) {
             this.name = name;
             this.project = project;
             this.branch = branch;
             this.defaultBranch = defaultBranch;
+            this.tags = tags;
         }
     }
 
