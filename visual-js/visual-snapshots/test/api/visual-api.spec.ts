@@ -60,6 +60,7 @@ describe("VisualSnapshots", () => {
         defaultBranch: "testDefaultBranch",
         project: "testProject",
         customId: "testCustomId",
+        tags: ["testTag1", "test, tag 2"],
         logger,
       };
 
@@ -71,6 +72,7 @@ describe("VisualSnapshots", () => {
         defaultBranch: params.defaultBranch,
         project: params.project,
         customId: params.customId,
+        tags: params.tags,
       });
     });
 

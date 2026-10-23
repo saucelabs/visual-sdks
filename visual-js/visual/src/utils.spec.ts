@@ -3,6 +3,7 @@ import {
   getFullPageConfig,
   getVisualResults,
   parseRegionsForAPI,
+  parseTags,
 } from './utils';
 import { DiffStatus, RegionIn } from './graphql/__generated__/graphql';
 import { FullPageScreenshotOptions } from './types';
@@ -225,6 +226,41 @@ describe('utils', () => {
         diffIds: ['1', '2'],
       });
       expect(result.UNAPPROVED).toEqual(1);
+    });
+  });
+  describe('parseTags', () => {
+    test.each([undefined, null, '', ' ', ',', ' , ,'])(
+      'returns null for empty input %p',
+      (input) => {
+        expect(parseTags(input)).toBeNull();
+      },
+    );
+
+    test('returns a single tag', () => {
+      expect(parseTags('smoke')).toEqual(['smoke']);
+    });
+
+    test('splits on commas', () => {
+      expect(parseTags('smoke,regression,nightly')).toEqual([
+        'smoke',
+        'regression',
+        'nightly',
+      ]);
+    });
+
+    test('trims whitespace and drops empty entries', () => {
+      expect(parseTags(' smoke , ,regression,, nightly ')).toEqual([
+        'smoke',
+        'regression',
+        'nightly',
+      ]);
+    });
+
+    test('preserves inner whitespace', () => {
+      expect(parseTags('release candidate,smoke')).toEqual([
+        'release candidate',
+        'smoke',
+      ]);
     });
   });
 });

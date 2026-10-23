@@ -211,6 +211,18 @@ export const removeDomScriptFile = async () => {
 };
 
 /**
+ * Parses a comma separated list of tags (ex: from `SAUCE_VISUAL_TAGS`). Tags containing a comma
+ * cannot be expressed this way and should be supplied through the SDK options instead.
+ */
+export const parseTags = (tags: string | undefined | null): string[] | null => {
+  const parsed = tags
+    ?.split(',')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+  return parsed?.length ? parsed : null;
+};
+
+/**
  * Parse ENVs & set options object for visual API usage.
  */
 export const getEnvOpts = (): VisualEnvOpts => {
@@ -228,6 +240,7 @@ export const getEnvOpts = (): VisualEnvOpts => {
     SAUCE_VISUAL_DEFAULT_BRANCH,
     SAUCE_VISUAL_BUILD_ID,
     SAUCE_VISUAL_CUSTOM_ID,
+    SAUCE_VISUAL_TAGS,
   } = process.env;
 
   if (SAUCE_BUILD_NAME) {
@@ -264,6 +277,7 @@ export const getEnvOpts = (): VisualEnvOpts => {
     buildName:
       SAUCE_VISUAL_BUILD_NAME || SAUCE_BUILD_NAME || 'Sauce Visual Build',
     customId: SAUCE_VISUAL_CUSTOM_ID ?? null,
+    tags: parseTags(SAUCE_VISUAL_TAGS),
   };
 };
 

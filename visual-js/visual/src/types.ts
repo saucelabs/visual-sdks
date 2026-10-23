@@ -63,4 +63,5 @@ export interface VisualEnvOpts {
   branch: string | null;
   defaultBranch: string | null;
   customId: string | null;
+  tags: string[] | null;
 }

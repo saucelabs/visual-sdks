@@ -18,6 +18,7 @@ export interface VisualOpts extends PlaywrightParams {
   branch: string | null;
   defaultBranch: string | null;
   customId: string | null;
+  tags: string[] | null;
 }
 
 export interface ArgsTypes {

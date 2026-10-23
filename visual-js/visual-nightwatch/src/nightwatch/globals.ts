@@ -5,6 +5,7 @@ import {
   ensureError,
   getApi,
   isSkipMode,
+  parseTags,
   VisualConfig,
 } from '@saucelabs/visual';
 import { buildUrlMessage, validateSauce } from '../utils/api';
@@ -23,6 +24,7 @@ const {
   SAUCE_VISUAL_DEFAULT_BRANCH,
   SAUCE_VISUAL_BUILD_NAME,
   SAUCE_VISUAL_CUSTOM_ID,
+  SAUCE_VISUAL_TAGS,
 } = process.env;
 
 const globals: NightwatchInternalGlobals & {
@@ -45,7 +47,8 @@ const globals: NightwatchInternalGlobals & {
       branch: string | undefined,
       defaultBranch: string | undefined,
       visualBuildId: string | undefined,
-      visualBuildUrl: string | undefined;
+      visualBuildUrl: string | undefined,
+      tags: string[] | undefined;
     sharedSettings = settings;
 
     const { sauceVisualService, webdriver: { host, port } = {} } =
@@ -55,7 +58,7 @@ const globals: NightwatchInternalGlobals & {
     // Some error handling
     validateSauce(host, sauceVisualService);
 
-    ({ buildName, project, branch, defaultBranch } = sauceVisualService);
+    ({ buildName, project, branch, defaultBranch, tags } = sauceVisualService);
     sauceConfig = {
       hostname: host,
       port: port,
@@ -75,6 +78,7 @@ const globals: NightwatchInternalGlobals & {
         project: project || SAUCE_VISUAL_PROJECT,
         branch: branch || SAUCE_VISUAL_BRANCH,
         defaultBranch: defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH,
+        tags: tags || parseTags(SAUCE_VISUAL_TAGS),
       };
       try {
         ({ id: visualBuildId, url: visualBuildUrl } = await getApi(

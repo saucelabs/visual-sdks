@@ -114,6 +114,7 @@ export const buildCreate = async (_: unknown, cmd: Command) => {
     customId: options.customId,
     project: options.project,
     defaultBranch: options.defaultBranch,
+    tags: options.tag,
   });
   console.info(`Build ${build.id} created`);
   if (options.url === true) {
@@ -132,6 +133,7 @@ type BuildCreateCommandOptions = {
   url?: boolean;
   project?: string;
   defaultBranch?: string;
+  tag?: string[];
 };
 const buildCreateCommand = () =>
   new Command()
@@ -143,6 +145,11 @@ const buildCreateCommand = () =>
     .option('--branch <branch>')
     .option('--default-branch <defaultBranch>')
     .option('-p, --project <project>')
+    .option(
+      '-t, --tag <tag>',
+      'Tag to associate with the build. Can be repeated to add multiple tags.',
+      (tag: string, tags: string[] = []) => [...tags, tag],
+    )
     .option('-u, --url', 'display build URL after creation')
     .action(buildCreate);
 

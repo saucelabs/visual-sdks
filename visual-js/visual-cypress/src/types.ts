@@ -38,6 +38,7 @@ export interface SauceConfig {
     | DiffingMethodSensitivity
     | `${DiffingMethodSensitivity}`;
   baselineOverride?: VisualBaselineOverride;
+  tags?: string[];
 }
 
 export interface HasSauceConfig {

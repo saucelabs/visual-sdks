@@ -23,6 +23,7 @@ import {
   getVisualResults,
   DiffingMethodToleranceIn,
   DiffingMethodSensitivity,
+  parseTags,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -65,6 +66,7 @@ const {
   SAUCE_VISUAL_DEFAULT_BRANCH,
   SAUCE_VISUAL_BUILD_ID,
   SAUCE_VISUAL_CUSTOM_ID,
+  SAUCE_VISUAL_TAGS,
 } = process.env;
 
 function errorMsg(error: unknown) {
@@ -254,6 +256,7 @@ class CypressSauceVisual {
           SAUCE_VISUAL_DEFAULT_BRANCH_NAME ||
           null,
         customId: SAUCE_VISUAL_CUSTOM_ID || null,
+        tags: config.saucelabs?.tags || parseTags(SAUCE_VISUAL_TAGS),
       });
       this.buildId = id;
       logger.info(buildUrl(url));
