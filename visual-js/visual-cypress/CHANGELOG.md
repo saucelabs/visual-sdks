@@ -1,5 +1,16 @@
 # @saucelabs/cypress-visual-plugin
 
+## 0.11.0
+
+### Minor Changes
+
+- 561fca4: add tags support
+
+### Patch Changes
+
+- Updated dependencies [561fca4]
+  - @saucelabs/visual@0.18.0
+
 ## 0.10.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @saucelabs/visual
 
+## 0.18.0
+
+### Minor Changes
+
+- 561fca4: add tags support
+
 ## 0.17.0
 
 ### Minor Changes

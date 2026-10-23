@@ -1,5 +1,16 @@
 # @saucelabs/nightwatch-sauce-visual-service
 
+## 0.15.0
+
+### Minor Changes
+
+- 561fca4: add tags support
+
+### Patch Changes
+
+- Updated dependencies [561fca4]
+  - @saucelabs/visual@0.18.0
+
 ## 0.14.1
 
 ### Patch Changes
