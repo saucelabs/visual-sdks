@@ -109,7 +109,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (VisualError.elementNotFound,
              "An element in the check options doesn't exist. Wait for it before the check, or remove it."),
             (VisualError.invalidCheckOptions,
-             "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."),
+             "Invalid check options. Regions need a finite position and a positive size, tolerance values must be between 0 and 1, and minChangeSize can't be negative."),
             (VisualError.clipElementOffScreen, "The clip element is off screen. Scroll it into view before the check."),
             (VisualError.screenshotFailed, "Could not process the screenshot."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),

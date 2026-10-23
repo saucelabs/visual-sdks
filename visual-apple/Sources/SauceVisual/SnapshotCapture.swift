@@ -18,7 +18,7 @@ internal enum SnapshotCapture {
     static func prepare(_ name: String, options: VisualCheckOptions) throws -> Prepared {
         let name = try validName(name)
         // Caller input is checked before the screenshot or any request.
-        try options.diffingMethodTolerance?.validate()
+        try options.validate()
         // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
         let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)

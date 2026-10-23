@@ -182,23 +182,47 @@ internal struct PixelRegion: Hashable, Sendable {
         self.diffingOptions = diffingOptions
     }
 
-    /// Scales `rect` to whole pixels and clips it to `bounds`. `nil` when nothing is left.
+    /// Scales `rect` to whole pixels and clips it to `bounds`. `nil` when `rect` or `scale` isn't usable,
+    /// or nothing is left.
     static func pixels(_ rect: CGRect, scale: CGFloat, in bounds: CGRect) -> CGRect? {
-        guard rect.width.isFinite, rect.height.isFinite, !rect.isNull else { return nil }
+        guard isUsable(rect), scale.isFinite, scale > 0 else { return nil }
         let pixels = CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)
             .integral
             .intersection(bounds)
         guard !pixels.isNull, pixels.width > 0, pixels.height > 0 else { return nil }
         return pixels
     }
+
+    /// A finite position and a positive size. Reads `size` directly, because `width` and `height` turn a
+    /// negative size positive, which would move the rectangle to another area.
+    static func isUsable(_ rect: CGRect) -> Bool {
+        let values = [rect.origin.x, rect.origin.y, rect.size.width, rect.size.height]
+        return values.allSatisfy(\.isFinite) && rect.size.width > 0 && rect.size.height > 0
+    }
 }
 
 extension VisualCheckOptions {
+    /// Checks caller input before the screenshot: tolerance ranges, and rectangles that need a finite
+    /// position and a positive size. Element frames are only known later, when the check resolves them.
+    /// - Throws: `VisualError.invalidCheckOptions`.
+    func validate() throws {
+        try diffingMethodTolerance?.validate()
+        let rects = ignoreRegions + regions.compactMap { region -> CGRect? in
+            if case .rect(let rect) = region.area { return rect }
+            return nil
+        }
+        guard rects.allSatisfy(PixelRegion.isUsable) else { throw VisualError.invalidCheckOptions }
+    }
+
     /// Reads element frames, which XCUI only allows on the main actor.
-    /// - Throws: `VisualError.elementNotFound`, or `.clipElementOffScreen`.
+    /// - Throws: `VisualError.elementNotFound`, `.clipElementOffScreen`, or `.screenshotFailed`.
     @MainActor
     func resolve(running test: TestIdentity, screenshot: Screenshot.Capture) throws -> SnapshotRequest {
-        let screen = CGRect(origin: .zero, size: screenshot.pixelSize)
+        let size = screenshot.pixelSize
+        guard screenshot.scale.isFinite, screenshot.scale > 0, size.width > 0, size.height > 0 else {
+            throw VisualError.screenshotFailed
+        }
+        let screen = CGRect(origin: .zero, size: size)
         var clip: CGRect?
         if let clipElement {
             guard clipElement.exists else { throw VisualError.elementNotFound }
@@ -221,7 +245,7 @@ extension VisualCheckOptions {
             let region = PixelRegion(rect, scale: screenshot.scale, in: image, name: name, diffingOptions: options)
             if region == nil {
                 // Not an error, since elements can scroll away, but tell the user nothing was ignored.
-                print("Sauce Visual: skipped region \(name.map { "\"\($0)\" " } ?? "")at \(rect), which is outside the screenshot.")
+                print("Sauce Visual: skipped region \(name.map { "\"\($0)\" " } ?? "")at \(rect), which is empty or outside the screenshot.")
             }
             return region
         }

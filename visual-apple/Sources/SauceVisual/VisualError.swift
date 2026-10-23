@@ -45,7 +45,7 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
         case .elementNotFound:
             return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
         case .invalidCheckOptions:
-            return "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."
+            return "Invalid check options. Regions need a finite position and a positive size, tolerance values must be between 0 and 1, and minChangeSize can't be negative."
         case .clipElementOffScreen:
             return "The clip element is off screen. Scroll it into view before the check."
         case .screenshotFailed:
