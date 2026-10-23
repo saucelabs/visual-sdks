@@ -57,6 +57,40 @@ final class DomCaptureTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(output.contains("visible=\"false\" selected=\"false\" index=\"1\""), "No frame, no coordinates")
     }
 
+    func testCoordinatesThatDontFitAnIntAreLeftOut() {
+        let huge = CGFloat(1e300)
+        let largest = CGFloat.greatestFiniteMagnitude
+        let cases: [(String, DomNode, CGPoint)] = [
+            // Finite, but far beyond what an `Int` holds, so `Int(_:)` would crash the test process.
+            ("huge x", DomNode(type: "XCUIElementTypeStaticText", frame: CGRect(x: huge, y: 0, width: 10, height: 10)), .zero),
+            ("huge width", DomNode(type: "XCUIElementTypeStaticText", frame: CGRect(x: 0, y: 0, width: huge, height: 10)), .zero),
+            // Finite until the origin moves it, which overflows to infinity.
+            ("overflowing x", DomNode(type: "XCUIElementTypeButton", frame: CGRect(x: -largest, y: 0, width: 10, height: 10)),
+             CGPoint(x: largest, y: 0))
+        ]
+        for (label, node, origin) in cases {
+            let element = xml(node, origin: origin).split(separator: "\n")[2]
+            XCTAssertFalse(element.contains(" x="), label)
+            XCTAssertFalse(element.contains(" width="), label)
+            XCTAssertTrue(element.contains("index=\"0\""), "The element itself is still written: \(label)")
+        }
+    }
+
+    func testOnlyUsableFramesCanBeVisible() {
+        let hidden: [(String, CGRect)] = [
+            // Overlaps the screen once `CGRect` normalizes the negative width.
+            ("negative width", CGRect(x: 100, y: 100, width: -50, height: 20)),
+            ("zero size", CGRect(x: 100, y: 100, width: 0, height: 0)),
+            ("NaN origin", CGRect(x: CGFloat.nan, y: 100, width: 50, height: 20)),
+            ("infinite origin", CGRect(x: CGFloat.infinity, y: 100, width: 50, height: 20)),
+            ("off screen", CGRect(x: 0, y: 2000, width: 50, height: 20))
+        ]
+        for (label, frame) in hidden {
+            XCTAssertFalse(DomCapture.isVisible(frame, on: screen), label)
+        }
+        XCTAssertTrue(DomCapture.isVisible(CGRect(x: 100, y: 100, width: 50, height: 20), on: screen))
+    }
+
     func testAttributesAreEscaped() {
         XCTAssertEqual(DomCapture.escape("a & b < c > \"d\" 'e'"), "a &amp; b &lt; c &gt; &quot;d&quot; &apos;e&apos;")
         XCTAssertEqual(DomCapture.escape("line\nbreak\tTab"), "line&#10;break&#9;Tab")

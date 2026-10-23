@@ -27,7 +27,7 @@ public struct VisualCheckOptions {
     public var diffingMethodTolerance: DiffingMethodTolerance?
     /// Compare against another snapshot's baseline. Replaces the client's override for this check.
     public var baselineOverride: BaselineOverride?
-    /// Also upload the element tree of the app under test, or of `clipElement`. Off by default.
+    /// Upload the element tree of the app under test, or of `clipElement`. Off by default.
     public var captureDom: Bool
 
     public init(
@@ -258,11 +258,14 @@ internal struct PixelRegion: Hashable, Sendable {
     /// Converts screen points to pixels inside `image`, the uploaded part of the screen in pixels.
     /// `nil` when the area is outside it.
     init?(_ rect: CGRect, scale: CGFloat, in image: CGRect, name: String?, diffingOptions: DiffingOptions?) {
-        guard let pixels = Self.pixels(rect, scale: scale, in: image) else { return nil }
-        self.x = Int(pixels.minX - image.minX)
-        self.y = Int(pixels.minY - image.minY)
-        self.width = Int(pixels.width)
-        self.height = Int(pixels.height)
+        // Checked conversion, so a value that doesn't fit in an `Int` drops the region instead of crashing.
+        guard let pixels = Self.pixels(rect, scale: scale, in: image),
+              let x = Int(exactly: pixels.minX - image.minX), let y = Int(exactly: pixels.minY - image.minY),
+              let width = Int(exactly: pixels.width), let height = Int(exactly: pixels.height) else { return nil }
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
         self.name = name
         self.diffingOptions = diffingOptions
     }

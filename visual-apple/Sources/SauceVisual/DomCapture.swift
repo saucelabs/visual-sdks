@@ -66,11 +66,9 @@ internal enum DomCapture {
         attributes.append(("visible", String(isVisible(node.frame, on: screen))))
         attributes.append(("selected", String(node.selected)))
         let frame = node.frame
-        if isFinite(frame) {
-            attributes.append(("x", String(Int((frame.minX - origin.x).rounded()))))
-            attributes.append(("y", String(Int((frame.minY - origin.y).rounded()))))
-            attributes.append(("width", String(Int(frame.width.rounded()))))
-            attributes.append(("height", String(Int(frame.height.rounded()))))
+        if let x = wholeNumber(frame.minX - origin.x), let y = wholeNumber(frame.minY - origin.y),
+           let width = wholeNumber(frame.width), let height = wholeNumber(frame.height) {
+            attributes += [("x", String(x)), ("y", String(y)), ("width", String(width)), ("height", String(height))]
         }
         attributes.append(("index", String(index)))
 
@@ -87,15 +85,18 @@ internal enum DomCapture {
         xml += "</\(node.type)>\n"
     }
 
+    /// Some elements, such as hidden ones, report an infinite or empty frame. Those, and frames with a
+    /// negative size, are never visible.
     static func isVisible(_ frame: CGRect, on screen: CGRect) -> Bool {
-        guard isFinite(frame) else { return false }
+        guard PixelRegion.isUsable(frame) else { return false }
         let visible = frame.intersection(screen)
         return !visible.isNull && visible.width > 0 && visible.height > 0
     }
 
-    /// Some elements, such as hidden ones, report an infinite frame.
-    private static func isFinite(_ frame: CGRect) -> Bool {
-        [frame.minX, frame.minY, frame.width, frame.height].allSatisfy(\.isFinite)
+    /// `value` rounded, or `nil` when it isn't finite or doesn't fit in an `Int`. `Int(_:)` would crash the
+    /// test process instead, and a finite frame can still be far out of range.
+    private static func wholeNumber(_ value: CGFloat) -> Int? {
+        Int(exactly: value.rounded())
     }
 
     /// Escapes XML markup and drops characters XML 1.0 can't hold.
