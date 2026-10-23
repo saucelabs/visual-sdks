@@ -74,10 +74,6 @@ public class VisualBuild {
     return build;
   }
 
-  public static VisualBuild getExternalBuild(VisualApi api) {
-    return getExternalBuild(api, new BuildAttributes(null, null, null, null, null, null));
-  }
-
   public static VisualBuild getExternalBuild(VisualApi api, BuildAttributes buildAttributes) {
     String buildId = buildAttributes.getBuildId();
     if (isNotBlank(buildId)) {

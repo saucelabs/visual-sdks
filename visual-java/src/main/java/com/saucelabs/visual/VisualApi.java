@@ -483,17 +483,10 @@ public class VisualApi {
         String defaultBranch,
         String buildId,
         String customId) {
-      this(
-          name,
-          project,
-          branch,
-          defaultBranch,
-          buildId,
-          customId,
-          EnvironmentVariableProvider.DEFAULT);
+      this(name, project, branch, defaultBranch, buildId, customId, null);
     }
 
-    public BuildAttributes(
+    BuildAttributes(
         String name,
         String project,
         String branch,
@@ -507,7 +500,7 @@ public class VisualApi {
       this.defaultBranch = defaultBranch;
       this.buildId = buildId;
       this.customId = customId;
-      this.env = env;
+      this.env = env != null ? env : EnvironmentVariableProvider.DEFAULT;
     }
 
     public String getName() {
