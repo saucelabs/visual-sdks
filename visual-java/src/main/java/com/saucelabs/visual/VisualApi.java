@@ -34,7 +34,8 @@ public class VisualApi {
   private static final Pattern sauceRegionRegex = Pattern.compile("saucelabs.(com|net)");
 
   private static String resolveEndpoint() {
-    return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
+    return DataCenter.fromSauceRegion(EnvironmentVariableProvider.DEFAULT.getSauceRegion())
+        .endpoint;
   }
 
   /** Creates a VisualApi instance using builder style */
@@ -47,6 +48,8 @@ public class VisualApi {
     private String branchName;
     private String defaultBranchName;
     private String buildName;
+    private String buildId;
+    private String customId;
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
@@ -73,6 +76,29 @@ public class VisualApi {
 
     public Builder withBuild(String buildName) {
       this.buildName = buildName;
+      return this;
+    }
+
+    /**
+     * Attach the created {@link VisualApi} to an existing build identified by its Sauce Visual
+     * build id. When set, this takes precedence over the {@code SAUCE_VISUAL_BUILD_ID} environment
+     * variable and over {@link #withCustomId(String)}.
+     *
+     * @param buildId Sauce Visual build id to reuse.
+     */
+    public Builder withBuildId(String buildId) {
+      this.buildId = buildId;
+      return this;
+    }
+
+    /**
+     * Attach the created {@link VisualApi} to an existing build identified by its custom id. When
+     * set, this takes precedence over the {@code SAUCE_VISUAL_CUSTOM_ID} environment variable.
+     *
+     * @param customId Custom id previously assigned to a build.
+     */
+    public Builder withCustomId(String customId) {
+      this.customId = customId;
       return this;
     }
 
@@ -137,7 +163,8 @@ public class VisualApi {
     }
 
     private BuildAttributes getBuildAttributes() {
-      return new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
+      return new BuildAttributes(
+          buildName, projectName, branchName, defaultBranchName, buildId, customId);
     }
 
     public VisualApi build() {
@@ -214,7 +241,7 @@ public class VisualApi {
    * @param accessKey SauceLabs access key
    */
   public VisualApi(RemoteWebDriver driver, String url, String username, String accessKey) {
-    this(driver, url, username, accessKey, new BuildAttributes(null, null, null, null));
+    this(driver, url, username, accessKey, new BuildAttributes(null, null, null, null, null, null));
   }
 
   /**
@@ -445,39 +472,68 @@ public class VisualApi {
     private final String project;
     private final String branch;
     private final String defaultBranch;
+    private final String buildId;
+    private final String customId;
+    private final EnvironmentVariableProvider env;
 
-    public BuildAttributes(String name, String project, String branch, String defaultBranch) {
+    public BuildAttributes(
+        String name,
+        String project,
+        String branch,
+        String defaultBranch,
+        String buildId,
+        String customId) {
+      this(name, project, branch, defaultBranch, buildId, customId, null);
+    }
+
+    BuildAttributes(
+        String name,
+        String project,
+        String branch,
+        String defaultBranch,
+        String buildId,
+        String customId,
+        EnvironmentVariableProvider env) {
       this.name = name;
       this.project = project;
       this.branch = branch;
       this.defaultBranch = defaultBranch;
+      this.buildId = buildId;
+      this.customId = customId;
+      this.env = env != null ? env : EnvironmentVariableProvider.DEFAULT;
     }
 
     public String getName() {
-      if (isNotBlank(EnvironmentVariables.BUILD_NAME_DEPRECATED)) {
+      if (isNotBlank(env.getBuildNameDeprecated())) {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
       }
-      return valueOrDefault(
-          valueOrDefault(name, EnvironmentVariables.BUILD_NAME),
-          EnvironmentVariables.BUILD_NAME_DEPRECATED);
+      return valueOrDefault(valueOrDefault(name, env.getBuildName()), env.getBuildNameDeprecated());
     }
 
     public String getProject() {
-      return valueOrDefault(project, EnvironmentVariables.PROJECT_NAME);
+      return valueOrDefault(project, env.getProjectName());
     }
 
     public String getBranch() {
-      return valueOrDefault(branch, EnvironmentVariables.BRANCH_NAME);
+      return valueOrDefault(branch, env.getBranchName());
     }
 
     public String getDefaultBranch() {
-      return valueOrDefault(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME);
+      return valueOrDefault(defaultBranch, env.getDefaultBranchName());
+    }
+
+    public String getBuildId() {
+      return valueOrDefault(buildId, env.getBuildId());
+    }
+
+    public String getCustomId() {
+      return valueOrDefault(customId, env.getCustomId());
     }
   }
 
   VisualBuild createBuild(String buildName) {
-    return createBuild(new BuildAttributes(buildName, null, null, null));
+    return createBuild(new BuildAttributes(buildName, null, null, null, null, null));
   }
 
   VisualBuild createBuild(BuildAttributes buildAttributes) {
@@ -487,7 +543,8 @@ public class VisualApi {
                 buildAttributes.getName(),
                 buildAttributes.getProject(),
                 buildAttributes.getBranch(),
-                buildAttributes.getDefaultBranch()));
+                buildAttributes.getDefaultBranch(),
+                buildAttributes.getCustomId()));
     CreateBuildMutation.Data data = client.execute(mutation, CreateBuildMutation.Data.class);
     log.info(getStartupMessage(data.result.url));
     return new VisualBuild(

@@ -23,12 +23,15 @@ public class CreateBuildMutation implements GraphQLOperation {
     private final String project;
     private final String branch;
     private final String defaultBranch;
+    private final String customId;
 
-    public BuildIn(String name, String project, String branch, String defaultBranch) {
+    public BuildIn(
+        String name, String project, String branch, String defaultBranch, String customId) {
       this.name = name;
       this.project = project;
       this.branch = branch;
       this.defaultBranch = defaultBranch;
+      this.customId = customId;
     }
 
     public String getName() {
@@ -45,6 +48,10 @@ public class CreateBuildMutation implements GraphQLOperation {
 
     public String getDefaultBranch() {
       return defaultBranch;
+    }
+
+    public String getCustomId() {
+      return customId;
     }
   }
 

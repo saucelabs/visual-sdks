@@ -1,5 +1,8 @@
 package com.saucelabs.visual.graphql;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.junit.jupiter.api.Disabled;
@@ -14,7 +17,25 @@ class CreateBuildMutationTest {
         mapper.writeValueAsString(
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName")));
+                    "buildName", "projectName", "branchName", "defaultBranchName", null)));
+  }
+
+  @Test
+  void buildIn_defaultsCustomIdToNull() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn(
+            "buildName", "projectName", "branchName", "mainBranch", null);
+
+    assertNull(buildIn.getCustomId());
+  }
+
+  @Test
+  void buildIn_storesCustomIdWhenProvided() {
+    CreateBuildMutation.BuildIn buildIn =
+        new CreateBuildMutation.BuildIn(
+            "buildName", "projectName", "branchName", "mainBranch", "my-custom-id");
+
+    assertEquals("my-custom-id", buildIn.getCustomId());
   }
 
   @Test
@@ -27,7 +48,7 @@ class CreateBuildMutationTest {
         client.execute(
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName")),
+                    "buildName", "projectName", "branchName", "defaultBranchName", null)),
             CreateBuildMutation.Data.class);
   }
 }
