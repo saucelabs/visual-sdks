@@ -21,7 +21,7 @@ class CreateBuildMutationTest {
         mapper.writeValueAsString(
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName")));
+                    "buildName", "projectName", "branchName", "defaultBranchName", null)));
   }
 
   @Test
@@ -56,7 +56,8 @@ class CreateBuildMutationTest {
   @Test
   void buildIn_defaultsCustomIdToNull() {
     CreateBuildMutation.BuildIn buildIn =
-        new CreateBuildMutation.BuildIn("buildName", "projectName", "branchName", "mainBranch");
+        new CreateBuildMutation.BuildIn(
+            "buildName", "projectName", "branchName", "mainBranch", null);
 
     assertNull(buildIn.getCustomId());
   }
@@ -80,7 +81,7 @@ class CreateBuildMutationTest {
         client.execute(
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName")),
+                    "buildName", "projectName", "branchName", "defaultBranchName", null)),
             CreateBuildMutation.Data.class);
   }
 }
