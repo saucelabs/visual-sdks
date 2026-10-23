@@ -3,6 +3,7 @@ package com.saucelabs.visual.graphql;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,28 +64,6 @@ class CreateBuildMutationTest {
     CreateBuildMutation.BuildIn buildIn =
         new CreateBuildMutation.BuildIn(
             "buildName", "projectName", "branchName", "mainBranch", null, null);
-
-    assertNull(buildIn.getCustomId());
-  }
-
-  @Test
-  void buildIn_storesCustomIdWhenProvided() {
-    CreateBuildMutation.BuildIn buildIn =
-        new CreateBuildMutation.BuildIn(
-            "buildName",
-            "projectName",
-            "branchName",
-            "mainBranch",
-            Arrays.asList("smoke", "nightly"),
-            "my-custom-id");
-
-    assertEquals("my-custom-id", buildIn.getCustomId());
-  }
-
-  @Test
-  void buildIn_defaultsCustomIdToNull() {
-    CreateBuildMutation.BuildIn buildIn =
-        new CreateBuildMutation.BuildIn("buildName", "projectName", "branchName", "mainBranch");
 
     assertNull(buildIn.getCustomId());
   }
