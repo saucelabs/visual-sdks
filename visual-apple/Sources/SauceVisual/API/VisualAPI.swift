@@ -142,7 +142,7 @@ internal struct VisualAPI: Sendable {
         )
     }
 
-    /// Uploads the screenshot and any element tree, then creates snapshot `name`.
+    /// Uploads snapshot artifacts, then creates snapshot `name`.
     /// - Throws: `VisualAPIError`, or `CancellationError`. A failed tree upload only prints a warning.
     func createSnapshot(
         name: String, png: Data, device: DeviceInfo, request: SnapshotRequest, in build: VisualBuild
@@ -199,7 +199,7 @@ internal struct VisualAPI: Sendable {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print("Sauce Visual: could not upload the DOM, so the snapshot has none. \(error)")
+            print("Sauce Visual: could not upload the DOM. \(error)")
             return nil
         }
     }
