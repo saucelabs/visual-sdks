@@ -509,7 +509,7 @@ public class VisualApi {
           EnvironmentVariableProvider.DEFAULT);
     }
 
-    public BuildAttributes(
+    BuildAttributes(
         String name,
         String project,
         String branch,
@@ -525,7 +525,7 @@ public class VisualApi {
       this.tags = tags;
       this.buildId = buildId;
       this.customId = customId;
-      this.env = env;
+      this.env = env != null ? env : EnvironmentVariableProvider.DEFAULT;
     }
 
     public String getName() {
