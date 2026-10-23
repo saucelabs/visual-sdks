@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.BuildStatus;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class CreateBuildMutation implements GraphQLOperation {
@@ -23,12 +24,19 @@ public class CreateBuildMutation implements GraphQLOperation {
     private final String project;
     private final String branch;
     private final String defaultBranch;
+    private final List<String> tags;
 
     public BuildIn(String name, String project, String branch, String defaultBranch) {
+      this(name, project, branch, defaultBranch, null);
+    }
+
+    public BuildIn(
+        String name, String project, String branch, String defaultBranch, List<String> tags) {
       this.name = name;
       this.project = project;
       this.branch = branch;
       this.defaultBranch = defaultBranch;
+      this.tags = tags;
     }
 
     public String getName() {
@@ -45,6 +53,10 @@ public class CreateBuildMutation implements GraphQLOperation {
 
     public String getDefaultBranch() {
       return defaultBranch;
+    }
+
+    public List<String> getTags() {
+      return tags;
     }
   }
 

@@ -528,6 +528,7 @@ type Build implements Node {
     orderBy: [SnapshotsOrderBy!] = [PRIMARY_KEY_ASC]
   ): SnapshotsConnection!
   status: BuildStatus!
+  tags: [String]!
   url: String!
 }
 
@@ -607,6 +608,7 @@ input BuildIn {
   keepAliveTimeout: Int
   name: String
   project: String
+  tags: [String!]
 }
 
 enum BuildMode {
