@@ -25,10 +25,6 @@ public class CreateBuildMutation implements GraphQLOperation {
     private final String defaultBranch;
     private final String customId;
 
-    public BuildIn(String name, String project, String branch, String defaultBranch) {
-      this(name, project, branch, defaultBranch, null);
-    }
-
     public BuildIn(
         String name, String project, String branch, String defaultBranch, String customId) {
       this.name = name;
