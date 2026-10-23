@@ -95,6 +95,50 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(request.diffingMethodTolerance, DiffingMethodTolerance(color: 0.1, minChangeSize: 3))
     }
 
+    func testRegionsNeedAFinitePositionAndAPositiveSize() {
+        let screen = CGRect(origin: .zero, size: screenshot.pixelSize)
+        let invalid: [(String, CGRect)] = [
+            // `CGRect` would otherwise treat this as the area from x 50 to 100.
+            ("negative width", CGRect(x: 100, y: 100, width: -50, height: 50)),
+            ("zero height", CGRect(x: 0, y: 0, width: 10, height: 0)),
+            ("NaN x", CGRect(x: CGFloat.nan, y: 0, width: 10, height: 10)),
+            ("infinite y", CGRect(x: 0, y: CGFloat.infinity, width: 10, height: 10)),
+            ("infinite width", CGRect(x: 0, y: 0, width: CGFloat.infinity, height: 10))
+        ]
+        for (label, rect) in invalid {
+            for options in [VisualCheckOptions(ignoreRegions: [rect]), VisualCheckOptions(regions: [.ignoreChanges(in: rect)])] {
+                XCTAssertThrowsError(try options.validate(), label) {
+                    XCTAssertEqual($0 as? VisualError, .invalidCheckOptions, label)
+                }
+            }
+            XCTAssertNil(PixelRegion.pixels(rect, scale: 3, in: screen), label)
+        }
+        XCTAssertNoThrow(try VisualCheckOptions(ignoreRegions: [CGRect(x: 0, y: 0, width: 10, height: 10)]).validate())
+    }
+
+    func testPixelsNeedAFinitePositiveScale() {
+        let screen = CGRect(origin: .zero, size: screenshot.pixelSize)
+        let rect = CGRect(x: 0, y: 0, width: 10, height: 10)
+        for scale: CGFloat in [0, -3, .nan, .infinity] {
+            XCTAssertNil(PixelRegion.pixels(rect, scale: scale, in: screen), "scale \(scale)")
+        }
+        XCTAssertEqual(PixelRegion.pixels(rect, scale: 3, in: screen), CGRect(x: 0, y: 0, width: 30, height: 30))
+    }
+
+    @MainActor
+    func testUnreadableScreenshotFails() {
+        let captures = [
+            Screenshot.Capture(png: Data(), scale: 1, pixelSize: .zero),
+            Screenshot.Capture(png: Data(), scale: 0, pixelSize: screenshot.pixelSize),
+            Screenshot.Capture(png: Data(), scale: .nan, pixelSize: screenshot.pixelSize)
+        ]
+        for capture in captures {
+            XCTAssertThrowsError(try VisualCheckOptions().resolve(running: TestIdentity(), screenshot: capture)) {
+                XCTAssertEqual($0 as? VisualError, .screenshotFailed)
+            }
+        }
+    }
+
     func testToleranceOutsideTheDocumentedRangesIsRejected() {
         let invalid: [(String, DiffingMethodTolerance)] = [
             ("NaN color", DiffingMethodTolerance(color: .nan)),

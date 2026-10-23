@@ -313,13 +313,19 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(try SnapshotCapture.validName("  Login \n"), "Login")
     }
 
-    func testInvalidToleranceFailsBeforeScreenshotOrRequest() async throws {
+    func testInvalidOptionsFailBeforeScreenshotOrRequest() async throws {
         let route = StubURLProtocol.Route([created, upload(), stored, snapshot])
         let client = try client(route)
         let tolerance = DiffingMethodTolerance(color: .nan)
         // Unit tests have no screen to capture, so reaching the screenshot would fail differently.
         await XCTAssertThrowsErrorAsync(
             try await client.sauceVisualCheck("Login", options: VisualCheckOptions(diffingMethodTolerance: tolerance))
+        ) {
+            XCTAssertEqual($0 as? VisualError, .invalidCheckOptions)
+        }
+        let flipped = CGRect(x: 0, y: 0, width: -10, height: 10)
+        await XCTAssertThrowsErrorAsync(
+            try await client.sauceVisualCheck("Login", options: VisualCheckOptions(ignoreRegions: [flipped]))
         ) {
             XCTAssertEqual($0 as? VisualError, .invalidCheckOptions)
         }
