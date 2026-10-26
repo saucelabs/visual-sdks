@@ -105,10 +105,12 @@ public class VisualApi {
     }
 
     /**
-     * Delay the server-side build completion by {@code delay} and keep the build open for new snapshots
-     * <p>Must be called <strong>after</strong> {@link #withCustomId(String)} — the delay only can be
-     * applied to a build that is being created or reused via customId.
-     * 
+     * Delay the server-side build completion by {@code delay} and keep the build open for new
+     * snapshots
+     *
+     * <p>Must be called <strong>after</strong> {@link #withCustomId(String)} — the delay only can
+     * be applied to a build that is being created or reused via customId.
+     *
      * @param delay build finish delay in seconds to accept new incoming snapshots from other builds
      * @throws IllegalStateException if {@link #withCustomId(String)} was not called first.
      * @throws IllegalArgumentException if {@code delay} is negative.
@@ -639,9 +641,9 @@ public class VisualApi {
 
   /**
    * Executes a finishBuild mutation with optional delay
-   * 
+   *
    * @param buildId Build id
-   * @param delay   Build finish delay
+   * @param delay Build finish delay
    * @return Finished build
    */
   FinishBuildMutation.Result finishBuild(String buildId, Duration delay) {
