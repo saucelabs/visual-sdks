@@ -111,7 +111,7 @@ public class VisualApi {
      * <p>Must be called <strong>after</strong> {@link #withCustomId(String)} — the delay only can
      * be applied to a build that is being created or reused via customId.
      *
-     * @param delay build finish delay in seconds to accept new incoming snapshots from other builds
+     * @param delay build finish delay in seconds to accept more Visual sessions
      * @throws IllegalStateException if {@link #withCustomId(String)} was not called first.
      * @throws IllegalArgumentException if {@code delay} is negative.
      */
