@@ -108,21 +108,12 @@ public class VisualApi {
      * Delay the server-side build completion by {@code delay} and keep the build open for new
      * snapshots
      *
-     * <p>Must be called <strong>after</strong> {@link #withCustomId(String)} — the delay only can
-     * be applied to a build that is being created or reused via customId.
+     * <p>Must be called with <strong>after</strong> {@link #withCustomId(String)} — the delay only
+     * can be applied to a build that is being created or reused via customId.
      *
      * @param delay build finish delay in seconds to accept more Visual sessions
-     * @throws IllegalStateException if {@link #withCustomId(String)} was not called first.
-     * @throws IllegalArgumentException if {@code delay} is negative.
      */
     public Builder withBuildFinishDelay(Duration delay) {
-      if (this.customId == null || this.customId.trim().isEmpty()) {
-        throw new IllegalStateException(
-            "withFinishDelay(...) requires withCustomId(...) to be called first.");
-      }
-      if (delay != null && delay.isNegative()) {
-        throw new IllegalArgumentException("finishDelay must not be negative");
-      }
       this.finishDelay = delay;
       return this;
     }
@@ -228,6 +219,15 @@ public class VisualApi {
       if (this.baselineOverride != null) {
         api.setBaselineOverride(this.baselineOverride);
       }
+
+      if (this.customId == null || this.customId.trim().isEmpty()) {
+        throw new IllegalStateException(
+            "withFinishDelay(...) requires withCustomId(...) to be called first.");
+      }
+      if (this.finishDelay != null && this.finishDelay.isNegative()) {
+        throw new IllegalArgumentException("finishDelay must not be negative");
+      }
+
       return api;
     }
   }
