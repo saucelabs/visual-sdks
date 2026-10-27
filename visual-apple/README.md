@@ -82,6 +82,7 @@ try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
 | `diffingMethodSensitivity`, `diffingMethodTolerance` | How strictly `.balanced` compares pixels |
 | `baselineOverride` | Compare against another snapshot's baseline, for example `BaselineOverride(operatingSystemVersion: "26.5")` to keep comparing against iOS 26.5 baselines after the simulator moves to a newer iOS. Each field has three states: leave it out to keep the snapshot's own value, set a value (`operatingSystemVersion: "26.5"`, `operatingSystem: .ios`), or use `.null` to match baselines that have no value for that field (`device: .null`). Baselines also match on the test and suite names, so to compare with a snapshot from another test, override `testName` too. Set it for every check with `VisualClient(baselineOverride:)`; a check's own override replaces it |
 | `captureDom` | Also upload the element tree, so the dashboard shows which element changed. Off by default. See [Element tree](#element-tree-dom) |
+| `fullPage` | Scroll an element and snapshot all of its content. See [Full-page screenshots](#full-page-screenshots) |
 
 ### Element tree (DOM)
 
@@ -102,6 +103,24 @@ try await visual.sauceVisualCheck("Order summary", options: VisualCheckOptions(
 - The tree comes from the app under test, or from `clipElement` when set.
 - In Safari or a web view, it holds the page's accessibility elements, not its HTML. Clip to the web view to capture it.
 - If the tree can't be read, the snapshot is uploaded without it and a warning is printed.
+
+### Full-page screenshots
+
+Pass the scrollable element, such as a table, list, or web view, to snapshot all of its content instead of the visible part:
+
+```swift
+try await visual.sauceVisualCheck("Products", options: VisualCheckOptions(
+    fullPage: FullPageScreenshot(scrollElement: app.collectionViews["products"])
+))
+```
+
+- The SDK scrolls the element down, waits, and takes a screenshot, until the content stops moving or `scrollLimit` screenshots are taken (10 by default). The screenshots are stitched into one image of the element.
+- After each scroll it waits `delayAfterScroll` seconds (0.5 by default), then until the element has stopped changing, so scroll indicators have faded and lazy-loaded content has appeared.
+- Capture starts from the current scroll position. Scroll to the top first if needed.
+- Ignore regions are relative to the element, as with `clipElement`. A `clipElement` that is a different element takes precedence, and the full page is skipped.
+- With `captureDom`, the element tree is read before scrolling, so it covers the first screen.
+- Headers that stay pinned while scrolling appear again in each part of the image.
+- Not available on tvOS, where the check throws `VisualError.fullPageNotSupported`.
 
 Rectangles are in points and converted to screenshot pixels. Parts outside the screen are clipped. Snapshots are compared with the baseline that has the same name, device, and OS version. On tvOS, the operating system is reported as `UNKNOWN`, because the API has no tvOS value.
 
@@ -145,7 +164,7 @@ checkOptions.captureDom = YES;
 }];
 ```
 
-`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, `captureDom`, and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
+`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, `captureDom`, the full-page settings (`fullPageScrollElement`, `fullPageScrollLimit`, `fullPageDelayAfterScroll`), and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
 
 ## Development
 

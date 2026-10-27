@@ -29,6 +29,8 @@ public struct VisualCheckOptions {
     public var baselineOverride: BaselineOverride?
     /// Upload the element tree of the app under test, or of `clipElement`. Off by default.
     public var captureDom: Bool
+    /// Scroll an element and snapshot all of its content. Ignored when `clipElement` is a different element.
+    public var fullPage: FullPageScreenshot?
 
     public init(
         testName: String? = nil,
@@ -42,7 +44,8 @@ public struct VisualCheckOptions {
         diffingMethodSensitivity: DiffingMethodSensitivity? = nil,
         diffingMethodTolerance: DiffingMethodTolerance? = nil,
         baselineOverride: BaselineOverride? = nil,
-        captureDom: Bool = false
+        captureDom: Bool = false,
+        fullPage: FullPageScreenshot? = nil
     ) {
         self.testName = testName
         self.suiteName = suiteName
@@ -56,6 +59,36 @@ public struct VisualCheckOptions {
         self.diffingMethodTolerance = diffingMethodTolerance
         self.baselineOverride = baselineOverride
         self.captureDom = captureDom
+        self.fullPage = fullPage
+    }
+
+    /// The element to scroll, unless a different `clipElement` takes precedence.
+    var fullPageElement: XCUIElement? {
+        guard let fullPage, clipElement == nil || clipElement == fullPage.scrollElement else { return nil }
+        return fullPage.scrollElement
+    }
+}
+
+/// Scrolls an element and stitches its screenshots into one image. Not available on tvOS.
+public struct FullPageScreenshot {
+    /// The scrollable element, such as a table, collection view, or web view.
+    public var scrollElement: XCUIElement
+    /// The most screenshots to take. Capture also stops when the content stops moving.
+    public var scrollLimit: Int
+    /// Seconds to wait after each scroll, for example for lazy-loaded content.
+    public var delayAfterScroll: TimeInterval
+
+    public init(scrollElement: XCUIElement, scrollLimit: Int = 10, delayAfterScroll: TimeInterval = 0.5) {
+        self.scrollElement = scrollElement
+        self.scrollLimit = scrollLimit
+        self.delayAfterScroll = delayAfterScroll
+    }
+
+    /// - Throws: `VisualError.invalidCheckOptions` unless `scrollLimit` is at least 1 and the delay isn't negative.
+    static func validate(scrollLimit: Int, delayAfterScroll: TimeInterval) throws {
+        guard scrollLimit >= 1, delayAfterScroll.isFinite, delayAfterScroll >= 0 else {
+            throw VisualError.invalidCheckOptions
+        }
     }
 }
 
@@ -244,6 +277,8 @@ internal struct SnapshotRequest: Hashable, Sendable {
     var baselineOverride: BaselineOverride?
     /// Set when `captureDom` is on and the tree could be read.
     var dom: DomSnapshot?
+    /// The screenshots to stitch below the first one, for a full-page check.
+    var fullPage: FullPageCapture.Frames?
 }
 
 /// A region in screenshot pixels, as the API expects.
@@ -268,6 +303,21 @@ internal struct PixelRegion: Hashable, Sendable {
         self.height = height
         self.name = name
         self.diffingOptions = diffingOptions
+    }
+
+    private init(x: Int, y: Int, width: Int, height: Int, name: String?, diffingOptions: DiffingOptions?) {
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.name = name
+        self.diffingOptions = diffingOptions
+    }
+
+    /// The part above row `limit`, or `nil` when nothing is left.
+    func cut(atHeight limit: Int) -> PixelRegion? {
+        guard y < limit else { return nil }
+        return PixelRegion(x: x, y: y, width: width, height: min(height, limit - y), name: name, diffingOptions: diffingOptions)
     }
 
     /// Scales `rect` to whole pixels and clips it to `bounds`. `nil` when `rect` or `scale` isn't usable,
@@ -300,6 +350,9 @@ extension VisualCheckOptions {
             return nil
         }
         guard rects.allSatisfy(PixelRegion.isUsable) else { throw VisualError.invalidCheckOptions }
+        if let fullPage {
+            try FullPageScreenshot.validate(scrollLimit: fullPage.scrollLimit, delayAfterScroll: fullPage.delayAfterScroll)
+        }
     }
 
     /// Reads element frames, which XCUI only allows on the main actor.
@@ -312,15 +365,19 @@ extension VisualCheckOptions {
         }
         let screen = CGRect(origin: .zero, size: size)
         var clip: CGRect?
-        if let clipElement {
-            guard clipElement.exists else { throw VisualError.elementNotFound }
-            guard let pixels = PixelRegion.pixels(clipElement.frame, scale: screenshot.scale, in: screen) else {
+        if let element = clipElement ?? fullPageElement {
+            guard element.exists else { throw VisualError.elementNotFound }
+            guard let pixels = PixelRegion.pixels(element.frame, scale: screenshot.scale, in: screen) else {
                 throw VisualError.clipElementOffScreen
             }
             clip = pixels
         }
         // Regions are relative to the uploaded image, so to the clip element when there is one.
-        let image = clip ?? screen
+        var image = clip ?? screen
+        if let clip, let fullPage, fullPageElement != nil {
+            // A full page grows downwards, so regions below the first screenshot are kept until it's stitched.
+            image.size.height = clip.height * CGFloat(fullPage.scrollLimit)
+        }
         func pixels(_ area: SelectiveRegion.Area, name: String?, options: DiffingOptions?) throws -> PixelRegion? {
             let rect: CGRect
             switch area {

@@ -36,6 +36,30 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         app.terminate()
     }
 
+    /// Scrolls the host's list and uploads one stitched image. Check it in the dashboard.
+    @MainActor
+    func testFullPageList() async throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-fullPageList"]
+        app.launch()
+        let list = app.descendants(matching: .any).matching(identifier: "fullPageList").firstMatch
+        XCTAssertTrue(list.waitForExistence(timeout: 10), "List did not appear")
+        let visual = try VisualClient(options: liveBuildOptions)
+        let options = VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 5))
+        #if os(tvOS)
+        do {
+            try await visual.sauceVisualCheck("Full page list", options: options)
+            XCTFail("Full page should not be available on tvOS")
+        } catch {
+            XCTAssertEqual(error as? VisualError, .fullPageNotSupported)
+        }
+        #else
+        let snapshot = try await visual.sauceVisualCheck("Full page list", options: options)
+        XCTAssertNotNil(UUID(uuidString: snapshot.id))
+        #endif
+        app.terminate()
+    }
+
     /// Uploads the app's element tree too. Check the snapshot's DOM in the dashboard.
     @MainActor
     func testHomeScreenWithDom() async throws {
