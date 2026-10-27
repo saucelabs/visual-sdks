@@ -253,7 +253,12 @@ public class VisualApi {
    * @param accessKey SauceLabs access key
    */
   public VisualApi(RemoteWebDriver driver, String url, String username, String accessKey) {
-    this(driver, url, username, accessKey, new BuildAttributes(null, null, null, null, null, null, null));
+    this(
+        driver,
+        url,
+        username,
+        accessKey,
+        new BuildAttributes(null, null, null, null, null, null, null));
   }
 
   /**

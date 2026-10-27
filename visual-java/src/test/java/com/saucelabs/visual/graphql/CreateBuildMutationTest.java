@@ -1,11 +1,11 @@
 package com.saucelabs.visual.graphql;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,13 +15,19 @@ import org.junit.jupiter.api.Test;
 class CreateBuildMutationTest {
 
   @Test
-  void testSerialization() throws IOException {
+  void testSerialization() {
     ObjectMapper mapper = new ObjectMapper();
-    String json =
-        mapper.writeValueAsString(
-            new CreateBuildMutation(
-                new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName", null)));
+    assertDoesNotThrow(
+        () ->
+            mapper.writeValueAsString(
+                new CreateBuildMutation(
+                    new CreateBuildMutation.BuildIn(
+                        "buildName",
+                        "projectName",
+                        "branchName",
+                        "defaultBranchName",
+                        null,
+                        null))));
   }
 
   @Test
@@ -47,7 +53,7 @@ class CreateBuildMutationTest {
             .valueToTree(
                 new CreateBuildMutation(
                     new CreateBuildMutation.BuildIn(
-                        "buildName", "projectName", "branchName", "defaultBranchName")))
+                        "buildName", "projectName", "branchName", "defaultBranchName", null, null)))
             .get("variables")
             .get("input");
     assertTrue(withoutTags.get("tags").isNull());
@@ -57,7 +63,7 @@ class CreateBuildMutationTest {
   void buildIn_defaultsCustomIdToNull() {
     CreateBuildMutation.BuildIn buildIn =
         new CreateBuildMutation.BuildIn(
-            "buildName", "projectName", "branchName", "mainBranch", null);
+            "buildName", "projectName", "branchName", "mainBranch", null, null);
 
     assertNull(buildIn.getCustomId());
   }
@@ -66,7 +72,12 @@ class CreateBuildMutationTest {
   void buildIn_storesCustomIdWhenProvided() {
     CreateBuildMutation.BuildIn buildIn =
         new CreateBuildMutation.BuildIn(
-            "buildName", "projectName", "branchName", "mainBranch", Arrays.asList("smoke", "nightly"), "my-custom-id");
+            "buildName",
+            "projectName",
+            "branchName",
+            "mainBranch",
+            Arrays.asList("smoke", "nightly"),
+            "my-custom-id");
 
     assertEquals("my-custom-id", buildIn.getCustomId());
   }
@@ -81,7 +92,7 @@ class CreateBuildMutationTest {
         client.execute(
             new CreateBuildMutation(
                 new CreateBuildMutation.BuildIn(
-                    "buildName", "projectName", "branchName", "defaultBranchName", null)),
+                    "buildName", "projectName", "branchName", "defaultBranchName", null, null)),
             CreateBuildMutation.Data.class);
   }
 }

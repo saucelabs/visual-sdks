@@ -37,7 +37,7 @@ class VisualBuildTest {
         .thenReturn(buildQueryResult("explicit-build-id", BuildMode.RUNNING));
 
     BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, "explicit-build-id", "ignored-custom-id");
+        new BuildAttributes(null, null, null, null, null, "explicit-build-id", "ignored-custom-id");
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -53,7 +53,8 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("explicit-custom-id"))
         .thenReturn(customIdQueryResult("resolved-custom-build-id", BuildMode.RUNNING));
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
+    BuildAttributes attrs =
+        new BuildAttributes(null, null, null, null, null, null, "explicit-custom-id");
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -68,7 +69,8 @@ class VisualBuildTest {
     when(api.getBuildById("explicit-build-id"))
         .thenReturn(buildQueryResult("explicit-build-id", BuildMode.COMPLETED));
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, "explicit-build-id", null);
+    BuildAttributes attrs =
+        new BuildAttributes(null, null, null, null, null, "explicit-build-id", null);
 
     assertThrows(VisualApiException.class, () -> VisualBuild.getExternalBuild(api, attrs));
   }
@@ -79,7 +81,8 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("explicit-custom-id"))
         .thenReturn(customIdQueryResult("resolved-build-id", BuildMode.COMPLETED));
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, "explicit-custom-id");
+    BuildAttributes attrs =
+        new BuildAttributes(null, null, null, null, null, null, "explicit-custom-id");
 
     assertThrows(VisualApiException.class, () -> VisualBuild.getExternalBuild(api, attrs));
   }
@@ -92,7 +95,7 @@ class VisualBuildTest {
         .thenReturn(customIdQueryResult("resolved-build-id", BuildMode.RUNNING));
 
     BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, "missing-build-id", "explicit-custom-id");
+        new BuildAttributes(null, null, null, null, null, "missing-build-id", "explicit-custom-id");
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -109,7 +112,7 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("missing-custom-id")).thenReturn(null);
 
     BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, "missing-build-id", "missing-custom-id");
+        new BuildAttributes(null, null, null, null, null, "missing-build-id", "missing-custom-id");
 
     assertNull(VisualBuild.getExternalBuild(api, attrs));
   }
@@ -121,7 +124,7 @@ class VisualBuildTest {
     when(env.getBuildId()).thenReturn(null);
     when(env.getCustomId()).thenReturn(null);
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, env);
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, null, env);
 
     assertNull(VisualBuild.getExternalBuild(api, attrs));
 
@@ -137,7 +140,7 @@ class VisualBuildTest {
     when(api.getBuildById("env-build-id"))
         .thenReturn(buildQueryResult("env-build-id", BuildMode.RUNNING));
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, env);
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, null, env);
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -155,7 +158,7 @@ class VisualBuildTest {
     when(api.getBuildByCustomId("env-custom-id"))
         .thenReturn(customIdQueryResult("resolved-build-id", BuildMode.RUNNING));
 
-    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, env);
+    BuildAttributes attrs = new BuildAttributes(null, null, null, null, null, null, null, env);
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
@@ -173,7 +176,7 @@ class VisualBuildTest {
         .thenReturn(buildQueryResult("client-build-id", BuildMode.RUNNING));
 
     BuildAttributes attrs =
-        new BuildAttributes(null, null, null, null, "client-build-id", null, env);
+        new BuildAttributes(null, null, null, null, null, "client-build-id", null, env);
 
     VisualBuild result = VisualBuild.getExternalBuild(api, attrs);
 
