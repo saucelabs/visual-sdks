@@ -231,7 +231,7 @@ public class VisualApi {
     void validate() {
       if ((this.customId == null || this.customId.trim().isEmpty()) && this.finishDelay != null) {
         throw new IllegalStateException(
-            "withBuildFinishDelay(...) requires withCustomId(...) to be called first.");
+            "withBuildFinishDelay(...) requires withCustomId(...) to be called.");
       }
     }
   }
