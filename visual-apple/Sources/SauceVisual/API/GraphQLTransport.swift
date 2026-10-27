@@ -1,9 +1,9 @@
 import Foundation
 
-/// SDK version sent in the `User-Agent` header. Keep in sync with `MARKETING_VERSION` in `Configuration/SDK.xcconfig`.
+/// Sent in the `User-Agent` header. Keep in sync with `MARKETING_VERSION` in `Configuration/SDK.xcconfig`.
 internal let sauceVisualVersion = "0.1.0"
 
-/// Minimal GraphQL-over-HTTP client for the Sauce Visual API. Stateless and safe to share.
+/// A small GraphQL client for the Sauce Visual API. Safe to share.
 internal struct GraphQLTransport: Sendable {
     let endpoint: URL
     let credentials: VisualCredentials
@@ -38,23 +38,7 @@ internal struct GraphQLTransport: Sendable {
             throw VisualAPIError(code: .apiError, detail: "Could not encode the request.", mayHaveBeenApplied: false)
         }
 
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(for: request)
-        } catch is CancellationError {
-            throw CancellationError()
-        } catch let error as URLError where error.code == .cancelled {
-            throw CancellationError()
-        } catch let error as URLError {
-            throw VisualAPIError(
-                code: .networkFailure, detail: Self.describe(error), mayHaveBeenApplied: !Self.neverSent(error)
-            )
-        } catch {
-            throw VisualAPIError(code: .networkFailure)
-        }
-
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        let (data, status) = try await Self.send(request, with: session)
         if status == 401 || status == 403 {
             throw VisualAPIError(code: .invalidCredentials, statusCode: status, mayHaveBeenApplied: false)
         }
@@ -85,6 +69,25 @@ internal struct GraphQLTransport: Sendable {
         return payload.result
     }
 
+    /// Sends `request` and returns the body and HTTP status.
+    /// - Throws: `VisualAPIError(.networkFailure)` when the server can't be reached, or `CancellationError`.
+    static func send(_ request: URLRequest, with session: URLSession) async throws -> (Data, Int) {
+        do {
+            let (data, response) = try await session.data(for: request)
+            return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
+        } catch let error as URLError {
+            throw VisualAPIError(
+                code: .networkFailure, detail: Self.describe(error), mayHaveBeenApplied: !Self.neverSent(error)
+            )
+        } catch {
+            throw VisualAPIError(code: .networkFailure)
+        }
+    }
+
     /// Failures that happen before the request is sent, so the server never saw it.
     private static func neverSent(_ error: URLError) -> Bool {
         switch error.code {
@@ -99,7 +102,7 @@ internal struct GraphQLTransport: Sendable {
         }
     }
 
-    /// A short reason for common failures. System messages can be missing or only show the error number.
+    /// A readable reason for common network errors, since system messages are often just a number.
     private static func describe(_ error: URLError) -> String {
         switch error.code {
         case .timedOut: return "The request timed out."
