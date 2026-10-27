@@ -2,20 +2,25 @@ package com.saucelabs.visual;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.saucelabs.visual.graphql.*;
+import com.saucelabs.visual.graphql.type.BuildStatus;
 import com.saucelabs.visual.graphql.type.Diff;
 import com.saucelabs.visual.graphql.type.DiffStatus;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
 import com.saucelabs.visual.graphql.type.SnapshotUpload;
 import com.saucelabs.visual.utils.BulkDriverHelper;
+import com.saucelabs.visual.utils.EnvironmentVariables;
 import java.lang.reflect.Field;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.ReflectionUtils;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.OutputType;
@@ -47,6 +52,36 @@ class VisualApiTest {
     setField(api, "client", mockGraphQLClient);
     mockDriverHelper = mock(BulkDriverHelper.class);
     setField(api, "bulkDriverHelper", mockDriverHelper);
+  }
+
+  @Test
+  void createBuildSendsTags() {
+    when(mockGraphQLClient.execute(any(), eq(CreateBuildMutation.Data.class)))
+        .thenReturn(
+            new CreateBuildMutation.Data(
+                new CreateBuildMutation.Result(
+                    "id", "Build", null, null, null, BuildStatus.RUNNING, "http://build")));
+
+    api.createBuild(
+        new VisualApi.BuildAttributes(
+            "Build", null, null, null, Arrays.asList("smoke", "nightly")));
+
+    ArgumentCaptor<CreateBuildMutation> mutation =
+        ArgumentCaptor.forClass(CreateBuildMutation.class);
+    verify(mockGraphQLClient).execute(mutation.capture(), eq(CreateBuildMutation.Data.class));
+    CreateBuildMutation.BuildIn input =
+        (CreateBuildMutation.BuildIn) mutation.getValue().getVariables().get("input");
+    assertEquals(Arrays.asList("smoke", "nightly"), input.getTags());
+  }
+
+  @Test
+  void tagsInCodeOverrideTheEnvironment() {
+    List<String> tags = Collections.singletonList("from-code");
+    assertEquals(tags, new VisualApi.BuildAttributes(null, null, null, null, tags).getTags());
+    // Without tags in code, SAUCE_VISUAL_TAGS is used (when it's set).
+    assertEquals(
+        EnvironmentVariables.parseTags(EnvironmentVariables.TAGS),
+        new VisualApi.BuildAttributes(null, null, null, null).getTags());
   }
 
   @Test
