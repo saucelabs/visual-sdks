@@ -9,6 +9,7 @@ export interface CreateVisualSnapshotsParams {
   defaultBranch?: string;
   project?: string;
   customId?: string;
+  tags?: string[];
   buildId?: string;
   suiteName: string;
   testName: string;
@@ -21,6 +22,7 @@ export interface CreateBuildParams {
   readonly defaultBranch?: string;
   readonly project?: string;
   readonly customId?: string;
+  readonly tags?: string[];
   readonly logger?: Logger;
 }
 
@@ -50,6 +52,7 @@ export class VisualSnapshotsApi {
       defaultBranch: params.defaultBranch,
       project: params.project,
       customId: params.customId,
+      tags: params.tags,
     });
 
     logger.info(

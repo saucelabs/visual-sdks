@@ -86,6 +86,7 @@ export type Baseline = Node & {
   nodeId: Scalars['ID'];
   operatingSystem: OperatingSystem;
   operatingSystemVersion: Maybe<Scalars['String']>;
+  owningTeamId: Maybe<Scalars['UUID']>;
   /** Reads a single `Baseline` that is related to this `Baseline`. */
   parent: Maybe<Baseline>;
   parentId: Maybe<Scalars['UUID']>;
@@ -153,6 +154,8 @@ export type BaselineCondition = {
   createdByUserId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `id` field. */
   id?: InputMaybe<Scalars['UUID']>;
+  /** Checks for equality with the object’s `owningTeamId` field. */
+  owningTeamId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `parentId` field. */
   parentId?: InputMaybe<Scalars['UUID']>;
   /** Checks for equality with the object’s `project` field. */
@@ -173,6 +176,8 @@ export type BaselineFilter = {
   createdByUserId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<UuidFilter>;
+  /** Filter by the object’s `owningTeamId` field. */
+  owningTeamId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `parentId` field. */
   parentId?: InputMaybe<UuidFilter>;
   /** Filter by the object’s `project` field. */
@@ -228,6 +233,8 @@ export enum BaselinesOrderBy {
   IdAsc = 'ID_ASC',
   IdDesc = 'ID_DESC',
   Natural = 'NATURAL',
+  OwningTeamIdAsc = 'OWNING_TEAM_ID_ASC',
+  OwningTeamIdDesc = 'OWNING_TEAM_ID_DESC',
   ParentIdAsc = 'PARENT_ID_ASC',
   ParentIdDesc = 'PARENT_ID_DESC',
   PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
@@ -369,6 +376,7 @@ export type Build = Node & {
   /** Reads and enables pagination through a set of `Snapshot`. */
   snapshots: SnapshotsConnection;
   status: BuildStatus;
+  tags: Array<Maybe<Scalars['String']>>;
   url: Scalars['String'];
 };
 
@@ -444,6 +452,8 @@ export type BuildCondition = {
   project?: InputMaybe<Scalars['String']>;
   /** Checks for equality with the object’s `status` field. */
   status?: InputMaybe<BuildStatus>;
+  /** Checks for equality with the object’s `tags` field. */
+  tags?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 /** A filter to be used against `Build` object types. All fields are combined with a logical ‘and.’ */
@@ -466,6 +476,8 @@ export type BuildFilter = {
   project?: InputMaybe<StringFilter>;
   /** Filter by the object’s `status` field. */
   status?: InputMaybe<BuildStatusFilter>;
+  /** Filter by the object’s `tags` field. */
+  tags?: InputMaybe<StringListFilter>;
 };
 
 export type BuildIn = {
@@ -479,6 +491,7 @@ export type BuildIn = {
   keepAliveTimeout?: InputMaybe<Scalars['Int']>;
   name?: InputMaybe<Scalars['String']>;
   project?: InputMaybe<Scalars['String']>;
+  tags?: InputMaybe<Array<Scalars['String']>>;
 };
 
 export enum BuildMode {
@@ -712,8 +725,16 @@ export type DatetimeFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']>;
 };
 
+export type DeleteBuildIn = {
+  id: Scalars['UUID'];
+};
+
 export type DeleteCommentIn = {
   id: Scalars['UUID'];
+};
+
+export type DeleteProjectIn = {
+  name: Scalars['String'];
 };
 
 export type DeleteUserResourcePermissionsIn = {
@@ -1064,22 +1085,6 @@ export type ElementIn = {
   name?: InputMaybe<Scalars['String']>;
 };
 
-export type FigmaAuthentication = {
-  __typename?: 'FigmaAuthentication';
-  status: FigmaAuthenticationStatus;
-};
-
-export enum FigmaAuthenticationStatus {
-  /** The user is authenticated and the token is ready to use. */
-  Authenticated = 'AUTHENTICATED',
-  /** The user authentication has been rejected by Figma. */
-  AuthenticationDenied = 'AUTHENTICATION_DENIED',
-  /** The user authentication has expired and has to be redone. */
-  AuthenticationExpired = 'AUTHENTICATION_EXPIRED',
-  /** The user is not authenticated with Figma. */
-  NotAuthenticated = 'NOT_AUTHENTICATED'
-}
-
 export type FinishBuildIn = {
   customId?: InputMaybe<Scalars['String']>;
   /** Delay the finishing the build for at least the specified number of seconds. */
@@ -1141,6 +1146,12 @@ export type IgnoreSelectorIn = {
   selector: SelectorIn;
 };
 
+export type Job = {
+  __typename?: 'Job';
+  id: Scalars['ID'];
+  webdriverSession: Maybe<WebdriverSession>;
+};
+
 /** All input for the `mergeBaselines` mutation. */
 export type MergeBaselinesInput = {
   /**
@@ -1195,7 +1206,17 @@ export type Mutation = {
   createSnapshot: Snapshot;
   createSnapshotFromWebDriver: Snapshot;
   createSnapshotUpload: SnapshotUpload;
+  deleteBuild: Maybe<Scalars['UUID']>;
   deleteComment: Maybe<Scalars['Void']>;
+  /**
+   * Deletes every build of the project, and the snapshots, diffs and baselines
+   * that belong to them. The builds are deleted in the background, so this can
+   * take a few minutes on a large project. The project stays listed until it
+   * finishes. Running builds are left alone.
+   *
+   * Returns the project id.
+   */
+  deleteProject: Maybe<Scalars['String']>;
   deleteUserResourcePermissions: Maybe<Scalars['UUID']>;
   finishBuild: Build;
   forceFinishBuild: Maybe<Build>;
@@ -1252,8 +1273,20 @@ export type MutationCreateSnapshotUploadArgs = {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteBuildArgs = {
+  input: DeleteBuildIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export type MutationDeleteCommentArgs = {
   input: DeleteCommentIn;
+};
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export type MutationDeleteProjectArgs = {
+  input: DeleteProjectIn;
 };
 
 
@@ -1553,8 +1586,6 @@ export type Query = Node & {
   diffFeedbacks: Maybe<DiffFeedbacksConnection>;
   /** Reads and enables pagination through a set of `Diff`. */
   diffs: Maybe<DiffsConnection>;
-  /** Returns a status of current authentication with Figma for the given user. */
-  figmaAuthentication: FigmaAuthentication;
   /**
    * List all the build branches that are visible to the current user and that include `filtername`.
    *
@@ -1567,6 +1598,12 @@ export type Query = Node & {
    * Results are limited to 100 entries.
    */
   filteredProjects: Array<Scalars['String']>;
+  /**
+   * List all the build tags that are visible to the current user and that include `filtername`.
+   *
+   * Results are limited to 100 entries.
+   */
+  filteredTags: Array<Scalars['String']>;
   jwtOrgId: Maybe<Scalars['UUID']>;
   jwtTeamId: Maybe<Scalars['UUID']>;
   jwtUserId: Maybe<Scalars['UUID']>;
@@ -1770,6 +1807,12 @@ export type QueryFilteredBranchesArgs = {
 
 /** The root query type which gives access points into the data universe. */
 export type QueryFilteredProjectsArgs = {
+  filtername: InputMaybe<Scalars['String']>;
+};
+
+
+/** The root query type which gives access points into the data universe. */
+export type QueryFilteredTagsArgs = {
   filtername: InputMaybe<Scalars['String']>;
 };
 
@@ -2166,6 +2209,14 @@ export type StringFilter = {
   lessThanOrEqualTo?: InputMaybe<Scalars['String']>;
 };
 
+/** A filter to be used against String List fields. All fields are combined with a logical ‘and.’ */
+export type StringListFilter = {
+  /** Contains the specified list of values. */
+  contains?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  /** Is null (if `true` is specified) or is not null (if `false` is specified). */
+  isNull?: InputMaybe<Scalars['Boolean']>;
+};
+
 /** A filter to be used against UUID fields. All fields are combined with a logical ‘and.’ */
 export type UuidFilter = {
   /** Greater than the specified value. */
@@ -2322,6 +2373,15 @@ export type WebdriverSession = {
   deviceName: Maybe<Scalars['String']>;
   operatingSystem: Maybe<OperatingSystem>;
   operatingSystemVersion: Maybe<Scalars['String']>;
+};
+
+/** This type has the same members as `WebdriverSession`. */
+export type WebdriverSessionIn = {
+  browser?: InputMaybe<Browser>;
+  browserVersion?: InputMaybe<Scalars['String']>;
+  deviceName?: InputMaybe<Scalars['String']>;
+  operatingSystem?: InputMaybe<OperatingSystem>;
+  operatingSystemVersion?: InputMaybe<Scalars['String']>;
 };
 
 export type WebdriverSessionInfoIn = {

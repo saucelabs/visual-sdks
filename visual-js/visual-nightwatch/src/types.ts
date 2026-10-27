@@ -70,6 +70,7 @@ export interface SauceVisualServiceOptions
   branch?: string;
   defaultBranch?: string;
   failOnFailures?: boolean;
+  tags?: string[];
 }
 
 export type RunnerSettings = NightwatchTestSettingGeneric & {

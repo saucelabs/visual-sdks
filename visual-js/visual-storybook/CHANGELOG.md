@@ -1,5 +1,17 @@
 # @saucelabs/visual-storybook
 
+## 1.1.0
+
+### Minor Changes
+
+- 561fca4: add tags support
+
+### Patch Changes
+
+- Updated dependencies [561fca4]
+  - @saucelabs/visual-playwright@0.8.0
+  - @saucelabs/visual@0.18.0
+
 ## 1.0.1
 
 ### Patch Changes

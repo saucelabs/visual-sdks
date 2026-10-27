@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { parseTags } from "@saucelabs/visual";
 import {
   accessKeyOption,
   branchOption,
@@ -10,6 +11,7 @@ import {
   projectOption,
   regionOption,
   snapshotNameOption,
+  tagOption,
   suiteNameOption,
   testNameOption,
   usernameOption,
@@ -39,11 +41,16 @@ export const pdfCommand = (clientVersion: string) => {
     .addOption(projectOption)
     .addOption(buildIdOption)
     .addOption(customIdOption)
+    .addOption(tagOption)
     .addOption(suiteNameOption)
     .addOption(testNameOption)
     .addOption(snapshotNameOption)
     .addOption(concurrencyOption)
-    .action((globsOrDirs: string[], params: PdfCommandParams) => {
+    .action((globsOrDirs: string[], { tag, ...options }: PdfCommandOptions) => {
+      const params: PdfCommandParams = {
+        ...options,
+        tags: tag ?? parseTags(process.env.SAUCE_VISUAL_TAGS) ?? undefined,
+      };
       const visualSnapshotsApi = new VisualSnapshotsApi(
         initializeVisualApi(params, clientVersion)
       );
@@ -66,3 +73,5 @@ export const pdfCommand = (clientVersion: string) => {
         });
     });
 };
+
+type PdfCommandOptions = Omit<PdfCommandParams, "tags"> & { tag?: string[] };

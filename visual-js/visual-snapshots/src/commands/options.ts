@@ -77,6 +77,13 @@ export const customIdOption = new Option(
     "If not provided, SAUCE_VISUAL_CUSTOM_ID environment variable will be used."
 ).env("SAUCE_VISUAL_CUSTOM_ID");
 
+export const tagOption = new Option(
+  "--tag <tag>",
+  "A tag you would like to associate with this build. Can be repeated to add multiple tags." +
+    EOL +
+    "If not provided, SAUCE_VISUAL_TAGS environment variable (comma separated) will be used."
+).argParser((tag: string, tags: string[] = []) => [...tags, tag]);
+
 export const suiteNameOption = new Option(
   "--suite-name <suite-name>",
   "The name of the suite you would like to appear in the Sauce Visual dashboard." +

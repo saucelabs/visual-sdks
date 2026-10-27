@@ -99,6 +99,7 @@ export type SauceVisualServiceOptions = {
   fullPage?: FullPageScreenshotWdioOptions;
   baselineOverride?: BaselineOverrideIn;
   hideScrollBars?: boolean;
+  tags?: string[];
 };
 
 // This type is derived from what provides Cucumber as framework
@@ -230,7 +231,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
       isBuildExternal = true;
     } else {
       let build;
-      const { customId, defaultBranch, branch, project } = getEnvOpts();
+      const { customId, defaultBranch, branch, project, tags } = getEnvOpts();
       try {
         build = await this.apiClient.createBuild({
           name:
@@ -241,6 +242,7 @@ export default class SauceVisualService implements Services.ServiceInstance {
           branch: this.options.branch || branch,
           defaultBranch: this.options.defaultBranch || defaultBranch,
           customId: this.options.customId || customId,
+          tags: this.options.tags || tags,
         });
       } catch (e: unknown) {
         const errorMessage = ensureError(e).message ?? 'Unknown error';

@@ -47,6 +47,7 @@ public class VisualApi {
     private String branchName;
     private String defaultBranchName;
     private String buildName;
+    private List<String> tags;
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
@@ -89,6 +90,17 @@ public class VisualApi {
     public Builder withDefaultBranch(String defaultBranchName) {
       this.defaultBranchName = defaultBranchName;
       return this;
+    }
+
+    /** Tags to add to the build. Overrides {@code SAUCE_VISUAL_TAGS}. */
+    public Builder withTags(List<String> tags) {
+      this.tags = tags;
+      return this;
+    }
+
+    /** Tags to add to the build. Overrides {@code SAUCE_VISUAL_TAGS}. */
+    public Builder withTags(String... tags) {
+      return withTags(Arrays.asList(tags));
     }
 
     public Builder withCaptureDom(Boolean captureDom) {
@@ -137,7 +149,7 @@ public class VisualApi {
     }
 
     private BuildAttributes getBuildAttributes() {
-      return new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
+      return new BuildAttributes(buildName, projectName, branchName, defaultBranchName, tags);
     }
 
     public VisualApi build() {
@@ -445,12 +457,19 @@ public class VisualApi {
     private final String project;
     private final String branch;
     private final String defaultBranch;
+    private final List<String> tags;
 
     public BuildAttributes(String name, String project, String branch, String defaultBranch) {
+      this(name, project, branch, defaultBranch, null);
+    }
+
+    public BuildAttributes(
+        String name, String project, String branch, String defaultBranch, List<String> tags) {
       this.name = name;
       this.project = project;
       this.branch = branch;
       this.defaultBranch = defaultBranch;
+      this.tags = tags;
     }
 
     public String getName() {
@@ -474,6 +493,11 @@ public class VisualApi {
     public String getDefaultBranch() {
       return valueOrDefault(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME);
     }
+
+    /** The tags passed in code, otherwise those from {@code SAUCE_VISUAL_TAGS}. */
+    public List<String> getTags() {
+      return tags != null ? tags : EnvironmentVariables.parseTags(EnvironmentVariables.TAGS);
+    }
   }
 
   VisualBuild createBuild(String buildName) {
@@ -487,7 +511,8 @@ public class VisualApi {
                 buildAttributes.getName(),
                 buildAttributes.getProject(),
                 buildAttributes.getBranch(),
-                buildAttributes.getDefaultBranch()));
+                buildAttributes.getDefaultBranch(),
+                buildAttributes.getTags()));
     CreateBuildMutation.Data data = client.execute(mutation, CreateBuildMutation.Data.class);
     log.info(getStartupMessage(data.result.url));
     return new VisualBuild(
