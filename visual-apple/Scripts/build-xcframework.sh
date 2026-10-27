@@ -109,8 +109,8 @@ for index in 0 1 2 3 4; do
     [[ -s $framework/Headers/$name ]] || fail "Missing header: $name"
   done
   header="$framework/Headers/SauceVisual-Swift.h"
-  for symbol in SLVClient SLVRegion SLVBuildOptions SLVBuild SLVSnapshot SLVCheckOptions SLVDiffingMethod SLVErrorCode \
-      initWithUsername: accessKey: region: options: error: initWithOptions: \
+  for symbol in SLVClient SLVRegion SLVBuildOptions SLVBuild SLVSnapshot SLVCheckOptions SLVDiffingMethod SLVBaselineOverride SLVOperatingSystem SLVErrorCode \
+      initWithUsername: accessKey: region: options: baselineOverride: error: initWithOptions: \
       buildWithCompletion: finishWithCompletion: sauceVisualCheckWithName: regionNamed:; do
     grep -Fq -- "$symbol" "$header" || fail "Missing public declaration: $symbol"
   done
