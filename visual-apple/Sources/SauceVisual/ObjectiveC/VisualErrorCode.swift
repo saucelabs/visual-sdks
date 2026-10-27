@@ -15,5 +15,7 @@ public enum VisualErrorCode: Int, Sendable {
     case invalidSnapshotName = 10
     case elementNotFound = 11
     case invalidCheckOptions = 12
+    case clipElementOffScreen = 13
+    case screenshotFailed = 14
 }
 #endif
