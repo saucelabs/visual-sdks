@@ -10,16 +10,20 @@ internal struct PresignedUploader: Sendable {
     /// What is uploaded, which sets its content type and how errors name it.
     enum Kind: Sendable {
         case screenshot
+        /// Stored as an HTML sidecar file, like the other SDKs' DOMs.
+        case dom
 
         var contentType: String {
             switch self {
             case .screenshot: return "image/png"
+            case .dom: return "text/html"
             }
         }
 
         var name: String {
             switch self {
             case .screenshot: return "Screenshot"
+            case .dom: return "DOM"
             }
         }
     }

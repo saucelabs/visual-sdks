@@ -51,6 +51,7 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqual(options.ignoreElements.count, 0u);
     XCTAssertNil(options.testName);
     XCTAssertNil(options.clipElement);
+    XCTAssertFalse(options.captureDom);
     XCTAssertNil(options.baselineOverride);
     SLVBaselineOverride *baseline = [[SLVBaselineOverride alloc] init];
     XCTAssertEqual(baseline.operatingSystem, SLVOperatingSystemNotSet);

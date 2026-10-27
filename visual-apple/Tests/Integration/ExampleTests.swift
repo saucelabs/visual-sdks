@@ -35,4 +35,15 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(snapshot.testName, "testSwiftExampleChecksScreen")
         app.terminate()
     }
+
+    /// Uploads the app's element tree too. Check the snapshot's DOM in the dashboard.
+    @MainActor
+    func testHomeScreenWithDom() async throws {
+        let app = XCUIApplication()
+        app.launch()
+        let visual = try VisualClient(options: liveBuildOptions)
+        let snapshot = try await visual.sauceVisualCheck("Home screen (DOM)", options: VisualCheckOptions(captureDom: true))
+        XCTAssertNotNil(UUID(uuidString: snapshot.id))
+        app.terminate()
+    }
 }

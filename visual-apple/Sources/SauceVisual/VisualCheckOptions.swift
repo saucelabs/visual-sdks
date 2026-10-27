@@ -27,6 +27,8 @@ public struct VisualCheckOptions {
     public var diffingMethodTolerance: DiffingMethodTolerance?
     /// Compare against another snapshot's baseline. Replaces the client's override for this check.
     public var baselineOverride: BaselineOverride?
+    /// Upload the element tree of the app under test, or of `clipElement`. Off by default.
+    public var captureDom: Bool
 
     public init(
         testName: String? = nil,
@@ -39,7 +41,8 @@ public struct VisualCheckOptions {
         diffingOptions: DiffingOptions? = nil,
         diffingMethodSensitivity: DiffingMethodSensitivity? = nil,
         diffingMethodTolerance: DiffingMethodTolerance? = nil,
-        baselineOverride: BaselineOverride? = nil
+        baselineOverride: BaselineOverride? = nil,
+        captureDom: Bool = false
     ) {
         self.testName = testName
         self.suiteName = suiteName
@@ -52,6 +55,7 @@ public struct VisualCheckOptions {
         self.diffingMethodSensitivity = diffingMethodSensitivity
         self.diffingMethodTolerance = diffingMethodTolerance
         self.baselineOverride = baselineOverride
+        self.captureDom = captureDom
     }
 }
 
@@ -99,8 +103,7 @@ public enum DiffingMethod: String, Hashable, Sendable {
     case experimental = "EXPERIMENTAL"
 }
 
-/// Kinds of change to report. Only `visual`, `dimensions`, and `position` apply for now;
-/// the others need an element tree, which the SDK doesn't upload yet.
+/// Kinds of change to report. `content`, `structure`, and `style` need `captureDom`.
 public struct DiffingOptions: OptionSet, Hashable, Sendable {
     public let rawValue: Int
     public init(rawValue: Int) { self.rawValue = rawValue }
@@ -239,6 +242,8 @@ internal struct SnapshotRequest: Hashable, Sendable {
     var diffingMethodTolerance: DiffingMethodTolerance?
     /// `nil` falls back to the client's override.
     var baselineOverride: BaselineOverride?
+    /// Set when `captureDom` is on and the tree could be read.
+    var dom: DomSnapshot?
 }
 
 /// A region in screenshot pixels, as the API expects.
@@ -253,11 +258,14 @@ internal struct PixelRegion: Hashable, Sendable {
     /// Converts screen points to pixels inside `image`, the uploaded part of the screen in pixels.
     /// `nil` when the area is outside it.
     init?(_ rect: CGRect, scale: CGFloat, in image: CGRect, name: String?, diffingOptions: DiffingOptions?) {
-        guard let pixels = Self.pixels(rect, scale: scale, in: image) else { return nil }
-        self.x = Int(pixels.minX - image.minX)
-        self.y = Int(pixels.minY - image.minY)
-        self.width = Int(pixels.width)
-        self.height = Int(pixels.height)
+        // Checked conversion, so a value that doesn't fit in an `Int` drops the region instead of crashing.
+        guard let pixels = Self.pixels(rect, scale: scale, in: image),
+              let x = Int(exactly: pixels.minX - image.minX), let y = Int(exactly: pixels.minY - image.minY),
+              let width = Int(exactly: pixels.width), let height = Int(exactly: pixels.height) else { return nil }
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
         self.name = name
         self.diffingOptions = diffingOptions
     }

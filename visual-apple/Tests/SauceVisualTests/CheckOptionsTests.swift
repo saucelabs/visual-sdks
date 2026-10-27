@@ -116,6 +116,11 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         XCTAssertNoThrow(try VisualCheckOptions(ignoreRegions: [CGRect(x: 0, y: 0, width: 10, height: 10)]).validate())
     }
 
+    func testRegionThatDoesntFitAnIntIsDropped() {
+        let huge = CGRect(x: 0, y: 0, width: CGFloat(1e300), height: 10)
+        XCTAssertNil(PixelRegion(huge, scale: 1, in: huge, name: nil, diffingOptions: nil))
+    }
+
     func testPixelsNeedAFinitePositiveScale() {
         let screen = CGRect(origin: .zero, size: screenshot.pixelSize)
         let rect = CGRect(x: 0, y: 0, width: 10, height: 10)

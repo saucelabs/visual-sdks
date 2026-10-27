@@ -23,9 +23,15 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         .json(["data": ["result": ["id": buildID, "name": "Build", "status": "EQUAL", "url": "http://build"]]])
     }
 
-    private func upload(url: String? = nil) -> StubURLProtocol.Reply {
-        .json(["data": ["result": ["id": uploadID, "imageUploadUrl": url ?? uploadURL.absoluteString]]])
+    private let domURL = URL(string: "https://storage.test/dom?signature=def")!
+
+    private func upload(url: String? = nil, domUrl: String? = nil) -> StubURLProtocol.Reply {
+        var result: [String: Any] = ["id": uploadID, "imageUploadUrl": url ?? uploadURL.absoluteString]
+        if let domUrl { result["domUploadUrl"] = domUrl }
+        return .json(["data": ["result": result]])
     }
+
+    private let dom = DomSnapshot(xml: Data("<AppiumAUT/>".utf8), devicePixelRatio: 3)
 
     private var stored: StubURLProtocol.Reply { StubURLProtocol.Reply(body: Data()) }
 
@@ -270,6 +276,47 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
             "operatingSystem": device.operatingSystem.rawValue, "operatingSystemVersion": device.operatingSystemVersion,
             "device": "iPhone 15 Pro", "diffingMethod": "BALANCED"
         ])
+    }
+
+    func testDomIsUploadedNextToTheScreenshot() async throws {
+        let route = StubURLProtocol.Route([created, upload(domUrl: domURL.absoluteString), stored, stored, snapshot])
+        _ = try await client(route).check(name: "Login", png: png, request: SnapshotRequest(dom: dom))
+
+        let requests = route.requests
+        XCTAssertEqual(requests.count, 5)
+        XCTAssertTrue((route.bodies[1]["query"] as? String)?.contains("domUploadUrl") == true)
+        let put = requests[3]
+        XCTAssertEqual(put.url, domURL)
+        XCTAssertEqual(put.httpMethod, "PUT")
+        XCTAssertEqual(put.httpBody, dom.xml)
+        XCTAssertEqual(put.value(forHTTPHeaderField: "Content-Type"), "text/html")
+        XCTAssertNotNil(put.value(forHTTPHeaderField: "Content-MD5"))
+        XCTAssertNil(put.value(forHTTPHeaderField: "Authorization"))
+        XCTAssertEqual(input(route.bodies[4])?["devicePixelRatio"] as? Double, 3, "DOM frames are points, the image pixels")
+    }
+
+    func testSnapshotWithoutDomSendsNoPixelRatio() async throws {
+        let route = StubURLProtocol.Route([created, upload(domUrl: domURL.absoluteString), stored, snapshot])
+        _ = try await client(route).check(name: "Login", png: png)
+
+        XCTAssertEqual(route.requests.count, 4, "No DOM upload")
+        XCTAssertNil(input(route.bodies[3])?["devicePixelRatio"])
+    }
+
+    func testDomProblemsStillCreateTheSnapshot() async throws {
+        let cases: [(String, [StubURLProtocol.Reply], Int)] = [
+            ("no DOM upload URL", [created, upload(), stored, snapshot], 3),
+            ("invalid DOM upload URL", [created, upload(domUrl: "http://storage.test/dom"), stored, snapshot], 3),
+            ("DOM upload fails", [created, upload(domUrl: domURL.absoluteString), stored,
+                                  StubURLProtocol.Reply(status: 500, body: Data()), snapshot], 4)
+        ]
+        for (label, replies, createIndex) in cases {
+            let route = StubURLProtocol.Route(replies)
+            let result = try await client(route).check(name: "Login", png: png, request: SnapshotRequest(dom: dom))
+            XCTAssertEqual(result.id, snapshotID, label)
+            XCTAssertTrue((route.bodies[createIndex]["query"] as? String)?.contains("createSnapshot(") == true, label)
+            XCTAssertNil(input(route.bodies[createIndex])?["devicePixelRatio"], "\(label): no DOM, so no ratio")
+        }
     }
 
     func testTestAndSuiteNamesAreSent() async throws {

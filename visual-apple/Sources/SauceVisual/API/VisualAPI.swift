@@ -142,13 +142,14 @@ internal struct VisualAPI: Sendable {
         )
     }
 
-    /// Uploads the screenshot, then creates snapshot `name` from it.
-    /// - Throws: `VisualAPIError`, or `CancellationError`.
+    /// Uploads snapshot artifacts, then creates snapshot `name`.
+    /// - Throws: `VisualAPIError`, or `CancellationError`. A failed tree upload only prints a warning.
     func createSnapshot(
         name: String, png: Data, device: DeviceInfo, request: SnapshotRequest, in build: VisualBuild
     ) async throws -> VisualSnapshot {
         let upload = try await createSnapshotUpload(buildId: build.id)
         try await uploader.upload(png, as: .screenshot, to: upload.imageUploadUrl)
+        let dom = try await uploadDom(request.dom, to: upload.domUploadUrl)
         let test = request.test
         let input = GraphQL.SnapshotIn(
             buildId: build.id,
@@ -164,7 +165,9 @@ internal struct VisualAPI: Sendable {
             diffingOptions: request.diffingOptions.map(GraphQL.DiffingOptionsIn.init),
             diffingMethodSensitivity: request.diffingMethodSensitivity?.rawValue,
             diffingMethodTolerance: request.diffingMethodTolerance.map(GraphQL.DiffingMethodToleranceIn.init),
-            baselineOverride: request.baselineOverride.flatMap { $0.isEmpty ? nil : GraphQL.BaselineOverrideIn($0) }
+            baselineOverride: request.baselineOverride.flatMap { $0.isEmpty ? nil : GraphQL.BaselineOverrideIn($0) },
+            // Scales the tree's point frames to the screenshot's pixels.
+            devicePixelRatio: dom?.devicePixelRatio
         )
         let result = try await transport.execute(
             Self.createSnapshotMutation, variables: GraphQL.Input(input: input), as: GraphQL.SnapshotResult.self
@@ -181,6 +184,24 @@ internal struct VisualAPI: Sendable {
             as: GraphQL.SnapshotUploadResult.self
         )
         return try Self.require(result)
+    }
+
+    /// Returns the tree if it was uploaded. Problems only print a warning; cancellation is passed on.
+    private func uploadDom(_ dom: DomSnapshot?, to url: String?) async throws -> DomSnapshot? {
+        guard let dom else { return nil }
+        guard let url else {
+            print("Sauce Visual: the API returned no DOM upload URL, so the snapshot has no DOM.")
+            return nil
+        }
+        do {
+            try await uploader.upload(dom.xml, as: .dom, to: url)
+            return dom
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            print("Sauce Visual: could not upload the DOM. \(error)")
+            return nil
+        }
     }
 
     private static func reusable(_ existing: GraphQL.BuildResponse) throws -> VisualBuild {
@@ -233,6 +254,7 @@ internal struct VisualAPI: Sendable {
             let diffingMethodSensitivity: String?
             let diffingMethodTolerance: DiffingMethodToleranceIn?
             let baselineOverride: BaselineOverrideIn?
+            let devicePixelRatio: Double?
         }
 
         /// Fields left `nil` are omitted, so the snapshot's own value is used for them.
@@ -324,6 +346,7 @@ internal struct VisualAPI: Sendable {
         struct SnapshotUploadResult: Decodable, Sendable {
             let id: String
             let imageUploadUrl: String?
+            let domUploadUrl: String?
         }
 
         struct SnapshotResult: Decodable, Sendable {
@@ -375,7 +398,7 @@ internal struct VisualAPI: Sendable {
     static let createSnapshotUploadMutation = """
     mutation createSnapshotUpload($input: SnapshotUploadIn!) {
         result: createSnapshotUpload(input: $input) {
-            id imageUploadUrl
+            id imageUploadUrl domUploadUrl
         }
     }
     """
