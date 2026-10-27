@@ -68,6 +68,16 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
         try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(ignoreElements: [description]))
     }
 
+    /// Scrolls the whole products page in Safari, down to the footer. Safari's bars are drawn over the page,
+    /// so this also checks they're left out between screenshots.
+    @MainActor
+    func testProductsFullPage() async throws {
+        try openLoginPage()
+        try openProductsPage()
+        let fullPage = FullPageScreenshot(scrollElement: page, scrollLimit: 20)
+        try await visual.sauceVisualCheck("Products full page", options: VisualCheckOptions(fullPage: fullPage))
+    }
+
     @MainActor
     func testMenuLogsOut() async throws {
         try openLoginPage()

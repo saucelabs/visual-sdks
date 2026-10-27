@@ -278,7 +278,7 @@ internal struct SnapshotRequest: Hashable, Sendable {
     /// Set when `captureDom` is on and the tree could be read.
     var dom: DomSnapshot?
     /// The screenshots to stitch below the first one, for a full-page check.
-    var fullPage: FullPageCapture.Frames?
+    var fullPage: [FullPageCapture.Frame]?
 }
 
 /// A region in screenshot pixels, as the API expects.
