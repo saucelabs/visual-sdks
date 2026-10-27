@@ -16,6 +16,7 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case invalidCheckOptions = 12
     case clipElementOffScreen = 13
     case screenshotFailed = 14
+    case fullPageNotSupported = 15
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -47,9 +48,11 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
         case .invalidCheckOptions:
             return "Invalid check options. Regions need a finite position and a positive size, tolerance values must be between 0 and 1, and minChangeSize can't be negative."
         case .clipElementOffScreen:
-            return "The clip element is off screen. Scroll it into view before the check."
+            return "The clip or full-page element is off screen. Scroll it into view before the check."
         case .screenshotFailed:
             return "Could not process the screenshot."
+        case .fullPageNotSupported:
+            return "Full-page screenshots aren't available on tvOS."
         }
     }
 
