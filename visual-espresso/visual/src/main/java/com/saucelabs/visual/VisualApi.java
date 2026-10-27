@@ -34,15 +34,13 @@ public class VisualApi {
     }
 
     static BuildIn buildInput(BuildAttributes buildAttributes) {
-        BuildIn.Builder builder = BuildIn.builder()
+        return BuildIn.builder()
                 .name(buildAttributes.name)
                 .branch(buildAttributes.branch)
                 .project(buildAttributes.project)
-                .defaultBranch(buildAttributes.defaultBranch);
-        if (buildAttributes.tags != null) {
-            builder.tags(buildAttributes.tags);
-        }
-        return builder.build();
+                .defaultBranch(buildAttributes.defaultBranch)
+                .tags(buildAttributes.tags)
+                .build();
     }
 
     CreateSnapshotUploadMutation.Data uploadSnapshot(String buildId, boolean captureDom, View clipElement, View scrollView) {

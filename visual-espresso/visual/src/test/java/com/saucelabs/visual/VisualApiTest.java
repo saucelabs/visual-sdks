@@ -23,9 +23,9 @@ public class VisualApiTest {
     }
 
     @Test
-    public void buildInputLeavesTagsOutWhenThereAreNone() {
+    public void buildInputSendsNullTagsWhenThereAreNone() {
         BuildIn input = VisualApi.buildInput(new BuildAttributes("Build", "Project", "feature", "main"));
 
-        assertEquals(Optional.absent(), input.tags);
+        assertEquals(Optional.present(null), input.tags);
     }
 }
