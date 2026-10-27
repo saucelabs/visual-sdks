@@ -114,6 +114,9 @@ public class VisualApi {
      * @param delay build finish delay in seconds to accept more Visual sessions
      */
     public Builder withBuildFinishDelay(Duration delay) {
+      if (delay != null && delay.isNegative()) {
+        throw new IllegalArgumentException("finishDelay must not be negative");
+      }
       this.finishDelay = delay;
       return this;
     }
@@ -199,6 +202,8 @@ public class VisualApi {
     }
 
     public VisualApi build() {
+      validate();
+
       VisualApi api = new VisualApi(this);
 
       if (this.captureDom != null) {
@@ -220,15 +225,14 @@ public class VisualApi {
         api.setBaselineOverride(this.baselineOverride);
       }
 
-      if (this.customId == null || this.customId.trim().isEmpty()) {
-        throw new IllegalStateException(
-            "withFinishDelay(...) requires withCustomId(...) to be called first.");
-      }
-      if (this.finishDelay != null && this.finishDelay.isNegative()) {
-        throw new IllegalArgumentException("finishDelay must not be negative");
-      }
-
       return api;
+    }
+
+    void validate() {
+      if ((this.customId == null || this.customId.trim().isEmpty()) && this.finishDelay != null) {
+        throw new IllegalStateException(
+            "withBuildFinishDelay(...) requires withCustomId(...) to be called first.");
+      }
     }
   }
 
