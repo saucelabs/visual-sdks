@@ -145,6 +145,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
     @objc public var testName: String?
     /// Defaults to the running test's class name.
     @objc public var suiteName: String?
+    /// Snapshot only this element instead of the whole screen. Only its on-screen part is kept.
+    @objc public var clipElement: XCUIElement?
     /// Areas to leave out of the comparison, as `CGRect` values in points.
     @objc public var ignoreRegions: [NSValue] = []
     /// Elements to leave out of the comparison. Each must exist when the check runs.
@@ -155,6 +157,7 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
         VisualCheckOptions(
             testName: testName,
             suiteName: suiteName,
+            clipElement: clipElement,
             ignoreRegions: ignoreRegions.map { value in
                 #if os(macOS)
                 return value.rectValue

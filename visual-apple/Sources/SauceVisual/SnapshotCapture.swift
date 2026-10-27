@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import XCTest
 
 /// Turns a `sauceVisualCheck` call into an upload: checks the name, takes the screenshot and resolves the options.
@@ -11,12 +12,13 @@ internal enum SnapshotCapture {
     }
 
     /// Runs on the main actor, because XCUI only allows screenshots and element frames there.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, or `.elementNotFound`.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, `.elementNotFound`, or
+    ///   `.clipElementOffScreen`.
     @MainActor
     static func prepare(_ name: String, options: VisualCheckOptions) throws -> Prepared {
         let name = try validName(name)
         // Caller input is checked before the screenshot or any request.
-        try options.diffingMethodTolerance?.validate()
+        try options.validate()
         // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
         let request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
@@ -124,6 +126,21 @@ internal enum Screenshot {
     static func capture() -> Capture {
         let screenshot = XCUIScreen.main.screenshot()
         return capture(png: screenshot.pngRepresentation, pointWidth: screenshot.image.size.width)
+    }
+
+    /// Cuts `rect`, in pixels, out of a PNG and returns it as a new PNG.
+    /// - Throws: `VisualError.screenshotFailed` when the image can't be read or written.
+    static func crop(_ png: Data, to rect: CGRect) throws -> Data {
+        guard let source = CGImageSourceCreateWithData(png as CFData, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+              let cropped = image.cropping(to: rect) else { throw VisualError.screenshotFailed }
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, "public.png" as CFString, 1, nil) else {
+            throw VisualError.screenshotFailed
+        }
+        CGImageDestinationAddImage(destination, cropped, nil)
+        guard CGImageDestinationFinalize(destination) else { throw VisualError.screenshotFailed }
+        return output as Data
     }
 
     /// Reads the image size from the PNG header, which works the same on every platform.
