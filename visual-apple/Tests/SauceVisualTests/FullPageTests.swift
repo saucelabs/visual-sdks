@@ -18,25 +18,56 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
         let screens = try positions.enumerated().map { try screen(scrolledTo: $1, indicator: $0) }
         let rows = try screens.map { try FullPageCapture.rows(of: $0, in: clip, ignoringRight: 2) }
 
-        var frames = FullPageCapture.Frames()
+        var frames: [FullPageCapture.Frame] = []
         for index in 1..<rows.count {
-            let moved = FullPageCapture.offset(from: rows[index - 1], to: rows[index], expected: 120)
-            guard moved != 0 else { break }
-            frames.pngs.append(screens[index])
-            frames.newRows.append(try XCTUnwrap(moved))
+            let shift = try XCTUnwrap(FullPageCapture.offset(from: rows[index - 1], to: rows[index], expected: 120))
+            guard shift.rows != 0 else { break }
+            frames.append(.init(png: screens[index], shift: shift))
         }
 
-        XCTAssertEqual(frames.newRows, [120, 120, 120, 40])
+        XCTAssertEqual(frames.map(\.shift.rows), [120, 120, 120, 40])
+        XCTAssertEqual(frames.map(\.shift.coveredTop), [0, 0, 0, 0])
         let stitched = try FullPageCapture.stitch(first: screens[0], frames: frames, clip: clip)
         XCTAssertEqual(try contentRows(of: stitched), Array(0..<contentHeight))
     }
 
-    func testBlankRowsMatchAnywhereSoTheExpectedShiftWins() {
+    func testBlankRowsAloneDontLineUp() {
         let blank = [UInt64](repeating: 7, count: 100)
-        XCTAssertEqual(FullPageCapture.offset(from: blank, to: blank, expected: 37), 0, "Nothing moved")
+        XCTAssertEqual(FullPageCapture.offset(from: blank, to: blank, expected: 37)?.rows, 0, "Nothing moved")
         var page = blank
         page[0] = 1
-        XCTAssertEqual(FullPageCapture.offset(from: page, to: blank, expected: 37), 37)
+        XCTAssertNil(FullPageCapture.offset(from: page, to: blank, expected: 37), "Any shift would do")
+    }
+
+    func testTheExpectedShiftWinsAmongEquallyGoodOnes() {
+        // Two bands repeat every 50 rows, so shifts of 50 and 100 both line up.
+        let pattern = (0..<50).map { UInt64($0) }
+        let page = pattern + pattern + pattern + pattern
+        XCTAssertEqual(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 90)?.rows, 100)
+        XCTAssertEqual(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 60)?.rows, 50)
+    }
+
+    func testAPinnedBandAtTheTopStillLinesUp() {
+        // 20 of 200 rows stay put while the content scrolls by 80, like a pinned header or the status bar.
+        let header = (0..<20).map { UInt64(1_000_000 + $0) }
+        let previous = header + (20..<200).map { UInt64($0) }
+        let current = header + (100..<280).map { UInt64($0) }
+        XCTAssertEqual(FullPageCapture.offset(from: previous, to: current, expected: 80), .init(rows: 80, coveredTop: 20))
+    }
+
+    func testBarsDrawnOverTheContentStillLineUp() throws {
+        // Like Safari: the content scrolls by 100 under a 30-row bar at the top, while a 40-row toolbar at the
+        // bottom shrinks to 15 rows. Only 30 of the 100 overlapping rows match.
+        let previous = (0..<160).map { UInt64($0) } + [UInt64](repeating: 9_000, count: 40)
+        let current = [UInt64](repeating: 8_000, count: 30) + (130..<285).map { UInt64($0) } + [UInt64](repeating: 9_001, count: 15)
+        XCTAssertEqual(FullPageCapture.offset(from: previous, to: current, expected: 110), .init(rows: 100, coveredTop: 30))
+
+        // Stitched, the top bar is left out and the old toolbar is drawn over, so only the last toolbar shows.
+        let first = try screen(scrolledTo: 0, indicator: 0, bars: (top: 0, bottom: 40))
+        let second = try screen(scrolledTo: 100, indicator: 0, bars: (top: 30, bottom: 15))
+        let frames = [FullPageCapture.Frame(png: second, shift: .init(rows: 100, coveredTop: 30))]
+        let stitched = try FullPageCapture.stitch(first: first, frames: frames, clip: clip)
+        XCTAssertEqual(try contentRows(of: stitched), Array(0..<285) + [Int](repeating: Self.barRow, count: 15))
     }
 
     func testScreenshotsThatDontLineUpStopTheCapture() {
@@ -84,10 +115,10 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
         )
         var request = SnapshotRequest()
         request.clip = clip
-        request.fullPage = FullPageCapture.Frames(
-            pngs: [try screen(scrolledTo: 200, indicator: 1), try screen(scrolledTo: 400, indicator: 2)],
-            newRows: [200, 200]
-        )
+        request.fullPage = [
+            .init(png: try screen(scrolledTo: 200, indicator: 1), shift: .init(rows: 200, coveredTop: 0)),
+            .init(png: try screen(scrolledTo: 400, indicator: 2), shift: .init(rows: 200, coveredTop: 0))
+        ]
         // Starts inside the 600 stitched rows and reaches past them.
         let wide = try XCTUnwrap(PixelRegion(
             CGRect(x: 0, y: 550, width: 10, height: 100), scale: 1, in: CGRect(x: 0, y: 0, width: 40, height: 2_000),
@@ -108,9 +139,12 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
 
     // MARK: - Helpers
 
+    /// The value `contentRows` reads for a bar drawn over the content.
+    private static let barRow = 4_000
+
     /// A 350-row screen: a header, 200 rows of content starting at `offset`, and a footer. A strip on the
-    /// right changes with `indicator`, like a scroll indicator.
-    private func screen(scrolledTo offset: Int, indicator: Int) throws -> Data {
+    /// right changes with `indicator`, like a scroll indicator. `bars` cover the top and bottom of the content.
+    private func screen(scrolledTo offset: Int, indicator: Int, bars: (top: Int, bottom: Int) = (0, 0)) throws -> Data {
         let height = 350
         var pixels = [UInt8](repeating: 255, count: width * height * 4)
         for y in 0..<height {
@@ -120,6 +154,10 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
                     pixels[i] = UInt8(indicator * 40)
                     pixels[i + 1] = 200
                     pixels[i + 2] = 200
+                } else if (100..<(100 + bars.top)).contains(y) || ((300 - bars.bottom)..<300).contains(y) {
+                    pixels[i] = UInt8(Self.barRow % 256)
+                    pixels[i + 1] = UInt8(Self.barRow / 256)
+                    pixels[i + 2] = 7
                 } else if (100..<300).contains(y) {
                     // Each content row has its own colour, so rows can be told apart.
                     let row = offset + y - 100
@@ -157,5 +195,12 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
             let i = row * image.width * 4
             return Int(pixels[i]) + Int(pixels[i + 1]) * 256
         }
+    }
+}
+
+private extension Array where Element == UInt64 {
+    /// The rows after scrolling up by `rows`, with new, different rows coming in at the bottom.
+    func shiftedUp(by rows: Int) -> [UInt64] {
+        Array(dropFirst(rows)) + (0..<rows).map { UInt64(10_000 + $0) }
     }
 }

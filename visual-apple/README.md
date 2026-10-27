@@ -119,7 +119,8 @@ try await visual.sauceVisualCheck("Products", options: VisualCheckOptions(
 - Capture starts from the current scroll position. Scroll to the top first if needed.
 - Ignore regions are relative to the element, as with `clipElement`. A `clipElement` that is a different element takes precedence, and the full page is skipped.
 - With `captureDom`, the element tree is read before scrolling, so it covers the first screen.
-- Headers that stay pinned while scrolling appear again in each part of the image.
+- Bars that stay in place while the content scrolls, like the status bar, a pinned header, or Safari's toolbar, show once: at the top or bottom of the image.
+- Capture stops early when screenshots can't be lined up, for example when the overlapping part is blank.
 - Not available on tvOS, where the check throws `VisualError.fullPageNotSupported`.
 
 Rectangles are in points and converted to screenshot pixels. Parts outside the screen are clipped. Snapshots are compared with the baseline that has the same name, device, and OS version. On tvOS, the operating system is reported as `UNKNOWN`, because the API has no tvOS value.

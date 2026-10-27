@@ -97,10 +97,10 @@ public actor VisualClient {
         // Crop and stitch here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
         let image: Data
         if let frames = request.fullPage, let clip = request.clip {
-            image = frames.pngs.isEmpty
+            image = frames.isEmpty
                 ? try Screenshot.crop(png, to: clip)
                 : try FullPageCapture.stitch(first: png, frames: frames, clip: clip)
-            let height = (Int(exactly: clip.height) ?? 0) + frames.addedHeight
+            let height = (Int(exactly: clip.height) ?? 0) + FullPageCapture.addedHeight(frames)
             request.regions = request.regions.compactMap { $0.cut(atHeight: height) }
         } else {
             image = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
