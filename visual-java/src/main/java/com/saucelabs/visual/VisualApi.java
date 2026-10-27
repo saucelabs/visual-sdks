@@ -1082,23 +1082,43 @@ public class VisualApi {
   }
 
   /**
-   * Returns a human-readable device name. Uses the Appium "deviceName" capability when present (set
-   * for mobile sessions) - note this reports whatever the session capabilities contain, which may
-   * be the originally requested pattern/wildcard (e.g. "iPhone.*") if the Appium server doesn't
-   * resolve it to the allocated device. Falls back to a generic desktop resolution label only when
-   * no device name capability was requested at all.
+   * Returns a human-readable device name. For Android/iOS sessions, queries the device directly via
+   * Appium's "mobile: deviceInfo" command rather than trusting the "deviceName" capability -
+   * Appium's own drivers frequently overwrite that capability with the device's raw UDID/serial for
+   * real devices instead of anything human-readable (see
+   * https://github.com/appium/appium/issues/8454). Falls back to a generic desktop resolution label
+   * for non-mobile sessions.
    */
   private String getDeviceName(Capabilities caps, Map<String, Object> windowDims) {
-    Object deviceName = caps.getCapability("appium:deviceName");
-    if (deviceName == null) {
-      deviceName = caps.getCapability("deviceName");
-    }
-
-    if (deviceName instanceof String && !((String) deviceName).isEmpty()) {
-      return (String) deviceName;
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+    if (os == OperatingSystem.ANDROID || os == OperatingSystem.IOS) {
+      return getMobileDeviceInfoName(os);
     }
 
     return String.format("Desktop (%sx%s)", windowDims.get("width"), windowDims.get("height"));
+  }
+
+  /**
+   * Builds a device label from Appium's "mobile: deviceInfo" command. Android reports
+   * "manufacturer" and "model" straight from the OS (e.g. "Google Pixel 8"). iOS only reports the
+   * generic device family via "name"/"model" (e.g. "iPhone") - Apple doesn't expose the specific
+   * marketing name (e.g. "iPhone 15 Pro") through any public API, so this is the most specific
+   * label iOS can give.
+   */
+  private String getMobileDeviceInfoName(OperatingSystem os) {
+    Map<String, Object> deviceInfo =
+        (Map<String, Object>) driver.executeScript("mobile: deviceInfo");
+
+    if (os == OperatingSystem.ANDROID) {
+      Object manufacturer = deviceInfo.get("manufacturer");
+      Object model = deviceInfo.get("model");
+      return (manufacturer instanceof String ? manufacturer + " " : "") + model;
+    }
+
+    Object name = deviceInfo.get("name");
+    return name instanceof String && !((String) name).isEmpty()
+        ? (String) name
+        : String.valueOf(deviceInfo.get("model"));
   }
 
   /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
