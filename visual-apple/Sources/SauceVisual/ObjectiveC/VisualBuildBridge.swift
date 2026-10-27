@@ -137,10 +137,126 @@ public enum VisualDiffingMethodCode: Int, Sendable {
     }
 }
 
-/// Options for one check, for Objective-C. Don't change them while the check runs.
+/// Operating systems for a baseline override, for Objective-C. `NotSet` keeps the snapshot's own.
+@objc(SLVOperatingSystem)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public enum VisualOperatingSystemCode: Int, Sendable {
+    case notSet = 0
+    case ios = 1
+    case macos = 2
+    case android = 3
+    case windows = 4
+    case linux = 5
+    case unknown = 6
+
+    internal var value: OperatingSystem? {
+        switch self {
+        case .notSet: return nil
+        case .ios: return .ios
+        case .macos: return .macos
+        case .android: return .android
+        case .windows: return .windows
+        case .linux: return .linux
+        case .unknown: return .unknown
+        }
+    }
+
+    internal init(_ value: OperatingSystem?) {
+        switch value {
+        case nil: self = .notSet
+        case .ios: self = .ios
+        case .macos: self = .macos
+        case .android: self = .android
+        case .windows: self = .windows
+        case .linux: self = .linux
+        case .unknown: self = .unknown
+        }
+    }
+}
+
+/// Baseline override fields, for `-[SLVBaselineOverride matchNullFor:]`.
+@objc(SLVBaselineOverrideField)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public enum VisualBaselineOverrideField: Int, Sendable {
+    case name = 0
+    case testName = 1
+    case suiteName = 2
+    case device = 3
+    case operatingSystem = 4
+    case operatingSystemVersion = 5
+}
+
+/// Values used instead of the snapshot's own when looking up its baseline, for Objective-C.
+/// Properties left `nil` keep the snapshot's own value. Not thread-safe: one thread owns it, and must not
+/// change it from another thread while a client or check is copying it. Later changes have no effect.
+@objc(SLVBaselineOverride)
+@available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
+public final class VisualBaselineOverride: NSObject {
+    @objc public var name: String?
+    @objc public var testName: String?
+    @objc public var suiteName: String?
+    @objc public var device: String?
+    @objc public var operatingSystem: VisualOperatingSystemCode = .notSet
+    @objc public var operatingSystemVersion: String?
+    /// Fields sent as `null`, matching baselines that have no value for them. Overrides any value set.
+    private var nullFields = Set<VisualBaselineOverrideField>()
+
+    @objc public override init() {
+        super.init()
+    }
+
+    /// Sends `field` as `null`, matching baselines that have no value for it.
+    @objc(matchNullFor:)
+    public func matchNull(for field: VisualBaselineOverrideField) {
+        nullFields.insert(field)
+    }
+
+    /// Whether `field` is sent as `null`.
+    @objc(matchesNullFor:)
+    public func matchesNull(for field: VisualBaselineOverrideField) -> Bool {
+        nullFields.contains(field)
+    }
+
+    internal convenience init(_ value: BaselineOverride) {
+        self.init()
+        name = read(value.name, .name)
+        testName = read(value.testName, .testName)
+        suiteName = read(value.suiteName, .suiteName)
+        device = read(value.device, .device)
+        if case .value(let system)? = value.operatingSystem { operatingSystem = VisualOperatingSystemCode(system) }
+        if case .null? = value.operatingSystem { nullFields.insert(.operatingSystem) }
+        operatingSystemVersion = read(value.operatingSystemVersion, .operatingSystemVersion)
+    }
+
+    internal var value: BaselineOverride {
+        BaselineOverride(
+            name: field(name, .name),
+            testName: field(testName, .testName),
+            suiteName: field(suiteName, .suiteName),
+            device: field(device, .device),
+            operatingSystem: nullFields.contains(.operatingSystem) ? .null : operatingSystem.value.map { .value($0) },
+            operatingSystemVersion: field(operatingSystemVersion, .operatingSystemVersion)
+        )
+    }
+
+    private func field(_ value: String?, _ key: VisualBaselineOverrideField) -> BaselineValue<String>? {
+        nullFields.contains(key) ? .null : value.map { .value($0) }
+    }
+
+    private func read(_ value: BaselineValue<String>?, _ key: VisualBaselineOverrideField) -> String? {
+        switch value {
+        case .value(let string)?: return string
+        case .null?: nullFields.insert(key); return nil
+        case nil: return nil
+        }
+    }
+}
+
+/// Options for one check, for Objective-C. Not thread-safe: one thread owns them, and must not change them
+/// from another thread while the check call is copying them. Later changes have no effect.
 @objc(SLVCheckOptions)
 @available(swift, obsoleted: 1.0, message: "Objective-C only. Swift code uses the Swift types instead.")
-public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
+public final class VisualCheckConfiguration: NSObject {
     /// Defaults to the running test's method name.
     @objc public var testName: String?
     /// Defaults to the running test's class name.
@@ -152,6 +268,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
     /// Elements to leave out of the comparison. Each must exist when the check runs.
     @objc public var ignoreElements: [XCUIElement] = []
     @objc public var diffingMethod: VisualDiffingMethodCode = .balanced
+    /// Compare against another snapshot's baseline.
+    @objc public var baselineOverride: VisualBaselineOverride?
 
     internal var value: VisualCheckOptions {
         VisualCheckOptions(
@@ -166,7 +284,8 @@ public final class VisualCheckConfiguration: NSObject, @unchecked Sendable {
                 #endif
             },
             ignoreElements: ignoreElements,
-            diffingMethod: diffingMethod.value
+            diffingMethod: diffingMethod.value,
+            baselineOverride: baselineOverride?.value
         )
     }
 }
@@ -187,12 +306,16 @@ public final class VisualObjCClient: NSObject, Sendable {
     @objc public static var errorDomain: String { VisualError.errorDomain }
     @objc public var region: VisualRegion { VisualRegion(client.region) }
     @objc public var options: VisualBuildConfiguration { VisualBuildConfiguration(client.options) }
+    /// Used for every check that doesn't set its own. A copy: changing it has no effect.
+    @objc public var baselineOverride: VisualBaselineOverride? { client.baselineOverride.map(VisualBaselineOverride.init) }
 
     /// `nil` arguments come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
+    /// `baselineOverride` applies to every check that doesn't set its own.
     /// - Throws: `SLVErrorCodeInvalidCredentials`, `SLVErrorCodeUnknownRegion`, or `SLVErrorCodeInvalidBuildId`.
-    @objc(initWithUsername:accessKey:region:options:error:)
+    @objc(initWithUsername:accessKey:region:options:baselineOverride:error:)
     public init(
-        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?
+        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?,
+        baselineOverride: VisualBaselineOverride?
     ) throws {
         let credentials: VisualCredentials?
         if username == nil && accessKey == nil {
@@ -201,9 +324,18 @@ public final class VisualObjCClient: NSObject, Sendable {
             credentials = try VisualCredentials(username: username ?? "", accessKey: accessKey ?? "")
         }
         client = try VisualClient(
-            credentials: credentials, region: region?.value, options: options?.value ?? VisualBuildOptions()
+            credentials: credentials, region: region?.value, options: options?.value ?? VisualBuildOptions(),
+            baselineOverride: baselineOverride?.value
         )
         super.init()
+    }
+
+    /// Like `initWithUsername:accessKey:region:options:baselineOverride:error:`, without a baseline override.
+    @objc(initWithUsername:accessKey:region:options:error:)
+    public convenience init(
+        username: String?, accessKey: String?, region: VisualRegion?, options: VisualBuildConfiguration?
+    ) throws {
+        try self.init(username: username, accessKey: accessKey, region: region, options: options, baselineOverride: nil)
     }
 
     /// Reads credentials and region from the environment.

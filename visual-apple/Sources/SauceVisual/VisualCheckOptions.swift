@@ -25,6 +25,8 @@ public struct VisualCheckOptions {
     public var diffingMethodSensitivity: DiffingMethodSensitivity?
     /// Detailed thresholds for the `.balanced` method. Leave `nil` for the default.
     public var diffingMethodTolerance: DiffingMethodTolerance?
+    /// Compare against another snapshot's baseline. Replaces the client's override for this check.
+    public var baselineOverride: BaselineOverride?
 
     public init(
         testName: String? = nil,
@@ -36,7 +38,8 @@ public struct VisualCheckOptions {
         diffingMethod: DiffingMethod? = nil,
         diffingOptions: DiffingOptions? = nil,
         diffingMethodSensitivity: DiffingMethodSensitivity? = nil,
-        diffingMethodTolerance: DiffingMethodTolerance? = nil
+        diffingMethodTolerance: DiffingMethodTolerance? = nil,
+        baselineOverride: BaselineOverride? = nil
     ) {
         self.testName = testName
         self.suiteName = suiteName
@@ -48,6 +51,7 @@ public struct VisualCheckOptions {
         self.diffingOptions = diffingOptions
         self.diffingMethodSensitivity = diffingMethodSensitivity
         self.diffingMethodTolerance = diffingMethodTolerance
+        self.baselineOverride = baselineOverride
     }
 }
 
@@ -147,6 +151,80 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
     }
 }
 
+/// Values used instead of the snapshot's own when looking up its baseline. Each field has three states:
+/// `nil` (unset) keeps the snapshot's own value, `.value(x)` matches `x`, and `.null` matches baselines with no value.
+/// Baselines also match on test and suite names, so set those to use another test's.
+public struct BaselineOverride: Hashable, Sendable {
+    public var name: BaselineValue<String>?
+    public var testName: BaselineValue<String>?
+    public var suiteName: BaselineValue<String>?
+    public var device: BaselineValue<String>?
+    public var operatingSystem: BaselineValue<OperatingSystem>?
+    public var operatingSystemVersion: BaselineValue<String>?
+
+    public init(
+        name: BaselineValue<String>? = nil,
+        testName: BaselineValue<String>? = nil,
+        suiteName: BaselineValue<String>? = nil,
+        device: BaselineValue<String>? = nil,
+        operatingSystem: BaselineValue<OperatingSystem>? = nil,
+        operatingSystemVersion: BaselineValue<String>? = nil
+    ) {
+        self.name = name
+        self.testName = testName
+        self.suiteName = suiteName
+        self.device = device
+        self.operatingSystem = operatingSystem
+        self.operatingSystemVersion = operatingSystemVersion
+    }
+
+    /// True when nothing is overridden.
+    var isEmpty: Bool { self == BaselineOverride() }
+}
+
+/// A baseline override field that is set: either a value to match, or `.null` to match baselines without one.
+/// String fields accept a literal directly: `name: "Login page"`.
+public enum BaselineValue<Wrapped: Hashable & Sendable>: Hashable, Sendable {
+    case value(Wrapped)
+    /// Sent as `null`, matching baselines that have no value for this field.
+    case null
+
+    func map<T>(_ transform: (Wrapped) -> T) -> BaselineValue<T> {
+        switch self {
+        case .value(let value): return .value(transform(value))
+        case .null: return .null
+        }
+    }
+}
+
+extension BaselineValue: ExpressibleByUnicodeScalarLiteral, ExpressibleByExtendedGraphemeClusterLiteral,
+    ExpressibleByStringLiteral where Wrapped == String {
+    public init(stringLiteral value: String) {
+        self = .value(value)
+    }
+}
+
+/// Lets the operating system be written directly: `operatingSystem: .ios` instead of `.value(.ios)`.
+extension BaselineValue where Wrapped == OperatingSystem {
+    public static var ios: Self { .value(.ios) }
+    public static var macos: Self { .value(.macos) }
+    public static var android: Self { .value(.android) }
+    public static var windows: Self { .value(.windows) }
+    public static var linux: Self { .value(.linux) }
+    public static var unknown: Self { .value(.unknown) }
+}
+
+/// Operating systems the Sauce Visual API knows.
+public enum OperatingSystem: String, Hashable, Sendable {
+    case ios = "IOS"
+    case macos = "MACOS"
+    case android = "ANDROID"
+    case windows = "WINDOWS"
+    case linux = "LINUX"
+    /// For example tvOS, which the API doesn't list.
+    case unknown = "UNKNOWN"
+}
+
 // MARK: - Resolution
 
 /// What a check needs besides the screenshot, with elements already turned into pixel rectangles.
@@ -159,6 +237,8 @@ internal struct SnapshotRequest: Hashable, Sendable {
     var diffingOptions: DiffingOptions?
     var diffingMethodSensitivity: DiffingMethodSensitivity?
     var diffingMethodTolerance: DiffingMethodTolerance?
+    /// `nil` falls back to the client's override.
+    var baselineOverride: BaselineOverride?
 }
 
 /// A region in screenshot pixels, as the API expects.
@@ -268,7 +348,8 @@ extension VisualCheckOptions {
             diffingMethod: diffingMethod ?? .balanced,
             diffingOptions: diffingOptions,
             diffingMethodSensitivity: diffingMethodSensitivity,
-            diffingMethodTolerance: diffingMethodTolerance
+            diffingMethodTolerance: diffingMethodTolerance,
+            baselineOverride: baselineOverride
         )
     }
 }

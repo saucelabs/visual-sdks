@@ -27,6 +27,14 @@ final class SauceDemoTests: XCTestCase, @unchecked Sendable {
     }
 
     @MainActor
+    func testLoginPageMatchesBaselineByName() async throws {
+        try openLoginPage()
+        // Compare with testLoginPage's "Login page". Baselines also match on the test name, so override both.
+        let options = VisualCheckOptions(baselineOverride: BaselineOverride(name: "Login page", testName: "testLoginPage"))
+        try await visual.sauceVisualCheck("Login page (override)", options: options)
+    }
+
+    @MainActor
     func testLoginButton() async throws {
         try openLoginPage()
         let button = page.buttons["Login"]
