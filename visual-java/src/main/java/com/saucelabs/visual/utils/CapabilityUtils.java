@@ -21,6 +21,15 @@ public class CapabilityUtils {
     }
   }
 
+  public static String getBrowserVersion(Capabilities caps) {
+    switch (caps.getBrowserVersion()) {
+      case "":
+        return null;
+      default:
+        return caps.getBrowserVersion();
+    }
+  }
+
   public static OperatingSystem getOperatingSystem(Capabilities caps) {
     Platform platform = caps.getPlatformName();
     Platform family = platform.family();

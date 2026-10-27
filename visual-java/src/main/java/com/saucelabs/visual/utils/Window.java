@@ -4,6 +4,7 @@ import java.util.List;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.UnsupportedCommandException;
 
 public class Window {
   private final JavascriptExecutor driver;
@@ -12,9 +13,18 @@ public class Window {
     this.driver = javascriptExecutor;
   }
 
+  /**
+   * Returns the current scroll offset and viewport size. Falls back to an empty rectangle on
+   * sessions that don't support JS execution (e.g. mobile browsers automated through Appium), since
+   * there's no WebDriver-native equivalent for scroll position.
+   */
   public Rectangle getViewport() {
-    Object result = driver.executeScript(jsViewportTupleSnippet);
-    return convertJsTupleToRectangle(result);
+    try {
+      Object result = driver.executeScript(jsViewportTupleSnippet);
+      return convertJsTupleToRectangle(result);
+    } catch (UnsupportedCommandException e) {
+      return new Rectangle(0, 0, 0, 0);
+    }
   }
 
   public Rectangle scrollTo(Point point) {
