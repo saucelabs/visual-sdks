@@ -7,6 +7,7 @@ import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.BuildByCustomIdQuery;
 import com.saucelabs.visual.graphql.BuildQuery;
 import com.saucelabs.visual.graphql.type.BuildMode;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,18 @@ public class VisualBuild {
   public static VisualBuild getBuildOnce(VisualApi api, BuildAttributes buildAttributes) {
     synchronized (VisualBuild.class) {
       if (build == null) {
+        String customId = buildAttributes.getCustomId();
+        Duration finishDelay = buildAttributes.getBuildDelay();
+
+        if (isNotBlank(customId) && finishDelay != null) {
+          // customId + delay: always create a new build
+          // (skip external reuse), always finish and apply delay)
+          build = api.createBuild(buildAttributes);
+          Runtime.getRuntime()
+              .addShutdownHook(new Thread(() -> api.finishBuild(build.id, finishDelay)));
+          return build;
+        }
+
         VisualBuild externalBuild = getExternalBuild(api, buildAttributes);
         if (externalBuild != null) {
           build = externalBuild;

@@ -51,6 +51,7 @@ public class VisualApi {
     private List<String> tags;
     private String buildId;
     private String customId;
+    private Duration finishDelay;
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
@@ -100,6 +101,23 @@ public class VisualApi {
      */
     public Builder withCustomId(String customId) {
       this.customId = customId;
+      return this;
+    }
+
+    /**
+     * Delay the server-side build completion by {@code delay} and keep the build open for new
+     * snapshots
+     *
+     * <p>Must be called with <strong>after</strong> {@link #withCustomId(String)} — the delay only
+     * can be applied to a build that is being created or reused via customId.
+     *
+     * @param delay build finish delay in seconds to accept more Visual sessions
+     */
+    public Builder withBuildFinishDelay(Duration delay) {
+      if (delay != null && delay.isNegative()) {
+        throw new IllegalArgumentException("finishDelay must not be negative");
+      }
+      this.finishDelay = delay;
       return this;
     }
 
@@ -175,11 +193,17 @@ public class VisualApi {
     }
 
     private BuildAttributes getBuildAttributes() {
-      return new BuildAttributes(
-          buildName, projectName, branchName, defaultBranchName, tags, buildId, customId);
+
+      BuildAttributes attrs =
+          new BuildAttributes(
+              buildName, projectName, branchName, defaultBranchName, tags, buildId, customId);
+      attrs.useBuildDelay(finishDelay);
+      return attrs;
     }
 
     public VisualApi build() {
+      validate();
+
       VisualApi api = new VisualApi(this);
 
       if (this.captureDom != null) {
@@ -200,7 +224,15 @@ public class VisualApi {
       if (this.baselineOverride != null) {
         api.setBaselineOverride(this.baselineOverride);
       }
+
       return api;
+    }
+
+    void validate() {
+      if ((this.customId == null || this.customId.trim().isEmpty()) && this.finishDelay != null) {
+        throw new IllegalStateException(
+            "withBuildFinishDelay(...) requires withCustomId(...) to be called.");
+      }
     }
   }
 
@@ -494,6 +526,7 @@ public class VisualApi {
     private final String buildId;
     private final String customId;
     private final EnvironmentVariableProvider env;
+    private Duration finishDelay;
 
     public BuildAttributes(
         String name,
@@ -531,6 +564,14 @@ public class VisualApi {
       this.buildId = buildId;
       this.customId = customId;
       this.env = env != null ? env : EnvironmentVariableProvider.DEFAULT;
+    }
+
+    void useBuildDelay(Duration finishDelay) {
+      this.finishDelay = finishDelay;
+    }
+
+    public Duration getBuildDelay() {
+      return finishDelay;
     }
 
     public String getName() {
@@ -599,8 +640,20 @@ public class VisualApi {
    * @return Finished build
    */
   FinishBuildMutation.Result finishBuild(String buildId) {
+    return finishBuild(buildId, null);
+  }
+
+  /**
+   * Executes a finishBuild mutation with optional delay
+   *
+   * @param buildId Build id
+   * @param delay Build finish delay
+   * @return Finished build
+   */
+  FinishBuildMutation.Result finishBuild(String buildId, Duration delay) {
+    Integer delaySeconds = delay == null ? null : Math.toIntExact(delay.getSeconds());
     FinishBuildMutation mutation =
-        new FinishBuildMutation(new FinishBuildMutation.FinishBuildIn(buildId));
+        new FinishBuildMutation(new FinishBuildMutation.FinishBuildIn(buildId, delaySeconds));
     return client.execute(mutation, FinishBuildMutation.Data.class).result;
   }
 

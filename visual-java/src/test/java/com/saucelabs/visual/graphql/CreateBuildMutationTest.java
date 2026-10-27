@@ -72,12 +72,7 @@ class CreateBuildMutationTest {
   void buildIn_storesCustomIdWhenProvided() {
     CreateBuildMutation.BuildIn buildIn =
         new CreateBuildMutation.BuildIn(
-            "buildName",
-            "projectName",
-            "branchName",
-            "mainBranch",
-            Arrays.asList("smoke", "nightly"),
-            "my-custom-id");
+            "buildName", "projectName", "branchName", "mainBranch", null, "my-custom-id");
 
     assertEquals("my-custom-id", buildIn.getCustomId());
   }
