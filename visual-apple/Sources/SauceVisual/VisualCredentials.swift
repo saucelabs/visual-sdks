@@ -1,11 +1,11 @@
 import Foundation
 
-/// Sauce Labs username and access key. The access key is redacted when printed or reflected.
+/// Your Sauce Labs username and access key. The key is hidden when printed.
 public struct VisualCredentials: Hashable, Sendable {
     public let username: String
     public let accessKey: String
 
-    /// Both values are trimmed and must not be empty.
+    /// Neither may be empty. Surrounding whitespace is removed.
     /// - Throws: `VisualError.invalidCredentials`.
     public init(username: String, accessKey: String) throws {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)

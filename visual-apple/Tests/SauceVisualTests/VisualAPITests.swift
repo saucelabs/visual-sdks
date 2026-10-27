@@ -3,7 +3,7 @@ import XCTest
 // Release runs need `-Xswiftc -enable-testing` for this import.
 @testable import SauceVisual
 
-// Test-only: no mutable instance state, XCTest owns its synchronization.
+// `@unchecked Sendable` is safe: the tests keep no shared state.
 final class VisualAPITests: XCTestCase, @unchecked Sendable {
     private let buildID = "0f8fad5b-d9cb-469f-a165-70867728950e"
     /// Requests never leave the process: `StubURLProtocol` answers them.

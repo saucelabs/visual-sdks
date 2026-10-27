@@ -5,7 +5,7 @@
 #import <SauceVisual/SauceVisual-Swift.h>
 #endif
 
-extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVBuild * _Nullable, NSError * _Nullable));
+extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVSnapshot * _Nullable, NSError * _Nullable));
 
 @interface ObjectiveCConsumerTests : XCTestCase
 @end
@@ -13,17 +13,16 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
 @implementation ObjectiveCConsumerTests
 
 - (void)testObjectiveCExampleReportsConstructorErrorOnMainThread {
-    // Fails in the constructor, before any request, so this runs without a backend: invalid credentials
-    // when TEST_RUNNER_SAUCE_* is unset, otherwise the invalid build ID.
+    // Fails before any request, so no backend is needed: on missing credentials, or else the bad build ID.
     SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout flow" project:nil branch:nil
                                                        defaultBranch:nil customId:nil buildId:@"not-a-uuid"];
     XCTestExpectation *done = [self expectationWithDescription:@"Objective-C example"];
     done.assertForOverFulfill = YES;
     __block BOOL returned = NO;
-    RunObjectiveCExample(options, ^(SLVBuild *build, NSError *error) {
+    RunObjectiveCExample(options, ^(SLVSnapshot *snapshot, NSError *error) {
         XCTAssertTrue(NSThread.isMainThread);
         XCTAssertTrue(returned);
-        XCTAssertNil(build);
+        XCTAssertNil(snapshot);
         XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
         XCTAssertTrue(error.code == SLVErrorCodeInvalidCredentials || error.code == SLVErrorCodeInvalidBuildId,
                       @"Unexpected code %ld", (long)error.code);
@@ -43,6 +42,23 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertNil([SLVRegion regionNamed:@"mars" error:&error]);
     XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
     XCTAssertEqual(error.code, SLVErrorCodeUnknownRegion);
+}
+
+- (void)testCheckOptionsDefaultToBalancedWithNothingIgnored {
+    SLVCheckOptions *options = [[SLVCheckOptions alloc] init];
+    XCTAssertEqual(options.diffingMethod, SLVDiffingMethodBalanced);
+    XCTAssertEqual(options.ignoreRegions.count, 0u);
+    XCTAssertEqual(options.ignoreElements.count, 0u);
+    XCTAssertNil(options.testName);
+    CGRect statusBar = CGRectMake(0, 0, 402, 62);
+#if TARGET_OS_OSX
+    options.ignoreRegions = @[[NSValue valueWithRect:statusBar]];
+#else
+    options.ignoreRegions = @[[NSValue valueWithCGRect:statusBar]];
+#endif
+    options.diffingMethod = SLVDiffingMethodExperimental;
+    XCTAssertEqual(options.ignoreRegions.count, 1u);
+    XCTAssertEqual(options.diffingMethod, SLVDiffingMethodExperimental);
 }
 
 - (void)testClientKeepsOptions {

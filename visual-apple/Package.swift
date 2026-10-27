@@ -8,9 +8,12 @@ let package = Package(
     targets: [
         .target(
             name: "SauceVisual",
+            dependencies: ["SauceVisualLoader"],
             resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         ),
+        // Picks up test names from the first test. C, because Swift can't run code at load time.
+        .target(name: "SauceVisualLoader"),
         .testTarget(
             name: "SauceVisualTests",
             dependencies: ["SauceVisual"],

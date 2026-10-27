@@ -1,7 +1,6 @@
 import Foundation
 
-/// Stable, non-sensitive failures. Codes are public API: never renumber or reuse one; add new codes at the end.
-/// Cancellation of a Swift call throws `CancellationError`, the Objective-C adapter maps it to `.cancelled`.
+/// SDK errors. The codes are public: never renumber or reuse one, and add new codes at the end.
 public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, CustomStringConvertible {
     case cancelled = 1
     case invalidCredentials = 2
@@ -12,6 +11,9 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case apiError = 7
     case conflictingConfiguration = 8
     case buildNotFound = 9
+    case invalidSnapshotName = 10
+    case elementNotFound = 11
+    case invalidCheckOptions = 12
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -36,6 +38,12 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Another Sauce Visual client in this process uses a different region, credentials, or build options. Every client in a test run must use the same ones."
         case .buildNotFound:
             return "No Sauce Visual build has this build ID. Check the buildId option or SAUCE_VISUAL_BUILD_ID."
+        case .invalidSnapshotName:
+            return "Invalid snapshot name. Give the snapshot a name that is not empty."
+        case .elementNotFound:
+            return "An element in the check options doesn't exist. Wait for it before the check, or remove it."
+        case .invalidCheckOptions:
+            return "Invalid check options. Tolerance values must be between 0 and 1, and minChangeSize can't be negative."
         }
     }
 

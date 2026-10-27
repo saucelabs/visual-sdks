@@ -5,22 +5,19 @@
 #import <SauceVisual/SauceVisual-Swift.h>
 #endif
 
-// Credentials and region come from SAUCE_USERNAME, SAUCE_ACCESS_KEY, and SAUCE_REGION.
-// Completion is always on the main thread. Handle constructor errors separately.
-// The SDK finishes the build automatically when the test run ends.
-void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVBuild * _Nullable, NSError * _Nullable)) {
+// Takes one snapshot. Credentials come from SAUCE_USERNAME and SAUCE_ACCESS_KEY,
+// and the SDK creates and finishes the build for you. Completion runs on the main thread.
+void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SLVSnapshot * _Nullable, NSError * _Nullable)) {
     NSError *error = nil;
     SLVClient *client = [[SLVClient alloc] initWithOptions:options error:&error];
     if (client == nil) {
         dispatch_async(dispatch_get_main_queue(), ^{ completion(nil, error); });
         return;
     }
-    [client buildWithCompletion:^(SLVBuild *build, NSError *failure) {
-        if (failure != nil) {
-            completion(nil, failure);
-            return;
+    [client sauceVisualCheckWithName:@"Home screen" completion:^(SLVSnapshot *snapshot, NSError *failure) {
+        if (failure == nil) {
+            NSLog(@"Sauce Visual build: %@", snapshot.buildId);
         }
-        NSLog(@"Sauce Visual build: %@", build.url ?: build.buildId);
-        completion(build, nil);
+        completion(snapshot, failure);
     }];
 }
