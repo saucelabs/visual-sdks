@@ -4,7 +4,7 @@ import SwiftUI
 struct SmokeHost: App {
     var body: some Scene {
         WindowGroup {
-            Text("SauceVisual mock SDK integration host")
+            Text("SauceVisual SDK integration host")
                 .padding()
         }
     }
