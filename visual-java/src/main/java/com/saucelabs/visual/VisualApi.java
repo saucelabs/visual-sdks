@@ -876,7 +876,10 @@ public class VisualApi {
         extractElementsToIgnoreRegions(
             Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
     ignoreRegions.addAll(extractIgnoreSelectors(options));
-    if (isNativeMobileApp(caps) && !fullPage) {
+    if (isNativeMobileApp(caps)) {
+      // Local full-page capture isn't implemented yet for native apps (getScreenshot() always
+      // falls back to a standard screenshot), so system bars are still present regardless of
+      // fullPage - revisit this gate once full-page stitching exists for native.
       ignoreRegions.addAll(getSystemBarIgnoreRegions(caps));
     }
 
@@ -1046,7 +1049,11 @@ public class VisualApi {
     OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
 
     if (os == OperatingSystem.IOS) {
-      return (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+      try {
+        return (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+      } catch (WebDriverException e) {
+        return null;
+      }
     }
 
     if (os != OperatingSystem.ANDROID) {
@@ -1200,8 +1207,11 @@ public class VisualApi {
       return 1.0;
     }
 
-    Map<String, Object> screenInfo =
-        (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+    Map<String, Object> screenInfo = getRawSystemBarInfo(caps);
+    if (screenInfo == null) {
+      return 1.0;
+    }
+
     Object scale = screenInfo.get("scale");
     return scale instanceof Number ? ((Number) scale).doubleValue() : 1.0;
   }
@@ -1213,7 +1223,8 @@ public class VisualApi {
   private void uploadDom(SnapshotUpload uploadResult, Capabilities caps) {
     String dom;
     if (isNativeMobileApp(caps)) {
-      dom = wrapNativePageSource(Objects.requireNonNull(this.driver.getPageSource()), caps);
+      String pageSource = this.driver.getPageSource();
+      dom = pageSource != null ? wrapNativePageSource(pageSource, caps) : null;
     } else {
       Object result = this.driver.executeScript(this.client.getDomCaptureScript());
       dom = result instanceof String ? (String) result : null;
