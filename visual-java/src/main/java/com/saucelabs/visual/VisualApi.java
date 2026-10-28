@@ -806,6 +806,12 @@ public class VisualApi {
         fullPage || isNativeMobileApp(caps) ? new Point(0, 0) : window.getViewport().getPoint();
     byte[] screenshot = getScreenshot(fullPage);
 
+    // Mobile screenshots include OS chrome (status bar); crop it so the image matches the web
+    // viewport's own coordinate space.
+    if (isMobileWebBrowser(caps)) {
+      screenshot = cropMobileWebChrome(screenshot, caps, windowDims, devicePixelRatio);
+    }
+
     // Handle clipping, if rect is present
     if (clipRect != null) {
       Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
@@ -958,39 +964,110 @@ public class VisualApi {
     return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
   }
 
+  /** A mobile web session: browserName set on Android/iOS, unlike a native app session. */
+  private boolean isMobileWebBrowser(Capabilities caps) {
+    String browserName = caps.getBrowserName();
+    if (browserName.isEmpty()) {
+      return false;
+    }
+
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+    return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
+  }
+
+  /** Crops OS chrome (e.g. the status bar) out of a mobile screenshot to match the web viewport. */
+  private byte[] cropMobileWebChrome(
+      byte[] screenshot,
+      Capabilities caps,
+      Map<String, Object> windowDims,
+      double devicePixelRatio) {
+    Map<String, Object> statusBarSize = getStatusBarSize(caps);
+    if (statusBarSize == null) {
+      return screenshot;
+    }
+
+    // iOS reports points (needs scaling); Android already reports pixels.
+    double statusBarScale =
+        CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.IOS ? devicePixelRatio : 1.0;
+    int statusBarHeight = (int) Math.round(toInt(statusBarSize.get("height")) * statusBarScale);
+    int viewportWidth = (int) Math.round(toInt(windowDims.get("width")) * devicePixelRatio);
+    int viewportHeight = (int) Math.round(toInt(windowDims.get("height")) * devicePixelRatio);
+
+    Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
+    Rectangle cropRect = new Rectangle(0, statusBarHeight, viewportHeight, viewportWidth);
+    Optional<Rectangle> boundedCropRect =
+        CartesianHelpers.intersect(cropRect, new Rectangle(new Point(0, 0), imageDims));
+
+    if (!boundedCropRect.isPresent()) {
+      return screenshot;
+    }
+
+    return ImageHelpers.saveImage(
+        ImageHelpers.cropImage(ImageHelpers.loadImage(screenshot), boundedCropRect.get()), "png");
+  }
+
+  /**
+   * Raw response from Appium's system-bar command: "mobile: deviceScreenInfo" (iOS) or "mobile:
+   * getSystemBars" (Android). Null if unavailable.
+   */
+  private Map<String, Object> getRawSystemBarInfo(Capabilities caps) {
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+
+    if (os == OperatingSystem.IOS) {
+      return (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+    }
+
+    if (os != OperatingSystem.ANDROID) {
+      return null;
+    }
+
+    try {
+      return (Map<String, Object>) driver.executeScript("mobile: getSystemBars");
+    } catch (WebDriverException e) {
+      return null;
+    }
+  }
+
+  /** Key for the status bar's size in {@link #getRawSystemBarInfo}'s response. */
+  private String getStatusBarKey(Capabilities caps) {
+    return CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.IOS
+        ? "statusBarSize"
+        : "statusBar";
+  }
+
+  /** Status bar size via {@link #getRawSystemBarInfo}; null if unavailable. */
+  private Map<String, Object> getStatusBarSize(Capabilities caps) {
+    Map<String, Object> rawInfo = getRawSystemBarInfo(caps);
+    if (rawInfo == null) {
+      return null;
+    }
+
+    return (Map<String, Object>) rawInfo.get(getStatusBarKey(caps));
+  }
+
   /**
    * Computes ignore regions for native system chrome (the status bar, and on Android the navigation
    * bar) so automatic diffing doesn't flag OS-level UI that isn't part of the app under test.
    */
   private List<RegionIn> getSystemBarIgnoreRegions(Capabilities caps) {
     List<RegionIn> regions = new ArrayList<>();
-    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
-
-    if (os == OperatingSystem.IOS) {
-      Map<String, Object> screenInfo =
-          (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
-      Map<String, Object> statusBarSize = (Map<String, Object>) screenInfo.get("statusBarSize");
-      if (statusBarSize != null) {
-        regions.add(toSystemBarIgnoreRegion("auto: System Status Bar", 0, 0, statusBarSize));
-      }
+    Map<String, Object> rawInfo = getRawSystemBarInfo(caps);
+    if (rawInfo == null) {
+      // Not mobile, or an older Appium that lacks "mobile: getSystemBars" - skip rather than fail.
       return regions;
     }
 
-    Map<String, Object> systemBars;
-    try {
-      systemBars = (Map<String, Object>) driver.executeScript("mobile: getSystemBars");
-    } catch (WebDriverException e) {
-      // "mobile: getSystemBars" needs a newer Appium/UiAutomator2 version; skip auto ignore
-      // regions rather than failing the whole check when it's unavailable.
-      return regions;
-    }
-
-    Map<String, Object> statusBar = (Map<String, Object>) systemBars.get("statusBar");
+    Map<String, Object> statusBar = (Map<String, Object>) rawInfo.get(getStatusBarKey(caps));
     if (statusBar != null) {
       regions.add(toSystemBarIgnoreRegion("auto: System Status Bar", 0, 0, statusBar));
     }
 
-    Map<String, Object> navigationBar = (Map<String, Object>) systemBars.get("navigationBar");
+    if (CapabilityUtils.getOperatingSystem(caps) != OperatingSystem.ANDROID) {
+      // iOS has no navigation bar concept.
+      return regions;
+    }
+
+    Map<String, Object> navigationBar = (Map<String, Object>) rawInfo.get("navigationBar");
     if (navigationBar != null
         && Boolean.TRUE.equals(navigationBar.get("visible"))
         && toInt(navigationBar.get("height")) > 0
