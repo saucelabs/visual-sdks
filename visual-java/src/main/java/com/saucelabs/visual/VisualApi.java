@@ -982,14 +982,12 @@ public class VisualApi {
       Map<String, Object> windowDims,
       double devicePixelRatio) {
     Map<String, Object> statusBarSize = getStatusBarSize(caps);
-    if (statusBarSize == null) {
+    if (statusBarSize == null || CapabilityUtils.getOperatingSystem(caps) != OperatingSystem.IOS) {
       return screenshot;
     }
 
-    // iOS reports points (needs scaling); Android already reports pixels.
-    double statusBarScale =
-        CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.IOS ? devicePixelRatio : 1.0;
-    int statusBarHeight = (int) Math.round(toInt(statusBarSize.get("height")) * statusBarScale);
+    // iOS reports points (needs scaling).
+    int statusBarHeight = (int) Math.round(toInt(statusBarSize.get("height")) * devicePixelRatio);
     int viewportWidth = (int) Math.round(toInt(windowDims.get("width")) * devicePixelRatio);
     int viewportHeight = (int) Math.round(toInt(windowDims.get("height")) * devicePixelRatio);
 

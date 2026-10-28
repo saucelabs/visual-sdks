@@ -1,5 +1,6 @@
 package com.saucelabs.visual;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -314,19 +315,16 @@ class VisualApiTest {
   }
 
   @Test
-  void cropMobileWebChromeAndroidUsesRawPixelsTest() throws ReflectiveOperationException {
-    when(mockDriver.executeScript("mobile: getSystemBars"))
-        .thenReturn(mapOf("statusBar", mapOf("width", 1080L, "height", 100L)));
-    // Screenshot has extra margin on both axes so a correct crop must trim it, not pass it through.
-    byte[] screenshot = solidPng(1200, 2500);
+  void cropMobileWebChromeAndroidIsNoOpTest() throws ReflectiveOperationException {
+    // Android's screenshot is proxied to ChromeDriver by default (nativeWebScreenshot=false), so
+    // it's already scoped to the web content - no cropping should happen, or be queried for.
+    byte[] screenshot = solidPng(1080, 2000);
 
-    byte[] cropped =
+    byte[] result =
         cropMobileWebChrome(
             screenshot, mobileCaps("Android", "chrome"), mapOf("width", 1080L, "height", 2000L), 1.0);
 
-    Dimension dims = ImageHelpers.getImageDimensions(cropped);
-    assertEquals(1080, dims.getWidth());
-    assertEquals(2000, dims.getHeight());
+    assertArrayEquals(screenshot, result);
   }
 
   @Test
