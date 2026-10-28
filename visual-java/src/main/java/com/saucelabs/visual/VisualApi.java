@@ -836,6 +836,9 @@ public class VisualApi {
         extractElementsToIgnoreRegions(
             Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
     ignoreRegions.addAll(extractIgnoreSelectors(options));
+    if (isNativeMobileApp(caps) && !fullPage) {
+      ignoreRegions.addAll(getSystemBarIgnoreRegions(caps));
+    }
 
     // get adjusted screenshot dimensions
     Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
@@ -953,6 +956,64 @@ public class VisualApi {
 
     OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
     return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
+  }
+
+  /**
+   * Computes ignore regions for native system chrome (the status bar, and on Android the navigation
+   * bar) so automatic diffing doesn't flag OS-level UI that isn't part of the app under test.
+   */
+  private List<RegionIn> getSystemBarIgnoreRegions(Capabilities caps) {
+    List<RegionIn> regions = new ArrayList<>();
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+
+    if (os == OperatingSystem.IOS) {
+      Map<String, Object> screenInfo =
+          (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+      Map<String, Object> statusBarSize = (Map<String, Object>) screenInfo.get("statusBarSize");
+      if (statusBarSize != null) {
+        regions.add(toSystemBarIgnoreRegion("auto: System Status Bar", 0, 0, statusBarSize));
+      }
+      return regions;
+    }
+
+    Map<String, Object> systemBars;
+    try {
+      systemBars = (Map<String, Object>) driver.executeScript("mobile: getSystemBars");
+    } catch (WebDriverException e) {
+      // "mobile: getSystemBars" needs a newer Appium/UiAutomator2 version; skip auto ignore
+      // regions rather than failing the whole check when it's unavailable.
+      return regions;
+    }
+
+    Map<String, Object> statusBar = (Map<String, Object>) systemBars.get("statusBar");
+    if (statusBar != null) {
+      regions.add(toSystemBarIgnoreRegion("auto: System Status Bar", 0, 0, statusBar));
+    }
+
+    Map<String, Object> navigationBar = (Map<String, Object>) systemBars.get("navigationBar");
+    if (navigationBar != null
+        && Boolean.TRUE.equals(navigationBar.get("visible"))
+        && toInt(navigationBar.get("height")) > 0
+        && toInt(navigationBar.get("width")) > 0) {
+      regions.add(
+          toSystemBarIgnoreRegion(
+              "auto: System Navigation Bar",
+              toInt(navigationBar.get("x")),
+              toInt(navigationBar.get("y")),
+              navigationBar));
+    }
+
+    return regions;
+  }
+
+  private RegionIn toSystemBarIgnoreRegion(String name, int x, int y, Map<String, Object> dims) {
+    return VisualRegion.ignoreChangesFor(
+            name, x, y, toInt(dims.get("width")), toInt(dims.get("height")))
+        .toRegionIn();
+  }
+
+  private static int toInt(Object value) {
+    return ((Number) value).intValue();
   }
 
   /**
