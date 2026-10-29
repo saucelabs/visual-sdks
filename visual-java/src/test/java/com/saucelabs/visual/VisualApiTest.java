@@ -9,7 +9,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.saucelabs.visual.graphql.*;
@@ -20,9 +19,9 @@ import com.saucelabs.visual.graphql.type.DiffsConnection;
 import com.saucelabs.visual.graphql.type.RegionIn;
 import com.saucelabs.visual.graphql.type.SnapshotUpload;
 import com.saucelabs.visual.utils.BulkDriverHelper;
+import com.saucelabs.visual.utils.EnvironmentVariables;
 import com.saucelabs.visual.utils.ImageHelpers;
 import java.awt.image.BufferedImage;
-import com.saucelabs.visual.utils.EnvironmentVariables;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -238,7 +237,8 @@ class VisualApiTest {
         .thenReturn(
             mapOf(
                 "statusBar", mapOf("width", 1080L, "height", 100L),
-                "navigationBar", mapOf("visible", false, "x", 0L, "y", 0L, "width", 0L, "height", 0L)));
+                "navigationBar",
+                    mapOf("visible", false, "x", 0L, "y", 0L, "width", 0L, "height", 0L)));
 
     List<RegionIn> regions = getSystemBarIgnoreRegions(mobileCaps("Android", null));
 
@@ -289,7 +289,8 @@ class VisualApiTest {
 
   @Test
   void getDeviceNameIosFallsBackToModelWhenNameIsEmptyTest() throws ReflectiveOperationException {
-    when(mockDriver.executeScript("mobile: deviceInfo")).thenReturn(mapOf("name", "", "model", "iPhone"));
+    when(mockDriver.executeScript("mobile: deviceInfo"))
+        .thenReturn(mapOf("name", "", "model", "iPhone"));
 
     assertEquals("iPhone", getDeviceName(mobileCaps("iOS", null), mapOf()));
   }
@@ -322,7 +323,10 @@ class VisualApiTest {
 
     byte[] result =
         cropMobileWebChrome(
-            screenshot, mobileCaps("Android", "chrome"), mapOf("width", 1080L, "height", 2000L), 1.0);
+            screenshot,
+            mobileCaps("Android", "chrome"),
+            mapOf("width", 1080L, "height", 2000L),
+            1.0);
 
     assertArrayEquals(screenshot, result);
   }
@@ -364,7 +368,8 @@ class VisualApiTest {
   }
 
   private static byte[] solidPng(int width, int height) {
-    return ImageHelpers.saveImage(new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png");
+    return ImageHelpers.saveImage(
+        new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png");
   }
 
   private boolean isNativeMobileApp(Capabilities caps) throws ReflectiveOperationException {
@@ -390,7 +395,8 @@ class VisualApiTest {
   private String getDeviceName(Capabilities caps, Map<String, Object> windowDims)
       throws ReflectiveOperationException {
     return (String)
-        invoke(api, "getDeviceName", new Class<?>[] {Capabilities.class, Map.class}, caps, windowDims);
+        invoke(
+            api, "getDeviceName", new Class<?>[] {Capabilities.class, Map.class}, caps, windowDims);
   }
 
   private String wrapNativePageSource(String pageSource, Capabilities caps)
@@ -418,7 +424,8 @@ class VisualApiTest {
             devicePixelRatio);
   }
 
-  private static Object invoke(Object target, String methodName, Class<?>[] paramTypes, Object... args)
+  private static Object invoke(
+      Object target, String methodName, Class<?>[] paramTypes, Object... args)
       throws ReflectiveOperationException {
     Method method = target.getClass().getDeclaredMethod(methodName, paramTypes);
     method.setAccessible(true);
