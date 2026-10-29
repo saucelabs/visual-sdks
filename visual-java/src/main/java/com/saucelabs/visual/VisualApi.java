@@ -9,6 +9,7 @@ import com.saucelabs.visual.exception.InvalidWebElementException;
 import com.saucelabs.visual.exception.VisualApiException;
 import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.*;
+import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
 import com.saucelabs.visual.utils.*;
@@ -779,10 +780,7 @@ public class VisualApi {
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     Capabilities caps = driver.getCapabilities();
     Window window = new Window(this.driver);
-    Map<String, Object> windowDims =
-        (Map<String, Object>)
-            driver.executeScript(
-                "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+    Map<String, Object> windowDims = getWindowDimensions(caps);
     double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
     boolean fullPage = options.getFullPageScreenshotConfig() != null;
     WebElement clipElement = getClipElement(options);
@@ -790,7 +788,7 @@ public class VisualApi {
     Rectangle clipRect = null;
 
     if (clipElement != null) {
-      Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement);
+      Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement, caps);
 
       clipRect =
           new Rectangle(
@@ -802,9 +800,17 @@ public class VisualApi {
       clipOffset = new Point(clipElementDims.getX(), clipElementDims.getY());
     }
 
-    // Needs to be queried after our clipElement block due to potential scrolling if fullPage=false
-    Point scrollOffset = fullPage ? new Point(0, 0) : window.getViewport().getPoint();
+    // Needs to be queried after our clipElement block due to potential scrolling if fullPage=false.
+    // Native apps have no single document scroll position, so there's nothing to query.
+    Point scrollOffset =
+        fullPage || isNativeMobileApp(caps) ? new Point(0, 0) : window.getViewport().getPoint();
     byte[] screenshot = getScreenshot(fullPage);
+
+    // Mobile screenshots include OS chrome (status bar); crop it so the image matches the web
+    // viewport's own coordinate space.
+    if (isMobileWebBrowser(caps)) {
+      screenshot = cropMobileWebChrome(screenshot, caps, windowDims, devicePixelRatio);
+    }
 
     // Handle clipping, if rect is present
     if (clipRect != null) {
@@ -836,6 +842,12 @@ public class VisualApi {
         extractElementsToIgnoreRegions(
             Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
     ignoreRegions.addAll(extractIgnoreSelectors(options));
+    if (isNativeMobileApp(caps)) {
+      // Local full-page capture isn't implemented yet for native apps (getScreenshot() always
+      // falls back to a standard screenshot), so system bars are still present regardless of
+      // fullPage - revisit this gate once full-page stitching exists for native.
+      ignoreRegions.addAll(getSystemBarIgnoreRegions(caps));
+    }
 
     // get adjusted screenshot dimensions
     Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
@@ -845,8 +857,7 @@ public class VisualApi {
             new Dimension(
                 (int) Math.round(imageDims.getWidth() / devicePixelRatio),
                 (int) Math.round(imageDims.getHeight() / devicePixelRatio)));
-    String deviceName =
-        String.format("Desktop (%sx%s)", windowDims.get("width"), windowDims.get("height"));
+    String deviceName = getDeviceName(caps, windowDims);
 
     // make regions relative to viewport
     List<RegionIn> visibleIgnoreRegions = new ArrayList<>();
@@ -871,13 +882,7 @@ public class VisualApi {
     // upload dom if present / enabled
     Boolean shouldCaptureDom = Optional.ofNullable(options.getCaptureDom()).orElse(this.captureDom);
     if (shouldCaptureDom != null && shouldCaptureDom) {
-      Object result = this.driver.executeScript(this.client.getDomCaptureScript());
-      if (result instanceof String) {
-        this.client.upload(
-            uploadResult.getDomUploadUrl(), ((String) result).getBytes(), "text/html");
-      } else {
-        System.out.println("Failed to capture Visual DOM.");
-      }
+      uploadDom(uploadResult, caps);
     }
 
     // create snapshot using upload id
@@ -885,7 +890,7 @@ public class VisualApi {
         new CreateSnapshotMutation(
             SnapshotIn.builder()
                 .withBrowser(CapabilityUtils.getBrowser(caps))
-                .withBrowserVersion(caps.getBrowserVersion())
+                .withBrowserVersion(CapabilityUtils.getBrowserVersion(caps))
                 .withDevice(deviceName)
                 .withDevicePixelRatio(devicePixelRatio)
                 .withOperatingSystem(CapabilityUtils.getOperatingSystem(caps))
@@ -926,23 +931,184 @@ public class VisualApi {
     return null;
   }
 
+  /**
+   * Full-page capture relies on WebDriver BiDi, which isn't available on sessions proxied through
+   * Appium (e.g. mobile browsers). Fall back to a standard screenshot in that case.
+   */
   private byte[] getScreenshot(boolean fullPage) {
     if (fullPage) {
-      BrowsingContext browsingContext = new BrowsingContext(driver, driver.getWindowHandle());
-      CaptureScreenshotParameters csp = new CaptureScreenshotParameters();
-      csp.origin(CaptureScreenshotParameters.Origin.DOCUMENT);
-      String screenshot = browsingContext.captureScreenshot(csp);
-      return OutputType.BYTES.convertFromBase64Png(screenshot);
+      try {
+        BrowsingContext browsingContext = new BrowsingContext(driver, driver.getWindowHandle());
+        CaptureScreenshotParameters csp = new CaptureScreenshotParameters();
+        csp.origin(CaptureScreenshotParameters.Origin.DOCUMENT);
+        String screenshot = browsingContext.captureScreenshot(csp);
+        return OutputType.BYTES.convertFromBase64Png(screenshot);
+      } catch (WebDriverException e) {
+        // No BiDi support on this session - fall through to a standard screenshot.
+        return driver.getScreenshotAs(OutputType.BYTES);
+      }
     }
 
     return driver.getScreenshotAs(OutputType.BYTES);
   }
 
   /**
-   * Query the browser for the dimensions and offset of the current clip element after scrolling to
-   * it, if applicable.
+   * A native mobile app session (Appium with "appium:app" rather than "browserName") has no DOM, so
+   * none of our JS snippets can run against it. Mobile *web* sessions (browserName set, even on
+   * Android/iOS) are real browsers and run JS the same as desktop.
    */
-  private Rectangle scrollToAndGetClipElementDims(boolean fullPage, WebElement clipElement) {
+  private boolean isNativeMobileApp(Capabilities caps) {
+    String browserName = caps.getBrowserName();
+    if (!browserName.isEmpty()) {
+      return false;
+    }
+
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+    return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
+  }
+
+  /** A mobile web session: browserName set on Android/iOS, unlike a native app session. */
+  private boolean isMobileWebBrowser(Capabilities caps) {
+    String browserName = caps.getBrowserName();
+    if (browserName.isEmpty()) {
+      return false;
+    }
+
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+    return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
+  }
+
+  /** Crops OS chrome (e.g. the status bar) out of a mobile screenshot to match the web viewport. */
+  private byte[] cropMobileWebChrome(
+      byte[] screenshot,
+      Capabilities caps,
+      Map<String, Object> windowDims,
+      double devicePixelRatio) {
+    Map<String, Object> statusBarSize = getStatusBarSize(caps);
+    if (statusBarSize == null || CapabilityUtils.getOperatingSystem(caps) != OperatingSystem.IOS) {
+      return screenshot;
+    }
+
+    // iOS reports points (needs scaling).
+    int statusBarHeight = (int) Math.round(toInt(statusBarSize.get("height")) * devicePixelRatio);
+    int viewportWidth = (int) Math.round(toInt(windowDims.get("width")) * devicePixelRatio);
+    int viewportHeight = (int) Math.round(toInt(windowDims.get("height")) * devicePixelRatio);
+
+    Dimension imageDims = ImageHelpers.getImageDimensions(screenshot);
+    Rectangle cropRect = new Rectangle(0, statusBarHeight, viewportHeight, viewportWidth);
+    Optional<Rectangle> boundedCropRect =
+        CartesianHelpers.intersect(cropRect, new Rectangle(new Point(0, 0), imageDims));
+
+    if (!boundedCropRect.isPresent()) {
+      return screenshot;
+    }
+
+    return ImageHelpers.saveImage(
+        ImageHelpers.cropImage(ImageHelpers.loadImage(screenshot), boundedCropRect.get()), "png");
+  }
+
+  /**
+   * Raw response from Appium's system-bar command: "mobile: deviceScreenInfo" (iOS) or "mobile:
+   * getSystemBars" (Android). Null if unavailable.
+   */
+  private Map<String, Object> getRawSystemBarInfo(Capabilities caps) {
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+
+    if (os == OperatingSystem.IOS) {
+      try {
+        return (Map<String, Object>) driver.executeScript("mobile: deviceScreenInfo");
+      } catch (WebDriverException e) {
+        return null;
+      }
+    }
+
+    if (os != OperatingSystem.ANDROID) {
+      return null;
+    }
+
+    try {
+      return (Map<String, Object>) driver.executeScript("mobile: getSystemBars");
+    } catch (WebDriverException e) {
+      return null;
+    }
+  }
+
+  /** Key for the status bar's size in {@link #getRawSystemBarInfo}'s response. */
+  private String getStatusBarKey(Capabilities caps) {
+    return CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.IOS
+        ? "statusBarSize"
+        : "statusBar";
+  }
+
+  /** Status bar size via {@link #getRawSystemBarInfo}; null if unavailable. */
+  private Map<String, Object> getStatusBarSize(Capabilities caps) {
+    Map<String, Object> rawInfo = getRawSystemBarInfo(caps);
+    if (rawInfo == null) {
+      return null;
+    }
+
+    return (Map<String, Object>) rawInfo.get(getStatusBarKey(caps));
+  }
+
+  /**
+   * Computes ignore regions for native system chrome (the status bar, and on Android the navigation
+   * bar) so automatic diffing doesn't flag OS-level UI that isn't part of the app under test.
+   */
+  private List<RegionIn> getSystemBarIgnoreRegions(Capabilities caps) {
+    List<RegionIn> regions = new ArrayList<>();
+    Map<String, Object> rawInfo = getRawSystemBarInfo(caps);
+    if (rawInfo == null) {
+      // Not mobile, or an older Appium that lacks "mobile: getSystemBars" - skip rather than fail.
+      return regions;
+    }
+
+    Map<String, Object> statusBar = (Map<String, Object>) rawInfo.get(getStatusBarKey(caps));
+    if (statusBar != null) {
+      regions.add(toSystemBarIgnoreRegion("auto: System Status Bar", 0, 0, statusBar));
+    }
+
+    if (CapabilityUtils.getOperatingSystem(caps) != OperatingSystem.ANDROID) {
+      // iOS has no navigation bar concept.
+      return regions;
+    }
+
+    Map<String, Object> navigationBar = (Map<String, Object>) rawInfo.get("navigationBar");
+    if (navigationBar != null
+        && Boolean.TRUE.equals(navigationBar.get("visible"))
+        && toInt(navigationBar.get("height")) > 0
+        && toInt(navigationBar.get("width")) > 0) {
+      regions.add(
+          toSystemBarIgnoreRegion(
+              "auto: System Navigation Bar",
+              toInt(navigationBar.get("x")),
+              toInt(navigationBar.get("y")),
+              navigationBar));
+    }
+
+    return regions;
+  }
+
+  private RegionIn toSystemBarIgnoreRegion(String name, int x, int y, Map<String, Object> dims) {
+    return VisualRegion.ignoreChangesFor(
+            name, x, y, toInt(dims.get("width")), toInt(dims.get("height")))
+        .toRegionIn();
+  }
+
+  private static int toInt(Object value) {
+    return ((Number) value).intValue();
+  }
+
+  /**
+   * Query the dimensions and offset of the current clip element after scrolling to it, if
+   * applicable. Uses the WebElement's native rect directly on native mobile app sessions, which
+   * have no DOM to query via JS.
+   */
+  private Rectangle scrollToAndGetClipElementDims(
+      boolean fullPage, WebElement clipElement, Capabilities caps) {
+    if (isNativeMobileApp(caps)) {
+      return clipElement.getRect();
+    }
+
     final String getElementDimensions =
         "const [clipElement, isFullPage] = arguments;\n"
             + "      if (!isFullPage) {\n"
@@ -972,6 +1138,134 @@ public class VisualApi {
         clipMap.get("y").intValue(),
         clipMap.get("height").intValue(),
         clipMap.get("width").intValue());
+  }
+
+  /**
+   * Query the browser's viewport size and device pixel ratio. Uses the WebDriver-native window size
+   * and device-specific pixel ratio directly on native mobile app sessions.
+   */
+  private Map<String, Object> getWindowDimensions(Capabilities caps) {
+    if (isNativeMobileApp(caps)) {
+      Dimension size = driver.manage().window().getSize();
+      Map<String, Object> windowDims = new HashMap<>();
+      windowDims.put("height", size.getHeight());
+      windowDims.put("width", size.getWidth());
+      windowDims.put("dpr", getNativeDevicePixelRatio(caps));
+      return windowDims;
+    }
+
+    return (Map<String, Object>)
+        driver.executeScript(
+            "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
+  }
+
+  /**
+   * Returns the device pixel ratio for a native mobile app session - i.e. the scaling factor needed
+   * to convert element/clip coordinates into the same space as the screenshot's pixels. Only iOS
+   * needs this: XCUITest reports element rects in points while screenshots are captured at the
+   * native pixel resolution, so the UIScreen "scale" factor (e.g. 2 or 3) is required to align the
+   * two. Android's UiAutomator2 already reports element rects in the same raw pixel space as its
+   * screenshots - its display "density" is a different, dp-conversion concept and isn't a stand-in
+   * for this, so no scaling is applied there.
+   */
+  private double getNativeDevicePixelRatio(Capabilities caps) {
+    if (CapabilityUtils.getOperatingSystem(caps) != OperatingSystem.IOS) {
+      return 1.0;
+    }
+
+    Map<String, Object> screenInfo = getRawSystemBarInfo(caps);
+    if (screenInfo == null) {
+      return 1.0;
+    }
+
+    Object scale = screenInfo.get("scale");
+    return scale instanceof Number ? ((Number) scale).doubleValue() : 1.0;
+  }
+
+  /**
+   * Captures the current DOM and uploads it. Uses WebDriver's native page source (the native view
+   * hierarchy XML) directly on native mobile app sessions, which have no DOM to query via JS.
+   */
+  private void uploadDom(SnapshotUpload uploadResult, Capabilities caps) {
+    String dom;
+    if (isNativeMobileApp(caps)) {
+      String pageSource = this.driver.getPageSource();
+      dom = pageSource != null ? wrapNativePageSource(pageSource, caps) : null;
+    } else {
+      Object result = this.driver.executeScript(this.client.getDomCaptureScript());
+      dom = result instanceof String ? (String) result : null;
+    }
+
+    if (dom != null) {
+      this.client.upload(uploadResult.getDomUploadUrl(), dom.getBytes(), "text/html");
+    } else {
+      System.out.println("Failed to capture Visual DOM.");
+    }
+  }
+
+  /**
+   * Wraps a native app's page source (its XML view hierarchy) in a custom root element naming the
+   * platform it came from - "android-page-source" or "ios-page-source" - so downstream DOM viewers
+   * can tell a native view hierarchy apart from a captured web DOM.
+   */
+  private String wrapNativePageSource(String pageSource, Capabilities caps) {
+    String rootElementName =
+        CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.ANDROID
+            ? "android-page-source"
+            : "ios-page-source";
+    // The root element can only appear once, so drop any XML declaration the page source itself
+    // starts with - the wrapper below provides its own.
+    String body = pageSource.replaceFirst("^\\s*<\\?xml[^>]*\\?>\\s*", "");
+
+    return "<!DOCTYPE "
+        + rootElementName
+        + ">\n<"
+        + rootElementName
+        + ">"
+        + body
+        + "</"
+        + rootElementName
+        + ">";
+  }
+
+  /**
+   * Returns a human-readable device name. For Android/iOS sessions, queries the device directly via
+   * Appium's "mobile: deviceInfo" command rather than trusting the "deviceName" capability -
+   * Appium's own drivers frequently overwrite that capability with the device's raw UDID/serial for
+   * real devices instead of anything human-readable (see
+   * https://github.com/appium/appium/issues/8454). Falls back to a generic desktop resolution label
+   * for non-mobile sessions.
+   */
+  private String getDeviceName(Capabilities caps, Map<String, Object> windowDims) {
+    OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
+    if (os == OperatingSystem.ANDROID || os == OperatingSystem.IOS) {
+      return getMobileDeviceInfoName(os);
+    }
+
+    return String.format("Desktop (%sx%s)", windowDims.get("width"), windowDims.get("height"));
+  }
+
+  /**
+   * Builds a device label from Appium's "mobile: deviceInfo" command. Android reports
+   * "manufacturer" and "model" straight from the OS (e.g. "Google Pixel 8"). iOS only reports the
+   * generic device family via "name"/"model" (e.g. "iPhone") - Apple doesn't expose the specific
+   * marketing name (e.g. "iPhone 15 Pro") through any public API, so this is the most specific
+   * label iOS can give.
+   */
+  private String getMobileDeviceInfoName(OperatingSystem os) {
+    Map<String, Object> deviceInfo =
+        (Map<String, Object>) driver.executeScript("mobile: deviceInfo");
+
+    if (os == OperatingSystem.ANDROID) {
+      Object manufacturer = deviceInfo.get("manufacturer");
+      Object model = deviceInfo.get("model");
+      return (manufacturer instanceof String ? manufacturer + " " : "") + model;
+    }
+
+    Object name = deviceInfo.get("name");
+    return name instanceof String && !((String) name).isEmpty()
+        ? (String) name
+        : String.valueOf(deviceInfo.get("model"));
   }
 
   /** Parse the Selenium parsed value from window.devicePixelRatio into a Double for our API */
