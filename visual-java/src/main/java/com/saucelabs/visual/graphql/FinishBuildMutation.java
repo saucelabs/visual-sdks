@@ -1,6 +1,7 @@
 package com.saucelabs.visual.graphql;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saucelabs.visual.graphql.type.BuildStatus;
 import java.util.Collections;
@@ -22,8 +23,16 @@ public class FinishBuildMutation implements GraphQLOperation {
 
     public final String uuid;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public final Integer delay;
+
     public FinishBuildIn(String uuid) {
+      this(uuid, null);
+    }
+
+    public FinishBuildIn(String uuid, Integer delay) {
       this.uuid = uuid;
+      this.delay = delay;
     }
   }
 

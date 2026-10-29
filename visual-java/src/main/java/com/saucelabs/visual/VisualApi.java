@@ -34,7 +34,8 @@ public class VisualApi {
   private static final Pattern sauceRegionRegex = Pattern.compile("saucelabs.(com|net)");
 
   private static String resolveEndpoint() {
-    return DataCenter.fromSauceRegion(EnvironmentVariables.SAUCE_REGION).endpoint;
+    return DataCenter.fromSauceRegion(EnvironmentVariableProvider.DEFAULT.getSauceRegion())
+        .endpoint;
   }
 
   /** Creates a VisualApi instance using builder style */
@@ -48,6 +49,9 @@ public class VisualApi {
     private String defaultBranchName;
     private String buildName;
     private List<String> tags;
+    private String buildId;
+    private String customId;
+    private Duration finishDelay;
     private Boolean captureDom;
     private FullPageScreenshotConfig fullPageScreenshotConfig;
     private Boolean hideScrollBars;
@@ -74,6 +78,46 @@ public class VisualApi {
 
     public Builder withBuild(String buildName) {
       this.buildName = buildName;
+      return this;
+    }
+
+    /**
+     * Attach the created {@link VisualApi} to an existing build identified by its Sauce Visual
+     * build id. When set, this takes precedence over the {@code SAUCE_VISUAL_BUILD_ID} environment
+     * variable and over {@link #withCustomId(String)}.
+     *
+     * @param buildId Sauce Visual build id to reuse.
+     */
+    public Builder withBuildId(String buildId) {
+      this.buildId = buildId;
+      return this;
+    }
+
+    /**
+     * Attach the created {@link VisualApi} to an existing build identified by its custom id. When
+     * set, this takes precedence over the {@code SAUCE_VISUAL_CUSTOM_ID} environment variable.
+     *
+     * @param customId Custom id previously assigned to a build.
+     */
+    public Builder withCustomId(String customId) {
+      this.customId = customId;
+      return this;
+    }
+
+    /**
+     * Delay the server-side build completion by {@code delay} and keep the build open for new
+     * snapshots
+     *
+     * <p>Must be called with <strong>after</strong> {@link #withCustomId(String)} — the delay only
+     * can be applied to a build that is being created or reused via customId.
+     *
+     * @param delay build finish delay in seconds to accept more Visual sessions
+     */
+    public Builder withBuildFinishDelay(Duration delay) {
+      if (delay != null && delay.isNegative()) {
+        throw new IllegalArgumentException("finishDelay must not be negative");
+      }
+      this.finishDelay = delay;
       return this;
     }
 
@@ -149,10 +193,17 @@ public class VisualApi {
     }
 
     private BuildAttributes getBuildAttributes() {
-      return new BuildAttributes(buildName, projectName, branchName, defaultBranchName, tags);
+
+      BuildAttributes attrs =
+          new BuildAttributes(
+              buildName, projectName, branchName, defaultBranchName, tags, buildId, customId);
+      attrs.useBuildDelay(finishDelay);
+      return attrs;
     }
 
     public VisualApi build() {
+      validate();
+
       VisualApi api = new VisualApi(this);
 
       if (this.captureDom != null) {
@@ -173,7 +224,15 @@ public class VisualApi {
       if (this.baselineOverride != null) {
         api.setBaselineOverride(this.baselineOverride);
       }
+
       return api;
+    }
+
+    void validate() {
+      if ((this.customId == null || this.customId.trim().isEmpty()) && this.finishDelay != null) {
+        throw new IllegalStateException(
+            "withBuildFinishDelay(...) requires withCustomId(...) to be called.");
+      }
     }
   }
 
@@ -226,7 +285,12 @@ public class VisualApi {
    * @param accessKey SauceLabs access key
    */
   public VisualApi(RemoteWebDriver driver, String url, String username, String accessKey) {
-    this(driver, url, username, accessKey, new BuildAttributes(null, null, null, null));
+    this(
+        driver,
+        url,
+        username,
+        accessKey,
+        new BuildAttributes(null, null, null, null, null, null, null));
   }
 
   /**
@@ -459,39 +523,83 @@ public class VisualApi {
     private final String defaultBranch;
     private final List<String> tags;
 
-    public BuildAttributes(String name, String project, String branch, String defaultBranch) {
-      this(name, project, branch, defaultBranch, null);
-    }
+    private final String buildId;
+    private final String customId;
+    private final EnvironmentVariableProvider env;
+    private Duration finishDelay;
 
     public BuildAttributes(
-        String name, String project, String branch, String defaultBranch, List<String> tags) {
+        String name,
+        String project,
+        String branch,
+        String defaultBranch,
+        List<String> tags,
+        String buildId,
+        String customId) {
+      this(
+          name,
+          project,
+          branch,
+          defaultBranch,
+          tags,
+          buildId,
+          customId,
+          EnvironmentVariableProvider.DEFAULT);
+    }
+
+    BuildAttributes(
+        String name,
+        String project,
+        String branch,
+        String defaultBranch,
+        List<String> tags,
+        String buildId,
+        String customId,
+        EnvironmentVariableProvider env) {
       this.name = name;
       this.project = project;
       this.branch = branch;
       this.defaultBranch = defaultBranch;
       this.tags = tags;
+      this.buildId = buildId;
+      this.customId = customId;
+      this.env = env != null ? env : EnvironmentVariableProvider.DEFAULT;
+    }
+
+    void useBuildDelay(Duration finishDelay) {
+      this.finishDelay = finishDelay;
+    }
+
+    public Duration getBuildDelay() {
+      return finishDelay;
     }
 
     public String getName() {
-      if (isNotBlank(EnvironmentVariables.BUILD_NAME_DEPRECATED)) {
+      if (isNotBlank(env.getBuildNameDeprecated())) {
         log.warn(
             "Sauce Labs Visual: Environment variable \"BUILD_NAME\" is deprecated and will be removed in a future version. Please use \"SAUCE_VISUAL_BUILD_NAME\" instead.");
       }
-      return valueOrDefault(
-          valueOrDefault(name, EnvironmentVariables.BUILD_NAME),
-          EnvironmentVariables.BUILD_NAME_DEPRECATED);
+      return valueOrDefault(valueOrDefault(name, env.getBuildName()), env.getBuildNameDeprecated());
     }
 
     public String getProject() {
-      return valueOrDefault(project, EnvironmentVariables.PROJECT_NAME);
+      return valueOrDefault(project, env.getProjectName());
     }
 
     public String getBranch() {
-      return valueOrDefault(branch, EnvironmentVariables.BRANCH_NAME);
+      return valueOrDefault(branch, env.getBranchName());
     }
 
     public String getDefaultBranch() {
-      return valueOrDefault(defaultBranch, EnvironmentVariables.DEFAULT_BRANCH_NAME);
+      return valueOrDefault(defaultBranch, env.getDefaultBranchName());
+    }
+
+    public String getBuildId() {
+      return valueOrDefault(buildId, env.getBuildId());
+    }
+
+    public String getCustomId() {
+      return valueOrDefault(customId, env.getCustomId());
     }
 
     /** The tags passed in code, otherwise those from {@code SAUCE_VISUAL_TAGS}. */
@@ -501,7 +609,7 @@ public class VisualApi {
   }
 
   VisualBuild createBuild(String buildName) {
-    return createBuild(new BuildAttributes(buildName, null, null, null));
+    return createBuild(new BuildAttributes(buildName, null, null, null, null, null, null, null));
   }
 
   VisualBuild createBuild(BuildAttributes buildAttributes) {
@@ -512,7 +620,8 @@ public class VisualApi {
                 buildAttributes.getProject(),
                 buildAttributes.getBranch(),
                 buildAttributes.getDefaultBranch(),
-                buildAttributes.getTags()));
+                buildAttributes.getTags(),
+                buildAttributes.getCustomId()));
     CreateBuildMutation.Data data = client.execute(mutation, CreateBuildMutation.Data.class);
     log.info(getStartupMessage(data.result.url));
     return new VisualBuild(
@@ -531,8 +640,20 @@ public class VisualApi {
    * @return Finished build
    */
   FinishBuildMutation.Result finishBuild(String buildId) {
+    return finishBuild(buildId, null);
+  }
+
+  /**
+   * Executes a finishBuild mutation with optional delay
+   *
+   * @param buildId Build id
+   * @param delay Build finish delay
+   * @return Finished build
+   */
+  FinishBuildMutation.Result finishBuild(String buildId, Duration delay) {
+    Integer delaySeconds = delay == null ? null : Math.toIntExact(delay.getSeconds());
     FinishBuildMutation mutation =
-        new FinishBuildMutation(new FinishBuildMutation.FinishBuildIn(buildId));
+        new FinishBuildMutation(new FinishBuildMutation.FinishBuildIn(buildId, delaySeconds));
     return client.execute(mutation, FinishBuildMutation.Data.class).result;
   }
 
