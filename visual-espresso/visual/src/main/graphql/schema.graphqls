@@ -452,6 +452,7 @@ input BuildIn {
     keepAliveTimeout: Int
     name: String
     project: String
+    tags: [String!]
 }
 
 enum BuildMode {
