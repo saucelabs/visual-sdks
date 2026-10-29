@@ -94,6 +94,24 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertNil(plain.baselineOverride);
 }
 
+- (void)testBuildOptionsKeepFinishDelay {
+    SLVBuildOptions *plain = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil
+                                                     defaultBranch:nil customId:nil buildId:nil];
+    XCTAssertNil(plain.finishDelay);
+    SLVBuildOptions *shared = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil defaultBranch:nil
+                                                           customId:@"ci-42" buildId:nil finishDelay:@120];
+    XCTAssertEqualObjects(shared.finishDelay, @120);
+    XCTAssertEqualObjects(shared.customId, @"ci-42");
+
+    NSError *error = nil;
+    SLVBuildOptions *invalid = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil defaultBranch:nil
+                                                            customId:nil buildId:nil finishDelay:@120];
+    XCTAssertNil([[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
+                                             options:invalid error:&error]);
+    XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
+    XCTAssertEqual(error.code, SLVErrorCodeInvalidFinishDelay);
+}
+
 - (void)testClientKeepsOptions {
     SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Build" project:@"Project" branch:nil
                                                        defaultBranch:nil customId:nil buildId:nil];

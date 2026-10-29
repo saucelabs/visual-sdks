@@ -18,5 +18,6 @@ public enum VisualErrorCode: Int, Sendable {
     case clipElementOffScreen = 13
     case screenshotFailed = 14
     case fullPageNotSupported = 15
+    case invalidFinishDelay = 16
 }
 #endif

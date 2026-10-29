@@ -21,6 +21,11 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         )
     }
 
+    /// The input of the last request, which finishes the build.
+    private func finishInput(_ route: StubURLProtocol.Route) -> [String: Any]? {
+        (route.bodies.last?["variables"] as? [String: Any])?["input"] as? [String: Any]
+    }
+
     func testFinishesBuildThisRunCreated() async throws {
         let store = SharedBuildStore()
         let route = StubURLProtocol.Route([reply(status: "RUNNING"), reply(status: "EQUAL")])
@@ -29,6 +34,34 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         guard case .finished(let build) = await store.finishOwnedBuild() else { return XCTFail("Not finished") }
         XCTAssertEqual(build.status, "EQUAL")
         XCTAssertTrue((route.bodies.last?["query"] as? String)?.contains("finishBuild") == true)
+        XCTAssertEqual(finishInput(route) as? [String: String], ["uuid": buildID], "No delay sent")
+    }
+
+    func testEveryWorkerFinishesACustomIdBuildWithADelay() async throws {
+        let created = [StubURLProtocol.Reply.json(["data": ["result": NSNull()]]), reply(status: "RUNNING")]
+        for (label, replies) in [("reused", [reply(status: "RUNNING")]), ("created", created)] {
+            let store = SharedBuildStore()
+            let route = StubURLProtocol.Route(replies + [reply(status: "RUNNING")])
+            _ = try await client(route, store, VisualBuildOptions(customId: "ci-42", finishDelay: 30.2)).build()
+
+            guard case .finishDelayed(let build, let seconds) = await store.finishOwnedBuild() else {
+                return XCTFail("Not finished: \(label)")
+            }
+            XCTAssertEqual(build.id, buildID, label)
+            XCTAssertEqual(seconds, 31, "Rounded up: \(label)")
+            XCTAssertEqual(finishInput(route)?["delay"] as? Int, 31, label)
+        }
+    }
+
+    func testManualFinishSendsTheDelay() async throws {
+        let store = SharedBuildStore()
+        let route = StubURLProtocol.Route([reply(status: "RUNNING"), reply(status: "RUNNING")])
+        let visual = try client(route, store, VisualBuildOptions(customId: "ci-42", finishDelay: 0))
+        _ = try await visual.finish()
+
+        XCTAssertEqual(finishInput(route)?["delay"] as? Int, 0)
+        guard case .finishDelayed = await store.finishOwnedBuild() else { return XCTFail("Not finished") }
+        XCTAssertEqual(route.requests.count, 2, "Lookup and one finishBuild")
     }
 
     func testLeavesReusedBuildOpen() async throws {
@@ -90,6 +123,8 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
                        "Sauce Visual: left build https://app.saucelabs.com/visual/builds/\(buildID) open, because it is named by a build ID or custom ID. Finish it once every worker is done.")
         XCTAssertEqual(AutoFinish.message(for: .finished(build)),
                        "Sauce Visual: finished build https://app.saucelabs.com/visual/builds/\(buildID) (UNAPPROVED).")
+        XCTAssertEqual(AutoFinish.message(for: .finishDelayed(build, seconds: 60)),
+                       "Sauce Visual: build https://app.saucelabs.com/visual/builds/\(buildID) finishes 60 s after the last worker finishes it.")
         XCTAssertEqual(AutoFinish.message(for: .failed(VisualError.networkFailure)),
                        "Sauce Visual: could not finish the build. Could not reach the Sauce Visual API.")
     }

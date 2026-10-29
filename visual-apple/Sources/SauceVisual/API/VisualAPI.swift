@@ -78,13 +78,14 @@ internal struct VisualAPI: Sendable {
     }
 
     /// Finishes a build whose last `finishBuild` may have been applied. Looks the build up first, and
-    /// sends `finishBuild` again only while the service still reports it running.
+    /// sends `finishBuild` again only while the service still reports it running. With a `delay`, the build
+    /// keeps running until the delay has passed, so it may be sent again; that only restarts the delay.
     /// - Throws: `VisualError.buildNotFound` or `VisualAPIError`.
-    func reconcileFinish(_ build: VisualBuild) async throws -> VisualBuild {
+    func reconcileFinish(_ build: VisualBuild, delay: Int? = nil) async throws -> VisualBuild {
         guard let id = UUID(uuidString: build.id), let current = try await self.build(id: id) else {
             throw VisualError.buildNotFound
         }
-        guard current.isCompleted else { return try await finishBuild(build) }
+        guard current.isCompleted else { return try await finishBuild(build, delay: delay) }
         return Self.updated(build, with: current)
     }
 
@@ -120,9 +121,12 @@ internal struct VisualAPI: Sendable {
         )
     }
 
-    func finishBuild(_ build: VisualBuild) async throws -> VisualBuild {
+    /// With a `delay` in seconds, the service finishes the build once that long has passed since the last
+    /// `finishBuild`, so the build is still running when this returns.
+    func finishBuild(_ build: VisualBuild, delay: Int? = nil) async throws -> VisualBuild {
+        let input = GraphQL.FinishBuildIn(uuid: build.id, delay: delay)
         let result = try await transport.execute(
-            Self.finishBuildMutation, variables: GraphQL.Input(input: GraphQL.FinishBuildIn(uuid: build.id)),
+            Self.finishBuildMutation, variables: GraphQL.Input(input: input),
             as: GraphQL.BuildResponse.self
         )
         return Self.updated(build, with: try Self.require(result))
@@ -233,6 +237,8 @@ internal struct VisualAPI: Sendable {
 
         struct FinishBuildIn: Encodable, Sendable {
             let uuid: String
+            /// Left out of the request when `nil`.
+            let delay: Int?
         }
 
         struct SnapshotUploadIn: Encodable, Sendable {
