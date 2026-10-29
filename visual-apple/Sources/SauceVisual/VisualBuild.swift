@@ -16,6 +16,10 @@ public struct VisualBuildOptions: Hashable, Sendable {
     /// Existing Sauce Visual build UUID to add snapshots to. Falls back to `SAUCE_VISUAL_BUILD_ID`.
     /// If no build has this ID, `build()` throws `VisualError.buildNotFound` rather than creating one.
     public var buildId: String?
+    /// Seconds the service waits before finishing a shared build, so other workers can still add snapshots.
+    /// Needs a `customId`. Each worker then finishes the build when its tests end, and the service finishes it
+    /// once this long has passed since the last worker did. Rounded up to whole seconds.
+    public var finishDelay: TimeInterval?
 
     public init(
         name: String? = nil,
@@ -23,7 +27,8 @@ public struct VisualBuildOptions: Hashable, Sendable {
         branch: String? = nil,
         defaultBranch: String? = nil,
         customId: String? = nil,
-        buildId: String? = nil
+        buildId: String? = nil,
+        finishDelay: TimeInterval? = nil
     ) {
         self.name = name
         self.project = project
@@ -31,6 +36,7 @@ public struct VisualBuildOptions: Hashable, Sendable {
         self.defaultBranch = defaultBranch
         self.customId = customId
         self.buildId = buildId
+        self.finishDelay = finishDelay
     }
 
     /// Fills empty fields from the environment and trims whitespace.
@@ -50,12 +56,27 @@ public struct VisualBuildOptions: Hashable, Sendable {
             branch: pick(branch, "SAUCE_VISUAL_BRANCH"),
             defaultBranch: pick(defaultBranch, "SAUCE_VISUAL_DEFAULT_BRANCH"),
             customId: pick(customId, "SAUCE_VISUAL_CUSTOM_ID"),
-            buildId: pick(buildId, "SAUCE_VISUAL_BUILD_ID")
+            buildId: pick(buildId, "SAUCE_VISUAL_BUILD_ID"),
+            finishDelay: finishDelay
         )
     }
 
     /// Whether the build is named by an ID, so other workers may share it.
     internal var namesBuild: Bool { buildId != nil || customId != nil }
+
+    /// `finishDelay` in whole seconds, as the API expects.
+    internal var finishDelaySeconds: Int? {
+        finishDelay.flatMap { Int(exactly: $0.rounded(.up)) }
+    }
+
+    /// Checks `finishDelay` on resolved options.
+    /// - Throws: `VisualError.invalidFinishDelay` without a `customId`, or for a negative or too large delay.
+    internal func validateFinishDelay() throws {
+        guard let finishDelay else { return }
+        guard customId != nil, finishDelay >= 0, let seconds = finishDelaySeconds, seconds <= Int(Int32.max) else {
+            throw VisualError.invalidFinishDelay
+        }
+    }
 }
 
 public struct VisualBuild: Hashable, Sendable {

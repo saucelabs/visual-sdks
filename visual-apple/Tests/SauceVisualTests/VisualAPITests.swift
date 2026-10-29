@@ -75,6 +75,16 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(route.bodies[0]["variables"] as? [String: String], ["input": buildID])
     }
 
+    func testBuildIdWinsOverCustomId() async throws {
+        let (api, route) = try api([.json(build())])
+        let resolution = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42", buildId: buildID))
+
+        XCTAssertEqual(resolution.build.id, buildID)
+        XCTAssertFalse(resolution.created)
+        XCTAssertEqual(route.requests.count, 1, "No custom ID lookup")
+        XCTAssertFalse((route.bodies[0]["query"] as? String)?.contains("buildByCustomId") == true)
+    }
+
     func testRunningBuildIsReusedByCustomId() async throws {
         let (api, route) = try api([.json(build(customId: "ci-42"))])
         let resolution = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42"))

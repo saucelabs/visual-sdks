@@ -75,6 +75,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             name: "Build", project: "Project", branch: "env-branch", defaultBranch: "env-main",
             customId: "custom", buildId: "env-id"
         ))
+        XCTAssertEqual(VisualBuildOptions(finishDelay: 5).resolved(with: environment).finishDelay, 5, "Kept as passed")
         XCTAssertEqual(VisualBuildOptions().resolved(with: [:]), VisualBuildOptions())
     }
 
@@ -84,7 +85,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
             (.conflictingConfiguration, 8), (.buildNotFound, 9), (.invalidSnapshotName, 10), (.elementNotFound, 11),
             (.invalidCheckOptions, 12), (.clipElementOffScreen, 13), (.screenshotFailed, 14),
-            (.fullPageNotSupported, 15)
+            (.fullPageNotSupported, 15), (.invalidFinishDelay, 16)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
@@ -115,6 +116,7 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
              "The clip or full-page element is off screen. Scroll it into view before the check."),
             (VisualError.screenshotFailed, "Could not process the screenshot."),
             (VisualError.fullPageNotSupported, "Full-page screenshots aren't available on tvOS."),
+            (VisualError.invalidFinishDelay, "Invalid finish delay. It needs a customId, and must be zero or more seconds."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),
              "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualAPIError(code: .apiError, detail: "Project not found"),

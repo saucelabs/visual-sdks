@@ -17,6 +17,7 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
     case clipElementOffScreen = 13
     case screenshotFailed = 14
     case fullPageNotSupported = 15
+    case invalidFinishDelay = 16
 
     public static var errorDomain: String { "com.saucelabs.visual.apple" }
     public var errorCode: Int { rawValue }
@@ -53,6 +54,8 @@ public enum VisualError: Int, Error, Sendable, CustomNSError, LocalizedError, Cu
             return "Could not process the screenshot."
         case .fullPageNotSupported:
             return "Full-page screenshots aren't available on tvOS."
+        case .invalidFinishDelay:
+            return "Invalid finish delay. It needs a customId, and must be zero or more seconds."
         }
     }
 

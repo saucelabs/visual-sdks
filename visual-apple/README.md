@@ -127,7 +127,17 @@ Rectangles are in points and converted to screenshot pixels. Parts outside the s
 
 Every `VisualClient` in the process shares one build: the first check creates it, or reuses the one named by `buildId` or `customId`. A `buildId` must name an existing build, otherwise the check throws `VisualError.buildNotFound`; a `customId` with no running build creates one with that ID. Every client must use the same region, credentials, and build options, otherwise it throws `VisualError.conflictingConfiguration`. To get the build before the first check, for example to log its link, call `try await visual.build()`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
 
-**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build named by `buildId` or `customId` is always left open, even when this run created it, because other workers may still be adding snapshots to it. Finish it from the step that knows every worker is done, for example a CI step after all test jobs. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
+**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build named by `buildId` or `customId` is left open, even when this run created it, because other workers may still be adding snapshots to it. Finish it from the step that knows every worker is done, for example a CI step after all test jobs. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
+
+**Sharing a build between workers.** Give every worker the same `customId`, for example from the CI pipeline, and a `finishDelay`:
+
+```swift
+let visual = try VisualClient(options: VisualBuildOptions(customId: ciPipelineId, finishDelay: 120))
+```
+
+- The first worker creates the build with that `customId`, and the others reuse it. A finished build with that `customId` makes the check throw `VisualError.buildAlreadyCompleted`.
+- Every worker finishes the build when its tests end. The service waits `finishDelay` seconds after the last one before finishing it, so set it longer than the gap between workers. The delay is rounded up to whole seconds.
+- `finishDelay` needs a `customId`, from code or `SAUCE_VISUAL_CUSTOM_ID`, and can't be negative. Otherwise the client throws `VisualError.invalidFinishDelay`.
 
 **Failed requests.** If a request to create or finish the build fails before the service sees it, for example when there is no connection, the next call simply tries again. When the outcome is unknown, for example after a timeout, the service may have applied it, so the SDK never repeats it blindly:
 
@@ -149,6 +159,7 @@ Use `@import SauceVisual;` with source SPM, or the compatibility header with the
 NSError *error = nil;
 SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout" project:@"iOS app"
     branch:@"feature-checkout" defaultBranch:@"main" customId:nil buildId:nil];
+// To share a build between workers: ...customId:pipelineId buildId:nil finishDelay:@120];
 SLVClient *visual = [[SLVClient alloc] initWithOptions:options error:&error];
 if (visual == nil) {
     NSLog(@"Initialization failed: %@", error.localizedDescription);
