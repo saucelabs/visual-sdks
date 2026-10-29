@@ -64,7 +64,7 @@ class VisualApiTest {
 
     api.createBuild(
         new VisualApi.BuildAttributes(
-            "Build", null, null, null, Arrays.asList("smoke", "nightly")));
+            "Build", null, null, null, Arrays.asList("smoke", "nightly"), null, null));
 
     ArgumentCaptor<CreateBuildMutation> mutation =
         ArgumentCaptor.forClass(CreateBuildMutation.class);
@@ -77,11 +77,12 @@ class VisualApiTest {
   @Test
   void tagsInCodeOverrideTheEnvironment() {
     List<String> tags = Collections.singletonList("from-code");
-    assertEquals(tags, new VisualApi.BuildAttributes(null, null, null, null, tags).getTags());
+    assertEquals(
+        tags, new VisualApi.BuildAttributes(null, null, null, null, tags, null, null).getTags());
     // Without tags in code, SAUCE_VISUAL_TAGS is used (when it's set).
     assertEquals(
         EnvironmentVariables.parseTags(EnvironmentVariables.TAGS),
-        new VisualApi.BuildAttributes(null, null, null, null).getTags());
+        new VisualApi.BuildAttributes(null, null, null, null, null, null, null).getTags());
   }
 
   @Test

@@ -9,6 +9,9 @@ import com.saucelabs.visual.graphql.GraphQLClient;
 import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.graphql.type.SnapshotIn;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class VisualClient {
 
     private final VisualBuild build;
@@ -32,6 +35,7 @@ public class VisualClient {
         private String projectName;
         private String branchName;
         private String defaultBranchName;
+        private List<String> tags;
         private Boolean captureDom;
         private String customId;
         private String buildId;
@@ -85,6 +89,23 @@ public class VisualClient {
         }
 
         /**
+         * @param tags Tags you would like to associate with this build.
+         * @return Builder instance
+         */
+        public Builder tags(List<String> tags) {
+            this.tags = tags;
+            return this;
+        }
+
+        /**
+         * @param tags Tags you would like to associate with this build.
+         * @return Builder instance
+         */
+        public Builder tags(String... tags) {
+            return tags(Arrays.asList(tags));
+        }
+
+        /**
          * @param captureDom Toggle DOM capturing for the whole build
          * @return Builder instance
          */
@@ -114,7 +135,7 @@ public class VisualClient {
         public VisualClient build() {
             GraphQLClient graphQLClient = new GraphQLClient(DataCenter.fromSauceRegion(region), username, accessKey);
             VisualApi visualApi = new VisualApi(graphQLClient);
-            BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName);
+            BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName, tags);
             VisualClient client = new VisualClient(visualApi, buildAttributes, customId, buildId);
             client.setCaptureDom(this.captureDom);
             return client;
