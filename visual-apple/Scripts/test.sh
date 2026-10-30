@@ -172,6 +172,12 @@ else
   fi
 fi
 
+# SKIP_SAFARI_TESTS=1 leaves out the Safari test on CI, where Safari on a fresh simulator is slow and flaky.
+test_args=()
+if [[ ${SKIP_SAFARI_TESTS:-} == 1 && ( $family == iphone || $family == ipad ) ]]; then
+  test_args+=(-skip-testing:ConsumerTests-iOS/SauceDemoTests)
+fi
+
 # pipefail keeps xcodebuild's exit status through tee.
 printf 'Distribution: %s; destination: %s\n' "$distribution" "$destination" | tee "$run/destination.log"
 xcodebuild "${build_args[@]}" test \
@@ -182,7 +188,8 @@ xcodebuild "${build_args[@]}" test \
   -test-timeouts-enabled YES \
   -default-test-execution-time-allowance 120 \
   -maximum-test-execution-time-allowance 120 \
-  -resultBundlePath "$run/TestResults.xcresult" 2>&1 | tee "$run/tests.log"
+  -resultBundlePath "$run/TestResults.xcresult" \
+  ${test_args[@]+"${test_args[@]}"} 2>&1 | tee "$run/tests.log"
 
 # Validate the structured result.
 xcrun xcresulttool get test-results summary \
