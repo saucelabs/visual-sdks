@@ -153,7 +153,7 @@ fi
 # Tests on a simulator don't see this shell's variables, so pass each SAUCE_* on as TEST_RUNNER_SAUCE_*,
 # which xcodebuild hands to the tests without the prefix.
 for name in SAUCE_USERNAME SAUCE_ACCESS_KEY SAUCE_REGION SAUCE_VISUAL_BUILD_NAME SAUCE_VISUAL_PROJECT \
-    SAUCE_VISUAL_BRANCH SAUCE_VISUAL_DEFAULT_BRANCH SAUCE_VISUAL_CUSTOM_ID SAUCE_VISUAL_BUILD_ID; do
+    SAUCE_VISUAL_BRANCH SAUCE_VISUAL_DEFAULT_BRANCH SAUCE_VISUAL_CUSTOM_ID SAUCE_VISUAL_BUILD_ID SAUCE_VISUAL_TAGS; do
   runner_name="TEST_RUNNER_$name"
   if [[ -z ${!runner_name:-} && -n ${!name:-} ]]; then
     export "$runner_name=${!name}"

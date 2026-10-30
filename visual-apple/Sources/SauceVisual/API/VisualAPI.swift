@@ -101,7 +101,8 @@ internal struct VisualAPI: Sendable {
             project: options.project,
             branch: options.branch,
             defaultBranch: options.defaultBranch,
-            customId: options.customId
+            customId: options.customId,
+            tags: options.tags?.isEmpty == false ? options.tags : nil
         )
         let result = try await transport.execute(
             Self.createBuildMutation, variables: GraphQL.Input(input: input), as: GraphQL.BuildResponse.self
@@ -233,6 +234,8 @@ internal struct VisualAPI: Sendable {
             let branch: String?
             let defaultBranch: String?
             let customId: String?
+            /// Left out of the request when `nil`.
+            let tags: [String]?
         }
 
         struct FinishBuildIn: Encodable, Sendable {
