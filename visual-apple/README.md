@@ -2,7 +2,7 @@
 
 `SauceVisual` Swift and Objective-C SDK for XCUITest on iOS/iPadOS 15+, tvOS 15+, and macOS 14+.
 
-The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests, and uploads full-screen screenshots for comparison. Ignore regions, element clipping, and other check options are not yet implemented.
+The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests, and uploads screenshots for comparison: the whole screen, one element, or a full page stitched from a scrolled element. Checks can ignore regions or elements, capture the element tree, and override the baseline.
 
 Development and binary distribution use **Xcode 26.6 / Swift 6.3**. The package uses Swift 5 language mode and is also tested in Swift 6 language mode.
 
