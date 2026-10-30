@@ -58,6 +58,28 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         }
     }
 
+    func testInvalidFinishDelayFailsAtInit() {
+        let invalid: [(String, VisualBuildOptions)] = [
+            ("no custom ID", VisualBuildOptions(finishDelay: 10)),
+            ("build ID only", VisualBuildOptions(buildId: buildID, finishDelay: 10)),
+            ("negative", VisualBuildOptions(customId: "ci-42", finishDelay: -1)),
+            ("not a number", VisualBuildOptions(customId: "ci-42", finishDelay: .nan)),
+            ("infinite", VisualBuildOptions(customId: "ci-42", finishDelay: .infinity)),
+            ("too large", VisualBuildOptions(customId: "ci-42", finishDelay: 3_000_000_000))
+        ]
+        for (label, options) in invalid {
+            XCTAssertThrowsError(try client(StubURLProtocol.Route([]), store: SharedBuildStore(), options: options), label) {
+                XCTAssertEqual($0 as? VisualError, .invalidFinishDelay, label)
+            }
+        }
+        XCTAssertNoThrow(try client(StubURLProtocol.Route([]), store: SharedBuildStore(),
+                                    options: VisualBuildOptions(customId: "ci-42", finishDelay: 0)))
+        // The custom ID may come from the environment.
+        XCTAssertNoThrow(try client(StubURLProtocol.Route([]), store: SharedBuildStore(),
+                                    options: VisualBuildOptions(finishDelay: 60),
+                                    environment: environment.merging(["SAUCE_VISUAL_CUSTOM_ID": "ci-42"]) { $1 }))
+    }
+
     func testBuildIdSpellingsShareOneBuild() async throws {
         let store = SharedBuildStore()
         let route = StubURLProtocol.Route([lookup(mode: "RUNNING")])
@@ -332,5 +354,17 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
         let finishedBuild = try await client.finish()
         XCTAssertEqual(finishedBuild.status, "EQUAL")
         XCTAssertEqual(operations(route), ["createBuild", "finishBuild", "build", "finishBuild"])
+    }
+
+    func testUncertainDelayedFinishIsSentAgainWithTheDelay() async throws {
+        // A delayed finish leaves the build running, so after a timeout it is sent again, which only restarts the delay.
+        let route = StubURLProtocol.Route([lookup(mode: "RUNNING"), .failure(.timedOut), lookup(mode: "RUNNING"), created])
+        let client = try client(route, store: SharedBuildStore(), options: VisualBuildOptions(customId: "run-1", finishDelay: 60))
+
+        await XCTAssertThrowsErrorAsync(try await client.finish())
+        _ = try await client.finish()
+        XCTAssertEqual(operations(route), ["buildByCustomId", "finishBuild", "build", "finishBuild"])
+        let delays = route.bodies.map { ($0["variables"] as? [String: Any])?["input"] as? [String: Any] }.map { $0?["delay"] as? Int }
+        XCTAssertEqual(delays, [nil, 60, nil, 60])
     }
 }
