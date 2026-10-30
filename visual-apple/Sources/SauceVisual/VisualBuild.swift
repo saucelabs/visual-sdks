@@ -20,6 +20,9 @@ public struct VisualBuildOptions: Hashable, Sendable {
     /// Needs a `customId`. Each worker then finishes the build when its tests end, and the service finishes it
     /// once this long has passed since the last worker did. Rounded up to whole seconds.
     public var finishDelay: TimeInterval?
+    /// Tags for a new build; a reused build keeps its own. Falls back to `SAUCE_VISUAL_TAGS`, a comma-separated
+    /// list. An empty list means no tags.
+    public var tags: [String]?
 
     public init(
         name: String? = nil,
@@ -28,7 +31,8 @@ public struct VisualBuildOptions: Hashable, Sendable {
         defaultBranch: String? = nil,
         customId: String? = nil,
         buildId: String? = nil,
-        finishDelay: TimeInterval? = nil
+        finishDelay: TimeInterval? = nil,
+        tags: [String]? = nil
     ) {
         self.name = name
         self.project = project
@@ -37,6 +41,7 @@ public struct VisualBuildOptions: Hashable, Sendable {
         self.customId = customId
         self.buildId = buildId
         self.finishDelay = finishDelay
+        self.tags = tags
     }
 
     /// Fills empty fields from the environment and trims whitespace.
@@ -57,8 +62,20 @@ public struct VisualBuildOptions: Hashable, Sendable {
             defaultBranch: pick(defaultBranch, "SAUCE_VISUAL_DEFAULT_BRANCH"),
             customId: pick(customId, "SAUCE_VISUAL_CUSTOM_ID"),
             buildId: pick(buildId, "SAUCE_VISUAL_BUILD_ID"),
-            finishDelay: finishDelay
+            finishDelay: finishDelay,
+            tags: tags.map(Self.cleaned) ?? Self.parseTags(environment["SAUCE_VISUAL_TAGS"])
         )
+    }
+
+    /// Tags from a comma-separated list, or `nil` when there are none.
+    private static func parseTags(_ list: String?) -> [String]? {
+        guard let list else { return nil }
+        let tags = cleaned(list.components(separatedBy: ","))
+        return tags.isEmpty ? nil : tags
+    }
+
+    private static func cleaned(_ tags: [String]) -> [String] {
+        tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
     }
 
     /// Whether the build is named by an ID, so other workers may share it.

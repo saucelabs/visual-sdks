@@ -32,6 +32,7 @@ The SDK reads the same environment variables as the other Sauce Visual SDKs:
 | `SAUCE_REGION` | `us-west-1` (default), `us-east-4`, `eu-central-1`, `asia-south-2`, or `staging` |
 | `SAUCE_VISUAL_BUILD_NAME`, `SAUCE_VISUAL_PROJECT`, `SAUCE_VISUAL_BRANCH`, `SAUCE_VISUAL_DEFAULT_BRANCH` | Build attributes |
 | `SAUCE_VISUAL_CUSTOM_ID`, `SAUCE_VISUAL_BUILD_ID` | Reuse a running build |
+| `SAUCE_VISUAL_TAGS` | Comma-separated tags for a new build, for example `smoke,nightly` |
 
 Values passed in code take precedence. Tests on a simulator or device don't inherit your shell, so pass each variable with the `TEST_RUNNER_` prefix, which `xcodebuild` strips:
 
@@ -48,12 +49,14 @@ In Xcode, set them under **Edit Scheme → Test → Arguments → Environment Va
 import SauceVisual
 
 let visual = try VisualClient(options: VisualBuildOptions(
-    name: "Checkout", project: "iOS app", branch: "feature-checkout", defaultBranch: "main"
+    name: "Checkout", project: "iOS app", branch: "feature-checkout", defaultBranch: "main", tags: ["smoke"]
 ))
 
 // In a UI test, after driving the app to the screen you want to compare:
 try await visual.sauceVisualCheck("Checkout page")
 ```
+
+`tags` are added to the build when the SDK creates it. Tags passed in code replace `SAUCE_VISUAL_TAGS`, and an empty list means no tags. A build reused by `buildId` or `customId` keeps its own tags.
 
 `sauceVisualCheck(_:options:)` screenshots the whole screen and adds it to the shared build, creating the build if needed. The snapshot records the running test's class as its suite name and the test method as its test name, so the dashboard groups snapshots by test. It runs on the main actor, like the XCUI APIs.
 
@@ -160,6 +163,7 @@ NSError *error = nil;
 SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout" project:@"iOS app"
     branch:@"feature-checkout" defaultBranch:@"main" customId:nil buildId:nil];
 // To share a build between workers: ...customId:pipelineId buildId:nil finishDelay:@120];
+// To tag a new build: ...buildId:nil finishDelay:nil tags:@[@"smoke"]];
 SLVClient *visual = [[SLVClient alloc] initWithOptions:options error:&error];
 if (visual == nil) {
     NSLog(@"Initialization failed: %@", error.localizedDescription);
