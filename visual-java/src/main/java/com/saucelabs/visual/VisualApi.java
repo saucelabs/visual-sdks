@@ -777,15 +777,49 @@ public class VisualApi {
   }
 
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
-    Capabilities caps = driver.getCapabilities();
     Window window = new Window(this.driver);
+    WebElement clipElement = getClipElement(options);
+    Point initialScrollPosition = window.getViewport().getPoint();
+    List<?> nestedScrollState;
+    try {
+      nestedScrollState = window.saveNestedScrollState(clipElement);
+    } catch (WebDriverException e) {
+      log.warn("Sauce Labs Visual: unable to capture nested scroll positions: {}", e.getMessage());
+      nestedScrollState = Collections.emptyList();
+    }
+    try {
+      return captureAndUploadLocalSnapshot(snapshotName, options, clipElement, window);
+    } finally {
+      // Taking a snapshot can scroll the page (clipping scrolls the clip element into
+      // view, DOM capture and full page screenshots move the viewport), so restore the
+      // scroll position the page had before the check. scrollIntoView also scrolls any
+      // scrollable ancestors of the clip element, so restore those too.
+      try {
+        window.restoreNestedScrollState(nestedScrollState);
+      } catch (WebDriverException e) {
+        log.warn(
+            "Sauce Labs Visual: unable to restore nested scroll positions after snapshot: {}",
+            e.getMessage());
+      }
+      try {
+        window.scrollTo(initialScrollPosition);
+      } catch (WebDriverException e) {
+        log.warn(
+            "Sauce Labs Visual: unable to restore scroll position after snapshot: {}",
+            e.getMessage());
+      }
+    }
+  }
+
+  private String captureAndUploadLocalSnapshot(
+      String snapshotName, CheckOptions options, WebElement clipElement, Window window) {
+    Capabilities caps = driver.getCapabilities();
     Map<String, Object> windowDims =
         (Map<String, Object>)
             driver.executeScript(
                 "return { height: window.innerHeight, width: window.innerWidth, dpr: window.devicePixelRatio }");
     double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
     boolean fullPage = options.getFullPageScreenshotConfig() != null;
-    WebElement clipElement = getClipElement(options);
     Point clipOffset = new Point(0, 0);
     Rectangle clipRect = null;
 
