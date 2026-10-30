@@ -45,15 +45,24 @@ public class ClippingIT extends IntegrationBase {
   }
 
   @Test
-  public void scrollToElementBeforeClipping() {
-    String id =
+  public void scrollBeforeAndAfterClipping() {
+    driver.executeScript("window.scrollTo(0, 200)");
+
+    String idBefore =
         sauceVisualCheck(
             "Scroll to element before clipping",
             new CheckOptions.Builder()
                 .withClipElement(
                     driver.findElement(By.cssSelector(".inventory_item:nth-child(21)")))
                 .build());
-    String result = getSnapshotResult(id);
-    expect.toMatchSnapshot(result);
+    String resultBefore = getSnapshotResult(idBefore);
+
+    String idAfter =
+        sauceVisualCheck(
+            "Scroll to previous position after clipping", new CheckOptions.Builder().build());
+    String resultAfter = getSnapshotResult(idAfter);
+
+    expect.toMatchSnapshot(resultBefore);
+    expect.toMatchSnapshot(resultAfter);
   }
 }
