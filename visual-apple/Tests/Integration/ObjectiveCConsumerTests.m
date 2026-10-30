@@ -112,6 +112,17 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqual(error.code, SLVErrorCodeInvalidFinishDelay);
 }
 
+- (void)testBuildOptionsKeepTags {
+    SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil defaultBranch:nil
+                                                             customId:nil buildId:nil finishDelay:nil
+                                                                 tags:@[@"smoke", @"nightly"]];
+    XCTAssertEqualObjects(options.tags, (@[@"smoke", @"nightly"]));
+    XCTAssertNil(options.finishDelay);
+    SLVBuildOptions *plain = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil
+                                                     defaultBranch:nil customId:nil buildId:nil];
+    XCTAssertNil(plain.tags);
+}
+
 - (void)testClientKeepsOptions {
     SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Build" project:@"Project" branch:nil
                                                        defaultBranch:nil customId:nil buildId:nil];
