@@ -272,6 +272,12 @@ public final class VisualCheckConfiguration: NSObject {
     @objc public var baselineOverride: VisualBaselineOverride?
     /// Upload the element tree of the app under test, or of `clipElement`. Off by default.
     @objc public var captureDom = false
+    /// Scroll this element and snapshot all of its content. Not available on tvOS.
+    @objc public var fullPageScrollElement: XCUIElement?
+    /// The most screenshots to take for `fullPageScrollElement`.
+    @objc public var fullPageScrollLimit: Int = 10
+    /// Seconds to wait after each scroll.
+    @objc public var fullPageDelayAfterScroll: TimeInterval = 0.5
 
     internal var value: VisualCheckOptions {
         VisualCheckOptions(
@@ -288,7 +294,10 @@ public final class VisualCheckConfiguration: NSObject {
             ignoreElements: ignoreElements,
             diffingMethod: diffingMethod.value,
             baselineOverride: baselineOverride?.value,
-            captureDom: captureDom
+            captureDom: captureDom,
+            fullPage: fullPageScrollElement.map {
+                FullPageScreenshot(scrollElement: $0, scrollLimit: fullPageScrollLimit, delayAfterScroll: fullPageDelayAfterScroll)
+            }
         )
     }
 }

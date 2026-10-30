@@ -83,7 +83,8 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (.cancelled, 1), (.invalidCredentials, 2), (.unknownRegion, 3), (.invalidBuildId, 4),
             (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
             (.conflictingConfiguration, 8), (.buildNotFound, 9), (.invalidSnapshotName, 10), (.elementNotFound, 11),
-            (.invalidCheckOptions, 12), (.clipElementOffScreen, 13), (.screenshotFailed, 14)
+            (.invalidCheckOptions, 12), (.clipElementOffScreen, 13), (.screenshotFailed, 14),
+            (.fullPageNotSupported, 15)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
@@ -110,8 +111,10 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
              "An element in the check options doesn't exist. Wait for it before the check, or remove it."),
             (VisualError.invalidCheckOptions,
              "Invalid check options. Regions need a finite position and a positive size, tolerance values must be between 0 and 1, and minChangeSize can't be negative."),
-            (VisualError.clipElementOffScreen, "The clip element is off screen. Scroll it into view before the check."),
+            (VisualError.clipElementOffScreen,
+             "The clip or full-page element is off screen. Scroll it into view before the check."),
             (VisualError.screenshotFailed, "Could not process the screenshot."),
+            (VisualError.fullPageNotSupported, "Full-page screenshots aren't available on tvOS."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),
              "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualAPIError(code: .apiError, detail: "Project not found"),
