@@ -50,7 +50,7 @@ public struct VisualBuildOptions: Hashable, Sendable {
     ) -> VisualBuildOptions {
         func pick(_ value: String?, _ key: String) -> String? {
             for candidate in [value, environment[key]] {
-                let trimmed = candidate?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                let trimmed = candidate.map(StringUtils.trimmed) ?? ""
                 if !trimmed.isEmpty { return trimmed }
             }
             return nil
@@ -63,21 +63,16 @@ public struct VisualBuildOptions: Hashable, Sendable {
             customId: pick(customId, "SAUCE_VISUAL_CUSTOM_ID"),
             buildId: pick(buildId, "SAUCE_VISUAL_BUILD_ID"),
             finishDelay: finishDelay,
-            tags: tags.map(Self.cleaned) ?? Self.parseTags(environment["SAUCE_VISUAL_TAGS"])
+            tags: tags.map(StringUtils.trimmedNonEmpty) ?? Self.parseTags(environment["SAUCE_VISUAL_TAGS"])
         )
     }
 
     /// Tags from a comma-separated list, or `nil` when there are none.
     private static func parseTags(_ list: String?) -> [String]? {
         guard let list else { return nil }
-        let tags = cleaned(list.components(separatedBy: ","))
+        let tags = StringUtils.trimmedNonEmpty(list.components(separatedBy: ","))
         return tags.isEmpty ? nil : tags
     }
-
-    private static func cleaned(_ tags: [String]) -> [String] {
-        tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
-    }
-
     /// Whether the build is named by an ID, so other workers may share it.
     internal var namesBuild: Bool { buildId != nil || customId != nil }
 

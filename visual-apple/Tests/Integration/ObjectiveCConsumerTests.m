@@ -15,7 +15,8 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
 - (void)testObjectiveCExampleReportsConstructorErrorOnMainThread {
     // Fails before any request, so no backend is needed: on missing credentials, or else the bad build ID.
     SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout flow" project:nil branch:nil
-                                                       defaultBranch:nil customId:nil buildId:@"not-a-uuid"];
+                                                       defaultBranch:nil customId:nil buildId:@"not-a-uuid"
+                                                         finishDelay:nil tags:nil];
     XCTestExpectation *done = [self expectationWithDescription:@"Objective-C example"];
     done.assertForOverFulfill = YES;
     __block BOOL returned = NO;
@@ -96,16 +97,17 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
 
 - (void)testBuildOptionsKeepFinishDelay {
     SLVBuildOptions *plain = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil
-                                                     defaultBranch:nil customId:nil buildId:nil];
+                                                     defaultBranch:nil customId:nil buildId:nil
+                                                       finishDelay:nil tags:nil];
     XCTAssertNil(plain.finishDelay);
     SLVBuildOptions *shared = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil defaultBranch:nil
-                                                           customId:@"ci-42" buildId:nil finishDelay:@120];
+                                                           customId:@"ci-42" buildId:nil finishDelay:@120 tags:nil];
     XCTAssertEqualObjects(shared.finishDelay, @120);
     XCTAssertEqualObjects(shared.customId, @"ci-42");
 
     NSError *error = nil;
     SLVBuildOptions *invalid = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil defaultBranch:nil
-                                                            customId:nil buildId:nil finishDelay:@120];
+                                                            customId:nil buildId:nil finishDelay:@120 tags:nil];
     XCTAssertNil([[SLVClient alloc] initWithUsername:@"user" accessKey:@"key" region:SLVRegion.staging
                                              options:invalid error:&error]);
     XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
@@ -119,13 +121,15 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqualObjects(options.tags, (@[@"smoke", @"nightly"]));
     XCTAssertNil(options.finishDelay);
     SLVBuildOptions *plain = [[SLVBuildOptions alloc] initWithName:@"Build" project:nil branch:nil
-                                                     defaultBranch:nil customId:nil buildId:nil];
+                                                     defaultBranch:nil customId:nil buildId:nil
+                                                       finishDelay:nil tags:nil];
     XCTAssertNil(plain.tags);
 }
 
 - (void)testClientKeepsOptions {
     SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Build" project:@"Project" branch:nil
-                                                       defaultBranch:nil customId:nil buildId:nil];
+                                                       defaultBranch:nil customId:nil buildId:nil
+                                                         finishDelay:nil tags:nil];
     SLVClient *client = [[SLVClient alloc] initWithUsername:@"user" accessKey:@"key"
                                                                region:SLVRegion.staging options:options error:nil];
     XCTAssertEqualObjects(client.options.name, @"Build");

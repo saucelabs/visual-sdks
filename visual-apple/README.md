@@ -161,8 +161,9 @@ Use `@import SauceVisual;` with source SPM, or the compatibility header with the
 
 NSError *error = nil;
 SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout" project:@"iOS app"
-    branch:@"feature-checkout" defaultBranch:@"main" customId:nil buildId:nil];
-// To share a build between workers: ...customId:pipelineId buildId:nil finishDelay:@120];
+    branch:@"feature-checkout" defaultBranch:@"main" customId:nil buildId:nil finishDelay:nil tags:nil];
+// Pass nil for anything you don't set.
+// To share a build between workers: ...customId:pipelineId buildId:nil finishDelay:@120 tags:nil];
 // To tag a new build: ...buildId:nil finishDelay:nil tags:@[@"smoke"]];
 SLVClient *visual = [[SLVClient alloc] initWithOptions:options error:&error];
 if (visual == nil) {
