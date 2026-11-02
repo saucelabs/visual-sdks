@@ -13,7 +13,16 @@ Add SauceVisual to your **UI test target only**, never to the app. XCUITest runs
 ### Swift Package Manager
 
 Add this checkout as a local package in Xcode, and add the `SauceVisual` product to the UI test target.
-See the [source consumer project](Tests/Integration/Source.xcodeproj) for an example.
+
+`SauceVisual` is a dynamic framework. Adding the product links it into the UI test target, but Xcode copies it into the test bundle only if the target has a Copy Files phase for it. Check that the UI test target has one, or add it:
+
+1. Select the UI test target and open **Build Phases**.
+2. Choose **+ → New Copy Files Phase**, set **Destination** to **Frameworks**, and leave **Subpath** empty. You can rename the phase to **Embed Frameworks**.
+3. Click **+** in the new phase, add the `SauceVisual` product, and make sure **Code Sign On Copy** is checked.
+
+After a build, check that `MyAppUITests-Runner.app/PlugIns/MyAppUITests.xctest/Frameworks/SauceVisual.framework` exists. Without the phase, Debug runs on a simulator still work, because the simulator can load the framework from the build folder in DerivedData. A physical device can't, and the run fails with `Library not loaded: @rpath/SauceVisual.framework/SauceVisual`.
+
+See the [source consumer project](Tests/Integration/Source.xcodeproj) for an example. Its UI test targets have this phase.
 
 ### XCFramework
 
@@ -182,6 +191,28 @@ checkOptions.captureDom = YES;
 ```
 
 `SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, `captureDom`, the full-page settings (`fullPageScrollElement`, `fullPageScrollLimit`, `fullPageDelayAfterScroll`), and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
+
+## Troubleshooting
+
+**`Library not loaded: @rpath/SauceVisual.framework/SauceVisual` on a device.** The UI test target links `SauceVisual` but doesn't embed it. Add the Copy Files phase described in [Swift Package Manager](#swift-package-manager).
+
+**A UI test run from Xcode hangs on a device.** `Setting up automation session` can take about a minute, and a later `Wait for <bundle ID> to idle` step doesn't finish. If the run's log contains this line, the debugger couldn't attach to the app under test:
+
+```text
+The executable does not contain "get-task-allow" in its entitlements, so the debugger will fail to attach.
+```
+
+When the Test action's **Debug executable** option is on (**Edit Scheme → Test → Info**), Xcode launches the app suspended and leaves it to the debugger to resume it. The debugger can attach only to an app whose `get-task-allow` entitlement is `true`, and distribution profiles (Ad Hoc, App Store, or Enterprise) allow only `false`. The cause is the app's signing, not SauceVisual.
+
+Sign the app target for development in the configuration the Test action builds, usually Debug: `CODE_SIGN_STYLE = Automatic`, `CODE_SIGN_IDENTITY = Apple Development`, and no `PROVISIONING_PROFILE_SPECIFIER`. Check the `[sdk=iphoneos*]` variants of these settings too, because they apply to device builds. The configuration name alone doesn't matter: Xcode sets `get-task-allow` to `true` only when it signs for development. Apply distribution signing when you export the archive instead, for example with `xcodebuild -exportArchive` and the `release-testing` or `app-store-connect` method.
+
+Simulator runs aren't affected, because the simulator doesn't enforce `get-task-allow`. Test runs started with `xcodebuild` aren't affected either, because they don't attach a debugger.
+
+To check a built app, run the command below. A development-signed app shows `"get-task-allow" => true`, and a distribution-signed one shows `false`:
+
+```bash
+codesign -d --entitlements - --xml "MyApp.app" | plutil -p - | grep get-task-allow
+```
 
 ## Development
 
