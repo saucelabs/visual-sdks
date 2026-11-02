@@ -67,25 +67,8 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
         self.init(VisualBuildOptions())
     }
 
-    @objc(initWithName:project:branch:defaultBranch:customId:buildId:)
-    public convenience init(
-        name: String?, project: String?, branch: String?, defaultBranch: String?, customId: String?, buildId: String?
-    ) {
-        self.init(name: name, project: project, branch: branch, defaultBranch: defaultBranch, customId: customId,
-                  buildId: buildId, finishDelay: nil)
-    }
-
-    /// `finishDelay` is in seconds and needs a `customId`. See `VisualBuildOptions.finishDelay`.
-    @objc(initWithName:project:branch:defaultBranch:customId:buildId:finishDelay:)
-    public convenience init(
-        name: String?, project: String?, branch: String?, defaultBranch: String?, customId: String?, buildId: String?,
-        finishDelay: NSNumber?
-    ) {
-        self.init(name: name, project: project, branch: branch, defaultBranch: defaultBranch, customId: customId,
-                  buildId: buildId, finishDelay: finishDelay, tags: nil)
-    }
-
-    /// See `VisualBuildOptions.tags`.
+    /// Pass `nil` for any value to leave unset. `finishDelay` is in seconds and needs a `customId`.
+    /// See `VisualBuildOptions`.
     @objc(initWithName:project:branch:defaultBranch:customId:buildId:finishDelay:tags:)
     public convenience init(
         name: String?, project: String?, branch: String?, defaultBranch: String?, customId: String?, buildId: String?,
