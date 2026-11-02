@@ -42,16 +42,39 @@ internal enum AutoFinish {
         }
 
         /// XCTest exits right after this returns, so wait here for the request to finish.
+        /// XCTest calls this on the main thread. Blocking it on a semaphore the lower-priority task signals is a
+        /// priority inversion, which the Thread Performance Checker reports, so poll a flag between short sleeps.
         func testBundleDidFinish(_ testBundle: Bundle) {
             let store = self.store
-            let done = DispatchSemaphore(value: 0)
+            let done = Flag()
             Task.detached {
                 if let message = AutoFinish.message(for: await store.finishOwnedBuild()) { print(message) }
-                done.signal()
+                done.set()
             }
-            if done.wait(timeout: .now() + timeout) == .timedOut {
-                print("Sauce Visual: timed out after \(Int(timeout)) s while finishing the build.")
+            let deadline = Date(timeIntervalSinceNow: timeout)
+            while !done.isSet {
+                if Date() >= deadline {
+                    return print("Sauce Visual: timed out after \(Int(timeout)) s while finishing the build.")
+                }
+                Thread.sleep(forTimeInterval: 0.05)
             }
+        }
+    }
+
+    final class Flag: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = false
+
+        var isSet: Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return value
+        }
+
+        func set() {
+            lock.lock()
+            value = true
+            lock.unlock()
         }
     }
 }
