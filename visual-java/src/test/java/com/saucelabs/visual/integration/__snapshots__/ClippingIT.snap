@@ -46,7 +46,7 @@ com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
 ]
 
 
-com.saucelabs.visual.integration.ClippingIT.scrollBeforeAndAfterClipping=[
+com.saucelabs.visual.integration.ClippingIT.scrollBeforeAndAfterClipping[clipped]=[
 {
   "snapshot" : {
     "name" : "Scroll to element before clipping (Sauce)",
@@ -66,7 +66,11 @@ com.saucelabs.visual.integration.ClippingIT.scrollBeforeAndAfterClipping=[
     },
     "ignoreRegions" : [ ]
   }
-},
+}
+]
+
+
+com.saucelabs.visual.integration.ClippingIT.scrollBeforeAndAfterClipping[restored]=[
 {
   "snapshot" : {
     "name" : "Scroll to previous position after clipping (Sauce)",

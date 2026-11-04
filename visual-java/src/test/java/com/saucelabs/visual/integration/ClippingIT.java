@@ -62,7 +62,7 @@ public class ClippingIT extends IntegrationBase {
             "Scroll to previous position after clipping", new CheckOptions.Builder().build());
     String resultAfter = getSnapshotResult(idAfter);
 
-    expect.toMatchSnapshot(resultBefore);
-    expect.toMatchSnapshot(resultAfter);
+    expect.scenario("clipped").toMatchSnapshot(resultBefore);
+    expect.scenario("restored").toMatchSnapshot(resultAfter);
   }
 }
