@@ -79,6 +79,15 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(VisualBuildOptions().resolved(with: [:]), VisualBuildOptions())
     }
 
+    func testTagsComeFromCodeOrTheEnvironment() {
+        let environment = ["SAUCE_VISUAL_TAGS": " smoke, ,nightly ,"]
+        XCTAssertEqual(VisualBuildOptions().resolved(with: environment).tags, ["smoke", "nightly"])
+        XCTAssertEqual(VisualBuildOptions(tags: [" ios ", ""]).resolved(with: environment).tags, ["ios"], "Code wins")
+        XCTAssertEqual(VisualBuildOptions(tags: []).resolved(with: environment).tags, [], "An empty list means no tags")
+        XCTAssertNil(VisualBuildOptions().resolved(with: ["SAUCE_VISUAL_TAGS": " , "]).tags)
+        XCTAssertNil(VisualBuildOptions().resolved(with: [:]).tags)
+    }
+
     func testErrorCodesAreStable() {
         let codes: [(VisualError, Int)] = [
             (.cancelled, 1), (.invalidCredentials, 2), (.unknownRegion, 3), (.invalidBuildId, 4),

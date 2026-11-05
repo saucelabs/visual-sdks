@@ -66,6 +66,23 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(input, ["name": "Build", "customId": "ci-42"])
     }
 
+    func testCreateBuildSendsTagsOnlyWhenThereAreSome() async throws {
+        let cases: [([String]?, [String]?)] = [(["smoke", "nightly"], ["smoke", "nightly"]), ([], nil), (nil, nil)]
+        for (tags, sent) in cases {
+            let (api, route) = try api([.json(build())])
+            _ = try await api.resolveBuild(VisualBuildOptions(name: "Build", tags: tags))
+            let input = try XCTUnwrap((route.bodies[0]["variables"] as? [String: Any])?["input"] as? [String: Any])
+            XCTAssertEqual(input["tags"] as? [String], sent, "\(String(describing: tags))")
+            XCTAssertEqual(input.keys.contains("tags"), sent != nil, "Left out when there are none")
+        }
+    }
+
+    func testReusedBuildKeepsItsTags() async throws {
+        let (api, route) = try api([.json(build(customId: "ci-42"))])
+        _ = try await api.resolveBuild(VisualBuildOptions(customId: "ci-42", tags: ["smoke"]))
+        XCTAssertEqual(route.requests.count, 1, "Only the lookup, so no tags are sent")
+    }
+
     func testRunningBuildIsReusedById() async throws {
         let (api, route) = try api([.json(build())])
         let reused = try await api.resolveBuild(VisualBuildOptions(buildId: buildID.uppercased())).build

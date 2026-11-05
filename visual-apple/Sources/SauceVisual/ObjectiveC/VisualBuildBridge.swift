@@ -54,6 +54,8 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
     @objc public var buildId: String? { value.buildId }
     /// Seconds, or `nil` for none. See `VisualBuildOptions.finishDelay`.
     @objc public var finishDelay: NSNumber? { value.finishDelay.map { NSNumber(value: $0) } }
+    /// See `VisualBuildOptions.tags`.
+    @objc public var tags: [String]? { value.tags }
 
     internal init(_ value: VisualBuildOptions) {
         self.value = value
@@ -65,23 +67,16 @@ public final class VisualBuildConfiguration: NSObject, Sendable {
         self.init(VisualBuildOptions())
     }
 
-    @objc(initWithName:project:branch:defaultBranch:customId:buildId:)
-    public convenience init(
-        name: String?, project: String?, branch: String?, defaultBranch: String?, customId: String?, buildId: String?
-    ) {
-        self.init(name: name, project: project, branch: branch, defaultBranch: defaultBranch, customId: customId,
-                  buildId: buildId, finishDelay: nil)
-    }
-
-    /// `finishDelay` is in seconds and needs a `customId`. See `VisualBuildOptions.finishDelay`.
-    @objc(initWithName:project:branch:defaultBranch:customId:buildId:finishDelay:)
+    /// Pass `nil` for any value to leave unset. `finishDelay` is in seconds and needs a `customId`.
+    /// See `VisualBuildOptions`.
+    @objc(initWithName:project:branch:defaultBranch:customId:buildId:finishDelay:tags:)
     public convenience init(
         name: String?, project: String?, branch: String?, defaultBranch: String?, customId: String?, buildId: String?,
-        finishDelay: NSNumber?
+        finishDelay: NSNumber?, tags: [String]?
     ) {
         self.init(VisualBuildOptions(
             name: name, project: project, branch: branch, defaultBranch: defaultBranch, customId: customId, buildId: buildId,
-            finishDelay: finishDelay?.doubleValue
+            finishDelay: finishDelay?.doubleValue, tags: tags
         ))
     }
 }
