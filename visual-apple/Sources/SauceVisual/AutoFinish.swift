@@ -2,12 +2,14 @@ import Foundation
 import XCTest
 
 /// Finishes the build this process created when the XCTest bundle ends, so tests never call `finish()`.
-/// Builds named by `buildId` or `customId` are left open for whoever coordinates the workers.
+/// Builds named by `buildId` or `customId` are left open for whoever coordinates the workers, unless a
+/// `finishDelay` is set: then every worker finishes the build, and the service waits for the others.
 internal enum AutoFinish {
     enum Outcome: Sendable {
         case noBuild
         case leftOpen(VisualBuild)
         case finished(VisualBuild)
+        case finishDelayed(VisualBuild, seconds: Int)
         case failed(Error)
     }
 
@@ -22,6 +24,8 @@ internal enum AutoFinish {
             return "Sauce Visual: left build \(build.url ?? build.id) open, because it is named by a build ID or custom ID. Finish it once every worker is done."
         case .finished(let build):
             return "Sauce Visual: finished build \(build.url ?? build.id) (\(build.status ?? "unknown"))."
+        case .finishDelayed(let build, let seconds):
+            return "Sauce Visual: build \(build.url ?? build.id) finishes \(seconds) s after the last worker finishes it."
         case .failed(let error):
             return "Sauce Visual: could not finish the build. \(error)"
         }

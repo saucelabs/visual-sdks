@@ -9,8 +9,9 @@ import Foundation
 ///
 /// The build is finished automatically when the XCTest bundle ends only if this process created it
 /// without a `buildId` or `customId`. A build named by either ID may be shared by several workers, so it
-/// is always left open, even when this process created it: finish it from the step that knows every
-/// worker is done, for example by calling `finish()` there.
+/// is left open, even when this process created it: finish it from the step that knows every worker is
+/// done, for example by calling `finish()` there. With a `finishDelay`, every worker finishes it instead,
+/// and the service waits that long after the last one before finishing it.
 public actor VisualClient {
     public nonisolated let region: SauceRegion
     public nonisolated let options: VisualBuildOptions
@@ -22,7 +23,7 @@ public actor VisualClient {
     private let device: DeviceInfo
 
     /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
-    /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, or `.invalidBuildId`.
+    /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, `.invalidBuildId`, or `.invalidFinishDelay`.
     public init(
         credentials: VisualCredentials? = nil,
         region: SauceRegion? = nil,
@@ -56,6 +57,7 @@ public actor VisualClient {
             // One spelling per build, so clients that name it differently still share it.
             options.buildId = uuid.uuidString.lowercased()
         }
+        try options.validateFinishDelay()
         self.region = region
         self.options = options
         self.baselineOverride = baselineOverride
@@ -200,7 +202,8 @@ internal actor SharedBuildStore {
     /// Called when the test bundle ends. Always waits for this process's admitted checks, then finishes the
     /// build only if this worker owns finishing it, which is not the same as having created it: a build named
     /// by `buildId` or `customId` may still have other workers uploading, so it is left open for the step
-    /// that knows they are all done. See `VisualAPI.Resolution.ownsFinish`.
+    /// that knows they are all done. See `VisualAPI.Resolution.ownsFinish`. With a `finishDelay`, every
+    /// worker finishes it, and the service waits for the others.
     func finishOwnedBuild() async -> AutoFinish.Outcome {
         if pending == nil, let uncertainCreation { return .failed(uncertainCreation) }
         guard let pending, let owner else { return .noBuild }
@@ -208,8 +211,10 @@ internal actor SharedBuildStore {
         do {
             let resolution = try await pending.value
             await drainChecks()
-            guard resolution.ownsFinish else { return .leftOpen(resolution.build) }
-            return .finished(try await finish(resolution.build, with: owner.api))
+            let delay = owner.configuration.options.finishDelaySeconds
+            guard resolution.ownsFinish || delay != nil else { return .leftOpen(resolution.build) }
+            let build = try await finish(resolution.build, with: owner.api)
+            return delay.map { .finishDelayed(build, seconds: $0) } ?? .finished(build)
         } catch let error as VisualAPI.UncertainCreation {
             return .failed(error.underlying)
         } catch {
@@ -246,7 +251,10 @@ internal actor SharedBuildStore {
         // Another call may have started finishing meanwhile.
         if let finishing { return try await finishing.value }
         let reconcile = finishMayHaveBeenApplied
-        let task = Task { reconcile ? try await api.reconcileFinish(build) : try await api.finishBuild(build) }
+        let delay = owner?.configuration.options.finishDelaySeconds
+        let task = Task {
+            reconcile ? try await api.reconcileFinish(build, delay: delay) : try await api.finishBuild(build, delay: delay)
+        }
         finishing = task
         do {
             return try await task.value
