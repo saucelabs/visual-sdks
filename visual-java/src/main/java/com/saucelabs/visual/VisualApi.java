@@ -934,6 +934,7 @@ public class VisualApi {
                 .withSuiteName(getOrInferSuiteName(options))
                 .withDiffingMethod(toDiffingMethod(options))
                 .withDiffingOptions(options.getDiffingOptions())
+                .withAppId(getAppId(caps))
                 .withIgnoreRegions(visibleIgnoreRegions)
                 .withDiffingMethodSensitivity(
                     Optional.ofNullable(getDiffingMethodSensitivity(options))
@@ -999,6 +1000,41 @@ public class VisualApi {
 
     OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
     return os == OperatingSystem.ANDROID || os == OperatingSystem.IOS;
+  }
+
+  /**
+   * The package name (Android) or bundle ID (iOS) of the app under test for native app sessions;
+   * null for browser sessions. Reads the session capabilities first and falls back to asking Appium
+   * for the foreground app.
+   */
+  private String getAppId(Capabilities caps) {
+    if (!isNativeMobileApp(caps)) {
+      return null;
+    }
+
+    boolean isIos = CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.IOS;
+    String capName = isIos ? "bundleId" : "appPackage";
+    for (String key : new String[] {"appium:" + capName, capName}) {
+      Object value = caps.getCapability(key);
+      if (value instanceof String && !((String) value).isEmpty()) {
+        return (String) value;
+      }
+    }
+
+    try {
+      if (isIos) {
+        Object info = driver.executeScript("mobile: activeAppInfo");
+        if (info instanceof Map) {
+          Object bundleId = ((Map<?, ?>) info).get("bundleId");
+          return bundleId instanceof String ? (String) bundleId : null;
+        }
+        return null;
+      }
+      Object pkg = driver.executeScript("mobile: getCurrentPackage");
+      return pkg instanceof String ? (String) pkg : null;
+    } catch (WebDriverException e) {
+      return null;
+    }
   }
 
   /** A mobile web session: browserName set on Android/iOS, unlike a native app session. */
@@ -1251,9 +1287,12 @@ public class VisualApi {
     // starts with - the wrapper below provides its own.
     String body = pageSource.replaceFirst("^\\s*<\\?xml[^>]*\\?>\\s*", "");
 
-    return "<!DOCTYPE "
+    // The backend's file-type detection regex requires "<?xml" and "<android-page-source>" to
+    // appear on the same line (it uses `.` without dotall), so the declaration must sit directly
+    // before the root element with no newline in between.
+    return "<?xml version=\"1.0\"?><!DOCTYPE "
         + rootElementName
-        + ">\n<"
+        + "><"
         + rootElementName
         + ">"
         + body
