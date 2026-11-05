@@ -306,13 +306,18 @@ class VisualApiTest {
   void wrapNativePageSourceTest() throws ReflectiveOperationException {
     String androidResult =
         wrapNativePageSource("<?xml version='1.0'?><hierarchy/>", mobileCaps("Android", null));
-    assertTrue(androidResult.startsWith("<!DOCTYPE android-page-source>\n<android-page-source>"));
-    assertTrue(androidResult.endsWith("</android-page-source>"));
-    assertFalse(androidResult.contains("<?xml"));
+    // The page source's own XML declaration is replaced by a single wrapper declaration, which
+    // must sit on the same line as the root element for the backend's file-type detection.
+    assertEquals(
+        "<?xml version=\"1.0\"?><!DOCTYPE android-page-source>"
+            + "<android-page-source><hierarchy/></android-page-source>",
+        androidResult);
 
     String iosResult = wrapNativePageSource("<AppiumAUT/>", mobileCaps("iOS", null));
-    assertTrue(iosResult.startsWith("<!DOCTYPE ios-page-source>\n<ios-page-source>"));
-    assertTrue(iosResult.endsWith("</ios-page-source>"));
+    assertEquals(
+        "<?xml version=\"1.0\"?><!DOCTYPE ios-page-source>"
+            + "<ios-page-source><AppiumAUT/></ios-page-source>",
+        iosResult);
   }
 
   @Test
