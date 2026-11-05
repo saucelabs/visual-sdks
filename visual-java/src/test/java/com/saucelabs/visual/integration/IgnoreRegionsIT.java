@@ -9,6 +9,7 @@ import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import java.util.EnumSet;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
@@ -18,6 +19,11 @@ import org.openqa.selenium.WebElement;
 public class IgnoreRegionsIT extends IntegrationBase {
   Expect expect;
 
+  @BeforeEach
+  public void resetScroll() {
+    driver.executeScript("window.scrollTo({top: 0, left: 0, behavior: 'instant'})");
+  }
+
   @BeforeAll
   public static void login() {
     LoginPage loginPage = new LoginPage();
@@ -25,7 +31,6 @@ public class IgnoreRegionsIT extends IntegrationBase {
     loginPage.login();
     InventoryLongPage inventoryPage = new InventoryLongPage();
     inventoryPage.open();
-    driver.executeScript("window.scrollTo(0, 0)");
   }
 
   final By ignoreSelectors = By.cssSelector(".inventory_item_img,.btn_inventory");
