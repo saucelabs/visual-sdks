@@ -295,6 +295,30 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(input(route.bodies[4])?["devicePixelRatio"] as? Double, 3, "DOM frames are points, the image pixels")
     }
 
+    func testRegionsAreSentInPointsWithDom() async throws {
+        // 186 px status bar at 3x, and a region whose pixel edges aren't whole points.
+        let regions = [PixelRegion(CGRect(x: 0, y: 0, width: 402, height: 62), scale: 3, in: CGRect(x: 0, y: 0, width: 1206, height: 2622),
+                                   name: nil, diffingOptions: nil),
+                       PixelRegion(CGRect(x: 1, y: 1, width: 1, height: 1), scale: 1, in: CGRect(x: 0, y: 0, width: 1206, height: 2622),
+                                   name: nil, diffingOptions: nil)].compactMap { $0 }
+        let route = StubURLProtocol.Route([created, upload(domUrl: domURL.absoluteString), stored, stored, snapshot])
+        _ = try await client(route).check(name: "Login", png: png, request: SnapshotRequest(regions: regions, dom: dom))
+
+        let sent = try XCTUnwrap(input(route.bodies[4])?["ignoreRegions"] as? [[String: Any]])
+        XCTAssertEqual(sent.map { [$0["x"], $0["y"], $0["width"], $0["height"]] as? [Int] }, [[0, 0, 402, 62], [0, 0, 1, 1]],
+                       "The service scales regions by devicePixelRatio, so they are sent in points")
+    }
+
+    func testRegionsAreSentInPixelsWithoutDom() async throws {
+        let regions = [PixelRegion(CGRect(x: 0, y: 0, width: 402, height: 62), scale: 3, in: CGRect(x: 0, y: 0, width: 1206, height: 2622),
+                                   name: nil, diffingOptions: nil)].compactMap { $0 }
+        let route = StubURLProtocol.Route([created, upload(), stored, snapshot])
+        _ = try await client(route).check(name: "Login", png: png, request: SnapshotRequest(regions: regions))
+
+        let sent = try XCTUnwrap(input(route.bodies[3])?["ignoreRegions"] as? [[String: Any]])
+        XCTAssertEqual(sent.map { [$0["x"], $0["y"], $0["width"], $0["height"]] as? [Int] }, [[0, 0, 1206, 186]])
+    }
+
     func testSnapshotWithoutDomSendsNoPixelRatio() async throws {
         let route = StubURLProtocol.Route([created, upload(domUrl: domURL.absoluteString), stored, snapshot])
         _ = try await client(route).check(name: "Login", png: png)

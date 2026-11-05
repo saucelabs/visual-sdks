@@ -165,7 +165,9 @@ internal struct VisualAPI: Sendable {
             operatingSystem: device.operatingSystem.rawValue,
             operatingSystemVersion: device.operatingSystemVersion,
             device: device.device,
-            ignoreRegions: request.regions.isEmpty ? nil : request.regions.map(GraphQL.RegionIn.init),
+            // With a DOM the service scales regions by `devicePixelRatio`, like the tree, so they go in points.
+            ignoreRegions: request.regions.isEmpty
+                ? nil : request.regions.map { GraphQL.RegionIn($0, devicePixelRatio: dom?.devicePixelRatio) },
             diffingMethod: request.diffingMethod.rawValue,
             diffingOptions: request.diffingOptions.map(GraphQL.DiffingOptionsIn.init),
             diffingMethodSensitivity: request.diffingMethodSensitivity?.rawValue,
@@ -309,11 +311,24 @@ internal struct VisualAPI: Sendable {
             /// `nil` ignores the region.
             let diffingOptions: DiffingOptionsIn?
 
-            init(_ region: PixelRegion) {
-                x = region.x
-                y = region.y
-                width = region.width
-                height = region.height
+            /// Sends `region` in pixels, or in points when `devicePixelRatio` is set. Points round outwards,
+            /// so the region still covers every pixel it did.
+            init(_ region: PixelRegion, devicePixelRatio: Double? = nil) {
+                if let ratio = devicePixelRatio, ratio.isFinite, ratio > 0 {
+                    let minX = (Double(region.x) / ratio).rounded(.down)
+                    let minY = (Double(region.y) / ratio).rounded(.down)
+                    let maxX = (Double(region.x + region.width) / ratio).rounded(.up)
+                    let maxY = (Double(region.y + region.height) / ratio).rounded(.up)
+                    x = Int(minX)
+                    y = Int(minY)
+                    width = Int(maxX - minX)
+                    height = Int(maxY - minY)
+                } else {
+                    x = region.x
+                    y = region.y
+                    width = region.width
+                    height = region.height
+                }
                 name = region.name
                 diffingOptions = region.diffingOptions.map(DiffingOptionsIn.init)
             }
