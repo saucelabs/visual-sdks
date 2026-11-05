@@ -12,18 +12,27 @@ internal enum SnapshotCapture {
     }
 
     /// Runs on the main actor, because XCUI only allows screenshots and element frames there.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, `.elementNotFound`, or
-    ///   `.clipElementOffScreen`.
+    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, `.elementNotFound`,
+    ///   `.clipElementOffScreen`, `.fullPageNotSupported`, or `.screenshotFailed`.
     @MainActor
     static func prepare(_ name: String, options: VisualCheckOptions) throws -> Prepared {
         let name = try validName(name)
         // Caller input is checked before the screenshot or any request.
         try options.validate()
+        #if os(tvOS)
+        if options.fullPageElement != nil { throw VisualError.fullPageNotSupported }
+        #endif
         // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
         var request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
         if options.captureDom {
-            request.dom = dom(clipElement: options.clipElement, clip: request.clip, screenshot: screenshot)
+            let element = options.clipElement ?? options.fullPageElement
+            request.dom = dom(clipElement: element, clip: request.clip, screenshot: screenshot)
+        }
+        if let element = options.fullPageElement, let fullPage = options.fullPage, let clip = request.clip {
+            request.fullPage = try FullPageCapture.capture(
+                element, first: screenshot, clip: clip, limit: fullPage.scrollLimit, delay: fullPage.delayAfterScroll
+            )
         }
         return Prepared(name: name, png: screenshot.png, request: request)
     }
@@ -160,14 +169,24 @@ internal enum Screenshot {
     /// Cuts `rect`, in pixels, out of a PNG and returns it as a new PNG.
     /// - Throws: `VisualError.screenshotFailed` when the image can't be read or written.
     static func crop(_ png: Data, to rect: CGRect) throws -> Data {
+        guard let cropped = try decode(png).cropping(to: rect) else { throw VisualError.screenshotFailed }
+        return try encode(cropped)
+    }
+
+    /// - Throws: `VisualError.screenshotFailed` when the PNG can't be read.
+    static func decode(_ png: Data) throws -> CGImage {
         guard let source = CGImageSourceCreateWithData(png as CFData, nil),
-              let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
-              let cropped = image.cropping(to: rect) else { throw VisualError.screenshotFailed }
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { throw VisualError.screenshotFailed }
+        return image
+    }
+
+    /// - Throws: `VisualError.screenshotFailed` when the PNG can't be written.
+    static func encode(_ image: CGImage) throws -> Data {
         let output = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(output, "public.png" as CFString, 1, nil) else {
             throw VisualError.screenshotFailed
         }
-        CGImageDestinationAddImage(destination, cropped, nil)
+        CGImageDestinationAddImage(destination, image, nil)
         guard CGImageDestinationFinalize(destination) else { throw VisualError.screenshotFailed }
         return output as Data
     }

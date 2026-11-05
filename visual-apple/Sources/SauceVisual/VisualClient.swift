@@ -93,14 +93,23 @@ public actor VisualClient {
     internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
         // Also checked here, for requests that don't come through `SnapshotCapture`.
         try request.diffingMethodTolerance?.validate()
-        // Crop here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
-        let png = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
         var request = request
+        // Crop and stitch here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
+        let image: Data
+        if let frames = request.fullPage, let clip = request.clip {
+            image = frames.isEmpty
+                ? try Screenshot.crop(png, to: clip)
+                : try FullPageCapture.stitch(first: png, frames: frames, clip: clip)
+            let height = (Int(exactly: clip.height) ?? 0) + FullPageCapture.addedHeight(frames)
+            request.regions = request.regions.compactMap { $0.cut(atHeight: height) }
+        } else {
+            image = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
+        }
         request.baselineOverride = request.baselineOverride ?? baselineOverride
         let device = self.device
         // Admitted for the whole upload, so finishing waits until the snapshot is created or has failed.
         return try await store.check(configuration, api: api) { [request] run in
-            try await run.api.createSnapshot(name: name, png: png, device: device, request: request, in: run.build)
+            try await run.api.createSnapshot(name: name, png: image, device: device, request: request, in: run.build)
         }
     }
 

@@ -53,6 +53,9 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertNil(options.clipElement);
     XCTAssertFalse(options.captureDom);
     XCTAssertNil(options.baselineOverride);
+    XCTAssertNil(options.fullPageScrollElement);
+    XCTAssertEqual(options.fullPageScrollLimit, 10);
+    XCTAssertEqualWithAccuracy(options.fullPageDelayAfterScroll, 0.5, 0.001);
     SLVBaselineOverride *baseline = [[SLVBaselineOverride alloc] init];
     XCTAssertEqual(baseline.operatingSystem, SLVOperatingSystemNotSet);
     baseline.name = @"Login page";
