@@ -780,6 +780,12 @@ public class VisualApi {
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
     Window window = new Window(this.driver);
     WebElement clipElement = getClipElement(options);
+
+    // Native apps have no document scroll position, so there's nothing to save/restore.
+    if (isNativeMobileApp(driver.getCapabilities())) {
+      return captureAndUploadLocalSnapshot(snapshotName, options, clipElement, window);
+    }
+
     Point initialScrollPosition = window.getViewport().getPoint();
     List<?> nestedScrollState;
     try {
