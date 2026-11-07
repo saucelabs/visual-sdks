@@ -2,8 +2,8 @@ import Foundation
 
 /// A failure reported by, or while reaching, the Sauce Visual API.
 ///
-/// `code` is the stable `VisualError`. `detail` is a short description written by the SDK. It never
-/// contains credentials or text from the server, since it ends up in NSError messages and logs.
+/// `code` is the stable `VisualError`. `detail` on SDK-generated errors is a safe SDK description; arbitrary server text is not forwarded.
+/// Detail supplied to the public initializer is caller-controlled and is not automatically redacted.
 public struct VisualAPIError: Error, Hashable, Sendable, CustomNSError, LocalizedError, CustomStringConvertible {
     public let code: VisualError
     public let detail: String?

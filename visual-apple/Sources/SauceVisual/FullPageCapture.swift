@@ -1,97 +1,201 @@
 import CoreGraphics
 import Foundation
 import XCTest
+#if os(macOS)
+import AppKit
+#endif
 
-/// Scrolls an element and stitches its screenshots into one image.
+/// Bounded scroll capture. Unsupported/ambiguous captures fail instead of uploading a guessed prefix.
 internal enum FullPageCapture {
-    /// A screenshot taken after scrolling, and how far the content moved since the one before.
+    typealias Shift = ScrollAlignment.Shift
+
     struct Frame: Hashable, Sendable {
         var png: Data
         var shift: Shift
     }
 
-    /// How far the content moved between two screenshots.
-    struct Shift: Hashable, Sendable {
-        /// How many rows the content moved up.
-        var rows: Int
-        /// The rows at the top of the later screenshot that don't show the content, like a status bar drawn over it.
-        var coveredTop: Int
+    struct Result: Sendable {
+        let first: Data
+        let frames: [Frame]
+        let extent: VisualCaptureExtent
     }
 
-    /// Scroll indicators appear along the right edge, so that strip is left out when comparing rows.
-    private static let indicatorWidth: CGFloat = 12
+    @MainActor
+    private static var indicatorWidth: CGFloat {
+        #if os(macOS)
+        // A persistent desktop scroller is wider than the mobile overlay indicator. Its moving
+        // thumb must not enter the row fingerprints used to measure the content's displacement.
+        return max(12, NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy))
+        #else
+        return 12
+        #endif
+    }
 
-    /// Scrolls `element` until `limit` screenshots are taken or the content stops moving.
-    /// `first` is the screenshot already taken, and `clip` the element's visible part in its pixels.
     @MainActor
     static func capture(
-        _ element: XCUIElement, first: Screenshot.Capture, clip: CGRect, limit: Int, delay: TimeInterval
-    ) throws -> [Frame] {
+        _ element: XCUIElement, first: Screenshot.Capture, clip: CGRect,
+        limit: Int, delay: TimeInterval, allowPartialAtLimit: Bool,
+        maximumPixels: Int, maximumDuration: TimeInterval
+    ) async throws -> Result {
+        try Task.checkCancellation()
+        let deadline = Deadline(seconds: maximumDuration)
+        guard let width = Int(exactly: clip.width), let baseHeight = Int(exactly: clip.height) else {
+            throw VisualError.screenshotFailed
+        }
+        try CaptureLimits.dimensions(width: width, height: baseHeight, maximumPixels: maximumPixels)
+        try validateFrame(element, clip: clip, screenshot: first)
+        let stableFirst = try await settledScreenshot(clip: clip, deadline: deadline)
+        guard stableFirst.pixelSize == first.pixelSize, stableFirst.scale == first.scale else {
+            throw VisualError.screenshotFailed
+        }
+        try validateFrame(element, clip: clip, screenshot: stableFirst)
         let ignoredRight = Int(exactly: (indicatorWidth * first.scale).rounded()) ?? 0
-        var previous = try rows(of: first.png, in: clip, ignoringRight: ignoredRight)
+        return try await collect(
+            first: stableFirst, clip: clip, limit: limit, allowPartialAtLimit: allowPartialAtLimit,
+            maximumPixels: maximumPixels, ignoredRight: ignoredRight, deadline: deadline
+        ) {
+            try validateFrame(element, clip: clip, screenshot: stableFirst)
+            scroll(element, visible: clip, scale: first.scale)
+            try await deadline.sleep(seconds: delay)
+            let next = try await settledScreenshot(clip: clip, deadline: deadline)
+            try validateFrame(element, clip: clip, screenshot: next)
+            return next
+        }
+    }
+
+    /// Collect measured frames independently of XCUI event delivery, so lost gestures can be
+    /// exercised deterministically with real images. Every attempt consumes the capture limit.
+    @MainActor
+    static func collect(
+        first: Screenshot.Capture, clip: CGRect, limit: Int, allowPartialAtLimit: Bool,
+        maximumPixels: Int, ignoredRight: Int, deadline: Deadline,
+        nextScreenshot: @MainActor () async throws -> Screenshot.Capture
+    ) async throws -> Result {
+        try deadline.check()
+        guard let width = Int(exactly: clip.width), let baseHeight = Int(exactly: clip.height) else {
+            throw VisualError.screenshotFailed
+        }
+        try CaptureLimits.dimensions(width: width, height: baseHeight, maximumPixels: maximumPixels)
+        var previous = try await fingerprint(first.png, clip: clip, ignoredRight: ignoredRight)
         var frames: [Frame] = []
+        var stationaryAttempts = 0
+        var outputHeight = baseHeight
+        var inputBytes = first.png.count
+        guard inputBytes <= CaptureLimits.maximumInputBytes else { throw VisualError.captureBudgetExceeded }
+
         for _ in 1..<limit {
-            try Task.checkCancellation()
-            let expected = scroll(element, visible: clip, scale: first.scale)
-            if delay > 0 { RunLoop.current.run(until: Date(timeIntervalSinceNow: delay)) }
-            let next = try settledScreenshot(clip: clip)
-            // A rotated or resized screen can't be stitched.
-            guard next.pixelSize == first.pixelSize else { throw VisualError.screenshotFailed }
-            let current = try rows(of: next.png, in: clip, ignoringRight: ignoredRight)
-            guard let shift = offset(from: previous, to: current, expected: expected) else {
-                print("Sauce Visual: stopped scrolling, because the screenshots didn't line up.")
-                break
+            try deadline.check()
+            let next = try await nextScreenshot()
+            guard next.pixelSize == first.pixelSize, next.scale == first.scale else { throw VisualError.screenshotFailed }
+            let current = try await fingerprint(next.png, clip: clip, ignoredRight: ignoredRight)
+            guard let shift = try await measure(previous, current) else {
+                throw VisualError.captureAlignmentFailed
             }
-            guard shift.rows > 0 else { break }
+            try deadline.check()
+            if shift.rows == 0 {
+                // XCUI can deliver a gesture without the view consuming it. Confirm with another
+                // measured attempt instead of silently returning a one-viewport image.
+                stationaryAttempts += 1
+                if stationaryAttempts == 2 {
+                    return Result(first: first.png, frames: frames, extent: .noMovementDetected)
+                }
+                continue
+            }
+            stationaryAttempts = 0
+            outputHeight = try CaptureLimits.adding(outputHeight, shift.rows)
+            try CaptureLimits.dimensions(width: width, height: outputHeight, maximumPixels: maximumPixels)
+            inputBytes = try CaptureLimits.adding(inputBytes, next.png.count)
+            guard inputBytes <= CaptureLimits.maximumInputBytes else { throw VisualError.captureBudgetExceeded }
             frames.append(Frame(png: next.png, shift: shift))
             previous = current
         }
-        return frames
+        guard allowPartialAtLimit else { throw VisualError.captureLimitReached }
+        return Result(first: first.png, frames: frames, extent: .limitReached)
     }
 
-    /// Waits until the scrollable area has looked the same for a second, so scroll indicators have faded
-    /// and animations have finished. Gives up after `timeout` seconds and returns the latest screenshot.
     @MainActor
-    private static func settledScreenshot(clip: CGRect, timeout: TimeInterval = 3) throws -> Screenshot.Capture {
-        var latest = Screenshot.capture()
-        var latestRows = try rows(of: latest.png, in: clip, ignoringRight: 0)
-        var unchangedSince = Date()
-        let deadline = Date(timeIntervalSinceNow: timeout)
-        while Date() < deadline, Date().timeIntervalSince(unchangedSince) < 1 {
-            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.25))
-            let next = Screenshot.capture()
-            let nextRows = try rows(of: next.png, in: clip, ignoringRight: 0)
-            if nextRows != latestRows { unchangedSince = Date() }
-            latest = next
-            latestRows = nextRows
+    private static func validateFrame(_ element: XCUIElement, clip: CGRect, screenshot: Screenshot.Capture) throws {
+        try Task.checkCancellation()
+        guard element.exists else { throw VisualError.elementNotFound }
+        let bounds = CGRect(origin: .zero, size: screenshot.pixelSize)
+        guard PixelRegion.pixels(element.frame, scale: screenshot.scale, in: bounds) == clip else {
+            // A moving/resizing viewport cannot be projected by the current vertical-only stitcher.
+            throw VisualError.captureAlignmentFailed
         }
+    }
+
+    /// Exact quiescence of the visible pixels is a conservative readiness condition, not an app-idle API.
+    @MainActor
+    private static func settledScreenshot(clip: CGRect, deadline: Deadline) async throws -> Screenshot.Capture {
+        try deadline.check()
+        var latest = Screenshot.capture()
+        var latestRows = try await fingerprint(latest.png, clip: clip, ignoredRight: 0)
+        var unchangedSince = DispatchTime.now().uptimeNanoseconds
+        let settleDeadline = Deadline(seconds: 3)
+        while DispatchTime.now().uptimeNanoseconds - unchangedSince < 1_000_000_000 {
+            try deadline.check()
+            try settleDeadline.check()
+            try await deadline.sleep(seconds: 0.25)
+            let next = Screenshot.capture()
+            guard next.pixelSize == latest.pixelSize, next.scale == latest.scale else { throw VisualError.screenshotFailed }
+            let rows = try await fingerprint(next.png, clip: clip, ignoredRight: 0)
+            if rows != latestRows { unchangedSince = DispatchTime.now().uptimeNanoseconds }
+            latest = next
+            latestRows = rows
+        }
+        try deadline.check()
         return latest
     }
 
-    /// Scrolls the content up by half the visible part, so screenshots overlap even under bars drawn over it.
-    /// Returns the expected movement in pixels.
     @MainActor
-    private static func scroll(_ element: XCUIElement, visible clip: CGRect, scale: CGFloat) -> Int {
+    private static func scroll(_ element: XCUIElement, visible clip: CGRect, scale: CGFloat) {
         let visible = CGRect(x: clip.minX / scale, y: clip.minY / scale, width: clip.width / scale, height: clip.height / scale)
         let distance = visible.height * 0.5
         #if os(macOS)
         element.scroll(byDeltaX: 0, deltaY: -distance)
         #elseif os(iOS)
         let frame = element.frame
-        let start = element.coordinate(withNormalizedOffset: .zero)
-            .withOffset(CGVector(dx: visible.midX - frame.minX, dy: visible.minY + visible.height * 0.8 - frame.minY))
+        let start = element.coordinate(withNormalizedOffset: .zero).withOffset(
+            CGVector(dx: visible.midX - frame.minX, dy: visible.minY + visible.height * 0.8 - frame.minY)
+        )
         let end = start.withOffset(CGVector(dx: 0, dy: -distance))
-        // Holding at the end stops momentum, so the content moves by about the dragged distance.
         start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.3)
         #endif
-        return Int(exactly: (distance * scale).rounded()) ?? 0
     }
 
-    /// A fingerprint of each pixel row of `clip`, leaving out `ignoringRight` pixels on the right.
+    /// Detached CPU work has bounded input and is awaited; cancellation is forwarded explicitly.
+    private static func fingerprint(_ png: Data, clip: CGRect, ignoredRight: Int) async throws -> [UInt64] {
+        let task = Task.detached(priority: .userInitiated) {
+            try rows(of: png, in: clip, ignoringRight: ignoredRight)
+        }
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: { task.cancel() }
+    }
+
+    private static func measure(_ previous: [UInt64], _ current: [UInt64]) async throws -> Shift? {
+        let task = Task.detached(priority: .userInitiated) {
+            try Task.checkCancellation()
+            return offset(from: previous, to: current, expected: 0)
+        }
+        return try await withTaskCancellationHandler {
+            let result = try await task.value
+            try Task.checkCancellation()
+            return result
+        } onCancel: { task.cancel() }
+    }
+
+    static func offset(from previous: [UInt64], to current: [UInt64], expected: Int) -> Shift? {
+        ScrollAlignment.offset(from: previous, to: current, expected: expected)
+    }
+
     static func rows(of png: Data, in clip: CGRect, ignoringRight: Int) throws -> [UInt64] {
-        guard let image = try Screenshot.decode(png).cropping(to: clip) else { throw VisualError.screenshotFailed }
+        try Task.checkCancellation()
+        guard PixelRegion.isUsable(clip), ignoringRight >= 0,
+              let image = try Screenshot.decode(png).cropping(to: clip) else { throw VisualError.screenshotFailed }
         let width = image.width
         let height = image.height
+        try CaptureLimits.dimensions(width: width, height: height, maximumPixels: CaptureLimits.maximumOutputPixels)
         let bytesPerRow = width * 4
         guard let context = CGContext(
             data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: bytesPerRow,
@@ -101,8 +205,10 @@ internal enum FullPageCapture {
         guard let data = context.data else { throw VisualError.screenshotFailed }
         let pixels = UnsafeRawBufferPointer(start: data, count: bytesPerRow * height)
         let compared = max(1, width - ignoringRight) * 4
-        // The context's memory starts with the top row.
-        return (0..<height).map { row in
+        var result: [UInt64] = []
+        result.reserveCapacity(height)
+        for row in 0..<height {
+            if row.isMultiple(of: 32) { try Task.checkCancellation() }
             var hash: UInt64 = 0xcbf2_9ce4_8422_2325
             let start = row * bytesPerRow
             var offset = start
@@ -114,106 +220,94 @@ internal enum FullPageCapture {
                 hash = (hash ^ UInt64(pixels[offset])) &* 0x100_0000_01b3
                 offset += 1
             }
-            return hash
+            result.append(hash)
         }
+        return result
     }
 
-    /// How the content moved between two screenshots: 0 rows when it didn't move, and `nil` when no shift
-    /// explains the change.
-    ///
-    /// Bars drawn over the content, like the status bar or Safari's toolbar, don't move with it. So each shift
-    /// is scored on its best stretch of overlapping rows, where at least 80% match. The shift whose stretch
-    /// covers most of the overlap wins, and among equally good shifts the one closest to `expected`. Blank rows
-    /// match anywhere, so a stretch with too little detail doesn't count.
-    static func offset(from previous: [UInt64], to current: [UInt64], expected: Int) -> Shift? {
-        let height = min(previous.count, current.count)
-        guard height > 0 else { return nil }
-        if previous == current { return Shift(rows: 0, coveredTop: 0) }
-        // At least a fifth of the rows must overlap, and a tenth must match with some detail, for a match to
-        // mean anything.
-        let maximumShift = height - max(1, height / 5)
-        let minimumStretch = max(1, height / 10)
-        let minimumDetail = max(2, height / 200)
-        guard maximumShift >= 1 else { return nil }
-        var best: (shift: Shift, coverage: Double)?
-        for shift in 1...maximumShift {
-            guard let stretch = bestStretch(previous, current, shift: shift, height: height),
-                  stretch.length >= minimumStretch, stretch.detail >= minimumDetail else { continue }
-            let coverage = Double(stretch.length) / Double(height - shift)
-            if let leader = best {
-                let clearlyBetter = coverage > leader.coverage + 0.02
-                let asGood = abs(coverage - leader.coverage) <= 0.02
-                let closer = abs(shift - expected) < abs(leader.shift.rows - expected)
-                guard clearlyBetter || (asGood && closer) else { continue }
-            }
-            best = (Shift(rows: shift, coveredTop: stretch.start), coverage)
+    /// Decode and draw one frame at a time. Validate the canvas before allocating it.
+    static func stitch(
+        first: Data, frames: [Frame], clip: CGRect,
+        maxOutputPixels: Int = CaptureLimits.defaultOutputPixels
+    ) throws -> Data {
+        try Task.checkCancellation()
+        guard let width = Int(exactly: clip.width), let baseHeight = Int(exactly: clip.height),
+              PixelRegion.isUsable(clip), frames.count < CaptureLimits.maximumFrames else {
+            throw VisualError.captureBudgetExceeded
         }
-        return best?.shift
-    }
+        var height = baseHeight
+        var inputBytes = first.count
+        for frame in frames {
+            guard frame.shift.rows > 0, frame.shift.rows <= baseHeight,
+                  frame.shift.coveredTop >= 0,
+                  frame.shift.coveredTop <= baseHeight - frame.shift.rows else {
+                throw VisualError.captureAlignmentFailed
+            }
+            height = try CaptureLimits.adding(height, frame.shift.rows)
+            inputBytes = try CaptureLimits.adding(inputBytes, frame.png.count)
+        }
+        guard inputBytes <= CaptureLimits.maximumInputBytes else { throw VisualError.captureBudgetExceeded }
+        try CaptureLimits.dimensions(width: width, height: height, maximumPixels: maxOutputPixels)
+        let outputSpace: CGColorSpace = try autoreleasepool {
+            let firstImage = try Screenshot.decode(first)
+            if let colorSpace = firstImage.colorSpace, colorSpace.model == .rgb { return colorSpace }
+            guard let fallback = CGColorSpace(name: CGColorSpace.sRGB) else { throw VisualError.screenshotFailed }
+            return fallback
+        }
+        guard let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+            space: outputSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { throw VisualError.screenshotFailed }
 
-    /// The best stretch of overlapping rows, in `current`, where at least 80% of the rows match.
-    /// `detail` counts the matching rows that differ from the row above, so blank rows don't count.
-    private static func bestStretch(
-        _ previous: [UInt64], _ current: [UInt64], shift: Int, height: Int
-    ) -> (start: Int, length: Int, detail: Int)? {
-        // Each mismatch cancels four matches, so a stretch with a positive total is over 80% matches.
-        var best: (start: Int, length: Int, detail: Int, total: Int)?
-        var start = 0
-        var total = 0
-        var detail = 0
-        for row in 0..<(height - shift) {
-            if total <= 0 {
-                start = row
-                total = 0
-                detail = 0
-            }
-            if current[row] == previous[row + shift] {
-                total += 1
-                if row > start, current[row] != current[row - 1] { detail += 1 }
-            } else {
-                total -= 4
-            }
-            if total > 0, total > best?.total ?? 0 {
-                best = (start, row - start + 1, detail, total)
+        func draw(_ png: Data, offset: Int, coveredTop: Int) throws {
+            try Task.checkCancellation()
+            try autoreleasepool {
+                guard let slice = try Screenshot.decode(png).cropping(to: clip),
+                      slice.width == width, slice.height == baseHeight,
+                      let visible = slice.cropping(to: CGRect(
+                        x: 0, y: coveredTop, width: width, height: baseHeight - coveredTop
+                      )) else { throw VisualError.screenshotFailed }
+                context.draw(visible, in: CGRect(
+                    x: 0, y: height - offset - baseHeight, width: width, height: baseHeight - coveredTop
+                ))
             }
         }
-        return best.map { ($0.start, $0.length, $0.detail) }
-    }
-
-    /// The first screenshot's `clip`, with each later screenshot drawn over it, lower by the rows it moved and
-    /// without its covered top, as a PNG. So bars drawn over the content only show at the top and bottom.
-    static func stitch(first: Data, frames: [Frame], clip: CGRect) throws -> Data {
-        let slices = try ([first] + frames.map(\.png)).map { png -> CGImage in
-            guard let slice = try Screenshot.decode(png).cropping(to: clip) else { throw VisualError.screenshotFailed }
-            return slice
-        }
-        let width = slices[0].width
-        let height = slices[0].height + addedHeight(frames)
-        guard slices.allSatisfy({ $0.width == width && $0.height == slices[0].height }),
-              frames.allSatisfy({ (1...slices[0].height).contains($0.shift.rows) }),
-              frames.allSatisfy({ (0..<slices[0].height).contains($0.shift.coveredTop) }),
-              let context = CGContext(
-                  data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
-                  space: slices[0].colorSpace ?? CGColorSpaceCreateDeviceRGB(),
-                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-              ) else { throw VisualError.screenshotFailed }
-        // Core Graphics counts from the bottom, so a lower part has a smaller y.
-        context.draw(slices[0], in: CGRect(x: 0, y: height - slices[0].height, width: width, height: slices[0].height))
+        try draw(first, offset: 0, coveredTop: 0)
         var offset = 0
-        for (frame, slice) in zip(frames, slices.dropFirst()) {
-            offset += frame.shift.rows
-            let visible = slice.height - frame.shift.coveredTop
-            guard let part = slice.cropping(to: CGRect(x: 0, y: frame.shift.coveredTop, width: width, height: visible)) else {
-                throw VisualError.screenshotFailed
-            }
-            context.draw(part, in: CGRect(x: 0, y: height - offset - slice.height, width: width, height: visible))
+        for frame in frames {
+            offset = try CaptureLimits.adding(offset, frame.shift.rows)
+            try draw(frame.png, offset: offset, coveredTop: frame.shift.coveredTop)
         }
         guard let image = context.makeImage() else { throw VisualError.screenshotFailed }
+        try Task.checkCancellation()
         return try Screenshot.encode(image)
     }
 
-    /// How many rows the later screenshots add below the first.
+    /// Compatibility helper for existing internal tests; rendering uses checked arithmetic above.
     static func addedHeight(_ frames: [Frame]) -> Int {
-        frames.reduce(0) { $0 + $1.shift.rows }
+        frames.reduce(0) { value, frame in
+            let next = value.addingReportingOverflow(frame.shift.rows)
+            return next.overflow ? Int.max : next.partialValue
+        }
+    }
+
+    struct Deadline: Sendable {
+        let end: UInt64
+        init(seconds: TimeInterval) {
+            let bounded = min(max(seconds, 0), CaptureLimits.maximumDuration)
+            end = DispatchTime.now().uptimeNanoseconds + UInt64(bounded * 1_000_000_000)
+        }
+        func check() throws {
+            try Task.checkCancellation()
+            guard DispatchTime.now().uptimeNanoseconds < end else { throw VisualError.captureTimedOut }
+        }
+        func sleep(seconds: TimeInterval) async throws {
+            try check()
+            let now = DispatchTime.now().uptimeNanoseconds
+            let requested = UInt64(min(max(seconds, 0), CaptureLimits.maximumDuration) * 1_000_000_000)
+            guard requested < end - min(now, end) else { throw VisualError.captureTimedOut }
+            if requested > 0 { try await Task.sleep(nanoseconds: requested) }
+            try check()
+        }
     }
 }

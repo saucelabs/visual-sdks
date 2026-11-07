@@ -1,60 +1,40 @@
 import Foundation
 
-/// Takes Sauce Visual snapshots in your UI tests. All clients share one build per test run,
-/// which the SDK creates on the first check.
-///
-/// The build belongs to the first client's region, credentials, and build options. Later clients must use
-/// the same ones, and then share the first client's connection. A client with a different configuration
-/// throws `VisualError.conflictingConfiguration`.
-///
-/// The build is finished automatically when the XCTest bundle ends only if this process created it
-/// without a `buildId` or `customId`. A build named by either ID may be shared by several workers, so it
-/// is left open, even when this process created it: finish it from the step that knows every worker is
-/// done, for example by calling `finish()` there. With a `finishDelay`, every worker finishes it instead,
-/// and the service waits that long after the last one before finishing it.
+/// XCUITest snapshot submission. One configuration owns the default build in each test process.
+/// Await every check. A receipt confirms submission, not baseline equality.
 public actor VisualClient {
     public nonisolated let region: SauceRegion
     public nonisolated let options: VisualBuildOptions
-    /// Used for every check that doesn't set its own.
     public nonisolated let baselineOverride: BaselineOverride?
     private let configuration: BuildConfiguration
     private let api: VisualAPI
     private let store: SharedBuildStore
     private let device: DeviceInfo
 
-    /// Missing values come from `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY`, `SAUCE_REGION`, and `SAUCE_VISUAL_*`.
-    /// - Throws: `VisualError.invalidCredentials`, `.unknownRegion`, `.invalidBuildId`, or `.invalidFinishDelay`.
     public init(
         credentials: VisualCredentials? = nil,
         region: SauceRegion? = nil,
         options: VisualBuildOptions = VisualBuildOptions(),
         baselineOverride: BaselineOverride? = nil,
-        session: URLSession = .shared
+        session: URLSession? = nil
     ) throws {
         try self.init(
             credentials: credentials, region: region, options: options, baselineOverride: baselineOverride,
-            session: session, environment: ProcessInfo.processInfo.environment, store: .shared
+            session: session ?? GraphQLTransport.defaultSession, environment: ProcessInfo.processInfo.environment, store: .shared
         )
-        // Usually already done when the SDK loads; this is a fallback.
         TestObservation.register()
     }
 
     internal init(
-        credentials: VisualCredentials?,
-        region: SauceRegion?,
-        options: VisualBuildOptions,
-        baselineOverride: BaselineOverride? = nil,
-        session: URLSession,
-        environment: [String: String],
-        store: SharedBuildStore,
-        uploader: PresignedUploader = .shared
+        credentials: VisualCredentials?, region: SauceRegion?, options: VisualBuildOptions,
+        baselineOverride: BaselineOverride? = nil, session: URLSession,
+        environment: [String: String], store: SharedBuildStore, uploader: PresignedUploader = .shared
     ) throws {
         let credentials = try credentials ?? VisualCredentials.fromEnvironment(environment)
         let region = try region ?? SauceRegion.fromEnvironment(environment)
         var options = options.resolved(with: environment)
         if let buildId = options.buildId {
             guard let uuid = UUID(uuidString: buildId) else { throw VisualError.invalidBuildId }
-            // One spelling per build, so clients that name it differently still share it.
             options.buildId = uuid.uuidString.lowercased()
         }
         try options.validateFinishDelay()
@@ -67,162 +47,237 @@ public actor VisualClient {
         self.device = DeviceInfo.current(environment)
     }
 
-    /// The shared build, created if needed. Only useful to read its ID or link before the first check.
-    /// Concurrent first calls make one request. A failed attempt is retried by a later call, unless the
-    /// service may already have created the build: then a build with a `customId` is looked up, and any
-    /// other keeps failing with the same error.
-    /// - Throws: `VisualError.buildAlreadyCompleted` once finishing has started, `.conflictingConfiguration`,
-    ///   `.invalidBuildId`, `.buildNotFound`, `VisualAPIError`, or `CancellationError`.
+    /// Resolve the run's build. Uncertain creation is reconciled by custom ID, never blindly repeated.
     public func build() async throws -> VisualBuild {
         try await store.run(configuration, api: api).build
     }
 
-    /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
-    /// - Throws: `VisualError`, such as `.invalidCheckOptions`, `.elementNotFound`, `.clipElementOffScreen`, or
-    ///   `.conflictingConfiguration`, or `VisualAPIError`.
+    /// Captures and submits one snapshot. The operation is admitted before any screenshot or gesture.
+    /// Requested DOM is required; unavailable DOM does not silently downgrade the check.
     @MainActor
     @discardableResult
     public func sauceVisualCheck(
         _ name: String, options: VisualCheckOptions = VisualCheckOptions()
     ) async throws -> VisualSnapshot {
-        let prepared = try SnapshotCapture.prepare(name, options: options)
-        return try await check(name: prepared.name, png: prepared.png, request: prepared.request)
+        try Task.checkCancellation()
+        _ = try SnapshotCapture.validName(name)
+        try options.validate()
+        let admission = try await store.admit(configuration, api: api)
+        do {
+            // Serialize capture across all clients, including suspension while scrolling settles.
+            // Networking does not hold this gate. XCUI handles never leave MainActor here.
+            let result = try await CaptureGate.submissions.withCapture {
+                let rendered = try await captureAndRender(name, options: options)
+                return try await submit(rendered, admission: admission)
+            }
+            await store.release(admission)
+            return result
+        } catch {
+            await store.release(admission)
+            throw error
+        }
     }
 
-    /// Uploads a prepared snapshot to the shared build. `name` is already validated by `SnapshotCapture`.
-    /// The upload goes through the API of the client that owns the build, so it reaches that build's
-    /// account and region.
-    internal func check(name: String, png: Data, request: SnapshotRequest = SnapshotRequest()) async throws -> VisualSnapshot {
-        // Also checked here, for requests that don't come through `SnapshotCapture`.
-        try request.diffingMethodTolerance?.validate()
-        var request = request
-        // Crop and stitch here rather than on the main actor, so the test isn't blocked while the image is re-encoded.
+    /// Internal entry point for already prepared requests and deterministic transport tests.
+    internal func check(
+        name: String, png: Data, request: SnapshotRequest = SnapshotRequest()
+    ) async throws -> VisualSnapshot {
+        try Task.checkCancellation()
+        let name = try SnapshotCapture.validName(name)
+        try request.validate()
+        let admission = try await store.admit(configuration, api: api)
+        do {
+            let prepared = SnapshotCapture.Prepared(name: name, png: png, request: request)
+            let rendered = try render(prepared)
+            let result = try await submit(rendered, admission: admission)
+            await store.release(admission)
+            return result
+        } catch {
+            await store.release(admission)
+            throw error
+        }
+    }
+
+    private struct Rendered: Sendable {
+        let name: String
+        let image: Data
+        let request: SnapshotRequest
+    }
+
+    @MainActor
+    private func captureAndRender(_ name: String, options: VisualCheckOptions) async throws -> Rendered {
+        try await CaptureGate.shared.withCapture {
+            let prepared = try await SnapshotCapture.prepare(name, options: options)
+            // This scope, including all captured frames, ends before submission awaits networking.
+            return try await render(prepared)
+        }
+    }
+
+    /// CPU rendering uses this actor, never MainActor. No XCUI handles reach this method.
+    private func render(_ prepared: SnapshotCapture.Prepared) throws -> Rendered {
+        try Task.checkCancellation()
+        var request = prepared.request
+        try request.validate()
         let image: Data
         if let frames = request.fullPage, let clip = request.clip {
-            image = frames.isEmpty
-                ? try Screenshot.crop(png, to: clip)
-                : try FullPageCapture.stitch(first: png, frames: frames, clip: clip)
-            let height = (Int(exactly: clip.height) ?? 0) + FullPageCapture.addedHeight(frames)
-            request.regions = request.regions.compactMap { $0.cut(atHeight: height) }
+            image = try FullPageCapture.stitch(
+                first: prepared.png, frames: frames, clip: clip,
+                maxOutputPixels: request.maxOutputPixels
+            )
         } else {
-            image = try request.clip.map { try Screenshot.crop(png, to: $0) } ?? png
+            image = try request.clip.map { try Screenshot.crop(prepared.png, to: $0) } ?? prepared.png
         }
+        request.fullPage = nil
         request.baselineOverride = request.baselineOverride ?? baselineOverride
-        let device = self.device
-        // Admitted for the whole upload, so finishing waits until the snapshot is created or has failed.
-        return try await store.check(configuration, api: api) { [request] run in
-            try await run.api.createSnapshot(name: name, png: image, device: device, request: request, in: run.build)
-        }
+        let size = Screenshot.capture(png: image, pointWidth: 0).pixelSize
+        request.pixelWidth = Int(exactly: size.width) ?? 0
+        request.pixelHeight = Int(exactly: size.height) ?? 0
+        try Task.checkCancellation()
+        return Rendered(name: prepared.name, image: image, request: request)
     }
 
-    /// Finishes the build early. You don't need to call this for a build the SDK finishes automatically.
-    /// New checks are refused from the moment it's called, even if finishing fails; checks already running
-    /// are waited for. Repeated calls return the same result without another request. A later call retries,
-    /// checking the build first when the failed request may have been applied.
-    /// - Throws: `VisualError.conflictingConfiguration`, `VisualAPIError`, `CancellationError`, or any error
-    ///   from creating the build.
+    private func submit(_ rendered: Rendered, admission: SharedBuildStore.Admission) async throws -> VisualSnapshot {
+        try Task.checkCancellation()
+        let run = try await store.resolve(admission)
+        return try await run.api.createSnapshot(
+            name: rendered.name, png: rendered.image, device: device, request: rendered.request, in: run.build
+        )
+    }
+
+    /// Close admission, drain accepted captures/submissions, and finalize the remote build.
+    /// With finishDelay this schedules finalization; it does not wait for comparison completion.
     public func finish() async throws -> VisualBuild {
         try await store.finish(configuration, api: api)
     }
 }
 
-/// What decides which build a client belongs to. The `URLSession` is left out on purpose: clients that
-/// differ only in session share the build and use the first client's session.
 internal struct BuildConfiguration: Hashable, Sendable {
     let endpoint: URL
     let credentials: VisualCredentials
     let options: VisualBuildOptions
 }
 
+/// Owns admission, configuration, remote creation, and finalization. No UI objects cross this actor.
 internal actor SharedBuildStore {
     static let shared = SharedBuildStore()
 
-    /// The shared build, and the API every request for it goes through.
     struct Run: Sendable {
         let build: VisualBuild
         let api: VisualAPI
     }
 
-    /// The configuration the build belongs to, and the API of the client that set it.
-    private var owner: (configuration: BuildConfiguration, api: VisualAPI)?
-    /// The creation in flight, or its result once it succeeded.
-    private var pending: Task<VisualAPI.Resolution, Error>?
-    /// Set when creation failed after the service may have created the build. The owner is kept with it,
-    /// so no later call creates a second build or binds another configuration.
-    private var uncertainCreation: Error?
-    private var finishing: Task<VisualBuild, Error>?
-    /// Set when a failed `finishBuild` may have been applied, so the next attempt looks the build up first.
-    private var finishMayHaveBeenApplied = false
-    /// Set when finishing starts and never cleared, even when finishing fails: a failed finish may still
-    /// have been applied. Later checks are refused; already admitted ones may still complete.
-    private(set) var isClosed = false
-    /// Admitted checks that haven't ended yet, and the finish calls waiting for them.
-    private var activeChecks = 0
-    private var drainWaiters: [CheckedContinuation<Void, Never>] = []
-
-    func run(_ configuration: BuildConfiguration, api: VisualAPI) async throws -> Run {
-        // Nothing is bound or started for a caller that is already cancelled.
-        try Task.checkCancellation()
-        let api = try ownerAPI(for: configuration, api)
-        if isClosed { throw VisualError.buildAlreadyCompleted }
-        let build = try await resolve(configuration.options, with: api).build
-        // The shared creation keeps going for other callers; only this one stops.
-        try Task.checkCancellation()
-        return Run(build: build, api: api)
+    /// Opaque local lease: only this store can create one, and every caller must release it.
+    struct Admission: Hashable, Sendable {
+        fileprivate let id: UUID
     }
 
-    /// Runs `body` with the build as one admitted check. Finishing waits until it ends, whether it
-    /// succeeds or fails. A check admitted while the build is still being created may still complete.
+    private var owner: (configuration: BuildConfiguration, api: VisualAPI)?
+    private var pending: Task<VisualAPI.Resolution, Error>?
+    private var uncertainCreation: Error?
+    private var creationDefinitelyFailed = false
+    private var finishing: Task<VisualBuild, Error>?
+    private var finishMayHaveBeenApplied = false
+    private var lastFinishError: Error?
+    private(set) var isClosed = false
+    private var admissions: Set<UUID> = []
+    private var drainWaiters: [CheckedContinuation<Void, Never>] = []
+
+    /// Validation and admission occur without suspension. A rejected call never binds configuration.
+    func admit(_ configuration: BuildConfiguration, api: VisualAPI) throws -> Admission {
+        try Task.checkCancellation()
+        guard !isClosed else { throw VisualError.buildAlreadyCompleted }
+        _ = try ownerAPI(for: configuration, api)
+        let admission = Admission(id: UUID())
+        admissions.insert(admission.id)
+        return admission
+    }
+
+    func resolve(_ admission: Admission) async throws -> Run {
+        guard admissions.contains(admission.id), let owner else {
+            throw VisualError.buildAlreadyCompleted
+        }
+        try Task.checkCancellation()
+        let resolution = try await resolve(owner.configuration.options, with: owner.api)
+        try Task.checkCancellation()
+        return Run(build: resolution.build, api: owner.api)
+    }
+
+    /// Idempotent local release; callers await this in both success and failure paths.
+    func release(_ admission: Admission) {
+        guard admissions.remove(admission.id) != nil else { return }
+        guard admissions.isEmpty else { return }
+        // Rebinding after a definite failure is safe only when no accepted work still holds the owner.
+        if creationDefinitelyFailed && pending == nil && uncertainCreation == nil && !isClosed {
+            owner = nil
+            creationDefinitelyFailed = false
+        }
+        let waiters = drainWaiters
+        drainWaiters.removeAll(keepingCapacity: true)
+        waiters.forEach { $0.resume() }
+    }
+
+    func run(_ configuration: BuildConfiguration, api: VisualAPI) async throws -> Run {
+        let admission = try admit(configuration, api: api)
+        do {
+            let result = try await resolve(admission)
+            release(admission)
+            return result
+        } catch {
+            release(admission)
+            throw error
+        }
+    }
+
+    /// Kept for prepared-request tests and other internal callers. Do not nest a second lease inside it.
     func check<T: Sendable>(
-        _ configuration: BuildConfiguration, api: VisualAPI, _ body: @Sendable (Run) async throws -> T
+        _ configuration: BuildConfiguration, api: VisualAPI,
+        _ body: @Sendable (Run) async throws -> T
     ) async throws -> T {
-        try Task.checkCancellation()
-        let api = try ownerAPI(for: configuration, api)
-        if isClosed { throw VisualError.buildAlreadyCompleted }
-        // Admitted before the first suspension, so a finish that starts meanwhile waits for it.
-        activeChecks += 1
-        defer { endCheck() }
-        let build = try await resolve(configuration.options, with: api).build
-        // The upload is this caller's own work, so it isn't started once the caller is cancelled.
-        try Task.checkCancellation()
-        return try await body(Run(build: build, api: api))
+        let admission = try admit(configuration, api: api)
+        do {
+            let run = try await resolve(admission)
+            let result = try await body(run)
+            release(admission)
+            return result
+        } catch {
+            release(admission)
+            throw error
+        }
     }
 
     func finish(_ configuration: BuildConfiguration, api: VisualAPI) async throws -> VisualBuild {
         try Task.checkCancellation()
         let api = try ownerAPI(for: configuration, api)
-        // Closed before the first suspension, so no check is admitted after finishing starts.
         isClosed = true
-        if let finishing { return try await finishing.value }
-        let build = try await resolve(configuration.options, with: api).build
-        await drainChecks()
-        return try await finish(build, with: api)
+        return try await finalization(options: configuration.options, api: api).value
     }
 
-    /// Called when the test bundle ends. Always waits for this process's admitted checks, then finishes the
-    /// build only if this worker owns finishing it, which is not the same as having created it: a build named
-    /// by `buildId` or `customId` may still have other workers uploading, so it is left open for the step
-    /// that knows they are all done. See `VisualAPI.Resolution.ownsFinish`. With a `finishDelay`, every
-    /// worker finishes it, and the service waits for the others.
+    /// Best-effort XCTest fallback. It drains even when capture has not created a remote build yet.
     func finishOwnedBuild() async -> AutoFinish.Outcome {
-        if pending == nil, let uncertainCreation { return .failed(uncertainCreation) }
-        guard let pending, let owner else { return .noBuild }
+        guard let owner else { return .noBuild }
         isClosed = true
+        await drainChecks()
+        let delay = owner.configuration.options.finishDelaySeconds
         do {
+            // Manual finalization takes precedence over automatic ownership/reporting rules.
+            if let finishing {
+                let build = try await finishing.value
+                return delay.map { .finishDelayed(build, seconds: $0) } ?? .finished(build)
+            }
+            if let lastFinishError {
+                return .failed(lastFinishError)
+            }
+            if let uncertainCreation { return .failed(uncertainCreation) }
+            guard let pending else { return .noBuild }
             let resolution = try await pending.value
-            await drainChecks()
-            let delay = owner.configuration.options.finishDelaySeconds
             guard resolution.ownsFinish || delay != nil else { return .leftOpen(resolution.build) }
-            let build = try await finish(resolution.build, with: owner.api)
+            let build = try await finalization(options: owner.configuration.options, api: owner.api).value
             return delay.map { .finishDelayed(build, seconds: $0) } ?? .finished(build)
-        } catch let error as VisualAPI.UncertainCreation {
-            return .failed(error.underlying)
         } catch {
             return .failed(error)
         }
     }
 
-    /// The first caller's configuration owns the build. Matching callers get its API, others are rejected.
     private func ownerAPI(for configuration: BuildConfiguration, _ api: VisualAPI) throws -> VisualAPI {
         guard let owner else {
             owner = (configuration, api)
@@ -232,80 +287,72 @@ internal actor SharedBuildStore {
         return owner.api
     }
 
-    private func endCheck() {
-        activeChecks -= 1
-        guard activeChecks == 0 else { return }
-        let waiters = drainWaiters
-        drainWaiters = []
-        waiters.forEach { $0.resume() }
-    }
-
-    /// Waits until every admitted check has ended.
     private func drainChecks() async {
-        while activeChecks > 0 {
+        while !admissions.isEmpty {
             await withCheckedContinuation { drainWaiters.append($0) }
         }
     }
 
-    private func finish(_ build: VisualBuild, with api: VisualAPI) async throws -> VisualBuild {
-        // Another call may have started finishing meanwhile.
-        if let finishing { return try await finishing.value }
-        let reconcile = finishMayHaveBeenApplied
-        let delay = owner?.configuration.options.finishDelaySeconds
-        let task = Task {
-            reconcile ? try await api.reconcileFinish(build, delay: delay) : try await api.finishBuild(build, delay: delay)
-        }
+    /// The shared task owns all of finalization, including draining. One waiter's cancellation cannot
+    /// stop finalization for the rest of the run. Failure never reopens admission.
+    private func finalization(options: VisualBuildOptions, api: VisualAPI) -> Task<VisualBuild, Error> {
+        if let finishing { return finishing }
+        let task = Task { try await self.performFinalization(options: options, api: api) }
         finishing = task
+        return task
+    }
+
+    private func performFinalization(options: VisualBuildOptions, api: VisualAPI) async throws -> VisualBuild {
         do {
-            return try await task.value
+            await drainChecks()
+            let build = try await resolve(options, with: api).build
+            let delay = options.finishDelaySeconds
+            let result = try await (finishMayHaveBeenApplied
+                ? api.reconcileFinish(build, delay: delay)
+                : api.finishBuild(build, delay: delay))
+            lastFinishError = nil
+            return result
         } catch {
-            if finishing == task {
-                // The next call retries. Admission stays closed either way.
-                finishing = nil
-                if VisualAPI.mayHaveBeenApplied(error) { finishMayHaveBeenApplied = true }
-            }
+            // Publish recovery state before the shared task completes and wakes its waiters.
+            if VisualAPI.mayHaveBeenApplied(error) { finishMayHaveBeenApplied = true }
+            lastFinishError = error
+            finishing = nil
             throw error
         }
     }
 
-    /// The request runs in its own task, so one caller's cancellation does not fail the others.
-    /// A failure that certainly created nothing releases the owner too, so a retry may use another
-    /// configuration. After an uncertain creation, only a build with a `customId` is looked up again.
     private func resolve(_ options: VisualBuildOptions, with api: VisualAPI) async throws -> VisualAPI.Resolution {
-        if let pending {
-            do {
-                return try await pending.value
-            } catch let error as VisualAPI.UncertainCreation {
-                throw error.underlying
-            }
-        }
-        let task: Task<VisualAPI.Resolution, Error>
-        if let uncertainCreation {
-            guard let customId = options.customId else { throw uncertainCreation }
-            task = Task {
-                guard let found = try await api.reconcileCreation(customId: customId) else { throw uncertainCreation }
-                return found
-            }
-        } else {
-            task = Task { try await api.resolveBuild(options) }
-        }
+        if let pending { return try await pending.value }
+        if let uncertainCreation, options.customId == nil { throw uncertainCreation }
+        let task = Task { try await self.performResolution(options: options, api: api) }
         pending = task
+        return try await task.value
+    }
+
+    private func performResolution(options: VisualBuildOptions, api: VisualAPI) async throws -> VisualAPI.Resolution {
         do {
-            let resolution = try await task.value
-            if pending == task { uncertainCreation = nil }
-            return resolution
-        } catch let error as VisualAPI.UncertainCreation {
-            if pending == task {
-                pending = nil
-                uncertainCreation = error.underlying
+            let result: VisualAPI.Resolution
+            if let uncertainCreation {
+                guard let customId = options.customId,
+                      let found = try await api.reconcileCreation(customId: customId) else {
+                    throw uncertainCreation
+                }
+                result = found
+            } else {
+                result = try await api.resolveBuild(options)
             }
+            uncertainCreation = nil
+            creationDefinitelyFailed = false
+            return result
+        } catch let error as VisualAPI.UncertainCreation {
+            pending = nil
+            uncertainCreation = error.underlying
+            creationDefinitelyFailed = false
             throw error.underlying
         } catch {
-            if pending == task {
-                pending = nil
-                // A failed lookup after an uncertain creation settles nothing, so that state is kept.
-                if uncertainCreation == nil { owner = nil }
-            }
+            pending = nil
+            creationDefinitelyFailed = uncertainCreation == nil
+            // Do not unbind while an admitted capture or a closing run still owns this configuration.
             throw error
         }
     }

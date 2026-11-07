@@ -27,8 +27,8 @@ select_simulator() {
       # Use Xcode's eligible destinations.
       udid=$(awk -v platform="$platform" -v prefix="$device_prefix" \
         -v requested="${SIMULATOR_UDID:-}" '
-        /Available destinations/ { available=1; next }
-        /Ineligible destinations/ { available=0 }
+        /Available destinations|Destinations compatible with/ { available=1; next }
+        /Ineligible destinations|Destinations incompatible with/ { available=0 }
         available && /\{/ {
           p=""; id=""; name=""
           count=split($0, fields, ",")

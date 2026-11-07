@@ -12,7 +12,7 @@ internal struct VisualAPI: Sendable {
     }
 
     init(
-        region: SauceRegion, credentials: VisualCredentials, session: URLSession = .shared,
+        region: SauceRegion, credentials: VisualCredentials, session: URLSession = GraphQLTransport.defaultSession,
         uploader: PresignedUploader = .shared
     ) {
         self.init(
@@ -85,8 +85,11 @@ internal struct VisualAPI: Sendable {
         guard let id = UUID(uuidString: build.id), let current = try await self.build(id: id) else {
             throw VisualError.buildNotFound
         }
-        guard current.isCompleted else { return try await finishBuild(build, delay: delay) }
-        return Self.updated(build, with: current)
+        switch current.mode {
+        case "COMPLETED": return Self.updated(build, with: current)
+        case "RUNNING": return try await finishBuild(build, delay: delay)
+        default: throw VisualAPIError(code: .apiError, detail: "The build response has an unrecognized mode.")
+        }
     }
 
     /// True unless the error shows the request changed nothing on the server. An interrupted request
@@ -148,10 +151,11 @@ internal struct VisualAPI: Sendable {
     }
 
     /// Uploads snapshot artifacts, then creates snapshot `name`.
-    /// - Throws: `VisualAPIError`, or `CancellationError`. A failed tree upload only prints a warning.
+    /// - Throws: `VisualAPIError`, or `CancellationError`. A requested tree must be uploaded successfully.
     func createSnapshot(
         name: String, png: Data, device: DeviceInfo, request: SnapshotRequest, in build: VisualBuild
     ) async throws -> VisualSnapshot {
+        try request.validate()
         let upload = try await createSnapshotUpload(buildId: build.id)
         try await uploader.upload(png, as: .screenshot, to: upload.imageUploadUrl)
         let dom = try await uploadDom(request.dom, to: upload.domUploadUrl)
@@ -179,7 +183,9 @@ internal struct VisualAPI: Sendable {
         )
         let snapshot = try Self.require(result)
         return VisualSnapshot(
-            id: snapshot.id, name: name, buildId: build.id, testName: test.testName, suiteName: test.suiteName
+            id: snapshot.id, name: name, buildId: build.id, testName: test.testName, suiteName: test.suiteName,
+            captureExtent: request.captureExtent, hasDom: dom != nil,
+            pixelWidth: request.pixelWidth, pixelHeight: request.pixelHeight
         )
     }
 
@@ -191,27 +197,22 @@ internal struct VisualAPI: Sendable {
         return try Self.require(result)
     }
 
-    /// Returns the tree if it was uploaded. Problems only print a warning; cancellation is passed on.
+    /// Returns the tree if it was uploaded. A missing or failed requested tree fails the operation.
     private func uploadDom(_ dom: DomSnapshot?, to url: String?) async throws -> DomSnapshot? {
         guard let dom else { return nil }
         guard let url else {
-            print("Sauce Visual: the API returned no DOM upload URL, so the snapshot has no DOM.")
-            return nil
+            throw VisualAPIError(code: .apiError, detail: "The API returned no DOM upload URL.")
         }
-        do {
-            try await uploader.upload(dom.xml, as: .dom, to: url)
-            return dom
-        } catch is CancellationError {
-            throw CancellationError()
-        } catch {
-            print("Sauce Visual: could not upload the DOM. \(error)")
-            return nil
-        }
+        try await uploader.upload(dom.xml, as: .dom, to: url)
+        return dom
     }
 
     private static func reusable(_ existing: GraphQL.BuildResponse) throws -> VisualBuild {
-        guard !existing.isCompleted else { throw VisualError.buildAlreadyCompleted }
-        return existing.build
+        switch existing.mode {
+        case "RUNNING": return existing.build
+        case "COMPLETED": throw VisualError.buildAlreadyCompleted
+        default: throw VisualAPIError(code: .apiError, detail: "The build response has an unrecognized mode.")
+        }
     }
 
     /// Mutations must return a value. GraphQL errors are already thrown by the transport.

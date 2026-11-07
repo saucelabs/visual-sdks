@@ -4,67 +4,79 @@ import XCTest
 
 /// Turns a `sauceVisualCheck` call into an upload: checks the name, takes the screenshot and resolves the options.
 internal enum SnapshotCapture {
-    /// Everything needed to upload one snapshot.
     struct Prepared: Sendable {
         let name: String
         let png: Data
         let request: SnapshotRequest
     }
 
-    /// Runs on the main actor, because XCUI only allows screenshots and element frames there.
-    /// - Throws: `VisualError.invalidSnapshotName`, `.invalidCheckOptions`, `.elementNotFound`,
-    ///   `.clipElementOffScreen`, `.fullPageNotSupported`, or `.screenshotFailed`.
+    /// Called only while the run owns an admission and CaptureGate owns the UI capture sequence.
     @MainActor
-    static func prepare(_ name: String, options: VisualCheckOptions) throws -> Prepared {
+    static func prepare(_ name: String, options: VisualCheckOptions) async throws -> Prepared {
+        try Task.checkCancellation()
         let name = try validName(name)
-        // Caller input is checked before the screenshot or any request.
         try options.validate()
         #if os(tvOS)
         if options.fullPageElement != nil { throw VisualError.fullPageNotSupported }
         #endif
-        // Screenshot first, so it shows the screen as it was when the check was called.
         let screenshot = Screenshot.capture()
         var request = try options.resolve(running: CurrentTest.shared.identity, screenshot: screenshot)
+        var png = screenshot.png
         if options.captureDom {
-            let element = options.clipElement ?? options.fullPageElement
-            request.dom = dom(clipElement: element, clip: request.clip, screenshot: screenshot)
+            request.dom = try dom(clipElement: options.clipElement, clip: request.clip, screenshot: screenshot)
         }
         if let element = options.fullPageElement, let fullPage = options.fullPage, let clip = request.clip {
-            request.fullPage = try FullPageCapture.capture(
-                element, first: screenshot, clip: clip, limit: fullPage.scrollLimit, delay: fullPage.delayAfterScroll
+            let captured = try await FullPageCapture.capture(
+                element, first: screenshot, clip: clip, limit: fullPage.scrollLimit,
+                delay: fullPage.delayAfterScroll, allowPartialAtLimit: fullPage.allowPartialAtLimit,
+                maximumPixels: fullPage.maximumOutputPixels, maximumDuration: fullPage.maximumDuration
             )
+            png = captured.first
+            request.fullPage = captured.frames
+            request.captureExtent = captured.extent
+            request.maxOutputPixels = fullPage.maximumOutputPixels
         }
-        return Prepared(name: name, png: screenshot.png, request: request)
+        try Task.checkCancellation()
+        return Prepared(name: name, png: png, request: request)
     }
 
-    /// Read right after the screenshot, so both show the same moment. Problems only print a warning.
+    /// Sequential screenshot/tree capture, not an atomic snapshot of the app. Raw XCUI errors and
+    /// accessibility values are never logged. The tree is required when explicitly requested.
     @MainActor
-    private static func dom(clipElement: XCUIElement?, clip: CGRect?, screenshot: Screenshot.Capture) -> DomSnapshot? {
+    private static func dom(
+        clipElement: XCUIElement?, clip: CGRect?, screenshot: Screenshot.Capture
+    ) throws -> DomSnapshot {
+        try Task.checkCancellation()
         let scale = screenshot.scale
-        let screen = CGRect(x: 0, y: 0, width: screenshot.pixelSize.width / scale, height: screenshot.pixelSize.height / scale)
-        // A clip's subtree lines up with the cropped image.
+        guard scale.isFinite, scale > 0 else { throw VisualError.screenshotFailed }
+        let screen = CGRect(
+            x: 0, y: 0, width: screenshot.pixelSize.width / scale, height: screenshot.pixelSize.height / scale
+        )
+        let origin = clip.map { CGPoint(x: $0.minX / scale, y: $0.minY / scale) } ?? .zero
+        // The current consumer contract is integer point bounds plus DPR. A fractional crop origin
+        // introduces an additional systematic shift. Do not invent a new wire representation here.
+        try DomCapture.validateOrigin(origin)
         let element: XCUIElement
         if let clipElement {
             element = clipElement
         } else {
             let app = XCUIApplication()
-            guard app.state == .runningForeground else {
-                print("Sauce Visual: skipped the DOM, because the app under test isn't in front.")
-                return nil
-            }
+            guard app.state == .runningForeground else { throw VisualError.domCaptureFailed }
             element = app
         }
-        let origin = clip.map { CGPoint(x: $0.minX / scale, y: $0.minY / scale) } ?? .zero
         do {
-            return try DomCapture.capture(element, origin: origin, screen: screen, devicePixelRatio: Double(scale))
+            let result = try DomCapture.capture(element, origin: origin, screen: screen, devicePixelRatio: Double(scale))
+            try Task.checkCancellation()
+            return result
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch let error as VisualError {
+            throw error
         } catch {
-            print("Sauce Visual: could not read the element tree, so the snapshot has no DOM. \(error)")
-            return nil
+            throw VisualError.domCaptureFailed
         }
     }
 
-    /// The name without surrounding whitespace.
-    /// - Throws: `VisualError.invalidSnapshotName` when it's empty.
     static func validName(_ name: String) throws -> String {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw VisualError.invalidSnapshotName }

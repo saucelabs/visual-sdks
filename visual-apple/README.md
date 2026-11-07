@@ -1,249 +1,158 @@
-# SauceVisual for Apple platforms
+# SauceVisual for Apple UI tests
 
-`SauceVisual` Swift and Objective-C SDK for XCUITest on iOS/iPadOS 15+, tvOS 15+, and macOS 14+.
-
-The SDK creates, reuses, and finishes Sauce Visual builds from your UI tests, and uploads screenshots for comparison: the whole screen, one element, or a full page stitched from a scrolled element. Checks can ignore regions or elements, capture the element tree, and override the baseline.
-
-Development and binary distribution use **Xcode 26.6 / Swift 6.3**. The package uses Swift 5 language mode and is also tested in Swift 6 language mode.
+`SauceVisual` submits screenshots from XCUITest on iOS/iPadOS 15+, tvOS 15+, and macOS 14+. The SDK runs in the UI-test runner, not the application under test. Development and CI use modern Xcode; the selected CI reference is Xcode 26.6. Swift 5 language mode and explicit Swift 6 checks are maintained. The manifest's tools declaration is not an old-compiler acceptance claim.
 
 ## Installation
 
-Add SauceVisual to your **UI test target only**, never to the app. XCUITest runs your tests in a separate runner process that drives the app from outside, so the app under test doesn't need the SDK. The SDK links XCTest, so an app that embeds it would not launch outside a test run.
+The Swift package manifest is at the **repository root**. For local work, add the root `visual-sdks` checkout in Xcode, not `visual-apple/`. Repository-URL installation must select an approved revision/version that contains that root manifest. No release tag or downloadable release is implied by this source contribution.
 
-### Swift Package Manager
+Link `SauceVisual` to the **UI test target only**. It is a dynamic library: ensure the test bundle's Frameworks copy phase embeds it with **Code Sign On Copy**. The app under test must not link or embed it. Inspect the built runner: `MyAppUITests-Runner.app/PlugIns/MyAppUITests.xctest/Frameworks/SauceVisual.framework` should exist. Test with clean DerivedData and a physical device; simulator search paths can hide embedding mistakes.
 
-Add this checkout as a local package in Xcode, and add the `SauceVisual` product to the UI test target.
+Select an Xcode version that supports the intended test OS. The package's deployment targets do not override the minimum OS required by that Xcode's XCTest libraries; validate the oldest supported test runtime before release.
 
-`SauceVisual` is a dynamic framework. Adding the product links it into the UI test target, but Xcode copies it into the test bundle only if the target has a Copy Files phase for it. Check that the UI test target has one, or add it:
+For direct binary integration, add `SauceVisual.xcframework` to the test target and embed/sign it there. Source and binary distributions must not both be linked into one runner. The archive includes matching dSYMs. The native integration projects demonstrate both paths.
 
-1. Select the UI test target and open **Build Phases**.
-2. Choose **+ → New Copy Files Phase**, set **Destination** to **Frameworks**, and leave **Subpath** empty. You can rename the phase to **Embed Frameworks**.
-3. Click **+** in the new phase, add the `SauceVisual` product, and make sure **Code Sign On Copy** is checked.
+Use a development-signed test configuration when debugger attachment is required. Do not replace an existing Ad Hoc/distribution configuration to install this SDK. Keep application distribution and development-test signing in separate schemes/configurations. The SDK never changes app provisioning profiles or `get-task-allow`.
 
-After a build, check that `MyAppUITests-Runner.app/PlugIns/MyAppUITests.xctest/Frameworks/SauceVisual.framework` exists. Without the phase, Debug runs on a simulator still work, because the simulator can load the framework from the build folder in DerivedData. A physical device can't, and the run fails with `Library not loaded: @rpath/SauceVisual.framework/SauceVisual`.
+## Credentials and run configuration
 
-See the [source consumer project](Tests/Integration/Source.xcodeproj) for an example. Its UI test targets have this phase.
+Credentials can be supplied as `VisualCredentials` or through `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY`. `SAUCE_REGION` selects the data center; supported names include `us-west-1`, `us-east-4`, `eu-central-1`, `asia-south-2`, and `staging`.
 
-### XCFramework
-
-Add `SauceVisual.xcframework` to the UI test target and choose **Embed & Sign**.
-The archive includes dSYMs, the consuming test target signs the framework. See the [binary consumer project](Tests/Integration/Binary.xcodeproj) for an example.
-
-On macOS, UI tests need a signed runner (ad-hoc signing, **Sign to Run Locally**, is enough), and macOS may ask once to let Xcode control the computer under **Privacy & Security → Accessibility**.
-
-## Credentials and region
-
-The SDK reads the same environment variables as the other Sauce Visual SDKs:
-
-| Variable | Purpose |
-|---|---|
-| `SAUCE_USERNAME`, `SAUCE_ACCESS_KEY` | Sauce Labs credentials (required) |
-| `SAUCE_REGION` | `us-west-1` (default), `us-east-4`, `eu-central-1`, `asia-south-2`, or `staging` |
-| `SAUCE_VISUAL_BUILD_NAME`, `SAUCE_VISUAL_PROJECT`, `SAUCE_VISUAL_BRANCH`, `SAUCE_VISUAL_DEFAULT_BRANCH` | Build attributes |
-| `SAUCE_VISUAL_CUSTOM_ID`, `SAUCE_VISUAL_BUILD_ID` | Reuse a running build |
-| `SAUCE_VISUAL_TAGS` | Comma-separated tags for a new build, for example `smoke,nightly` |
-
-Values passed in code take precedence. Tests on a simulator or device don't inherit your shell, so pass each variable with the `TEST_RUNNER_` prefix, which `xcodebuild` strips:
+Build defaults use `SAUCE_VISUAL_BUILD_NAME`, `SAUCE_VISUAL_PROJECT`, `SAUCE_VISUAL_BRANCH`, `SAUCE_VISUAL_DEFAULT_BRANCH`, `SAUCE_VISUAL_BUILD_ID`, `SAUCE_VISUAL_CUSTOM_ID`, and comma-separated `SAUCE_VISUAL_TAGS`. Code values take precedence. Keep secrets out of committed schemes and logs. For command-line UI tests, pass them using the `TEST_RUNNER_` prefix, which the runner receives without the prefix.
 
 ```bash
-TEST_RUNNER_SAUCE_USERNAME="$SAUCE_USERNAME" TEST_RUNNER_SAUCE_ACCESS_KEY="$SAUCE_ACCESS_KEY" \
-  xcodebuild test -scheme MyAppUITests -destination 'platform=iOS Simulator,name=iPhone 17'
+TEST_RUNNER_SAUCE_USERNAME="$SAUCE_USERNAME" \
+TEST_RUNNER_SAUCE_ACCESS_KEY="$SAUCE_ACCESS_KEY" \
+xcodebuild test -scheme MyAppUITests \
+  -destination 'platform=iOS Simulator,id=YOUR_SIMULATOR_UDID'
 ```
 
-In Xcode, set them under **Edit Scheme → Test → Arguments → Environment Variables**. Keep real keys out of shared (committed) schemes.
+All clients in one process share a run. Matching endpoint, credentials, and resolved build options use the first owner's API transport. Conflicting configurations are rejected. A build UUID is normalized before comparison. A failed call does not silently rebind a closed run.
 
-## Swift
+The default API session is ephemeral, with a 30-second request timeout and 60-second resource timeout. An explicitly injected API session has the caller's own policy. Storage uploads use a separate, credential-free session, refuse redirects, and have a 10-second resource timeout.
+
+## Swift use
 
 ```swift
+import XCTest
 import SauceVisual
 
-let visual = try VisualClient(options: VisualBuildOptions(
-    name: "Checkout", project: "iOS app", branch: "feature-checkout", defaultBranch: "main", tags: ["smoke"]
-))
-
-// In a UI test, after driving the app to the screen you want to compare:
-try await visual.sauceVisualCheck("Checkout page")
+@MainActor
+func submitCheckout(using app: XCUIApplication) async throws -> VisualSnapshot {
+    let visual = try VisualClient(options: VisualBuildOptions(
+        name: "Checkout", project: "iOS app", branch: "feature-checkout",
+        defaultBranch: "main", tags: ["smoke"]
+    ))
+    return try await visual.sauceVisualCheck("Checkout")
+}
 ```
 
-`tags` are added to the build when the SDK creates it. Tags passed in code replace `SAUCE_VISUAL_TAGS`, and an empty list means no tags. A build reused by `buildId` or `customId` keeps its own tags.
+Await each check. Success is a **submission receipt**, not a visual-equality assertion. Comparison results are evaluated in Sauce Visual or by the owning CI integration separately.
 
-`sauceVisualCheck(_:options:)` screenshots the whole screen and adds it to the shared build, creating the build if needed. The snapshot records the running test's class as its suite name and the test method as its test name, so the dashboard groups snapshots by test. It runs on the main actor, like the XCUI APIs.
+The receipt includes `id`, `buildId`, names, local `pixelWidth`/`pixelHeight`, `hasDom`, and `captureExtent`. Public captures have positive dimensions. `hasDom` confirms upload, not backend semantic interpretation. `captureExtent` is `.viewport`, `.noMovementDetected`, or an explicitly permitted `.limitReached` prefix.
 
-Pass `VisualCheckOptions` to change how a snapshot is compared. Every field is optional:
+Screenshot and XCUI access remain on MainActor. Checks are admitted before capture, so a closed or conflicting run cannot scroll the app before rejection. Capture sequences are serialized across clients, including suspension while scrolling settles. At most two public capture/submission pipelines retain SDK-owned images concurrently. Network waits do not monopolize the UI capture gate.
 
-```swift
-try await visual.sauceVisualCheck("Products page", options: VisualCheckOptions(
-    clipElement: app.otherElements["cart"],                            // snapshot only this element
-    ignoreRegions: [CGRect(x: 0, y: 0, width: 402, height: 62)],        // points, like XCUIElement.frame
-    ignoreElements: [app.staticTexts["timestamp"]],                     // must exist at the check
-    regions: [.detectChanges(in: app.images["logo"], [.visual])],       // compare this area with its own rules
-    diffingMethod: .balanced,                                           // the default
-    diffingMethodSensitivity: .high,
-    diffingMethodTolerance: DiffingMethodTolerance(minChangeSize: 3)
-))
-```
+## Viewport checks, clipping, and regions
 
-| Option | Purpose |
-|---|---|
-| `testName`, `suiteName` | Override the names taken from the running test |
-| `clipElement` | Snapshot only this element. Parts off screen are cut off, and an element entirely off screen throws `VisualError.clipElementOffScreen`. Ignore regions still use screen coordinates |
-| `ignoreRegions`, `ignoreElements` | Areas and elements left out of the comparison. A missing element throws `VisualError.elementNotFound` |
-| `regions` | `SelectiveRegion.ignoreChanges(in:)` or `.detectChanges(in:_:)` for a rectangle or element |
-| `diffingMethod` | `.balanced` (default) or `.experimental` |
-| `diffingOptions` | Kinds of change to report: `.visual`, `.position`, `.dimensions`, and, with `captureDom`, `.content`, `.structure`, `.style` |
-| `diffingMethodSensitivity`, `diffingMethodTolerance` | How strictly `.balanced` compares pixels |
-| `baselineOverride` | Compare against another snapshot's baseline, for example `BaselineOverride(operatingSystemVersion: "26.5")` to keep comparing against iOS 26.5 baselines after the simulator moves to a newer iOS. Each field has three states: leave it out to keep the snapshot's own value, set a value (`operatingSystemVersion: "26.5"`, `operatingSystem: .ios`), or use `.null` to match baselines that have no value for that field (`device: .null`). Baselines also match on the test and suite names, so to compare with a snapshot from another test, override `testName` too. Set it for every check with `VisualClient(baselineOverride:)`; a check's own override replaces it |
-| `captureDom` | Also upload the element tree, so the dashboard shows which element changed. Off by default. See [Element tree](#element-tree-dom) |
-| `fullPage` | Scroll an element and snapshot all of its content. See [Full-page screenshots](#full-page-screenshots) |
-
-### Element tree (DOM)
-
-Turn on `captureDom` to upload the screen's element tree with the snapshot. The dashboard then shows which element changed, and `diffingOptions` can compare text, structure, and style.
+`clipElement` keeps the visible part of one element. Explicit rectangles use **screen points**, like `XCUIElement.frame`, and are projected into the uploaded image's pixels. Missing elements throw. Invalid geometry, unknown comparison bits, and out-of-range thresholds fail before capture or network side effects. A valid off-screen region may be omitted; ignore regions are comparison controls, not data redaction.
 
 ```swift
-// The whole screen of your app
-try await visual.sauceVisualCheck("Cart", options: VisualCheckOptions(captureDom: true))
-
-// One section, reporting only text and layout changes
-try await visual.sauceVisualCheck("Order summary", options: VisualCheckOptions(
-    clipElement: app.otherElements["orderSummary"],
-    diffingOptions: [.content, .position, .dimensions],
-    captureDom: true
+let receipt = try await visual.sauceVisualCheck("Cart", options: VisualCheckOptions(
+    clipElement: app.otherElements["cart"],
+    ignoreElements: [app.staticTexts["timestamp"]],
+    diffingMethod: .balanced,
+    diffingMethodTolerance: DiffingMethodTolerance(color: 0.1, minChangeSize: 3)
 ))
 ```
 
-- The tree comes from the app under test, or from `clipElement` when set.
-- In Safari or a web view, it holds the page's accessibility elements, not its HTML. Clip to the web view to capture it.
-- If the tree can't be read, the snapshot is uploaded without it and a warning is printed.
+`diffingOptions` can select kinds of changes. `.content`, `.structure`, and `.style` require a successfully captured/uploaded tree, including when selected by a region. The same requirement applies to `.all`. `DiffingMethod` supports `.balanced` and `.experimental`.
 
-### Full-page screenshots
+## Element tree (DOM)
 
-Pass the scrollable element, such as a table, list, or web view, to snapshot all of its content instead of the visible part:
+`captureDom: true` is a **required artifact request**: a foreground-app/tree-read failure, missing upload URL, or failed PUT fails the check instead of silently returning ordinary success. No snapshot registration is sent after a failed required tree upload. Allocation or screenshot upload may already have occurred before a later transport failure; this is not remote rollback.
+
+The tree contains accessibility identifiers, labels, values, and descendants, potentially beyond visible image content. Use test data. Ignore masks do not redact it. Raw tree errors/content are not logged. The screenshot and tree are sequential observations, not an atomic observation of a changing app.
+
+The existing consumer representation uses integer point bounds plus a device-pixel ratio. Bounds are therefore quantized; exact sub-point alignment is not promised. Fractional-point crop origins are rejected rather than silently shifting the tree. Full-screen trees and whole-point clip origins remain supported. A different representation requires producer/consumer contract validation before changing the wire format.
+
+Capture is bounded by tree depth, node count, and a conservative encoded-size budget. Exceeding a budget throws; the tree is not silently truncated. In Safari/web views the hierarchy is accessibility content, not HTML.
+
+Full-page images with DOM or masks are **not supported in this version**. The first viewport's tree/masks cannot be presented as metadata for stitched lower content.
+
+## Bounded scroll capture
+
+Scroll capture is available on iOS/iPadOS and macOS, not tvOS. It starts from the current position and leaves the app at the resulting position. It requires a stable, non-resizing viewport and enough unique image content to establish alignment. Repetitive/blank content may be rejected rather than guessed.
 
 ```swift
-try await visual.sauceVisualCheck("Products", options: VisualCheckOptions(
-    fullPage: FullPageScreenshot(scrollElement: app.collectionViews["products"])
+let receipt = try await visual.sauceVisualCheck("Products", options: VisualCheckOptions(
+    fullPage: FullPageScreenshot(
+        scrollElement: app.collectionViews["products"],
+        scrollLimit: 10,
+        allowPartialAtLimit: false,
+        maximumOutputPixels: 20_000_000,
+        maximumDuration: 60
+    )
 ))
 ```
 
-- The SDK scrolls the element down, waits, and takes a screenshot, until the content stops moving or `scrollLimit` screenshots are taken (10 by default). The screenshots are stitched into one image of the element.
-- After each scroll it waits `delayAfterScroll` seconds (0.5 by default), then until the element has stopped changing, so scroll indicators have faded and lazy-loaded content has appeared.
-- Capture starts from the current scroll position. Scroll to the top first if needed.
-- Ignore regions are relative to the element, as with `clipElement`. A `clipElement` that is a different element takes precedence, and the full page is skipped.
-- With `captureDom`, the element tree is read before scrolling, so it covers the first screen.
-- Bars that stay in place while the content scrolls, like the status bar, a pinned header, or Safari's toolbar, show once: at the top or bottom of the image.
-- Capture stops early when screenshots can't be lined up, for example when the overlapping part is blank.
-- Not available on tvOS, where the check throws `VisualError.fullPageNotSupported`.
+A gesture distance is not treated as a measured content offset. Zero movement participates in alignment, and ambiguous matches throw `captureAlignmentFailed`. A stability timeout throws. Reaching the screenshot cap throws `captureLimitReached` unless the caller explicitly sets `allowPartialAtLimit: true`; that receipt then reports `.limitReached`.
 
-Rectangles are in points and converted to screenshot pixels. Parts outside the screen are clipped. Snapshots are compared with the baseline that has the same name, device, and OS version. On tvOS, the operating system is reported as `UNKNOWN`, because the API has no tvOS value.
+`.noMovementDetected` requires two consecutive scroll attempts with measured zero movement, so one missed gesture does not end capture. Confirmation attempts count toward `scrollLimit` and the capture deadline. This is not a guarantee that an indefinitely lazy-loaded application has no future content; no pixel-only algorithm can prove that general property.
 
-Every `VisualClient` in the process shares one build: the first check creates it, or reuses the one named by `buildId` or `customId`. A `buildId` must name an existing build, otherwise the check throws `VisualError.buildNotFound`; a `customId` with no running build creates one with that ID. Every client must use the same region, credentials, and build options, otherwise it throws `VisualError.conflictingConfiguration`. To get the build before the first check, for example to log its link, call `try await visual.build()`. Each test process gets its own build, so running the same tests on several devices gives one build per device.
+Defaults permit 20 million output pixels and 60 seconds of capture. Hard client-side limits are 32 million output pixels, 64 MiB of retained input PNG data, 100 screenshots, and 300 seconds. These are safety policies, not server limits or a guarantee of available memory on every device. Rendering checks arithmetic before allocating the canvas and decodes/draws one frame at a time. Select lower limits for constrained runners and measure on supported devices.
 
-**You don't need to finish the build.** When the last test ends, the SDK finishes the build it created and prints its dashboard link. A build named by `buildId` or `customId` is left open, even when this run created it, because other workers may still be adding snapshots to it. Finish it from the step that knows every worker is done, for example a CI step after all test jobs. Call `finish()` only to finish earlier. Errors are `VisualError` or `VisualAPIError`, in the `com.saucelabs.visual.apple` domain.
+Do not combine effective scroll capture with `captureDom`, ignore regions/elements, or selective regions. The SDK rejects these combinations until metadata projection is implemented. A different `clipElement` takes precedence over a full-page element, as before.
 
-**Sharing a build between workers.** Give every worker the same `customId`, for example from the CI pipeline, and a `finishDelay`:
+## Baseline overrides
+
+The client may provide a default `BaselineOverride`. A per-check override **replaces**, not merges, that default. An empty per-check override clears inheritance.
+
+Each field has three states: omitted keeps the snapshot's own value, `.value(x)` selects that value, and `.null` matches an absent field. String literals and OS shortcuts remain supported:
 
 ```swift
-let visual = try VisualClient(options: VisualBuildOptions(customId: ciPipelineId, finishDelay: 120))
+let override = BaselineOverride(device: .null, operatingSystemVersion: "26.5")
 ```
 
-- The first worker creates the build with that `customId`, and the others reuse it. A finished build with that `customId` makes the check throw `VisualError.buildAlreadyCompleted`.
-- Every worker finishes the build when its tests end. The service waits `finishDelay` seconds after the last one before finishing it, so set it longer than the gap between workers. The delay is rounded up to whole seconds.
-- `finishDelay` needs a `customId`, from code or `SAUCE_VISUAL_CUSTOM_ID`, and can't be negative. Otherwise the client throws `VisualError.invalidFinishDelay`.
+Baseline selection also depends on test/suite identity. Override those fields deliberately when comparing against another test's baseline.
 
-**Failed requests.** If a request to create or finish the build fails before the service sees it, for example when there is no connection, the next call simply tries again. When the outcome is unknown, for example after a timeout, the service may have applied it, so the SDK never repeats it blindly:
+## Lifecycle, cancellation, and recovery
 
-- Creating a build named by `customId`: the next call looks the build up by that ID.
-- Creating any other build: every later call fails with the same error, so a second build is never created.
-- Finishing: the next `finish()` checks the build first, and finishes it again only if it is still running.
+Explicit `finish()` closes admission, waits for admitted captures and uploads, and then finalizes once. It does not automatically assert the comparison result. A cancelled waiter does not cancel shared creation or accepted run-owned finalization. Cancellation is cooperative and does not undo committed remote work. Native XCUI calls have their own behavior and cannot be interrupted by an arbitrary Swift deadline.
 
-Once finishing starts, no more snapshots are accepted, even if finishing fails.
+XCTest shutdown finalization is a **bounded best-effort fallback**. A warning/timeout there does not fail an already-finished test. For strict CI acceptance, use an owner that awaits/inspects finalization and evaluates the comparison result. Do not finish a process-shared build in every individual test's teardown.
 
-To pass credentials in code instead: `VisualClient(credentials: VisualCredentials(username: "…", accessKey: "…"), region: .euCentral1)`.
+Builds named by `buildId` or `customId` are left open for their owner unless delayed finalization is explicitly configured. `finishDelay` is a service grace period, not knowledge that all workers finished. An external owner after all workers is the deterministic shared-run pattern. A supplied build UUID must exist.
+
+Unknown mutation outcomes do not authorize another creation. With a custom ID the SDK performs reconciliation lookups; without one it preserves the failure for that run. A finish retry looks up state and accepts only supported RUNNING/COMPLETED modes. Generic network/HTTP errors are conservative; the final error alone may not prove no request was sent. Safe pre-execution rejections may be retried. Closed admission is never reopened.
 
 ## Objective-C
 
-Use `@import SauceVisual;` with source SPM, or the compatibility header with the XCFramework:
+Use `@import SauceVisual;` for source SPM, or `<SauceVisual/SauceVisual-Swift.h>` for the binary. The `SLVClient` facade uses the same coordinator. Completions are asynchronous on MainActor, exactly once, with a result or error. Keep the XCTest expectation alive until completion.
 
-```objc
-#import <SauceVisual/SauceVisual-Swift.h>
+Operations return an optional-to-retain `SLVOperation` handle with `cancel`. Dropping it does not cancel work. `SLVSnapshot` exposes `captureExtent`, `hasDom`, and pixel dimensions. `SLVCheckOptions` adds `fullPageAllowPartialAtLimit`, `fullPageMaximumOutputPixels`, and `fullPageMaximumDuration`. Configuration builders remain single-owner mutable objects; do not mutate them during the call's synchronous value copy. Stable NSError codes are appended, never renumbered, in `com.saucelabs.visual.apple`.
 
-NSError *error = nil;
-SLVBuildOptions *options = [[SLVBuildOptions alloc] initWithName:@"Checkout" project:@"iOS app"
-    branch:@"feature-checkout" defaultBranch:@"main" customId:nil buildId:nil finishDelay:nil tags:nil];
-// Pass nil for anything you don't set.
-// To share a build between workers: ...customId:pipelineId buildId:nil finishDelay:@120 tags:nil];
-// To tag a new build: ...buildId:nil finishDelay:nil tags:@[@"smoke"]];
-SLVClient *visual = [[SLVClient alloc] initWithOptions:options error:&error];
-if (visual == nil) {
-    NSLog(@"Initialization failed: %@", error.localizedDescription);
-    return;
-}
+## Development and acceptance
 
-SLVCheckOptions *checkOptions = [[SLVCheckOptions alloc] init];
-checkOptions.ignoreElements = @[app.staticTexts[@"timestamp"]];
-checkOptions.captureDom = YES;
-[visual sauceVisualCheckWithName:@"Checkout page" options:checkOptions completion:^(SLVSnapshot *snapshot, NSError *failure) {
-    if (failure != nil) {
-        NSLog(@"Check failed: %@", failure.localizedDescription);
-    }
-}];
-```
-
-`SLVCheckOptions` covers the test and suite names, `clipElement`, `ignoreRegions` (`NSValue` rectangles in points), `ignoreElements`, `diffingMethod`, `captureDom`, the full-page settings (`fullPageScrollElement`, `fullPageScrollLimit`, `fullPageDelayAfterScroll`), and `baselineOverride` (`SLVBaselineOverride`; `nil` properties are unset, and `matchNullFor:` sends a field as `null`). Completions run once on the main thread. Use `initWithUsername:accessKey:region:options:error:` to pass credentials in code, or `initWithUsername:accessKey:region:options:baselineOverride:error:` to also set a baseline override for every check. Errors use `SLVClient.errorDomain` and `SLVErrorCode`.
-
-## Troubleshooting
-
-**`Library not loaded: @rpath/SauceVisual.framework/SauceVisual` on a device.** The UI test target links `SauceVisual` but doesn't embed it. Add the Copy Files phase described in [Swift Package Manager](#swift-package-manager).
-
-**A UI test run from Xcode hangs on a device.** `Setting up automation session` can take about a minute, and a later `Wait for <bundle ID> to idle` step doesn't finish. If the run's log contains this line, the debugger couldn't attach to the app under test:
-
-```text
-The executable does not contain "get-task-allow" in its entitlements, so the debugger will fail to attach.
-```
-
-When the Test action's **Debug executable** option is on (**Edit Scheme → Test → Info**), Xcode launches the app suspended and leaves it to the debugger to resume it. The debugger can attach only to an app whose `get-task-allow` entitlement is `true`, and distribution profiles (Ad Hoc, App Store, or Enterprise) allow only `false`. The cause is the app's signing, not SauceVisual.
-
-Sign the app target for development in the configuration the Test action builds, usually Debug: `CODE_SIGN_STYLE = Automatic`, `CODE_SIGN_IDENTITY = Apple Development`, and no `PROVISIONING_PROFILE_SPECIFIER`. Check the `[sdk=iphoneos*]` variants of these settings too, because they apply to device builds. The configuration name alone doesn't matter: Xcode sets `get-task-allow` to `true` only when it signs for development. Apply distribution signing when you export the archive instead, for example with `xcodebuild -exportArchive` and the `release-testing` or `app-store-connect` method.
-
-Simulator runs aren't affected, because the simulator doesn't enforce `get-task-allow`. Test runs started with `xcodebuild` aren't affected either, because they don't attach a debugger.
-
-To check a built app, run the command below. A development-signed app shows `"get-task-allow" => true`, and a distribution-signed one shows `false`:
+From the repository root:
 
 ```bash
-codesign -d --entitlements - --xml "MyApp.app" | plutil -p - | grep get-task-allow
-```
-
-## Development
-
-Run package tests and source integration tests:
-
-```bash
+export DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer
 xcrun swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
-# Release needs -enable-testing, because some tests use @testable import.
-xcrun swift test -c release -Xswiftc -enable-testing
-for family in iphone ipad tvos macos; do
-  Scripts/test.sh source "$family"
-done
-```
-
-Build and test the XCFramework with Xcode 26.6 selected:
-
-```bash
+xcrun swift test -c release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+xcrun swift test -Xswiftc -swift-version -Xswiftc 6 \
+  -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+cd visual-apple
+Scripts/check-xcodeproj-sources.sh
+for family in iphone ipad tvos macos; do Scripts/test.sh source "$family"; done
 Scripts/build-xcframework.sh
-for family in iphone ipad tvos macos; do
-  Scripts/test.sh binary "$family"
-done
+for family in iphone ipad tvos macos; do Scripts/test.sh binary "$family"; done
 ```
 
-The tests include live tests that create real builds, so they need credentials and fail without them. Set them in your shell, or in CI from the existing secrets. `Scripts/test.sh` forwards every `SAUCE_*` variable to the simulator:
+Live consumer tests need authorized fixture credentials and submit real artifacts. Scripts retain logs/results and fail on empty runs, failures, or skips; there are no hardcoded test totals. Remove or relocate generated `dist/` intentionally before rebuilding, because the build never overwrites it.
 
-```bash
-export SAUCE_USERNAME=… SAUCE_ACCESS_KEY=… SAUCE_REGION=us-west-1
-```
+The live consumer fixture injects an API session with a 60-second request timeout and a 90-second resource timeout to accommodate service latency on hosted runners. It does not retry mutations. The runner retains its 120-second per-test limit, and the SDK's default session policy is unchanged.
 
-Shared build settings and the binary version live in [Configuration/SDK.xcconfig](Configuration/SDK.xcconfig).
+New SDK Swift files must be in the package source directory and all native framework targets. The membership check follows target source phases. New package tests are automatically discovered; public consumer tests need both integration projects. Binary consumers must never compile SDK sources as a fallback.
 
-## License
-
-[Apache-2.0](LICENSE).
+Before release, validate a clean repository-URL consumer and signed physical iOS device, positive/negative Objective-C paths, maximum-size captures, DOM consumer interpretation, and the tested original XCFramework. CI artifacts expire and are not a durable customer release endpoint. No old-Xcode lane or provenance system is required by this contribution.
