@@ -45,7 +45,7 @@ extension ContributionConsumerTests {
         guard app.staticTexts["SauceVisual SDK integration host"].waitForExistence(timeout: 15) else {
             throw ReadbackFailure.fixtureUnavailable
         }
-        let visual = try VisualClient(options: liveBuildOptions)
+        let visual = try VisualClient(options: liveBuildOptions, session: liveAPISession)
         #if os(macOS)
         let checkOptions = VisualCheckOptions(clipElement: app.windows.firstMatch, captureDom: true)
         #else

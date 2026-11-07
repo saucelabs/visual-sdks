@@ -12,6 +12,58 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
     /// The scrollable area sits between a 100-row header and a 50-row footer.
     private let clip = CGRect(x: 0, y: 100, width: 40, height: 200)
 
+    @MainActor
+    func testMissedFirstGestureDoesNotTruncateCapture() async throws {
+        let result = try await collect(positions: [0, 120, 240, 360, 400, 400, 400])
+        XCTAssertEqual(result.frames.map(\.shift.rows), [120, 120, 120, 40])
+        XCTAssertEqual(result.extent, .noMovementDetected)
+        let stitched = try FullPageCapture.stitch(first: result.first, frames: result.frames, clip: clip)
+        XCTAssertEqual(try contentRows(of: stitched), Array(0..<contentHeight))
+    }
+
+    @MainActor
+    func testMovementResetsNoMovementConfirmation() async throws {
+        let result = try await collect(positions: [120, 120, 240, 360, 400, 400, 400])
+        XCTAssertEqual(result.frames.map(\.shift.rows), [120, 120, 120, 40])
+        XCTAssertEqual(result.extent, .noMovementDetected)
+        let stitched = try FullPageCapture.stitch(first: result.first, frames: result.frames, clip: clip)
+        XCTAssertEqual(try contentRows(of: stitched), Array(0..<contentHeight))
+    }
+
+    @MainActor
+    func testNoMovementConfirmationRespectsTheCaptureLimit() async throws {
+        do {
+            _ = try await collect(positions: [0])
+            XCTFail("A single stationary frame must not confirm the end of capture")
+        } catch {
+            XCTAssertEqual(error as? VisualError, .captureLimitReached)
+        }
+        let partial = try await collect(positions: [0], allowPartialAtLimit: true)
+        XCTAssertEqual(partial.extent, .limitReached)
+        XCTAssertTrue(partial.frames.isEmpty)
+        let stationary = try await collect(positions: [0, 0])
+        XCTAssertEqual(stationary.extent, .noMovementDetected)
+        XCTAssertTrue(stationary.frames.isEmpty)
+    }
+
+    @MainActor
+    private func collect(positions: [Int], allowPartialAtLimit: Bool = false) async throws -> FullPageCapture.Result {
+        let first = Screenshot.capture(png: try screen(scrolledTo: 0, indicator: 0), pointWidth: CGFloat(width))
+        var attempts = 0
+        let result = try await FullPageCapture.collect(
+            first: first, clip: clip, limit: positions.count + 1,
+            allowPartialAtLimit: allowPartialAtLimit, maximumPixels: 1_000_000,
+            ignoredRight: 2, deadline: .init(seconds: 10)
+        ) {
+            let position = positions[attempts]
+            attempts += 1
+            return Screenshot.capture(png: try self.screen(scrolledTo: position, indicator: attempts % 5),
+                                      pointWidth: CGFloat(self.width))
+        }
+        XCTAssertEqual(attempts, positions.count, "Capture must confirm no movement instead of accepting one lost gesture")
+        return result
+    }
+
     func testScreenshotsAreStitchedIntoTheWholeContent() throws {
         // The last scroll only moves 40 rows, and the one after doesn't move at all.
         let positions = [0, 120, 240, 360, 400, 400]

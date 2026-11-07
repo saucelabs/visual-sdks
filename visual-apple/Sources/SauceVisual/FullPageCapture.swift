@@ -50,28 +50,58 @@ internal enum FullPageCapture {
         }
         try validateFrame(element, clip: clip, screenshot: stableFirst)
         let ignoredRight = Int(exactly: (indicatorWidth * first.scale).rounded()) ?? 0
-        var previous = try await fingerprint(stableFirst.png, clip: clip, ignoredRight: ignoredRight)
+        return try await collect(
+            first: stableFirst, clip: clip, limit: limit, allowPartialAtLimit: allowPartialAtLimit,
+            maximumPixels: maximumPixels, ignoredRight: ignoredRight, deadline: deadline
+        ) {
+            try validateFrame(element, clip: clip, screenshot: stableFirst)
+            scroll(element, visible: clip, scale: first.scale)
+            try await deadline.sleep(seconds: delay)
+            let next = try await settledScreenshot(clip: clip, deadline: deadline)
+            try validateFrame(element, clip: clip, screenshot: next)
+            return next
+        }
+    }
+
+    /// Collect measured frames independently of XCUI event delivery, so lost gestures can be
+    /// exercised deterministically with real images. Every attempt consumes the capture limit.
+    @MainActor
+    static func collect(
+        first: Screenshot.Capture, clip: CGRect, limit: Int, allowPartialAtLimit: Bool,
+        maximumPixels: Int, ignoredRight: Int, deadline: Deadline,
+        nextScreenshot: @MainActor () async throws -> Screenshot.Capture
+    ) async throws -> Result {
+        try deadline.check()
+        guard let width = Int(exactly: clip.width), let baseHeight = Int(exactly: clip.height) else {
+            throw VisualError.screenshotFailed
+        }
+        try CaptureLimits.dimensions(width: width, height: baseHeight, maximumPixels: maximumPixels)
+        var previous = try await fingerprint(first.png, clip: clip, ignoredRight: ignoredRight)
         var frames: [Frame] = []
+        var stationaryAttempts = 0
         var outputHeight = baseHeight
-        var inputBytes = stableFirst.png.count
+        var inputBytes = first.png.count
         guard inputBytes <= CaptureLimits.maximumInputBytes else { throw VisualError.captureBudgetExceeded }
 
         for _ in 1..<limit {
             try deadline.check()
-            try validateFrame(element, clip: clip, screenshot: stableFirst)
-            let expected = scroll(element, visible: clip, scale: first.scale)
-            try await deadline.sleep(seconds: delay)
-            let next = try await settledScreenshot(clip: clip, deadline: deadline)
+            let next = try await nextScreenshot()
             guard next.pixelSize == first.pixelSize, next.scale == first.scale else { throw VisualError.screenshotFailed }
-            try validateFrame(element, clip: clip, screenshot: next)
             let current = try await fingerprint(next.png, clip: clip, ignoredRight: ignoredRight)
-            guard let shift = try await measure(previous, current, expected: expected) else {
+            guard let shift = try await measure(previous, current) else {
                 throw VisualError.captureAlignmentFailed
             }
             try deadline.check()
             if shift.rows == 0 {
-                return Result(first: stableFirst.png, frames: frames, extent: .noMovementDetected)
+                // XCUI can deliver a gesture without the view consuming it. Confirm with another
+                // measured attempt instead of silently returning a one-viewport image.
+                stationaryAttempts += 1
+                if stationaryAttempts == 2 {
+                    return Result(first: first.png, frames: frames, extent: .noMovementDetected)
+                }
+                continue
             }
+            stationaryAttempts = 0
             outputHeight = try CaptureLimits.adding(outputHeight, shift.rows)
             try CaptureLimits.dimensions(width: width, height: outputHeight, maximumPixels: maximumPixels)
             inputBytes = try CaptureLimits.adding(inputBytes, next.png.count)
@@ -80,7 +110,7 @@ internal enum FullPageCapture {
             previous = current
         }
         guard allowPartialAtLimit else { throw VisualError.captureLimitReached }
-        return Result(first: stableFirst.png, frames: frames, extent: .limitReached)
+        return Result(first: first.png, frames: frames, extent: .limitReached)
     }
 
     @MainActor
@@ -118,7 +148,7 @@ internal enum FullPageCapture {
     }
 
     @MainActor
-    private static func scroll(_ element: XCUIElement, visible clip: CGRect, scale: CGFloat) -> Int {
+    private static func scroll(_ element: XCUIElement, visible clip: CGRect, scale: CGFloat) {
         let visible = CGRect(x: clip.minX / scale, y: clip.minY / scale, width: clip.width / scale, height: clip.height / scale)
         let distance = visible.height * 0.5
         #if os(macOS)
@@ -131,7 +161,6 @@ internal enum FullPageCapture {
         let end = start.withOffset(CGVector(dx: 0, dy: -distance))
         start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.3)
         #endif
-        return Int(exactly: (distance * scale).rounded()) ?? 0
     }
 
     /// Detached CPU work has bounded input and is awaited; cancellation is forwarded explicitly.
@@ -144,10 +173,10 @@ internal enum FullPageCapture {
         } onCancel: { task.cancel() }
     }
 
-    private static func measure(_ previous: [UInt64], _ current: [UInt64], expected: Int) async throws -> Shift? {
+    private static func measure(_ previous: [UInt64], _ current: [UInt64]) async throws -> Shift? {
         let task = Task.detached(priority: .userInitiated) {
             try Task.checkCancellation()
-            return offset(from: previous, to: current, expected: expected)
+            return offset(from: previous, to: current, expected: 0)
         }
         return try await withTaskCancellationHandler {
             let result = try await task.value
@@ -262,7 +291,7 @@ internal enum FullPageCapture {
         }
     }
 
-    private struct Deadline: Sendable {
+    struct Deadline: Sendable {
         let end: UInt64
         init(seconds: TimeInterval) {
             let bounded = min(max(seconds, 0), CaptureLimits.maximumDuration)

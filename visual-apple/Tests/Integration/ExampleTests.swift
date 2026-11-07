@@ -20,6 +20,19 @@ let liveBuildOptions = VisualBuildOptions(
     branch: "feat/visual-apple-snapshot", defaultBranch: "main"
 )
 
+/// Live CI traffic can exceed the SDK's default 30-second request timeout. Keep this allowance
+/// confined to the consumer fixture; the runner still bounds each test and mutations are not retried.
+let liveAPISession: URLSession = {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.timeoutIntervalForRequest = 60
+    configuration.timeoutIntervalForResource = 90
+    configuration.httpShouldSetCookies = false
+    configuration.httpCookieStorage = nil
+    configuration.urlCredentialStorage = nil
+    configuration.urlCache = nil
+    return URLSession(configuration: configuration)
+}()
+
 /// Takes a real snapshot, so it needs credentials:
 /// `SAUCE_USERNAME=… SAUCE_ACCESS_KEY=… Scripts/test.sh source iphone`
 final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
@@ -33,7 +46,7 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         #else
         let checkOptions = VisualCheckOptions()
         #endif
-        let snapshot = try await runSwiftExample(liveBuildOptions, checkOptions: checkOptions)
+        let snapshot = try await runSwiftExample(liveBuildOptions, checkOptions: checkOptions, session: liveAPISession)
         XCTAssertNotNil(UUID(uuidString: snapshot.id))
         XCTAssertNotNil(UUID(uuidString: snapshot.buildId))
         XCTAssertEqual(snapshot.name, "Home screen")
@@ -50,7 +63,7 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         app.launch()
         let list = app.descendants(matching: .any).matching(identifier: "fullPageList").firstMatch
         XCTAssertTrue(list.waitForExistence(timeout: 10), "List did not appear")
-        let visual = try VisualClient(options: liveBuildOptions)
+        let visual = try VisualClient(options: liveBuildOptions, session: liveAPISession)
         let options = VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 5, allowPartialAtLimit: true))
         #if os(tvOS)
         do {
@@ -71,7 +84,7 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
     func testHomeScreenWithDom() async throws {
         let app = XCUIApplication()
         app.launch()
-        let visual = try VisualClient(options: liveBuildOptions)
+        let visual = try VisualClient(options: liveBuildOptions, session: liveAPISession)
         #if os(macOS)
         let checkOptions = VisualCheckOptions(clipElement: app.windows.firstMatch, captureDom: true)
         #else
@@ -170,7 +183,7 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
         defer { app.terminate() }
         let list = app.descendants(matching: .any).matching(identifier: "fullPageList").firstMatch
         XCTAssertTrue(list.waitForExistence(timeout: 10), "List did not appear")
-        let visual = try VisualClient(options: liveBuildOptions)
+        let visual = try VisualClient(options: liveBuildOptions, session: liveAPISession)
         let checkOptions = options?(app, list) ?? VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list))
         let receipt = try await visual.sauceVisualCheck(name, options: checkOptions)
         XCTAssertGreaterThan(receipt.pixelWidth, 0)

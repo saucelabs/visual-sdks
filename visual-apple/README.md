@@ -98,7 +98,7 @@ let receipt = try await visual.sauceVisualCheck("Products", options: VisualCheck
 
 A gesture distance is not treated as a measured content offset. Zero movement participates in alignment, and ambiguous matches throw `captureAlignmentFailed`. A stability timeout throws. Reaching the screenshot cap throws `captureLimitReached` unless the caller explicitly sets `allowPartialAtLimit: true`; that receipt then reports `.limitReached`.
 
-`.noMovementDetected` means the observed frames established no movement, not that an indefinitely lazy-loaded application has no future content. No pixel-only algorithm can prove that general property.
+`.noMovementDetected` requires two consecutive scroll attempts with measured zero movement, so one missed gesture does not end capture. Confirmation attempts count toward `scrollLimit` and the capture deadline. This is not a guarantee that an indefinitely lazy-loaded application has no future content; no pixel-only algorithm can prove that general property.
 
 Defaults permit 20 million output pixels and 60 seconds of capture. Hard client-side limits are 32 million output pixels, 64 MiB of retained input PNG data, 100 screenshots, and 300 seconds. These are safety policies, not server limits or a guarantee of available memory on every device. Rendering checks arithmetic before allocating the canvas and decodes/draws one frame at a time. Select lower limits for constrained runners and measure on supported devices.
 
@@ -150,6 +150,8 @@ for family in iphone ipad tvos macos; do Scripts/test.sh binary "$family"; done
 ```
 
 Live consumer tests need authorized fixture credentials and submit real artifacts. Scripts retain logs/results and fail on empty runs, failures, or skips; there are no hardcoded test totals. Remove or relocate generated `dist/` intentionally before rebuilding, because the build never overwrites it.
+
+The live consumer fixture injects an API session with a 60-second request timeout and a 90-second resource timeout to accommodate service latency on hosted runners. It does not retry mutations. The runner retains its 120-second per-test limit, and the SDK's default session policy is unchanged.
 
 New SDK Swift files must be in the package source directory and all native framework targets. The membership check follows target source phases. New package tests are automatically discovered; public consumer tests need both integration projects. Binary consumers must never compile SDK sources as a fallback.
 

@@ -7,7 +7,7 @@ import Foundation
 public enum VisualCaptureExtent: Int, Hashable, Sendable {
     /// One viewport or clipped element, without scrolling.
     case viewport = 0
-    /// Scrolling stopped after unambiguous image alignment reported zero movement.
+    /// Two consecutive scroll attempts had unambiguous image alignment reporting zero movement.
     /// This is not a guarantee that a lazily loaded or externally changing page has no more content.
     case noMovementDetected = 1
     /// The caller explicitly allowed a bounded prefix at the screenshot limit.
