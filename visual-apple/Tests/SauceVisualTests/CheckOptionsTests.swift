@@ -13,6 +13,31 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
     /// 1206×2622 pixels at 3 pixels per point, like an iPhone 17.
     private let screenshot = Screenshot.Capture(png: Data("png".utf8), scale: 3, pixelSize: CGSize(width: 1206, height: 2622))
 
+    func testPixelProjectionIgnoresArithmeticNoiseInStationaryViewport() {
+        let bounds = CGRect(x: 0, y: 0, width: 1170, height: 2532)
+        let expected = CGRect(x: 0, y: 836, width: 1170, height: 900)
+        // Actual XCUI bounds before/after scrolling the inset integration fixture on a 3x display.
+        for height in [300.0, 300.0000000000001] {
+            let frame = CGRect(x: 0, y: 278.66666666666663, width: 390, height: height)
+            XCTAssertEqual(PixelRegion.pixels(frame, scale: 3, in: bounds), expected)
+        }
+        for scale in [CGFloat(1), 2, 3] {
+            let frame = CGRect(x: CGFloat(10).nextDown, y: CGFloat(20).nextUp,
+                               width: CGFloat(30).nextUp, height: CGFloat(40).nextUp)
+            XCTAssertEqual(PixelRegion.pixels(frame, scale: scale, in: bounds),
+                           CGRect(x: 10 * scale, y: 20 * scale, width: 30 * scale, height: 40 * scale))
+        }
+    }
+
+    func testPixelProjectionPreservesRealFractionalEdgesAndMovement() {
+        let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let fractional = CGRect(x: 10.0001, y: 20.0001, width: 30, height: 40)
+        XCTAssertEqual(PixelRegion.pixels(fractional, scale: 1, in: bounds),
+                       CGRect(x: 10, y: 20, width: 31, height: 41))
+        XCTAssertEqual(PixelRegion.pixels(CGRect(x: 11, y: 21, width: 30, height: 40), scale: 1, in: bounds),
+                       CGRect(x: 11, y: 21, width: 30, height: 40))
+    }
+
     func testRegionsAreScaledToPixelsAndClippedToTheImage() {
         let size = CGRect(x: 0, y: 0, width: 300, height: 300)
         XCTAssertEqual(PixelRegion(CGRect(x: 10, y: 20, width: 30, height: 40), scale: 3, in: size, name: "a", diffingOptions: nil),
@@ -324,5 +349,23 @@ final class CheckOptionsTests: XCTestCase, @unchecked Sendable {
         )
         _ = try await client.check(name: "Login", png: png, request: request)
         return route
+    }
+
+    func testEmptyCheckOverrideClearsNonemptyClientOverride() async throws {
+        let input = try await snapshotInput(
+            for: SnapshotRequest(baselineOverride: BaselineOverride()),
+            clientOverride: BaselineOverride(device: "Other device", operatingSystemVersion: .null)
+        )
+        XCTAssertNil(input["baselineOverride"])
+    }
+
+    func testNullOnlyCheckOverrideReplacesClientDefaults() async throws {
+        let input = try await snapshotInput(
+            for: SnapshotRequest(baselineOverride: BaselineOverride(device: .null)),
+            clientOverride: BaselineOverride(device: "Other device", operatingSystemVersion: "26.5")
+        )
+        let sent = try XCTUnwrap(input["baselineOverride"] as? [String: Any])
+        XCTAssertEqual(Set(sent.keys), ["device"])
+        XCTAssertTrue(sent["device"] is NSNull)
     }
 }

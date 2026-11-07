@@ -94,7 +94,9 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (.buildAlreadyCompleted, 5), (.networkFailure, 6), (.apiError, 7),
             (.conflictingConfiguration, 8), (.buildNotFound, 9), (.invalidSnapshotName, 10), (.elementNotFound, 11),
             (.invalidCheckOptions, 12), (.clipElementOffScreen, 13), (.screenshotFailed, 14),
-            (.fullPageNotSupported, 15), (.invalidFinishDelay, 16)
+            (.fullPageNotSupported, 15), (.invalidFinishDelay, 16),
+            (.captureAlignmentFailed, 17), (.captureLimitReached, 18), (.captureTimedOut, 19),
+            (.captureBudgetExceeded, 20), (.domCaptureFailed, 21), (.unsupportedCaptureCombination, 22)
         ]
         for (error, code) in codes {
             XCTAssertEqual((error as NSError).code, code)
@@ -113,19 +115,19 @@ final class ConfigurationTests: XCTestCase, @unchecked Sendable {
             (VisualError.invalidCredentials, "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualError.unknownRegion, "Unknown Sauce Labs region. Check the region name or SAUCE_REGION."),
             (VisualError.invalidBuildId, "Invalid Sauce Visual build ID. Check that it is a UUID."),
-            (VisualError.buildAlreadyCompleted, "The Sauce Visual build is already finished. Start a new build to add snapshots."),
+            (VisualError.buildAlreadyCompleted, "The Sauce Visual run is closed. New snapshots cannot be admitted."),
             (VisualError.networkFailure, "Could not reach the Sauce Visual API."),
             (VisualError.apiError, "The Sauce Visual API returned an error."),
             (VisualError.invalidSnapshotName, "Invalid snapshot name. Give the snapshot a name that is not empty."),
             (VisualError.elementNotFound,
-             "An element in the check options doesn't exist. Wait for it before the check, or remove it."),
+             "An element in the check options does not exist. Wait for it before the check."),
             (VisualError.invalidCheckOptions,
-             "Invalid check options. Regions need a finite position and a positive size, tolerance values must be between 0 and 1, and minChangeSize can't be negative."),
+             "Invalid check options. Check finite positive regions, supported flags, tolerance ranges, and capture limits."),
             (VisualError.clipElementOffScreen,
-             "The clip or full-page element is off screen. Scroll it into view before the check."),
+             "The clip or scroll element is off screen. Scroll it into view before the check."),
             (VisualError.screenshotFailed, "Could not process the screenshot."),
-            (VisualError.fullPageNotSupported, "Full-page screenshots aren't available on tvOS."),
-            (VisualError.invalidFinishDelay, "Invalid finish delay. It needs a customId, and must be zero or more seconds."),
+            (VisualError.fullPageNotSupported, "Scroll capture is not available on tvOS."),
+            (VisualError.invalidFinishDelay, "Invalid finish delay. It needs a customId and a nonnegative supported number of seconds."),
             (VisualAPIError(code: .invalidCredentials, statusCode: 401),
              "Invalid Sauce Labs credentials. Check your username and access key."),
             (VisualAPIError(code: .apiError, detail: "Project not found"),

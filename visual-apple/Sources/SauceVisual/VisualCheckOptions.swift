@@ -27,9 +27,9 @@ public struct VisualCheckOptions {
     public var diffingMethodTolerance: DiffingMethodTolerance?
     /// Compare against another snapshot's baseline. Replaces the client's override for this check.
     public var baselineOverride: BaselineOverride?
-    /// Upload the element tree of the app under test, or of `clipElement`. Off by default.
+    /// Require capture and upload of the element tree. Off by default; failure throws.
     public var captureDom: Bool
-    /// Scroll an element and snapshot all of its content. Ignored when `clipElement` is a different element.
+    /// Bounded scroll capture with explicit failure/extent reporting. Ignored when `clipElement` is a different element.
     public var fullPage: FullPageScreenshot?
 
     public init(
@@ -71,22 +71,41 @@ public struct VisualCheckOptions {
 
 /// Scrolls an element and stitches its screenshots into one image. Not available on tvOS.
 public struct FullPageScreenshot {
-    /// The scrollable element, such as a table, collection view, or web view.
     public var scrollElement: XCUIElement
-    /// The most screenshots to take. Capture also stops when the content stops moving.
+    /// Maximum screenshots, including the initial viewport. Valid range: 1...100.
     public var scrollLimit: Int
-    /// Seconds to wait after each scroll, for example for lazy-loaded content.
     public var delayAfterScroll: TimeInterval
+    /// Explicitly permit a bounded prefix when the screenshot limit is reached.
+    /// The receipt then reports `.limitReached`; ambiguity and instability still throw.
+    public var allowPartialAtLimit: Bool
+    /// Client-side canvas safety budget, at most 32,000,000 pixels.
+    public var maximumOutputPixels: Int
+    /// Monotonic capture deadline, excluding upload. Valid range: greater than 0, at most 300 seconds.
+    public var maximumDuration: TimeInterval
 
-    public init(scrollElement: XCUIElement, scrollLimit: Int = 10, delayAfterScroll: TimeInterval = 0.5) {
+    public init(
+        scrollElement: XCUIElement, scrollLimit: Int = 10, delayAfterScroll: TimeInterval = 0.5,
+        allowPartialAtLimit: Bool = false, maximumOutputPixels: Int = 20_000_000,
+        maximumDuration: TimeInterval = 60
+    ) {
         self.scrollElement = scrollElement
         self.scrollLimit = scrollLimit
         self.delayAfterScroll = delayAfterScroll
+        self.allowPartialAtLimit = allowPartialAtLimit
+        self.maximumOutputPixels = maximumOutputPixels
+        self.maximumDuration = maximumDuration
     }
 
-    /// - Throws: `VisualError.invalidCheckOptions` unless `scrollLimit` is at least 1 and the delay isn't negative.
-    static func validate(scrollLimit: Int, delayAfterScroll: TimeInterval) throws {
-        guard scrollLimit >= 1, delayAfterScroll.isFinite, delayAfterScroll >= 0 else {
+    static func validate(
+        scrollLimit: Int, delayAfterScroll: TimeInterval,
+        maximumOutputPixels: Int = 20_000_000, maximumDuration: TimeInterval = 60
+    ) throws {
+        guard (1...CaptureLimits.maximumFrames).contains(scrollLimit),
+              delayAfterScroll.isFinite, delayAfterScroll >= 0,
+              maximumDuration.isFinite, maximumDuration > 0,
+              maximumDuration <= CaptureLimits.maximumDuration,
+              delayAfterScroll < maximumDuration,
+              (1...CaptureLimits.maximumOutputPixels).contains(maximumOutputPixels) else {
             throw VisualError.invalidCheckOptions
         }
     }
@@ -181,7 +200,8 @@ public struct DiffingMethodTolerance: Hashable, Sendable {
     /// - Throws: `VisualError.invalidCheckOptions`.
     internal func validate() throws {
         let fractions = [color, brightness, antiAliasing].compactMap { $0 }
-        guard fractions.allSatisfy((0...1).contains), (minChangeSize ?? 0) >= 0 else {
+        guard fractions.allSatisfy({ $0.isFinite && (0...1).contains($0) }),
+              (0...Int(Int32.max)).contains(minChangeSize ?? 0) else {
             throw VisualError.invalidCheckOptions
         }
     }
@@ -266,19 +286,39 @@ public enum OperatingSystem: String, Hashable, Sendable {
 /// What a check needs besides the screenshot, with elements already turned into pixel rectangles.
 internal struct SnapshotRequest: Hashable, Sendable {
     var test = TestIdentity()
-    /// The part of the screenshot to keep, in pixels. `nil` keeps the whole screen.
     var clip: CGRect?
     var regions: [PixelRegion] = []
     var diffingMethod: DiffingMethod = .balanced
     var diffingOptions: DiffingOptions?
     var diffingMethodSensitivity: DiffingMethodSensitivity?
     var diffingMethodTolerance: DiffingMethodTolerance?
-    /// `nil` falls back to the client's override.
     var baselineOverride: BaselineOverride?
-    /// Set when `captureDom` is on and the tree could be read.
     var dom: DomSnapshot?
-    /// The screenshots to stitch below the first one, for a full-page check.
     var fullPage: [FullPageCapture.Frame]?
+    var captureExtent: VisualCaptureExtent = .viewport
+    var maxOutputPixels: Int = CaptureLimits.defaultOutputPixels
+    var pixelWidth: Int = 0
+    var pixelHeight: Int = 0
+
+    func validate() throws {
+        try diffingMethodTolerance?.validate()
+        let selections = [diffingOptions].compactMap { $0 } + regions.compactMap(\.diffingOptions)
+        for selection in selections {
+            guard selection.subtracting(.all).isEmpty else { throw VisualError.invalidCheckOptions }
+            if !selection.intersection([.content, .structure, .style]).isEmpty && dom == nil {
+                throw VisualError.unsupportedCaptureCombination
+            }
+        }
+        if fullPage != nil || captureExtent != .viewport {
+            guard clip != nil, regions.isEmpty, dom == nil,
+                  selections.allSatisfy({ $0.intersection([.content, .structure, .style]).isEmpty }) else {
+                throw VisualError.unsupportedCaptureCombination
+            }
+        }
+        guard maxOutputPixels > 0, maxOutputPixels <= CaptureLimits.maximumOutputPixels else {
+            throw VisualError.invalidCheckOptions
+        }
+    }
 }
 
 /// A region in screenshot pixels, as the API expects.
@@ -323,11 +363,31 @@ internal struct PixelRegion: Hashable, Sendable {
     /// Scales `rect` to whole pixels and clips it to `bounds`. `nil` when `rect` or `scale` isn't usable,
     /// or nothing is left.
     static func pixels(_ rect: CGRect, scale: CGFloat, in bounds: CGRect) -> CGRect? {
-        guard isUsable(rect), scale.isFinite, scale > 0 else { return nil }
-        let pixels = CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)
-            .integral
-            .intersection(bounds)
-        guard !pixels.isNull, pixels.width > 0, pixels.height > 0 else { return nil }
+        guard isUsable(rect), isUsable(bounds), scale.isFinite, scale > 0 else { return nil }
+        let x = rect.origin.x * scale
+        let y = rect.origin.y * scale
+        let width = rect.size.width * scale
+        let height = rect.size.height * scale
+        let values = [x, y, width, height, x + width, y + height,
+                      bounds.minX, bounds.minY, bounds.maxX, bounds.maxY]
+        guard values.allSatisfy(\.isFinite),
+              values.allSatisfy({ Int(exactly: $0.rounded(.down)) != nil && Int(exactly: $0.rounded(.up)) != nil }) else {
+            return nil
+        }
+        // XCUI can describe a stationary, pixel-aligned edge a few floating-point steps either
+        // side of its value (for example 278.66666666666663 points at 3x). Remove only that
+        // arithmetic noise before rounding outwards; genuine fractional pixels still expand.
+        func edge(_ value: CGFloat) -> CGFloat {
+            let integer = value.rounded()
+            let tolerance = min(8 * max(value.ulp, CGFloat.ulpOfOne), 0.000_001)
+            return abs(value - integer) <= tolerance ? integer : value
+        }
+        let left = edge(x).rounded(.down)
+        let top = edge(y).rounded(.down)
+        let right = edge(x + width).rounded(.up)
+        let bottom = edge(y + height).rounded(.up)
+        let pixels = CGRect(x: left, y: top, width: right - left, height: bottom - top).intersection(bounds)
+        guard isUsable(pixels), !pixels.isNull else { return nil }
         return pixels
     }
 
@@ -350,8 +410,23 @@ extension VisualCheckOptions {
             return nil
         }
         guard rects.allSatisfy(PixelRegion.isUsable) else { throw VisualError.invalidCheckOptions }
-        if let fullPage {
-            try FullPageScreenshot.validate(scrollLimit: fullPage.scrollLimit, delayAfterScroll: fullPage.delayAfterScroll)
+        let selections = [diffingOptions].compactMap { $0 } + regions.compactMap(\.diffingOptions)
+        for selection in selections {
+            guard selection.subtracting(.all).isEmpty else { throw VisualError.invalidCheckOptions }
+            if !selection.intersection([.content, .structure, .style]).isEmpty && !captureDom {
+                throw VisualError.unsupportedCaptureCombination
+            }
+        }
+        if fullPageElement != nil, let fullPage {
+            try FullPageScreenshot.validate(
+                scrollLimit: fullPage.scrollLimit, delayAfterScroll: fullPage.delayAfterScroll,
+                maximumOutputPixels: fullPage.maximumOutputPixels, maximumDuration: fullPage.maximumDuration
+            )
+            // First-viewport metadata cannot be projected into a stitched image without a defined
+            // content/overlay mapping. Reject it rather than mask the wrong pixels or claim full DOM coverage.
+            guard !captureDom, ignoreRegions.isEmpty, ignoreElements.isEmpty, regions.isEmpty else {
+                throw VisualError.unsupportedCaptureCombination
+            }
         }
     }
 
@@ -373,11 +448,7 @@ extension VisualCheckOptions {
             clip = pixels
         }
         // Regions are relative to the uploaded image, so to the clip element when there is one.
-        var image = clip ?? screen
-        if let clip, let fullPage, fullPageElement != nil {
-            // A full page grows downwards, so regions below the first screenshot are kept until it's stitched.
-            image.size.height = clip.height * CGFloat(fullPage.scrollLimit)
-        }
+        let image = clip ?? screen
         func pixels(_ area: SelectiveRegion.Area, name: String?, options: DiffingOptions?) throws -> PixelRegion? {
             let rect: CGRect
             switch area {

@@ -27,7 +27,13 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
     func testSwiftExampleChecksScreen() async throws {
         let app = XCUIApplication()
         app.launch()
-        let snapshot = try await runSwiftExample(liveBuildOptions)
+        #if os(macOS)
+        // Keep live test uploads inside the fixture window, excluding the developer's desktop.
+        let checkOptions = VisualCheckOptions(clipElement: app.windows.firstMatch)
+        #else
+        let checkOptions = VisualCheckOptions()
+        #endif
+        let snapshot = try await runSwiftExample(liveBuildOptions, checkOptions: checkOptions)
         XCTAssertNotNil(UUID(uuidString: snapshot.id))
         XCTAssertNotNil(UUID(uuidString: snapshot.buildId))
         XCTAssertEqual(snapshot.name, "Home screen")
@@ -45,7 +51,7 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         let list = app.descendants(matching: .any).matching(identifier: "fullPageList").firstMatch
         XCTAssertTrue(list.waitForExistence(timeout: 10), "List did not appear")
         let visual = try VisualClient(options: liveBuildOptions)
-        let options = VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 5))
+        let options = VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 5, allowPartialAtLimit: true))
         #if os(tvOS)
         do {
             try await visual.sauceVisualCheck("Full page list", options: options)
@@ -66,7 +72,12 @@ final class LiveBuildConsumerTests: XCTestCase, @unchecked Sendable {
         let app = XCUIApplication()
         app.launch()
         let visual = try VisualClient(options: liveBuildOptions)
-        let snapshot = try await visual.sauceVisualCheck("Home screen (DOM)", options: VisualCheckOptions(captureDom: true))
+        #if os(macOS)
+        let checkOptions = VisualCheckOptions(clipElement: app.windows.firstMatch, captureDom: true)
+        #else
+        let checkOptions = VisualCheckOptions(captureDom: true)
+        #endif
+        let snapshot = try await visual.sauceVisualCheck("Home screen (DOM)", options: checkOptions)
         XCTAssertNotNil(UUID(uuidString: snapshot.id))
         app.terminate()
     }
@@ -85,7 +96,7 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
     @MainActor
     func testScrollLimitStopsEarly() async throws {
         try await check("Full page limit 2", screen: "-fullPageList") { _, list in
-            VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 2))
+            VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 2, allowPartialAtLimit: true))
         }
     }
 
@@ -101,7 +112,7 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
     /// Only the short list between a header and a footer is captured.
     @MainActor
     func testListBetweenHeaderAndFooter() async throws {
-        try await check("Full page inset list", screen: "-fullPageInset")
+        try await check("Full page inset list", screen: "-fullPageInset", expectedContentHeight: 12 * 64)
     }
 
     /// Rows of different heights and colours, in a plain scroll view.
@@ -118,13 +129,19 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
         }
     }
 
-    /// Ignore regions and the element tree work together with the full page.
+    /// Unprojected metadata is rejected before scrolling or upload.
     @MainActor
-    func testIgnoredElementAndDom() async throws {
-        try await check("Full page with ignore and DOM", screen: "-fullPageList") { app, list in
-            VisualCheckOptions(
-                ignoreElements: [app.staticTexts["Row 2"]], captureDom: true, fullPage: FullPageScreenshot(scrollElement: list)
-            )
+    func testUnsupportedScrollMetadataFailsBeforeCapture() async throws {
+        do {
+            try await check("Unsupported scroll metadata", screen: "-fullPageList") { app, list in
+                VisualCheckOptions(
+                    ignoreElements: [app.staticTexts["Row 2"]], captureDom: true,
+                    fullPage: FullPageScreenshot(scrollElement: list)
+                )
+            }
+            XCTFail("Expected an unsupported capture combination")
+        } catch {
+            XCTAssertEqual(error as? VisualError, .unsupportedCaptureCombination)
         }
     }
 
@@ -144,7 +161,8 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
     /// Launches the host on `screen` and checks it. Without `options`, the whole list is captured.
     @MainActor
     private func check(
-        _ name: String, screen: String, options: ((XCUIApplication, XCUIElement) -> VisualCheckOptions)? = nil
+        _ name: String, screen: String, expectedContentHeight: CGFloat? = nil,
+        options: ((XCUIApplication, XCUIElement) -> VisualCheckOptions)? = nil
     ) async throws {
         let app = XCUIApplication()
         app.launchArguments = [screen]
@@ -154,7 +172,15 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
         XCTAssertTrue(list.waitForExistence(timeout: 10), "List did not appear")
         let visual = try VisualClient(options: liveBuildOptions)
         let checkOptions = options?(app, list) ?? VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list))
-        try await visual.sauceVisualCheck(name, options: checkOptions)
+        let receipt = try await visual.sauceVisualCheck(name, options: checkOptions)
+        XCTAssertGreaterThan(receipt.pixelWidth, 0)
+        XCTAssertGreaterThan(receipt.pixelHeight, 0)
+        if let expectedContentHeight {
+            // The fixture has known content dimensions: submission alone must not pass a truncated stitch.
+            let scale = CGFloat(receipt.pixelWidth) / list.frame.width
+            XCTAssertEqual(receipt.captureExtent, .noMovementDetected)
+            XCTAssertEqual(CGFloat(receipt.pixelHeight), expectedContentHeight * scale, accuracy: 1)
+        }
     }
 }
 #endif

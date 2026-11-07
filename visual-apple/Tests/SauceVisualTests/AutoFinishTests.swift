@@ -90,7 +90,7 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
 
     func testFailedCreationIsNotFinished() async throws {
         let store = SharedBuildStore()
-        let route = StubURLProtocol.Route([.failure(.cannotConnectToHost)])
+        let route = StubURLProtocol.Route([.failure(.badURL)])
         _ = try? await client(route, store, VisualBuildOptions()).build()
 
         guard case .noBuild = await store.finishOwnedBuild() else { return XCTFail("Expected no build") }
@@ -126,6 +126,6 @@ final class AutoFinishTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(AutoFinish.message(for: .finishDelayed(build, seconds: 60)),
                        "Sauce Visual: build https://app.saucelabs.com/visual/builds/\(buildID) finishes 60 s after the last worker finishes it.")
         XCTAssertEqual(AutoFinish.message(for: .failed(VisualError.networkFailure)),
-                       "Sauce Visual: could not finish the build. Could not reach the Sauce Visual API.")
+                       "Sauce Visual: could not confirm finalization. Use the explicit run owner to inspect or reconcile the build.")
     }
 }

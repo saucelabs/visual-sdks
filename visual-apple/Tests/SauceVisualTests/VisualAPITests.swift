@@ -226,10 +226,10 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
 
     func testFailuresSayWhetherTheServiceMayHaveAppliedTheRequest() async throws {
         let cases: [(String, StubURLProtocol.Reply, Bool)] = [
-            ("cannot connect", .failure(.cannotConnectToHost), false),
-            ("host not found", .failure(.cannotFindHost), false),
+            ("cannot connect", .failure(.cannotConnectToHost), true),
+            ("host not found", .failure(.cannotFindHost), true),
             ("unauthorized", StubURLProtocol.Reply(status: 401, body: Data()), false),
-            ("bad request", StubURLProtocol.Reply(status: 400, body: Data()), false),
+            ("unclassified HTTP error", StubURLProtocol.Reply(status: 400, body: Data()), true),
             ("GraphQL error", .json(["errors": [["message": "Invalid input"]]]), false),
             ("timeout", .failure(.timedOut), true),
             ("connection lost", .failure(.networkConnectionLost), true),
@@ -251,7 +251,7 @@ final class VisualAPITests: XCTestCase, @unchecked Sendable {
         await XCTAssertThrowsErrorAsync(try await timedOut.resolveBuild(VisualBuildOptions())) {
             XCTAssertTrue($0 is VisualAPI.UncertainCreation, "\($0)")
         }
-        let (refused, _) = try api([.failure(.cannotConnectToHost)])
+        let (refused, _) = try api([.failure(.badURL)])
         await XCTAssertThrowsErrorAsync(try await refused.resolveBuild(VisualBuildOptions())) {
             XCTAssertTrue($0 is VisualAPIError, "\($0)")
         }

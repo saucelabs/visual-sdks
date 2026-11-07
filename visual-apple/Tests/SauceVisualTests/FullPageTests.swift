@@ -33,18 +33,21 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
 
     func testBlankRowsAloneDontLineUp() {
         let blank = [UInt64](repeating: 7, count: 100)
-        XCTAssertEqual(FullPageCapture.offset(from: blank, to: blank, expected: 37)?.rows, 0, "Nothing moved")
+        XCTAssertNil(FullPageCapture.offset(from: blank, to: blank, expected: 37), "Uniform pixels cannot establish a displacement")
         var page = blank
         page[0] = 1
         XCTAssertNil(FullPageCapture.offset(from: page, to: blank, expected: 37), "Any shift would do")
     }
 
-    func testTheExpectedShiftWinsAmongEquallyGoodOnes() {
-        // Two bands repeat every 50 rows, so shifts of 50 and 100 both line up.
+    func testAmbiguousRepeatedContentIsRejected() {
         let pattern = (0..<50).map { UInt64($0) }
         let page = pattern + pattern + pattern + pattern
-        XCTAssertEqual(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 90)?.rows, 100)
-        XCTAssertEqual(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 60)?.rows, 50)
+        XCTAssertNil(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 90))
+        XCTAssertNil(FullPageCapture.offset(from: page, to: page.shiftedUp(by: 50), expected: 60))
+        var stationary = page
+        stationary[stationary.count - 1] = 90_001
+        let result = FullPageCapture.offset(from: page, to: stationary, expected: 100)
+        XCTAssertTrue(result == nil || result?.rows == 0, "A changed row is not evidence of scrolling")
     }
 
     func testAPinnedBandAtTheTopStillLinesUp() {
@@ -60,7 +63,7 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
         // bottom shrinks to 15 rows. Only 30 of the 100 overlapping rows match.
         let previous = (0..<160).map { UInt64($0) } + [UInt64](repeating: 9_000, count: 40)
         let current = [UInt64](repeating: 8_000, count: 30) + (130..<285).map { UInt64($0) } + [UInt64](repeating: 9_001, count: 15)
-        XCTAssertEqual(FullPageCapture.offset(from: previous, to: current, expected: 110), .init(rows: 100, coveredTop: 30))
+        XCTAssertNil(FullPageCapture.offset(from: previous, to: current, expected: 110), "The overlap is too heavily occluded to infer movement safely")
 
         // Stitched, the top bar is left out and the old toolbar is drawn over, so only the last toolbar shows.
         let first = try screen(scrolledTo: 0, indicator: 0, bars: (top: 0, bottom: 40))
@@ -98,11 +101,11 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
         XCTAssertNoThrow(try FullPageScreenshot.validate(scrollLimit: 10, delayAfterScroll: 0.5))
     }
 
-    func testCheckUploadsTheStitchedImageAndCutsRegions() async throws {
+    func testCheckUploadsTheStitchedImageWithoutUnprojectedMetadata() async throws {
         let buildID = "0f8fad5b-d9cb-469f-a165-70867728950e"
         let uploadURL = "https://storage.test/upload?signature=abc"
         let route = StubURLProtocol.Route([
-            .json(["data": ["result": ["id": buildID, "name": "Build", "status": "RUNNING", "url": "http://build"]]]),
+            .json(["data": ["result": ["id": buildID, "name": "Build", "status": "RUNNING"]]]),
             .json(["data": ["result": ["id": "7c9e6679-7425-40de-944b-e07fc1f90ae7", "imageUploadUrl": uploadURL]]]),
             StubURLProtocol.Reply(body: Data()),
             .json(["data": ["result": ["id": "16fd2706-8baf-433b-82eb-8c7fada847da"]]])
@@ -119,22 +122,16 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
             .init(png: try screen(scrolledTo: 200, indicator: 1), shift: .init(rows: 200, coveredTop: 0)),
             .init(png: try screen(scrolledTo: 400, indicator: 2), shift: .init(rows: 200, coveredTop: 0))
         ]
-        // Starts inside the 600 stitched rows and reaches past them.
-        let wide = try XCTUnwrap(PixelRegion(
-            CGRect(x: 0, y: 550, width: 10, height: 100), scale: 1, in: CGRect(x: 0, y: 0, width: 40, height: 2_000),
-            name: nil, diffingOptions: nil
-        ))
-        request.regions = [wide]
-
-        _ = try await client.check(name: "Page", png: try screen(scrolledTo: 0, indicator: 0), request: request)
-
+        request.captureExtent = .noMovementDetected
+        let receipt = try await client.check(name: "Page", png: try screen(scrolledTo: 0, indicator: 0), request: request)
         let put = try XCTUnwrap(route.requests.first { $0.url?.absoluteString == uploadURL })
         XCTAssertEqual(try contentRows(of: try XCTUnwrap(put.httpBody)), Array(0..<contentHeight))
-        let snapshotBody = try XCTUnwrap(route.bodies.last)
-        let input = try XCTUnwrap((snapshotBody["variables"] as? [String: Any])?["input"] as? [String: Any])
-        let regions = try XCTUnwrap(input["ignoreRegions"] as? [[String: Any]])
-        XCTAssertEqual(regions.first?["y"] as? Int, 550)
-        XCTAssertEqual(regions.first?["height"] as? Int, 50, "Cut at the stitched height")
+        XCTAssertEqual(receipt.pixelWidth, width)
+        XCTAssertEqual(receipt.pixelHeight, contentHeight)
+        XCTAssertEqual(receipt.captureExtent, .noMovementDetected)
+        let variables = try XCTUnwrap(route.bodies.last?["variables"] as? [String: Any])
+        let input = try XCTUnwrap(variables["input"] as? [String: Any])
+        XCTAssertNil(input["ignoreRegions"])
     }
 
     // MARK: - Helpers
@@ -195,6 +192,27 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
             let i = row * image.width * 4
             return Int(pixels[i]) + Int(pixels[i + 1]) * 256
         }
+    }
+
+    func testStitchedRequestRejectsUnprojectedRegionsBeforeRequests() async throws {
+        let route = StubURLProtocol.Route([])
+        let client = try VisualClient(
+            credentials: nil, region: nil, options: VisualBuildOptions(name: "Build"),
+            session: StubURLProtocol.session(route),
+            environment: ["SAUCE_USERNAME": "user", "SAUCE_ACCESS_KEY": "secret", "SAUCE_REGION": "staging"],
+            store: SharedBuildStore(), uploader: PresignedUploader(configuration: StubURLProtocol.configuration(route))
+        )
+        var request = SnapshotRequest()
+        request.clip = clip
+        request.fullPage = [.init(png: try screen(scrolledTo: 100, indicator: 1), shift: .init(rows: 100, coveredTop: 0))]
+        request.regions = [try XCTUnwrap(PixelRegion(
+            CGRect(x: 0, y: 180, width: 10, height: 20), scale: 1,
+            in: CGRect(x: 0, y: 0, width: 40, height: 1_000), name: nil, diffingOptions: nil
+        ))]
+        await XCTAssertThrowsErrorAsync(try await client.check(name: "Page", png: Data(), request: request)) {
+            XCTAssertEqual($0 as? VisualError, .unsupportedCaptureCombination)
+        }
+        XCTAssertTrue(route.requests.isEmpty)
     }
 }
 

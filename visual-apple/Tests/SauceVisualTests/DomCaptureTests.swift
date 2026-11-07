@@ -38,7 +38,7 @@ final class DomCaptureTests: XCTestCase, @unchecked Sendable {
         """)
     }
 
-    func testBackendRecognizesTheDocumentAsIos() {
+    func testDocumentContainsExpectedAppiumMarker() {
         // The diffing engine looks for <AppiumAUT> in the first 1000 characters.
         let start = xml(DomNode(type: "XCUIElementTypeApplication")).prefix(1000)
         XCTAssertTrue(start.hasPrefix("<?xml"))
