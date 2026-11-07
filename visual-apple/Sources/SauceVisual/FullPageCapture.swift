@@ -126,17 +126,20 @@ internal enum FullPageCapture {
 
     /// Exact quiescence of the visible pixels is a conservative readiness condition, not an app-idle API.
     @MainActor
-    private static func settledScreenshot(clip: CGRect, deadline: Deadline) async throws -> Screenshot.Capture {
+    static func settledScreenshot(
+        clip: CGRect, deadline: Deadline,
+        takeScreenshot: @MainActor () async throws -> Screenshot.Capture = { Screenshot.capture() }
+    ) async throws -> Screenshot.Capture {
         try deadline.check()
-        var latest = Screenshot.capture()
+        var latest = try await takeScreenshot()
         var latestRows = try await fingerprint(latest.png, clip: clip, ignoredRight: 0)
         var unchangedSince = DispatchTime.now().uptimeNanoseconds
-        let settleDeadline = Deadline(seconds: 3)
+        // Screenshot delivery can itself be slow. Use the caller's shared capture deadline,
+        // rather than an independent short timeout that can expire before the pixels settle.
         while DispatchTime.now().uptimeNanoseconds - unchangedSince < 1_000_000_000 {
             try deadline.check()
-            try settleDeadline.check()
             try await deadline.sleep(seconds: 0.25)
-            let next = Screenshot.capture()
+            let next = try await takeScreenshot()
             guard next.pixelSize == latest.pixelSize, next.scale == latest.scale else { throw VisualError.screenshotFailed }
             let rows = try await fingerprint(next.png, clip: clip, ignoredRight: 0)
             if rows != latestRows { unchangedSince = DispatchTime.now().uptimeNanoseconds }

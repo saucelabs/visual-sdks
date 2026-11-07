@@ -20,11 +20,15 @@ struct SmokeHost: App {
         } else if arguments.contains("-fullPageScrollView") {
             ScrollView {
                 VStack(spacing: 0) {
-                    ForEach(0..<30, id: \.self) { block in
+                    ForEach(0..<8, id: \.self) { block in
                         marker("Block \(block)", seed: block + 100, height: CGFloat(40 + (block % 4) * 30))
                     }
                 }
-            }.accessibilityIdentifier("fullPageList")
+            }
+            // A bounded viewport stays inside the safe area on every platform. The eight mixed
+            // rows still require multiple overlapping captures without making this a long stress test.
+            .frame(height: 300)
+            .accessibilityIdentifier("fullPageList")
         } else {
             Text("SauceVisual SDK integration host").padding()
         }

@@ -131,14 +131,12 @@ final class FullPageEdgeCaseTests: XCTestCase, @unchecked Sendable {
     /// Rows of different heights and colours, in a plain scroll view.
     @MainActor
     func testScrollViewWithMixedRows() async throws {
-        let contentHeight = (0..<30).reduce(CGFloat.zero) { $0 + CGFloat(40 + ($1 % 4) * 30) }
+        let contentHeight = (0..<8).reduce(CGFloat.zero) { $0 + CGFloat(40 + ($1 % 4) * 30) }
         try await check(
             "Full page scroll view", screen: "-fullPageScrollView", expectedContentHeight: contentHeight
         ) { _, list in
-            // The 2,490-point fixture needs eight half-viewport scrolls on CI's 540-point macOS
-            // window, plus the initial frame and two stationary confirmations. Leave room for
-            // missed gestures while requiring a complete capture within the existing time limit.
-            VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list, scrollLimit: 16))
+            XCTAssertEqual(list.frame.height, 300, accuracy: 0.5, "The fixture must use its bounded viewport")
+            return VisualCheckOptions(fullPage: FullPageScreenshot(scrollElement: list))
         }
     }
 

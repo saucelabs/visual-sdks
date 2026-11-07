@@ -13,6 +13,57 @@ final class FullPageTests: XCTestCase, @unchecked Sendable {
     private let clip = CGRect(x: 0, y: 100, width: 40, height: 200)
 
     @MainActor
+    func testSettlingUsesTheCaptureDeadline() async throws {
+        let screenshots = try (0...2).map {
+            Screenshot.capture(png: try screen(scrolledTo: $0, indicator: 0), pointWidth: CGFloat(width))
+        }
+        var calls = 0
+        let result = try await FullPageCapture.settledScreenshot(clip: clip, deadline: .init(seconds: 20)) {
+            let index = calls
+            calls += 1
+            // A slow screenshot source changes for longer than three seconds, then becomes stable.
+            if index == 1 || index == 2 { try await Task.sleep(nanoseconds: 1_600_000_000) }
+            return screenshots[min(index, 2)]
+        }
+        XCTAssertEqual(result.png, screenshots[2].png)
+        XCTAssertGreaterThan(calls, 3, "The final frame must be observed again before it is accepted")
+    }
+
+    @MainActor
+    func testContinuouslyChangingScreenshotsRespectTheCaptureDeadline() async throws {
+        let screenshots = try (0...1).map {
+            Screenshot.capture(png: try screen(scrolledTo: $0, indicator: 0), pointWidth: CGFloat(width))
+        }
+        var calls = 0
+        do {
+            _ = try await FullPageCapture.settledScreenshot(clip: clip, deadline: .init(seconds: 0.8)) {
+                defer { calls += 1 }
+                return screenshots[calls % 2]
+            }
+            XCTFail("Continuously changing pixels must not be accepted as settled")
+        } catch {
+            XCTAssertEqual(error as? VisualError, .captureTimedOut)
+        }
+    }
+
+    @MainActor
+    func testSettlingHonorsCancellation() async throws {
+        let task = Task { @MainActor in
+            try await FullPageCapture.settledScreenshot(clip: self.clip, deadline: .init(seconds: 20)) {
+                try Task.checkCancellation()
+                return Screenshot.capture(png: try self.screen(scrolledTo: 0, indicator: 0), pointWidth: CGFloat(self.width))
+            }
+        }
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("Cancelled capture must not accept a screenshot")
+        } catch {
+            XCTAssertTrue(error is CancellationError)
+        }
+    }
+
+    @MainActor
     func testMissedFirstGestureDoesNotTruncateCapture() async throws {
         let result = try await collect(positions: [0, 120, 240, 360, 400, 400, 400])
         XCTAssertEqual(result.frames.map(\.shift.rows), [120, 120, 120, 40])

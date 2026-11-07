@@ -96,7 +96,7 @@ let receipt = try await visual.sauceVisualCheck("Products", options: VisualCheck
 ))
 ```
 
-A gesture distance is not treated as a measured content offset. Zero movement participates in alignment, and ambiguous matches throw `captureAlignmentFailed`. A stability timeout throws. Reaching the screenshot cap throws `captureLimitReached` unless the caller explicitly sets `allowPartialAtLimit: true`; that receipt then reports `.limitReached`.
+A gesture distance is not treated as a measured content offset. Zero movement participates in alignment, and ambiguous matches throw `captureAlignmentFailed`. Settling requires unchanged pixels for at least one second and uses the same `maximumDuration` deadline as the entire capture; it does not reset that deadline after scrolling. A stability timeout throws. Reaching the screenshot cap throws `captureLimitReached` unless the caller explicitly sets `allowPartialAtLimit: true`; that receipt then reports `.limitReached`.
 
 `.noMovementDetected` requires two consecutive scroll attempts with measured zero movement, so one missed gesture does not end capture. Confirmation attempts count toward `scrollLimit` and the capture deadline. This is not a guarantee that an indefinitely lazy-loaded application has no future content; no pixel-only algorithm can prove that general property.
 
