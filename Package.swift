@@ -9,14 +9,19 @@ let package = Package(
         .target(
             name: "SauceVisual",
             dependencies: ["SauceVisualLoader"],
+            path: "visual-apple/Sources/SauceVisual",
             resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         ),
-        // Picks up test names from the first test. C, because Swift can't run code at load time.
-        .target(name: "SauceVisualLoader"),
+        .target(
+            name: "SauceVisualLoader",
+            path: "visual-apple/Sources/SauceVisualLoader",
+            publicHeadersPath: "include"
+        ),
         .testTarget(
             name: "SauceVisualTests",
             dependencies: ["SauceVisual"],
+            path: "visual-apple/Tests/SauceVisualTests",
             swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
         )
     ],
