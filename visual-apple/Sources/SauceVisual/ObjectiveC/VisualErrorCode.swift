@@ -1,6 +1,7 @@
 #if canImport(ObjectiveC)
-/// Error codes for Objective-C, in the `com.saucelabs.visual.apple` domain. Kept apart from `VisualError`,
-/// because an `@objc` error enum would get the wrong NSError domain.
+import Foundation
+
+/// Objective-C numeric error contract. Values match VisualError exactly.
 @objc(SLVErrorCode)
 public enum VisualErrorCode: Int, Sendable {
     case cancelled = 1
@@ -19,5 +20,11 @@ public enum VisualErrorCode: Int, Sendable {
     case screenshotFailed = 14
     case fullPageNotSupported = 15
     case invalidFinishDelay = 16
+    case captureAlignmentFailed = 17
+    case captureLimitReached = 18
+    case captureTimedOut = 19
+    case captureBudgetExceeded = 20
+    case domCaptureFailed = 21
+    case unsupportedCaptureCombination = 22
 }
 #endif

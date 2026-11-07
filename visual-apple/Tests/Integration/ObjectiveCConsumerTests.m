@@ -137,4 +137,43 @@ extern void RunObjectiveCExample(SLVBuildOptions *options, void (^completion)(SL
     XCTAssertEqualObjects(client.region, SLVRegion.staging);
 }
 
+- (void)testOperationHandleCancelsWithoutLosingCompletion {
+    NSError *initializationError = nil;
+    SLVClient *client = [[SLVClient alloc] initWithUsername:@"test-user"
+                                                 accessKey:@"not-a-real-key"
+                                                    region:SLVRegion.staging
+                                                   options:nil
+                                                     error:&initializationError];
+    XCTAssertNotNil(client);
+    XCTAssertNil(initializationError);
+    if (client == nil) { return; }
+
+    XCTestExpectation *done = [self expectationWithDescription:@"Cancelled Objective-C operation"];
+    done.assertForOverFulfill = YES;
+    // An invalid name is a second no-network boundary if validation wins the cancellation race.
+    SLVOperation *operation = [client sauceVisualCheckWithName:@""
+                                                  completion:^(SLVSnapshot *snapshot, NSError *error) {
+        XCTAssertTrue(NSThread.isMainThread);
+        XCTAssertNil(snapshot);
+        XCTAssertEqualObjects(error.domain, SLVClient.errorDomain);
+        XCTAssertTrue(error.code == SLVErrorCodeCancelled || error.code == SLVErrorCodeInvalidSnapshotName);
+        [done fulfill];
+    }];
+    XCTAssertNotNil(operation);
+    [operation cancel];
+    [operation cancel];
+    [self waitForExpectations:@[done] timeout:10.0];
+}
+
+- (void)testBoundedCaptureOptionsAndAppendedErrorCodes {
+    SLVCheckOptions *options = [[SLVCheckOptions alloc] init];
+    XCTAssertFalse(options.fullPageAllowPartialAtLimit);
+    XCTAssertEqual(options.fullPageMaximumOutputPixels, 20000000);
+    XCTAssertEqualWithAccuracy(options.fullPageMaximumDuration, 60.0, 0.001);
+    XCTAssertEqual(SLVErrorCodeCaptureAlignmentFailed, 17);
+    XCTAssertEqual(SLVErrorCodeUnsupportedCaptureCombination, 22);
+    XCTAssertEqual(SLVCaptureExtentViewport, 0);
+    XCTAssertEqual(SLVCaptureExtentLimitReached, 2);
+}
+
 @end

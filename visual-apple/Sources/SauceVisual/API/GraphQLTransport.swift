@@ -1,31 +1,37 @@
 import Foundation
 
-/// Sent in the `User-Agent` header. Keep in sync with `MARKETING_VERSION` in `Configuration/SDK.xcconfig`.
+/// Keep in sync with MARKETING_VERSION in Configuration/SDK.xcconfig.
 internal let sauceVisualVersion = "0.1.0"
 
-/// A small GraphQL client for the Sauce Visual API. Safe to share.
+/// One GraphQL operation per request. Server-provided error text is never made loggable.
 internal struct GraphQLTransport: Sendable {
     let endpoint: URL
     let credentials: VisualCredentials
     let session: URLSession
 
-    init(endpoint: URL, credentials: VisualCredentials, session: URLSession = .shared) {
+    /// Bounded defaults. A caller may still explicitly inject a differently configured API session.
+    static let defaultSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 60
+        configuration.httpShouldSetCookies = false
+        configuration.httpCookieStorage = nil
+        configuration.urlCredentialStorage = nil
+        configuration.urlCache = nil
+        return URLSession(configuration: configuration)
+    }()
+
+    init(endpoint: URL, credentials: VisualCredentials, session: URLSession = GraphQLTransport.defaultSession) {
         self.endpoint = endpoint
         self.credentials = credentials
         self.session = session
     }
 
-    /// Sends one operation whose root field is aliased as `result`.
-    ///
-    /// Returns `nil` only when the server answered with an explicit `"result": null` and no errors, so a
-    /// lookup miss can't be confused with a failed or malformed response.
-    /// - Throws: `VisualAPIError` for transport and HTTP failures, any GraphQL error (even next to a
-    ///   partial result), a response without a `result` field, or `CancellationError`.
+    /// Only an explicit, error-free `data.result: null` is a lookup miss.
     func execute<Variables: Encodable & Sendable, Result: Decodable & Sendable>(
-        _ query: String,
-        variables: Variables,
-        as _: Result.Type
+        _ query: String, variables: Variables, as _: Result.Type
     ) async throws -> Result? {
+        try Task.checkCancellation()
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -40,16 +46,20 @@ internal struct GraphQLTransport: Sendable {
 
         let (data, status) = try await Self.send(request, with: session)
         if status == 401 || status == 403 {
+            // Authentication/authorization rejection is part of the API contract.
             throw VisualAPIError(code: .invalidCredentials, statusCode: status, mayHaveBeenApplied: false)
         }
         guard (200..<300).contains(status) else {
-            // A 4xx refuses the request. A 5xx may come after the server already applied it.
-            throw VisualAPIError(
-                code: .apiError, detail: "HTTP \(status).", statusCode: status,
-                mayHaveBeenApplied: !(400..<500).contains(status)
-            )
+            // A generic HTTP status is not transaction/rollback evidence.
+            throw VisualAPIError(code: .apiError, detail: "HTTP \(status).", statusCode: status)
         }
+        return try decodeResult(data, status: status, as: Result.self)
+    }
 
+    /// Internal so response semantics can be tested without a transport or a service account.
+    func decodeResult<Result: Decodable & Sendable>(
+        _ data: Data, status: Int, as _: Result.Type
+    ) throws -> Result? {
         let envelope: Envelope<Result>
         do {
             envelope = try JSONDecoder().decode(Envelope<Result>.self, from: data)
@@ -57,10 +67,11 @@ internal struct GraphQLTransport: Sendable {
             throw VisualAPIError(code: .apiError, detail: "Unexpected response format.", statusCode: status)
         }
         if let errors = envelope.errors, !errors.isEmpty {
-            // Server messages are left out: they become NSError text, which apps and CI logs print.
+            // In GraphQL, omitted data distinguishes a pre-execution request error from an
+            // execution result. Present-but-null data can follow a committed mutation.
             throw VisualAPIError(
                 code: .apiError, detail: "The GraphQL operation failed.", statusCode: status,
-                mayHaveBeenApplied: envelope.data?.result != nil
+                mayHaveBeenApplied: envelope.hasData || errors.contains(where: \.hasExecutionPath)
             )
         }
         guard let payload = envelope.data, payload.hasResult else {
@@ -69,9 +80,8 @@ internal struct GraphQLTransport: Sendable {
         return payload.result
     }
 
-    /// Sends `request` and returns the body and HTTP status.
-    /// - Throws: `VisualAPIError(.networkFailure)` when the server can't be reached, or `CancellationError`.
     static func send(_ request: URLRequest, with session: URLSession) async throws -> (Data, Int) {
+        try Task.checkCancellation()
         do {
             let (data, response) = try await session.data(for: request)
             return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
@@ -88,21 +98,17 @@ internal struct GraphQLTransport: Sendable {
         }
     }
 
-    /// Failures that happen before the request is sent, so the server never saw it.
+    /// Local construction failures are safe to retry. Transport connectivity errors are kept
+    /// uncertain: with retries or redirects, the final error alone cannot prove no request arrived.
     private static func neverSent(_ error: URLError) -> Bool {
         switch error.code {
-        case .notConnectedToInternet, .cannotFindHost, .dnsLookupFailed, .cannotConnectToHost, .badURL,
-             .unsupportedURL, .secureConnectionFailed, .serverCertificateUntrusted, .serverCertificateHasBadDate,
-             .serverCertificateNotYetValid, .serverCertificateHasUnknownRoot, .clientCertificateRejected,
-             .clientCertificateRequired, .appTransportSecurityRequiresSecureConnection, .dataNotAllowed,
-             .internationalRoamingOff, .callIsActive:
+        case .badURL, .unsupportedURL:
             return true
         default:
             return false
         }
     }
 
-    /// A readable reason for common network errors, since system messages are often just a number.
     private static func describe(_ error: URLError) -> String {
         switch error.code {
         case .timedOut: return "The request timed out."
@@ -123,11 +129,9 @@ internal struct GraphQLTransport: Sendable {
     }
 
     private struct Envelope<Result: Decodable>: Decodable {
-        /// Tells a missing `result` field apart from an explicit `null`.
         struct Payload: Decodable {
             let hasResult: Bool
             let result: Result?
-
             private enum CodingKeys: String, CodingKey { case result }
 
             init(from decoder: Decoder) throws {
@@ -136,9 +140,30 @@ internal struct GraphQLTransport: Sendable {
                 result = hasResult ? try container.decode(Result?.self, forKey: .result) : nil
             }
         }
-        /// Only the presence of errors is used, never their text.
-        struct GraphQLError: Decodable {}
+
+        struct GraphQLError: Decodable {
+            let hasExecutionPath: Bool
+            private enum CodingKeys: String, CodingKey { case message, path }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                // Validate the required member, but do not retain server-controlled text.
+                _ = try container.decode(String.self, forKey: .message)
+                // A malformed/null path is still not evidence that nothing executed.
+                hasExecutionPath = container.contains(.path)
+            }
+        }
+
+        let hasData: Bool
         let data: Payload?
         let errors: [GraphQLError]?
+        private enum CodingKeys: String, CodingKey { case data, errors }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            hasData = container.contains(.data)
+            data = try container.decodeIfPresent(Payload.self, forKey: .data)
+            errors = try container.decodeIfPresent([GraphQLError].self, forKey: .errors)
+        }
     }
 }

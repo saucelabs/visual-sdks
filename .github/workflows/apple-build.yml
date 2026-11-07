@@ -6,10 +6,12 @@ on:
       - main
     paths:
       - 'visual-apple/**'
+      - Package.swift
       - .github/workflows/apple-build.yml
   pull_request:
     paths:
       - 'visual-apple/**'
+      - Package.swift
       - .github/workflows/apple-build.yml
   workflow_dispatch:
 
@@ -58,11 +60,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
-          xcrun swift test -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+          xcrun swift test --package-path "$GITHUB_WORKSPACE" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
             2>&1 | tee build/swift-debug.log
-          xcrun swift test -c release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
+          xcrun swift test --package-path "$GITHUB_WORKSPACE" -c release -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
             2>&1 | tee build/swift-release.log
-          xcrun swift test -Xswiftc -swift-version -Xswiftc 6 \
+          xcrun swift test --package-path "$GITHUB_WORKSPACE" -Xswiftc -swift-version -Xswiftc 6 \
             -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors \
             2>&1 | tee build/swift6.log
 

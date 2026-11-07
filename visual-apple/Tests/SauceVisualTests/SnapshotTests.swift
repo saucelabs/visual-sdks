@@ -303,19 +303,21 @@ final class SnapshotTests: XCTestCase, @unchecked Sendable {
         XCTAssertNil(input(route.bodies[3])?["devicePixelRatio"])
     }
 
-    func testDomProblemsStillCreateTheSnapshot() async throws {
-        let cases: [(String, [StubURLProtocol.Reply], Int)] = [
-            ("no DOM upload URL", [created, upload(), stored, snapshot], 3),
-            ("invalid DOM upload URL", [created, upload(domUrl: "http://storage.test/dom"), stored, snapshot], 3),
-            ("DOM upload fails", [created, upload(domUrl: domURL.absoluteString), stored,
-                                  StubURLProtocol.Reply(status: 500, body: Data()), snapshot], 4)
+    func testRequestedDomFailureDoesNotCreateSnapshot() async throws {
+        let cases: [(String, [StubURLProtocol.Reply])] = [
+            ("missing URL", [created, upload(), stored, snapshot]),
+            ("invalid URL", [created, upload(domUrl: "http://storage.test/dom"), stored, snapshot]),
+            ("failed PUT", [created, upload(domUrl: domURL.absoluteString), stored,
+                            StubURLProtocol.Reply(status: 500, body: Data()), snapshot])
         ]
-        for (label, replies, createIndex) in cases {
+        for (label, replies) in cases {
             let route = StubURLProtocol.Route(replies)
-            let result = try await client(route).check(name: "Login", png: png, request: SnapshotRequest(dom: dom))
-            XCTAssertEqual(result.id, snapshotID, label)
-            XCTAssertTrue((route.bodies[createIndex]["query"] as? String)?.contains("createSnapshot(") == true, label)
-            XCTAssertNil(input(route.bodies[createIndex])?["devicePixelRatio"], "\(label): no DOM, so no ratio")
+            await XCTAssertThrowsErrorAsync(
+                try await client(route).check(name: "Login", png: png, request: SnapshotRequest(dom: dom))
+            ) {
+                XCTAssertEqual(($0 as? VisualAPIError)?.code, .apiError, label)
+            }
+            XCTAssertFalse(route.bodies.contains { ($0["query"] as? String)?.contains("createSnapshot(") == true }, label)
         }
     }
 

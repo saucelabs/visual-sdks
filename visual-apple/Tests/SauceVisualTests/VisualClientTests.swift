@@ -153,7 +153,7 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
 
     func testFailedCreationReleasesTheConfiguration() async throws {
         let store = SharedBuildStore()
-        let failing = try client(StubURLProtocol.Route([.failure(.cannotConnectToHost)]), store: store)
+        let failing = try client(StubURLProtocol.Route([.failure(.badURL)]), store: store)
         let route = StubURLProtocol.Route([created])
         let other = try self.client(route, store: store, options: VisualBuildOptions(name: "Other build"))
 
@@ -166,7 +166,7 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
 
     func testFailedCreationIsRetried() async throws {
         let store = SharedBuildStore()
-        let route = StubURLProtocol.Route([.failure(.cannotConnectToHost), created])
+        let route = StubURLProtocol.Route([.failure(.badURL), created])
         let client = try client(route, store: store)
 
         await XCTAssertThrowsErrorAsync(try await client.build()) {
@@ -274,7 +274,7 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
             // The configuration stays bound, so another one can't create a build either.
             let other = try self.client(StubURLProtocol.Route([created]), store: store, options: VisualBuildOptions(name: "Other build"))
             await XCTAssertThrowsErrorAsync(try await other.build()) {
-                XCTAssertEqual($0 as? VisualError, .conflictingConfiguration, label)
+                XCTAssertEqual($0 as? VisualError, .buildAlreadyCompleted, label)
             }
             XCTAssertEqual(operations(route), ["createBuild"], label)
         }
@@ -316,7 +316,7 @@ final class VisualClientTests: XCTestCase, @unchecked Sendable {
 
     func testFailedFinishKeepsAdmissionClosedAndIsRetried() async throws {
         // The request never reached the service, so it is sent again as it was.
-        let route = StubURLProtocol.Route([created, .failure(.cannotConnectToHost), finished])
+        let route = StubURLProtocol.Route([created, .failure(.badURL), finished])
         let client = try client(route, store: SharedBuildStore())
 
         await XCTAssertThrowsErrorAsync(try await client.finish()) {

@@ -118,6 +118,10 @@ public final class VisualSnapshotRecord: NSObject, Sendable {
     @objc public let buildId: String
     @objc public let testName: String?
     @objc public let suiteName: String?
+    @objc public let captureExtent: VisualCaptureExtent
+    @objc public let hasDom: Bool
+    @objc public let pixelWidth: Int
+    @objc public let pixelHeight: Int
 
     internal init(_ value: VisualSnapshot) {
         snapshotId = value.id
@@ -125,6 +129,10 @@ public final class VisualSnapshotRecord: NSObject, Sendable {
         buildId = value.buildId
         testName = value.testName
         suiteName = value.suiteName
+        captureExtent = value.captureExtent
+        hasDom = value.hasDom
+        pixelWidth = value.pixelWidth
+        pixelHeight = value.pixelHeight
         super.init()
     }
 }
@@ -286,6 +294,9 @@ public final class VisualCheckConfiguration: NSObject {
     @objc public var fullPageScrollLimit: Int = 10
     /// Seconds to wait after each scroll.
     @objc public var fullPageDelayAfterScroll: TimeInterval = 0.5
+    @objc public var fullPageAllowPartialAtLimit: Bool = false
+    @objc public var fullPageMaximumOutputPixels: Int = 20_000_000
+    @objc public var fullPageMaximumDuration: TimeInterval = 60
 
     internal var value: VisualCheckOptions {
         VisualCheckOptions(
@@ -304,7 +315,11 @@ public final class VisualCheckConfiguration: NSObject {
             baselineOverride: baselineOverride?.value,
             captureDom: captureDom,
             fullPage: fullPageScrollElement.map {
-                FullPageScreenshot(scrollElement: $0, scrollLimit: fullPageScrollLimit, delayAfterScroll: fullPageDelayAfterScroll)
+                FullPageScreenshot(
+                    scrollElement: $0, scrollLimit: fullPageScrollLimit,
+                    delayAfterScroll: fullPageDelayAfterScroll, allowPartialAtLimit: fullPageAllowPartialAtLimit,
+                    maximumOutputPixels: fullPageMaximumOutputPixels, maximumDuration: fullPageMaximumDuration
+                )
             }
         )
     }
@@ -366,61 +381,52 @@ public final class VisualObjCClient: NSObject, Sendable {
 
     /// The shared build, created if needed.
     @objc(buildWithCompletion:)
-    public func build(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) {
+    @discardableResult
+    public func build(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) -> VisualOperation {
         let client = self.client
-        Task {
-            do {
-                let build = try await client.build()
-                await completion(VisualBuildRecord(build), nil)
-            } catch {
-                await completion(nil, bridgeToNSError(error))
-            }
-        }
+        return VisualOperation(Task {
+            do { await completion(VisualBuildRecord(try await client.build()), nil) }
+            catch { await completion(nil, bridgeToNSError(error)) }
+        })
     }
 
     /// Screenshots the screen and uploads it as snapshot `name`, named after the running test.
     @objc(sauceVisualCheckWithName:completion:)
+    @discardableResult
     public func sauceVisualCheck(
         name: String, completion: @escaping @MainActor @Sendable (VisualSnapshotRecord?, NSError?) -> Void
-    ) {
+    ) -> VisualOperation {
         sauceVisualCheck(name: name, options: nil, completion: completion)
     }
 
     /// Like `sauceVisualCheckWithName:completion:`, with options such as areas to ignore.
     @objc(sauceVisualCheckWithName:options:completion:)
+    @discardableResult
     public func sauceVisualCheck(
         name: String, options: VisualCheckConfiguration?,
         completion: @escaping @MainActor @Sendable (VisualSnapshotRecord?, NSError?) -> Void
-    ) {
+    ) -> VisualOperation {
         let client = self.client
-        // Read the test's names now, while it is certainly still running.
         var value = options?.value ?? VisualCheckOptions()
         let test = CurrentTest.shared.identity.overriding(testName: value.testName, suiteName: value.suiteName)
         value.testName = test.testName
         value.suiteName = test.suiteName
         let request = MainActorOptions(value: value)
-        Task { @MainActor in
-            do {
-                let snapshot = try await client.sauceVisualCheck(name, options: request.value)
-                completion(VisualSnapshotRecord(snapshot), nil)
-            } catch {
-                completion(nil, bridgeToNSError(error))
-            }
-        }
+        return VisualOperation(Task { @MainActor in
+            do { completion(VisualSnapshotRecord(try await client.sauceVisualCheck(name, options: request.value)), nil) }
+            catch { completion(nil, bridgeToNSError(error)) }
+        })
     }
 
-    /// Finishes the build early. You don't need to: the SDK finishes it when the tests end.
+    /// Explicit run-level finalization. Automatic XCTest cleanup is a best-effort fallback.
     @objc(finishWithCompletion:)
-    public func finish(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) {
+    @discardableResult
+    public func finish(completion: @escaping @MainActor @Sendable (VisualBuildRecord?, NSError?) -> Void) -> VisualOperation {
         let client = self.client
-        Task {
-            do {
-                let build = try await client.finish()
-                await completion(VisualBuildRecord(build), nil)
-            } catch {
-                await completion(nil, bridgeToNSError(error))
-            }
-        }
+        return VisualOperation(Task {
+            do { await completion(VisualBuildRecord(try await client.finish()), nil) }
+            catch { await completion(nil, bridgeToNSError(error)) }
+        })
     }
 }
 

@@ -73,7 +73,7 @@ internal struct PresignedUploader: Sendable {
     static func validated(_ string: String?, kind: Kind) throws -> URL {
         guard let string, let components = URLComponents(string: string), let url = components.url,
               let scheme = components.scheme?.lowercased(), let host = components.host, !host.isEmpty,
-              components.user == nil, components.password == nil,
+              components.user == nil, components.password == nil, components.fragment == nil,
               scheme == "https" || (scheme == "http" && ["localhost", "127.0.0.1", "::1", "[::1]"].contains(host.lowercased()))
         else {
             throw VisualAPIError(code: .apiError, detail: "The API returned an invalid \(kind.name.lowercased()) upload URL.")
