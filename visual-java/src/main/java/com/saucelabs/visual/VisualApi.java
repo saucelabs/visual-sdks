@@ -797,6 +797,17 @@ public class VisualApi {
     try {
       return captureAndUploadLocalSnapshot(snapshotName, options, clipElement, window);
     } finally {
+      // Undo hideElementsOverlapping: remove the hidden marker from every element and delete the
+      // injected style tag.
+      if (clipElement != null) {
+        try {
+          window.restoreHiddenElements();
+        } catch (WebDriverException e) {
+          log.warn(
+              "Sauce Labs Visual: unable to restore elements hidden for clipping: {}",
+              e.getMessage());
+        }
+      }
       // Taking a snapshot can scroll the page (clipping scrolls the clip element into
       // view, DOM capture and full page screenshots move the viewport), so restore the
       // scroll position the page had before the check. scrollIntoView also scrolls any
@@ -829,6 +840,18 @@ public class VisualApi {
 
     if (clipElement != null) {
       Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement, caps);
+      if (!isNativeMobileApp(caps)) {
+        // Hide anything painted on top of the clip element (sticky headers, banners, etc.).
+        // visibility: hidden doesn't affect layout, so the dims above remain valid. Undone in the
+        // finally block of sauceVisualCheckLocal.
+        try {
+          window.hideElementsOverlapping(clipElement, fullPage);
+        } catch (WebDriverException e) {
+          log.warn(
+              "Sauce Labs Visual: unable to hide elements overlapping the clip element: {}",
+              e.getMessage());
+        }
+      }
 
       clipRect =
           new Rectangle(
