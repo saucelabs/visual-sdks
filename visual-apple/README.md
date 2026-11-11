@@ -1,5 +1,7 @@
-# Sauce Labs Visual for Apple platforms
+# Sauce Labs Visual for XCUITest
 
-The Apple SDK (`SauceVisual`, for XCUITest on iOS/iPadOS, tvOS and macOS) is available at **[saucelabs/visual-apple](https://github.com/saucelabs/visual-apple)**.
+Sauce Labs Visual for XCUITest exposes Sauce Labs Visual Testing for your iOS, iPadOS, tvOS, and macOS apps. The SDK is available at [saucelabs/visual-apple](https://github.com/saucelabs/visual-apple).
 
-Installation and usage instructions are in that repository.
+## Installation & Usage
+
+View installation and usage instructions on the [Sauce Docs website](https://docs.saucelabs.com/visual-testing/integrations/xcuitest/).
