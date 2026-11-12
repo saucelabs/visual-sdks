@@ -4,10 +4,13 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
+import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 @ExtendWith({TestMetaInfoExtension.class, SnapshotExtension.class})
 public class ClippingIT extends IntegrationBase {
@@ -42,6 +45,42 @@ public class ClippingIT extends IntegrationBase {
                 .build());
     String result = getSnapshotResult(id);
     expect.toMatchSnapshot(result);
+  }
+
+  @Test
+  @EnabledIfEnvironmentVariable(
+      named = "RUN_ON",
+      matches = "local",
+      disabledReason = "overlap hiding is implemented only in the local capture path")
+  public void hideElementsOverlappingClipElement() throws InterruptedException {
+    driver.findElement(By.cssSelector("button#react-burger-menu-btn")).click();
+    Thread.sleep(1000);
+
+    String idStandard =
+        sauceVisualCheck(
+            "Clipped element with overlapping menu",
+            new CheckOptions.Builder()
+                .withClipSelector("[data-test='inventory-item']:nth-child(1)")
+                .build());
+    String resultStandard = getSnapshotResult(idStandard);
+
+    String idFps =
+        sauceVisualCheck(
+            "FPS clipped element with overlapping menu ",
+            new CheckOptions.Builder()
+                .withClipSelector("[data-test='inventory-item']:nth-child(7)")
+                .withFullPageConfig(new FullPageScreenshotConfig.Builder().build())
+                .build());
+    String resultFps = getSnapshotResult(idFps);
+
+    WebElement closeButton = driver.findElement(By.cssSelector("button#react-burger-cross-btn"));
+    if (closeButton.isDisplayed()) {
+      closeButton.click();
+      Thread.sleep(1000);
+    }
+
+    expect.scenario("standard").toMatchSnapshot(resultStandard);
+    expect.scenario("fps").toMatchSnapshot(resultFps);
   }
 
   @Test
