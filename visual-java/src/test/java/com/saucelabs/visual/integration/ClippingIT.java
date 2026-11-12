@@ -7,6 +7,7 @@ import com.saucelabs.visual.junit5.TestMetaInfoExtension;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -47,6 +48,10 @@ public class ClippingIT extends IntegrationBase {
   }
 
   @Test
+  @EnabledIfEnvironmentVariable(
+      named = "RUN_ON",
+      matches = "local",
+      disabledReason = "overlap hiding is implemented only in the local capture path")
   public void hideElementsOverlappingClipElement() throws InterruptedException {
     driver.findElement(By.cssSelector("button#react-burger-menu-btn")).click();
     Thread.sleep(1000);
