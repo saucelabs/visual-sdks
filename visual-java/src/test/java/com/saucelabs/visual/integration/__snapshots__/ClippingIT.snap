@@ -46,6 +46,30 @@ com.saucelabs.visual.integration.ClippingIT.clipToSelectorOnThePage=[
 ]
 
 
+com.saucelabs.visual.integration.ClippingIT.hideElementsOverlappingClipElement=[
+{
+  "snapshot" : {
+    "name" : "Clipped element with overlapping menu (Sauce)",
+    "suiteName" : "com.saucelabs.visual.integration.ClippingIT",
+    "testName" : "hideElementsOverlappingClipElement",
+    "operatingSystem" : "WINDOWS",
+    "operatingSystemVersion" : "10",
+    "device" : "Desktop (1384x1007)",
+    "devicePixelRatio" : 1,
+    "hasDom" : true,
+    "metadata" : null,
+    "diffs" : {
+      "nodes" : [ {
+        "status" : "EQUAL",
+        "diffClusters" : [ ]
+      } ]
+    },
+    "ignoreRegions" : [ ]
+  }
+}
+]
+
+
 com.saucelabs.visual.integration.ClippingIT.scrollBeforeAndAfterClipping[clipped]=[
 {
   "snapshot" : {

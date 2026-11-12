@@ -4,10 +4,14 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
+import com.saucelabs.visual.model.FullPageScreenshotConfig;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 @ExtendWith({TestMetaInfoExtension.class, SnapshotExtension.class})
 public class ClippingIT extends IntegrationBase {
@@ -41,6 +45,26 @@ public class ClippingIT extends IntegrationBase {
                 .withClipElement(driver.findElement(By.cssSelector(".inventory_list")))
                 .build());
     String result = getSnapshotResult(id);
+    expect.toMatchSnapshot(result);
+  }
+
+  @Test
+  public void hideElementsOverlappingClipElement() throws InterruptedException {
+    driver.findElement(By.cssSelector("button#react-burger-menu-btn")).click();
+    Thread.sleep(1000);
+
+    String id =
+        sauceVisualCheck(
+            "Clipped element with overlapping menu",
+            new CheckOptions.Builder()
+                .withClipSelector("[data-test='inventory-item']:nth-child(1)")
+                .withFullPageConfig(new FullPageScreenshotConfig.Builder().build())
+                .build());
+    String result = getSnapshotResult(id);
+
+    driver.findElement(By.cssSelector("button#react-burger-cross-btn")).click();
+    Thread.sleep(1000);
+
     expect.toMatchSnapshot(result);
   }
 
