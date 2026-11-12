@@ -5,13 +5,11 @@ import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.saucelabs.visual.CheckOptions;
 import com.saucelabs.visual.junit5.TestMetaInfoExtension;
 import com.saucelabs.visual.model.FullPageScreenshotConfig;
-import java.time.Duration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.WebElement;
 
 @ExtendWith({TestMetaInfoExtension.class, SnapshotExtension.class})
 public class ClippingIT extends IntegrationBase {
@@ -53,19 +51,31 @@ public class ClippingIT extends IntegrationBase {
     driver.findElement(By.cssSelector("button#react-burger-menu-btn")).click();
     Thread.sleep(1000);
 
-    String id =
+    String idStandard =
         sauceVisualCheck(
             "Clipped element with overlapping menu",
             new CheckOptions.Builder()
                 .withClipSelector("[data-test='inventory-item']:nth-child(1)")
+                .build());
+    String resultStandard = getSnapshotResult(idStandard);
+
+    String idFps =
+        sauceVisualCheck(
+            "FPS clipped element with overlapping menu ",
+            new CheckOptions.Builder()
+                .withClipSelector("[data-test='inventory-item']:nth-child(7)")
                 .withFullPageConfig(new FullPageScreenshotConfig.Builder().build())
                 .build());
-    String result = getSnapshotResult(id);
+    String resultFps = getSnapshotResult(idFps);
 
-    driver.findElement(By.cssSelector("button#react-burger-cross-btn")).click();
-    Thread.sleep(1000);
+    WebElement closeButton = driver.findElement(By.cssSelector("button#react-burger-cross-btn"));
+    if (closeButton.isDisplayed()) {
+      closeButton.click();
+      Thread.sleep(1000);
+    }
 
-    expect.toMatchSnapshot(result);
+    expect.scenario("standard").toMatchSnapshot(resultStandard);
+    expect.scenario("fps").toMatchSnapshot(resultFps);
   }
 
   @Test
