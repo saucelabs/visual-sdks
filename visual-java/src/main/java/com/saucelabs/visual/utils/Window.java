@@ -96,20 +96,20 @@ public class Window {
    * outside the viewport, then the original scroll position is restored. Call
    * restoreHiddenElements() afterward to undo every change made to the page.
    *
-   * @param element  the element to uncover
+   * @param element the element to uncover
    * @param fullPage whether the whole element will be captured, rather than only the part visible
-   *                 in the viewport
+   *     in the viewport
    */
   public void hideElementsOverlapping(WebElement element, boolean fullPage) {
     if (element == null) {
       return;
     }
     driver.executeScript(
-            jsHideOverlappingSnippet,
-            element,
-            fullPage,
-            HIDE_OVERLAPPING_STYLE_ID,
-            HIDE_OVERLAPPING_ATTRIBUTE);
+        jsHideOverlappingSnippet,
+        element,
+        fullPage,
+        HIDE_OVERLAPPING_STYLE_ID,
+        HIDE_OVERLAPPING_ATTRIBUTE);
   }
 
   /**
