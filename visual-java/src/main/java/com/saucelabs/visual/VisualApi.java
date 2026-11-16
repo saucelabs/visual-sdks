@@ -12,6 +12,7 @@ import com.saucelabs.visual.graphql.type.*;
 import com.saucelabs.visual.graphql.type.OperatingSystem;
 import com.saucelabs.visual.model.*;
 import com.saucelabs.visual.model.DiffingMethodSensitivity;
+import com.saucelabs.visual.spi.*;
 import com.saucelabs.visual.utils.*;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
@@ -246,6 +247,9 @@ public class VisualApi {
   private final List<String> uploadedDiffIds = new ArrayList<>();
   private Boolean captureDom;
   private FullPageScreenshotConfig fullPageScreenshotConfig;
+  private NativeFullPageCapturer nativeFullPageCapturer;
+  private boolean nativeFullPageCapturerLoaded;
+  private Map<String, Object> systemBarInfo;
   private Boolean hideScrollBars;
   private DiffingMethodSensitivity diffingMethodSensitivity;
   private DiffingMethodTolerance diffingMethodTolerance;
@@ -778,6 +782,8 @@ public class VisualApi {
   }
 
   private String sauceVisualCheckLocal(String snapshotName, CheckOptions options) {
+    // System bars can change between checks (e.g. rotation): refetch them once per check.
+    systemBarInfo = null;
     Window window = new Window(this.driver);
     WebElement clipElement = getClipElement(options);
 
@@ -834,11 +840,23 @@ public class VisualApi {
     Capabilities caps = driver.getCapabilities();
     Map<String, Object> windowDims = getWindowDimensions(caps);
     double devicePixelRatio = formatDevicePixelRatio(windowDims.get("dpr"));
-    boolean fullPage = options.getFullPageScreenshotConfig() != null;
+    FullPageScreenshotConfig fullPageConfig =
+        Optional.ofNullable(options.getFullPageScreenshotConfig())
+            .orElse(this.fullPageScreenshotConfig);
+    boolean fullPage = fullPageConfig != null;
+    // Native full-page capture is provided by an optional plugin; without it, native checks fall
+    // back to a viewport screenshot.
+    NativeFullPageCapturer capturer =
+        fullPage && isNativeMobileApp(caps) ? getNativeFullPageCapturer() : null;
+    boolean nativeFullPage = capturer != null;
     Point clipOffset = new Point(0, 0);
     Rectangle clipRect = null;
 
-    if (clipElement != null) {
+    if (clipElement != null && nativeFullPage) {
+      log.warn(
+          "Sauce Labs Visual: clipElement / clipSelector are ignored for native full-page "
+              + "screenshots. Use FullPageScreenshotConfig.withNativeClipSelector instead.");
+    } else if (clipElement != null) {
       Rectangle clipElementDims = scrollToAndGetClipElementDims(fullPage, clipElement, caps);
       if (!isNativeMobileApp(caps)) {
         // Hide anything painted on top of the clip element (sticky headers, banners, etc.).
@@ -867,7 +885,39 @@ public class VisualApi {
     // Native apps have no single document scroll position, so there's nothing to query.
     Point scrollOffset =
         fullPage || isNativeMobileApp(caps) ? new Point(0, 0) : window.getViewport().getPoint();
-    byte[] screenshot = getScreenshot(fullPage);
+
+    byte[] screenshot;
+    NativeFullPageResult nativeResult = null;
+    List<RegionIn> nativeViewportIgnoreRegions = null;
+    List<IgnoreSelectorIn> ignoreSelectors =
+        Optional.ofNullable(options.getIgnoreSelectors()).orElse(Collections.emptyList());
+    if (nativeFullPage) {
+      // Static regions and ignoreElements are measured in viewport coordinates, which match the
+      // first stitched screenshot only while the app is at the position that capture started from:
+      // before capturing when starting from the current location, or after capturing (which
+      // scrolls back to the top) when starting from the top.
+      boolean startsFromTop =
+          fullPageConfig.getScrollOption() != ScrollOption.START_FROM_CURRENT_LOCATION;
+      if (!startsFromTop) {
+        nativeViewportIgnoreRegions = extractViewportIgnoreRegions(options);
+      }
+      nativeResult =
+          captureNativeFullPage(
+              capturer, buildNativeFullPageRequest(caps, fullPageConfig, ignoreSelectors));
+      if (startsFromTop) {
+        nativeViewportIgnoreRegions = extractViewportIgnoreRegions(options);
+      }
+      screenshot = nativeResult.getScreenshot();
+      NativeRect clipRegion = nativeResult.getClipRegion();
+      if (clipRegion != null) {
+        clipOffset =
+            new Point((int) Math.round(clipRegion.getX()), (int) Math.round(clipRegion.getY()));
+      }
+    } else {
+      // BiDi full-page capture is for browsers only; native apps without the plugin get a viewport
+      // screenshot.
+      screenshot = getScreenshot(fullPage && !isNativeMobileApp(caps));
+    }
 
     // Mobile screenshots include OS chrome (status bar); crop it so the image matches the web
     // viewport's own coordinate space.
@@ -900,16 +950,24 @@ public class VisualApi {
         this.client.execute(mutation, CreateSnapshotUploadMutation.Data.class).result;
 
     // add ignore regions
-    List<RegionIn> ignoreRegions = extractIgnoreList(options);
-    ignoreRegions.addAll(
-        extractElementsToIgnoreRegions(
-            Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
-    ignoreRegions.addAll(extractIgnoreSelectors(options));
-    if (isNativeMobileApp(caps)) {
-      // Local full-page capture isn't implemented yet for native apps (getScreenshot() always
-      // falls back to a standard screenshot), so system bars are still present regardless of
-      // fullPage - revisit this gate once full-page stitching exists for native.
-      ignoreRegions.addAll(getSystemBarIgnoreRegions(caps));
+    List<RegionIn> ignoreRegions;
+    if (nativeResult != null) {
+      // The stitched image starts below the status bar: move viewport regions into its
+      // coordinates. Ignore selectors were tracked across scrolls during capture. System bars
+      // aren't part of the stitched image, so they need no ignore regions.
+      ignoreRegions = new ArrayList<>();
+      int viewportOffsetY = (int) Math.round(nativeResult.getViewportOffsetY());
+      for (RegionIn region : nativeViewportIgnoreRegions) {
+        region.setY(region.getY() - viewportOffsetY);
+        ignoreRegions.add(region);
+      }
+      ignoreRegions.addAll(toIgnoreRegions(nativeResult.getIgnoreRegions(), ignoreSelectors));
+    } else {
+      ignoreRegions = extractViewportIgnoreRegions(options);
+      ignoreRegions.addAll(extractIgnoreSelectors(options));
+      if (isNativeMobileApp(caps)) {
+        ignoreRegions.addAll(getSystemBarIgnoreRegions(caps));
+      }
     }
 
     // get adjusted screenshot dimensions
@@ -983,6 +1041,118 @@ public class VisualApi {
         this.client.execute(snapshotMutation, CreateSnapshotMutation.Data.class);
 
     return this.addUploadedDiffIds(result != null ? result.result : null);
+  }
+
+  /**
+   * The registered native full-page plugin, loaded on first use. Null (with a one-time warning)
+   * when none is on the classpath.
+   */
+  private NativeFullPageCapturer getNativeFullPageCapturer() {
+    if (!nativeFullPageCapturerLoaded) {
+      nativeFullPageCapturer = NativeFullPageCapturerLoader.load();
+      nativeFullPageCapturerLoaded = true;
+      if (nativeFullPageCapturer == null) {
+        log.warn(
+            "Sauce Labs Visual: full-page screenshots of native apps on local sessions need the "
+                + "native full-page screenshot plugin on the classpath; taking viewport "
+                + "screenshots instead. If you build a shaded jar, make sure META-INF/services "
+                + "files are merged.");
+      }
+    }
+    return nativeFullPageCapturer;
+  }
+
+  private NativeFullPageRequest buildNativeFullPageRequest(
+      Capabilities caps, FullPageScreenshotConfig config, List<IgnoreSelectorIn> ignoreSelectors) {
+    List<NativeSelector> nativeIgnoreSelectors = new ArrayList<>(ignoreSelectors.size());
+    for (IgnoreSelectorIn ignoreSelector : ignoreSelectors) {
+      nativeIgnoreSelectors.add(toNativeSelector(ignoreSelector.getSelector()));
+    }
+
+    return NativeFullPageRequest.builder()
+        .withDriver(driver)
+        .withPlatform(
+            CapabilityUtils.getOperatingSystem(caps) == OperatingSystem.ANDROID
+                ? NativePlatform.ANDROID
+                : NativePlatform.IOS)
+        .withScrollElementId(config.getScrollElement())
+        .withScrollLimit(config.getScrollLimit())
+        .withDelayAfterScrollMs(config.getDelayAfterScrollMs())
+        .withScrollOption(
+            config.getScrollOption() == ScrollOption.START_FROM_CURRENT_LOCATION
+                ? NativeScrollOption.START_FROM_CURRENT_LOCATION
+                : NativeScrollOption.START_FROM_TOP)
+        .withClipSelector(
+            config.getNativeClipSelector() != null
+                ? toNativeSelector(config.getNativeClipSelector())
+                : null)
+        .withIgnoreSelectors(nativeIgnoreSelectors)
+        .withSystemBarInfo(getRawSystemBarInfo(caps))
+        .build();
+  }
+
+  private static NativeSelector toNativeSelector(SelectorIn selector) {
+    if (selector == null || selector.getValue() == null) {
+      throw new VisualApiException("Selector cannot be null");
+    }
+    if (selector.getType() != SelectorType.XPATH) {
+      throw new VisualApiException(
+          "Only XPATH selectors are supported for native full-page screenshots: "
+              + selector.getValue());
+    }
+    return NativeSelector.xpath(selector.getValue());
+  }
+
+  private static NativeFullPageResult captureNativeFullPage(
+      NativeFullPageCapturer capturer, NativeFullPageRequest request) {
+    try {
+      NativeFullPageResult result = capturer.capture(request);
+      if (result == null) {
+        throw new VisualApiException("Native full-page screenshot plugin returned no result");
+      }
+      return result;
+    } catch (VisualApiException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new VisualApiException("Native full-page screenshot failed: " + e.getMessage(), e);
+    }
+  }
+
+  /** Maps plugin regions back to the name and diffing options of the selector that matched. */
+  private static List<RegionIn> toIgnoreRegions(
+      List<NativeIgnoreRegion> regions, List<IgnoreSelectorIn> ignoreSelectors) {
+    List<RegionIn> result = new ArrayList<>(regions.size());
+    for (NativeIgnoreRegion region : regions) {
+      int index = region.getSelectorIndex();
+      if (index < 0 || index >= ignoreSelectors.size()) {
+        log.warn("Sauce Labs Visual: ignoring a native region with unknown selector {}", index);
+        continue;
+      }
+      IgnoreSelectorIn selector = ignoreSelectors.get(index);
+      NativeRect rect = region.getRect();
+      result.add(
+          RegionIn.builder()
+              .withName(
+                  selector.getName() != null
+                      ? selector.getName()
+                      : selector.getSelector().getValue())
+              .withX((int) Math.round(rect.getX()))
+              .withY((int) Math.round(rect.getY()))
+              .withWidth((int) Math.round(rect.getWidth()))
+              .withHeight((int) Math.round(rect.getHeight()))
+              .withDiffingOptions(selector.getDiffingOptions())
+              .build());
+    }
+    return result;
+  }
+
+  /** Static ignore regions / visual regions plus ignoreElements, in viewport coordinates. */
+  private List<RegionIn> extractViewportIgnoreRegions(CheckOptions options) {
+    List<RegionIn> regions = new ArrayList<>(extractIgnoreList(options));
+    regions.addAll(
+        extractElementsToIgnoreRegions(
+            Optional.ofNullable(options.getIgnoreElements()).orElse(Collections.emptyList())));
+    return regions;
   }
 
   private String addUploadedDiffIds(SnapshotDiffResult result) {
@@ -1108,9 +1278,20 @@ public class VisualApi {
 
   /**
    * Raw response from Appium's system-bar command: "mobile: deviceScreenInfo" (iOS) or "mobile:
-   * getSystemBars" (Android). Null if unavailable.
+   * getSystemBars" (Android). Null if unavailable. Fetched at most once per local check; an
+   * unavailable (null) result is simply queried again.
    */
   private Map<String, Object> getRawSystemBarInfo(Capabilities caps) {
+    if (systemBarInfo == null) {
+      systemBarInfo = fetchRawSystemBarInfo(caps);
+    }
+    return systemBarInfo;
+  }
+
+  /**
+   * Queries Appium for {@link #getRawSystemBarInfo}; no request is made for non-mobile sessions.
+   */
+  private Map<String, Object> fetchRawSystemBarInfo(Capabilities caps) {
     OperatingSystem os = CapabilityUtils.getOperatingSystem(caps);
 
     if (os == OperatingSystem.IOS) {
