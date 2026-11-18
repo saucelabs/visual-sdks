@@ -81,8 +81,21 @@ public class VisualApi {
     }
 
     void finishBuild(String buildId) {
-        FinishBuildIn input = FinishBuildIn.builder().uuid(buildId).build();
-        FinishBuildMutation m = new FinishBuildMutation(input);
+        finishBuild(buildId, null);
+    }
+
+    /**
+     * Executes a finishBuild mutation with optional delay (in seconds).
+     *
+     * @param buildId Build id
+     * @param delaySeconds Build finish delay in seconds, or {@code null} for no delay
+     */
+    void finishBuild(String buildId, Integer delaySeconds) {
+        FinishBuildIn.Builder inputBuilder = FinishBuildIn.builder().uuid(buildId);
+        if (delaySeconds != null) {
+            inputBuilder.delay(delaySeconds);
+        }
+        FinishBuildMutation m = new FinishBuildMutation(inputBuilder.build());
         graphQLClient.executeMutation(m);
     }
 

@@ -39,6 +39,7 @@ public class VisualClient {
         private Boolean captureDom;
         private String customId;
         private String buildId;
+        private Integer finishDelaySeconds;
 
         public Builder(String username, String accessKey) {
             this("us-west-1", username, accessKey);
@@ -132,13 +133,42 @@ public class VisualClient {
             return this;
         }
 
+        /**
+         * Delay the server-side build completion by {@code seconds} and keep the build open for
+         * new snapshots.
+         *
+         * <p>Must be used together with {@link #customId(String)} — the delay can only be applied
+         * to a build that is being created or reused via customId.
+         *
+         * @param seconds Build finish delay in seconds, or {@code null} to disable
+         * @return Builder instance
+         */
+        public Builder buildFinishDelay(Integer seconds) {
+            if (seconds != null && seconds < 0) {
+                throw new IllegalArgumentException("finishDelay must not be negative");
+            }
+            this.finishDelaySeconds = seconds;
+            return this;
+        }
+
         public VisualClient build() {
+            validate();
             GraphQLClient graphQLClient = new GraphQLClient(DataCenter.fromSauceRegion(region), username, accessKey);
             VisualApi visualApi = new VisualApi(graphQLClient);
             BuildAttributes buildAttributes = new BuildAttributes(buildName, projectName, branchName, defaultBranchName, tags);
+            if (this.finishDelaySeconds != null) {
+                buildAttributes.useBuildDelay(finishDelaySeconds);
+            }
             VisualClient client = new VisualClient(visualApi, buildAttributes, customId, buildId);
             client.setCaptureDom(this.captureDom);
             return client;
+        }
+
+        void validate() {
+            if ((this.customId == null || this.customId.trim().isEmpty()) && this.finishDelaySeconds != null) {
+                throw new IllegalStateException(
+                        "buildFinishDelay(...) requires customId(...) to be called.");
+            }
         }
     }
 
@@ -200,7 +230,7 @@ public class VisualClient {
      * Finishes a VisualBuild. Should be called explicitly in @After/@AfterClass
      */
     public void finish() {
-        visualApi.finishBuild(this.build.getId());
+        visualApi.finishBuild(this.build.getId(), this.build.getFinishDelay());
     }
 
 }
