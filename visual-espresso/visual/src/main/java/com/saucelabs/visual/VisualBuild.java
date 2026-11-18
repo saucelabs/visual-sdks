@@ -21,6 +21,7 @@ public class VisualBuild {
     private final String branch;
     private final String defaultBranch;
     private final String url;
+    private Integer finishDelay;
 
     VisualBuild(
             String id, String name, String project, String branch, String defaultBranch, String url) {
@@ -63,6 +64,14 @@ public class VisualBuild {
         return id;
     }
 
+    public Integer getFinishDelay() {
+        return finishDelay;
+    }
+
+    private void setFinishDelay(Integer finishDelay) {
+        this.finishDelay = finishDelay;
+    }
+
     private static volatile VisualBuild build = null;
 
     public static VisualBuild getBuildOnce(VisualApi visualApi,
@@ -71,6 +80,16 @@ public class VisualBuild {
                                            String buildId) {
         synchronized (VisualBuild.class) {
             if (build == null) {
+                Integer finishDelay = buildAttributes.getBuildDelay();
+
+                if (!TextUtils.isEmpty(customId) && finishDelay != null) {
+                    // customId + delay: always create a new build (skip external reuse)
+                    // so the server-side delay applies to a fresh build
+                    build = visualApi.createBuild(buildAttributes);
+                    build.setFinishDelay(finishDelay);
+                    return build;
+                }
+
                 VisualBuild externalBuild = getExternalBuild(visualApi, customId, buildId);
                 if (externalBuild != null) {
                     Log.i(LOG_TAG, String.format(" %n   Sauce Visual: %n%85s%n ", externalBuild.url));
@@ -114,6 +133,7 @@ public class VisualBuild {
         public final String branch;
         public final String defaultBranch;
         public final List<String> tags;
+        private Integer finishDelay;
 
         public BuildAttributes(String name, String project, String branch, String defaultBranch) {
             this(name, project, branch, defaultBranch, null);
@@ -125,6 +145,14 @@ public class VisualBuild {
             this.branch = branch;
             this.defaultBranch = defaultBranch;
             this.tags = tags;
+        }
+
+        void useBuildDelay(Integer finishDelaySeconds) {
+            this.finishDelay = finishDelaySeconds;
+        }
+
+        public Integer getBuildDelay() {
+            return finishDelay;
         }
     }
 
