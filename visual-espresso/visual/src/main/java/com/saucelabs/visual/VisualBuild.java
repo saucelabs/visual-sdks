@@ -84,8 +84,7 @@ public class VisualBuild {
 
                 if (!TextUtils.isEmpty(customId) && finishDelay != null) {
                     // customId + delay: always create a new build (skip external reuse)
-                    // so the server-side delay applies to a fresh build. Caller is
-                    // responsible for invoking VisualClient.finish() (e.g. in @AfterClass).
+                    // so the server-side delay applies to a fresh build
                     build = visualApi.createBuild(buildAttributes);
                     build.setFinishDelay(finishDelay);
                     return build;
