@@ -1,13 +1,29 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import type { MockInstance } from 'jest-mock';
 import * as sauceVisual from '@saucelabs/visual';
-import { BuildStatus, getEnvOpts, VisualApi } from '@saucelabs/visual';
+import {
+  BuildMode,
+  BuildStatus,
+  getEnvOpts,
+  VisualApi,
+} from '@saucelabs/visual';
 import VisualPlaywright from './api';
 import * as utils from './utils';
 
 jest.mock('@saucelabs/visual', () => {
   const apiResult = {
     buildStatus: jest.fn(),
+    build: jest.fn(),
+    buildByCustomId: jest.fn(),
+    createBuild: jest.fn(),
+    domCaptureScript: jest.fn(),
   };
   return {
     ...jest.requireActual<typeof sauceVisual>('@saucelabs/visual'),
@@ -29,10 +45,11 @@ describe('api', () => {
     .spyOn(console, 'error')
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     .mockImplementation(() => {});
-  jest.spyOn(utils, 'getOpts').mockReturnValue({
+  const defaultOpts = {
     ...getEnvOpts(),
     externalBuildId: true,
-  });
+  };
+  const getOptsSpy = jest.spyOn(utils, 'getOpts').mockReturnValue(defaultOpts);
   const buildStatusSpy = VisualPlaywright.api
     .buildStatus as unknown as MockInstance<VisualApi['buildStatus']>;
 
@@ -112,6 +129,84 @@ describe('api', () => {
       expect(consoleInfoSpy).toBeCalledWith(
         expect.stringContaining(fakeBuild.url),
       );
+    });
+  });
+
+  describe('setup', () => {
+    const api = VisualPlaywright.api as unknown as Record<
+      'build' | 'buildByCustomId' | 'createBuild',
+      jest.Mock<(...args: unknown[]) => Promise<unknown>>
+    >;
+    const completedMsg =
+      'cannot add more screenshots since the build is already completed';
+    const withOpts = (opts: Partial<typeof defaultOpts>) =>
+      getOptsSpy.mockReturnValue({ ...defaultOpts, ...opts });
+    const setOptsSpy = jest
+      .spyOn(utils, 'setOpts')
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      .mockImplementation(() => {});
+
+    afterEach(() => {
+      getOptsSpy.mockReturnValue(defaultOpts);
+    });
+
+    it('refuses a completed build passed by buildId', async () => {
+      withOpts({ buildId: 'build-1', customId: null });
+      api.build.mockResolvedValue({ id: 'build-1', mode: BuildMode.Completed });
+
+      await expect(VisualPlaywright.setup()).rejects.toThrow(completedMsg);
+      expect(api.build).toBeCalledWith('build-1');
+      expect(api.createBuild).not.toBeCalled();
+    });
+
+    it('joins a running build passed by buildId', async () => {
+      withOpts({ buildId: 'build-1', customId: null });
+      api.build.mockResolvedValue({ id: 'build-1', mode: BuildMode.Running });
+
+      await VisualPlaywright.setup();
+      expect(api.createBuild).not.toBeCalled();
+    });
+
+    it('refuses a completed build found by customId', async () => {
+      withOpts({ buildId: null, customId: 'my-custom-id' });
+      api.buildByCustomId.mockResolvedValue({
+        id: 'build-2',
+        mode: BuildMode.Completed,
+      });
+
+      await expect(VisualPlaywright.setup()).rejects.toThrow(completedMsg);
+      expect(api.buildByCustomId).toBeCalledWith('my-custom-id');
+      expect(api.createBuild).not.toBeCalled();
+    });
+
+    it('joins a running build found by customId as an external build', async () => {
+      withOpts({ buildId: null, customId: 'my-custom-id' });
+      api.buildByCustomId.mockResolvedValue({
+        id: 'build-2',
+        mode: BuildMode.Running,
+      });
+
+      await VisualPlaywright.setup();
+      expect(api.createBuild).not.toBeCalled();
+      expect(setOptsSpy).toBeCalledWith({
+        buildId: 'build-2',
+        externalBuildId: true,
+      });
+    });
+
+    it('creates a build when the customId has none yet', async () => {
+      withOpts({ buildId: null, customId: 'new-custom-id' });
+      api.buildByCustomId.mockResolvedValue(null);
+      api.createBuild.mockResolvedValue({ id: 'build-3', url: 'url' });
+
+      await VisualPlaywright.setup();
+      expect(api.createBuild).toBeCalledWith(
+        expect.objectContaining({ customId: 'new-custom-id' }),
+      );
+      expect(setOptsSpy).toBeCalledWith({
+        buildId: 'build-3',
+        externalBuildId: false,
+      });
     });
   });
 });

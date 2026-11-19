@@ -1,5 +1,6 @@
 import type { Page } from 'playwright-core';
 import {
+  BuildMode,
   BuildStatus,
   downloadDomScript,
   getApi as getVisualApi,
@@ -20,6 +21,20 @@ import {
 } from './utils';
 
 const clientVersion = 'PKG_VERSION';
+
+/**
+ * A finished build rejects new snapshots, so refuse to join one rather than fail every check.
+ */
+const assertBuildIsRunning = (
+  build: { mode: BuildMode } | null | undefined,
+) => {
+  if (build?.mode === BuildMode.Completed) {
+    const msg =
+      'Sauce Labs Visual: cannot add more screenshots since the build is already completed';
+    console.error(msg);
+    throw new Error(msg);
+  }
+};
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
@@ -51,6 +66,7 @@ export class VisualPlaywright {
 
   public async getBuildIdForCustomId(customId: string) {
     const build = await this.api.buildByCustomId(customId);
+    assertBuildIsRunning(build);
     return build?.id ?? null;
   }
 
@@ -436,6 +452,10 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     const { buildId: passedBuildId, customId } = getOpts();
     let buildId = passedBuildId;
     let customBuildId = null;
+
+    if (buildId) {
+      assertBuildIsRunning(await this.api.build(buildId));
+    }
 
     if (!buildId && customId) {
       customBuildId = await this.getBuildIdForCustomId(customId);
