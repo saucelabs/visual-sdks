@@ -22,6 +22,7 @@ import {
   isIgnoreSelectorType,
   IgnoreSelectorIn,
   getEnvOpts,
+  validateBuildFinishDelay,
   DiffingMethodSensitivity,
   DiffingMethodToleranceIn,
 } from '@saucelabs/visual';
@@ -80,6 +81,10 @@ export type SauceVisualServiceOptions = {
   project?: string;
   branch?: string;
   customId?: string;
+  /**
+   * Seconds to keep the build open after it's finished. Requires customId or SAUCE_VISUAL_CUSTOM_ID.
+   */
+  buildFinishDelay?: number;
   defaultBranch?: string;
   diffingMethod?: DiffingMethod;
   /**
@@ -224,7 +229,15 @@ export default class SauceVisualService implements Services.ServiceInstance {
     _capabilities: unknown,
   ): Promise<void> {
     log.info('Sauce Visual service started');
-    const build = await this.getExternalBuild(this.apiClient);
+    const finishDelay = validateBuildFinishDelay(
+      this.options.buildFinishDelay,
+      this.options.customId || SAUCE_VISUAL_CUSTOM_ID,
+    );
+    // With a finish delay, create the build for the customId instead of joining it.
+    const build =
+      finishDelay === undefined
+        ? await this.getExternalBuild(this.apiClient)
+        : undefined;
     if (build) {
       process.env[VISUAL_BUILD_ID_KEY] = build.id;
       this.url = build.url;
@@ -263,7 +276,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
     const buildId = process.env[VISUAL_BUILD_ID_KEY] || '';
 
     if (!isBuildExternal) {
-      await this.apiClient.finishBuild({ uuid: buildId });
+      await this.apiClient.finishBuild({
+        uuid: buildId,
+        delay: this.options.buildFinishDelay ?? undefined,
+      });
     }
     log.info(buildUrlMessage(this.url || '', { reviewReady: true }));
   }
