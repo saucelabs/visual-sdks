@@ -8,6 +8,7 @@ import {
   getVisualResults,
   RegionIn,
   removeDomScriptFile,
+  validateBuildFinishDelay,
   VisualEnvOpts,
 } from '@saucelabs/visual';
 import { backOff } from 'exponential-backoff';
@@ -97,9 +98,13 @@ export class VisualPlaywright {
     return build.id;
   }
 
-  public async finishBuild(id: string) {
+  /**
+   * @param delay Seconds to keep the build open after it's finished.
+   */
+  public async finishBuild(id: string, delay?: number) {
     return await this.api.finishBuild({
       uuid: id,
+      delay,
     });
   }
 
@@ -449,9 +454,18 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   public async setup() {
     await downloadDomScript(this.api);
 
-    const { buildId: passedBuildId, customId } = getOpts();
+    const { buildId: passedBuildId, customId, buildFinishDelay } = getOpts();
     let buildId = passedBuildId;
     let customBuildId = null;
+
+    // With a finish delay, create the build for the customId instead of joining it.
+    if (validateBuildFinishDelay(buildFinishDelay, customId) !== undefined) {
+      setOpts({
+        buildId: await this.createBuild(),
+        externalBuildId: false,
+      });
+      return;
+    }
 
     if (buildId) {
       assertBuildIsRunning(await this.api.build(buildId));
@@ -484,13 +498,24 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   public async teardown() {
     await removeDomScriptFile();
 
-    const { buildId, externalBuildId } = getOpts();
+    const { buildId, externalBuildId, buildFinishDelay } = getOpts();
     // Only finish the build automatically if we created it during globalSetup (if it's not external).
     if (!externalBuildId && buildId) {
-      const finishedBuild = await this.finishBuild(buildId);
+      const delay = buildFinishDelay ?? undefined;
+      const finishedBuild = await this.finishBuild(buildId, delay);
 
       if (!finishedBuild) {
         throw new Error('Failed to finalize build.');
+      }
+
+      // The build stays open during the delay, so its result isn't final yet.
+      if (delay !== undefined) {
+        console.info(
+          `Your Sauce Visual Build stays open for ${delay}s for other runs sharing its customId:
+  ${finishedBuild.url}
+`,
+        );
+        return;
       }
 
       await this.waitForBuildResult(finishedBuild.id);

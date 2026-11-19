@@ -19,6 +19,10 @@ export interface VisualOpts extends PlaywrightParams {
   defaultBranch: string | null;
   customId: string | null;
   tags: string[] | null;
+  /**
+   * Seconds to keep the build open after it's finished. Requires customId.
+   */
+  buildFinishDelay?: number | null;
 }
 
 export interface ArgsTypes {

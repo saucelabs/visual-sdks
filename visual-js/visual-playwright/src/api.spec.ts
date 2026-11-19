@@ -23,6 +23,7 @@ jest.mock('@saucelabs/visual', () => {
     build: jest.fn(),
     buildByCustomId: jest.fn(),
     createBuild: jest.fn(),
+    finishBuild: jest.fn(),
     domCaptureScript: jest.fn(),
   };
   return {
@@ -134,7 +135,7 @@ describe('api', () => {
 
   describe('setup', () => {
     const api = VisualPlaywright.api as unknown as Record<
-      'build' | 'buildByCustomId' | 'createBuild',
+      'build' | 'buildByCustomId' | 'createBuild' | 'finishBuild',
       jest.Mock<(...args: unknown[]) => Promise<unknown>>
     >;
     const completedMsg =
@@ -206,6 +207,78 @@ describe('api', () => {
       expect(setOptsSpy).toBeCalledWith({
         buildId: 'build-3',
         externalBuildId: false,
+      });
+    });
+
+    describe('buildFinishDelay', () => {
+      it('creates the build for its customId instead of joining it', async () => {
+        withOpts({
+          buildId: null,
+          customId: 'shared-id',
+          buildFinishDelay: 30,
+        });
+        api.createBuild.mockResolvedValue({ id: 'build-4', url: 'url' });
+
+        await VisualPlaywright.setup();
+        expect(api.buildByCustomId).not.toBeCalled();
+        expect(api.createBuild).toBeCalledWith(
+          expect.objectContaining({ customId: 'shared-id' }),
+        );
+        expect(setOptsSpy).toBeCalledWith({
+          buildId: 'build-4',
+          externalBuildId: false,
+        });
+      });
+
+      it('requires a customId', async () => {
+        withOpts({ buildId: null, customId: null, buildFinishDelay: 30 });
+
+        await expect(VisualPlaywright.setup()).rejects.toThrow(
+          'buildFinishDelay requires a customId',
+        );
+        expect(api.createBuild).not.toBeCalled();
+      });
+
+      it('rejects a negative delay', async () => {
+        withOpts({
+          buildId: null,
+          customId: 'shared-id',
+          buildFinishDelay: -5,
+        });
+
+        await expect(VisualPlaywright.setup()).rejects.toThrow(
+          'non-negative whole number of seconds',
+        );
+      });
+
+      it('finishes the build with the delay and does not wait for its result', async () => {
+        withOpts({
+          buildId: 'build-4',
+          externalBuildId: false,
+          customId: 'shared-id',
+          buildFinishDelay: 30,
+        });
+        api.finishBuild.mockResolvedValue({ id: 'build-4', url: 'url' });
+
+        await VisualPlaywright.teardown();
+        expect(api.finishBuild).toBeCalledWith({ uuid: 'build-4', delay: 30 });
+        expect(buildStatusSpy).not.toBeCalled();
+      });
+
+      it('finishes without a delay and waits for the result when unset', async () => {
+        withOpts({ buildId: 'build-5', externalBuildId: false });
+        api.finishBuild.mockResolvedValue({ id: 'build-5', url: 'url' });
+        buildStatusSpy.mockResolvedValue({
+          ...fakeBuild,
+          status: BuildStatus.Equal,
+        });
+
+        await VisualPlaywright.teardown();
+        expect(api.finishBuild).toBeCalledWith({
+          uuid: 'build-5',
+          delay: undefined,
+        });
+        expect(buildStatusSpy).toBeCalledTimes(1);
       });
     });
   });
