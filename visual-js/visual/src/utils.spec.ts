@@ -4,6 +4,7 @@ import {
   getVisualResults,
   parseRegionsForAPI,
   parseTags,
+  validateBuildFinishDelay,
 } from './utils';
 import { DiffStatus, RegionIn } from './graphql/__generated__/graphql';
 import { FullPageScreenshotOptions } from './types';
@@ -227,6 +228,36 @@ describe('utils', () => {
       });
       expect(result.UNAPPROVED).toEqual(1);
     });
+  });
+  describe('validateBuildFinishDelay', () => {
+    test.each([undefined, null])(
+      'returns undefined when unset (%p)',
+      (delay) => {
+        expect(validateBuildFinishDelay(delay, null)).toBeUndefined();
+      },
+    );
+
+    test.each([0, 30, 600])('returns a valid delay of %p seconds', (delay) => {
+      expect(validateBuildFinishDelay(delay, 'my-custom-id')).toEqual(delay);
+    });
+
+    test.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+      'rejects %p',
+      (delay) => {
+        expect(() => validateBuildFinishDelay(delay, 'my-custom-id')).toThrow(
+          'buildFinishDelay must be a non-negative whole number of seconds',
+        );
+      },
+    );
+
+    test.each([undefined, null, '', '  '])(
+      'requires a customId (%p)',
+      (customId) => {
+        expect(() => validateBuildFinishDelay(30, customId)).toThrow(
+          'buildFinishDelay requires a customId',
+        );
+      },
+    );
   });
   describe('parseTags', () => {
     test.each([undefined, null, '', ' ', ',', ' , ,'])(

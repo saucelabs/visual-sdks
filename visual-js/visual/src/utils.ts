@@ -223,6 +223,30 @@ export const parseTags = (tags: string | undefined | null): string[] | null => {
 };
 
 /**
+ * Validates `buildFinishDelay` and returns it, or `undefined` when it isn't set.
+ * It must be a non-negative whole number of seconds and requires a `customId`.
+ */
+export const validateBuildFinishDelay = (
+  buildFinishDelay: number | null | undefined,
+  customId: string | null | undefined,
+): number | undefined => {
+  if (buildFinishDelay === null || buildFinishDelay === undefined) {
+    return undefined;
+  }
+  if (!Number.isInteger(buildFinishDelay) || buildFinishDelay < 0) {
+    throw new Error(
+      `Sauce Labs Visual: buildFinishDelay must be a non-negative whole number of seconds, got ${buildFinishDelay}.`,
+    );
+  }
+  if (!customId?.trim()) {
+    throw new Error(
+      'Sauce Labs Visual: buildFinishDelay requires a customId (the customId option or SAUCE_VISUAL_CUSTOM_ID).',
+    );
+  }
+  return buildFinishDelay;
+};
+
+/**
  * Parse ENVs & set options object for visual API usage.
  */
 export const getEnvOpts = (): VisualEnvOpts => {
