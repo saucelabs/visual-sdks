@@ -6,6 +6,7 @@ import {
   getApi,
   isSkipMode,
   parseTags,
+  validateBuildFinishDelay,
   VisualConfig,
 } from '@saucelabs/visual';
 import { buildUrlMessage, validateSauce } from '../utils/api';
@@ -65,7 +66,15 @@ const globals: NightwatchInternalGlobals & {
       user: process.env.SAUCE_USERNAME,
       key: process.env.SAUCE_ACCESS_KEY,
     };
-    const build = await getExternalBuild(sauceConfig);
+    const finishDelay = validateBuildFinishDelay(
+      sauceVisualService.buildFinishDelay,
+      SAUCE_VISUAL_CUSTOM_ID,
+    );
+    // With a finish delay, create the build for the customId instead of joining it.
+    const build =
+      finishDelay === undefined
+        ? await getExternalBuild(sauceConfig)
+        : undefined;
 
     if (build) {
       externalBuildId = true;
@@ -79,6 +88,7 @@ const globals: NightwatchInternalGlobals & {
         branch: branch || SAUCE_VISUAL_BRANCH,
         defaultBranch: defaultBranch || SAUCE_VISUAL_DEFAULT_BRANCH,
         tags: tags || parseTags(SAUCE_VISUAL_TAGS),
+        customId: SAUCE_VISUAL_CUSTOM_ID || null,
       };
       try {
         ({ id: visualBuildId, url: visualBuildUrl } = await getApi(
@@ -133,6 +143,7 @@ const globals: NightwatchInternalGlobals & {
       } else {
         build = await api.finishBuild({
           uuid: visualBuildId,
+          delay: sauceVisualService.buildFinishDelay ?? undefined,
         });
       }
       visualBuildUrl = build?.url;
