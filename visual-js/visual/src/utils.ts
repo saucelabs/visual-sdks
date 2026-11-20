@@ -230,7 +230,7 @@ export const validateBuildFinishDelay = (
   buildFinishDelay: number | null | undefined,
   customId: string | null | undefined,
 ): number | undefined => {
-  if (buildFinishDelay === null || buildFinishDelay === undefined) {
+  if (!buildFinishDelay) {
     return undefined;
   }
   if (!Number.isInteger(buildFinishDelay) || buildFinishDelay < 0) {

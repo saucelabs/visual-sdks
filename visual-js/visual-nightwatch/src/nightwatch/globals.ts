@@ -70,13 +70,15 @@ const globals: NightwatchInternalGlobals & {
       sauceVisualService.buildFinishDelay,
       SAUCE_VISUAL_CUSTOM_ID,
     );
-    // With a finish delay, create the build for the customId instead of joining it.
-    const build =
-      finishDelay === undefined
-        ? await getExternalBuild(sauceConfig)
-        : undefined;
+    // Throws if the build is already completed.
+    const build = await getExternalBuild(sauceConfig);
 
-    if (build) {
+    // With a finish delay and no buildId, go through createBuild instead: it creates the
+    // customId's build, or joins it if it's running.
+    if (
+      build &&
+      (finishDelay === undefined || process.env[VISUAL_BUILD_ID_KEY])
+    ) {
       externalBuildId = true;
       process.env[VISUAL_BUILD_ID_KEY] = build.id;
       ({ url: visualBuildUrl } = build);

@@ -211,16 +211,20 @@ describe('api', () => {
     });
 
     describe('buildFinishDelay', () => {
-      it('creates the build for its customId instead of joining it', async () => {
+      it('creates or joins the customId build through createBuild', async () => {
         withOpts({
           buildId: null,
           customId: 'shared-id',
           buildFinishDelay: 30,
         });
+        api.buildByCustomId.mockResolvedValue({
+          id: 'build-4',
+          mode: BuildMode.Running,
+        });
         api.createBuild.mockResolvedValue({ id: 'build-4', url: 'url' });
 
         await VisualPlaywright.setup();
-        expect(api.buildByCustomId).not.toBeCalled();
+        expect(api.buildByCustomId).toBeCalledWith('shared-id');
         expect(api.createBuild).toBeCalledWith(
           expect.objectContaining({ customId: 'shared-id' }),
         );
@@ -228,6 +232,34 @@ describe('api', () => {
           buildId: 'build-4',
           externalBuildId: false,
         });
+      });
+
+      it('refuses a completed build found by customId', async () => {
+        withOpts({
+          buildId: null,
+          customId: 'shared-id',
+          buildFinishDelay: 30,
+        });
+        api.buildByCustomId.mockResolvedValue({
+          id: 'build-4',
+          mode: BuildMode.Completed,
+        });
+
+        await expect(VisualPlaywright.setup()).rejects.toThrow(completedMsg);
+        expect(api.createBuild).not.toBeCalled();
+      });
+
+      it('joins a build passed by buildId instead of creating one', async () => {
+        withOpts({
+          buildId: 'build-1',
+          customId: 'shared-id',
+          buildFinishDelay: 30,
+        });
+        api.build.mockResolvedValue({ id: 'build-1', mode: BuildMode.Running });
+
+        await VisualPlaywright.setup();
+        expect(api.build).toBeCalledWith('build-1');
+        expect(api.createBuild).not.toBeCalled();
       });
 
       it('requires a customId', async () => {

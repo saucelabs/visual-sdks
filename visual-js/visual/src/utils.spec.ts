@@ -230,25 +230,22 @@ describe('utils', () => {
     });
   });
   describe('validateBuildFinishDelay', () => {
-    test.each([undefined, null])(
+    test.each([undefined, null, 0, Number.NaN])(
       'returns undefined when unset (%p)',
       (delay) => {
         expect(validateBuildFinishDelay(delay, null)).toBeUndefined();
       },
     );
 
-    test.each([0, 30, 600])('returns a valid delay of %p seconds', (delay) => {
+    test.each([1, 30, 600])('returns a valid delay of %p seconds', (delay) => {
       expect(validateBuildFinishDelay(delay, 'my-custom-id')).toEqual(delay);
     });
 
-    test.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
-      'rejects %p',
-      (delay) => {
-        expect(() => validateBuildFinishDelay(delay, 'my-custom-id')).toThrow(
-          'buildFinishDelay must be a non-negative whole number of seconds',
-        );
-      },
-    );
+    test.each([-1, 1.5, Number.POSITIVE_INFINITY])('rejects %p', (delay) => {
+      expect(() => validateBuildFinishDelay(delay, 'my-custom-id')).toThrow(
+        'buildFinishDelay must be a non-negative whole number of seconds',
+      );
+    });
 
     test.each([undefined, null, '', '  '])(
       'requires a customId (%p)',

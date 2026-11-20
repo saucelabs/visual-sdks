@@ -182,8 +182,10 @@ class CypressSauceVisual {
       config.saucelabs?.buildFinishDelay,
       SAUCE_VISUAL_CUSTOM_ID,
     );
-    // With a finish delay, create the build for the customId instead of joining it.
-    if (this.buildFinishDelay !== undefined) {
+    // With a finish delay and no buildId, throw if the customId's build is completed, then
+    // go through createBuild: it creates the build, or joins it if it's running.
+    if (this.buildFinishDelay !== undefined && !SAUCE_VISUAL_BUILD_ID) {
+      await this.getEffectiveBuild();
       await this.createBuild(config);
       return;
     }

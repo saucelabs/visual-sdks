@@ -458,8 +458,13 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
     let buildId = passedBuildId;
     let customBuildId = null;
 
-    // With a finish delay, create the build for the customId instead of joining it.
-    if (validateBuildFinishDelay(buildFinishDelay, customId) !== undefined) {
+    // With a finish delay and no buildId, throw if the customId's build is completed, then
+    // go through createBuild: it creates the build, or joins it if it's running.
+    if (
+      validateBuildFinishDelay(buildFinishDelay, customId) !== undefined &&
+      !buildId
+    ) {
+      await this.getBuildIdForCustomId(customId!);
       setOpts({
         buildId: await this.createBuild(),
         externalBuildId: false,

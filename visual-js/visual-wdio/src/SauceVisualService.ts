@@ -229,16 +229,29 @@ export default class SauceVisualService implements Services.ServiceInstance {
     _capabilities: unknown,
   ): Promise<void> {
     log.info('Sauce Visual service started');
-    const finishDelay = validateBuildFinishDelay(
-      this.options.buildFinishDelay,
-      this.options.customId || SAUCE_VISUAL_CUSTOM_ID,
+    let finishDelay: number | undefined;
+    try {
+      finishDelay = validateBuildFinishDelay(
+        this.options.buildFinishDelay,
+        this.options.customId || SAUCE_VISUAL_CUSTOM_ID,
+      );
+    } catch (e) {
+      // Only a SevereServiceError stops WebdriverIO before it starts any sessions.
+      throw new SevereServiceError(ensureError(e).message);
+    }
+    const hasBuildId = Boolean(
+      this.options.buildId || process.env[VISUAL_BUILD_ID_KEY],
     );
-    // With a finish delay, create the build for the customId instead of joining it.
-    const build =
+    // Throws if the build is already completed.
+    const build = await this.getExternalBuild(
+      this.apiClient,
       finishDelay === undefined
-        ? await this.getExternalBuild(this.apiClient)
-        : undefined;
-    if (build) {
+        ? SAUCE_VISUAL_CUSTOM_ID
+        : this.options.customId || SAUCE_VISUAL_CUSTOM_ID,
+    );
+    // With a finish delay and no buildId, go through createBuild instead: it creates the
+    // customId's build, or joins it if it's running.
+    if (build && (finishDelay === undefined || hasBuildId)) {
       process.env[VISUAL_BUILD_ID_KEY] = build.id;
       this.url = build.url;
       isBuildExternal = true;
@@ -508,7 +521,10 @@ export default class SauceVisualService implements Services.ServiceInstance {
       return id;
     };
 
-  async getExternalBuild(api: VisualApi) {
+  async getExternalBuild(
+    api: VisualApi,
+    customId: string | undefined = SAUCE_VISUAL_CUSTOM_ID,
+  ) {
     const buildCompletedMsg = `Sauce Labs Visual: cannot add more screenshots since the build is already completed`;
 
     if (this.options.buildId) {
@@ -543,12 +559,12 @@ export default class SauceVisualService implements Services.ServiceInstance {
       return build;
     }
 
-    if (SAUCE_VISUAL_CUSTOM_ID) {
+    if (customId) {
       let build;
       try {
-        build = await api.buildByCustomId(SAUCE_VISUAL_CUSTOM_ID);
+        build = await api.buildByCustomId(customId);
       } catch (e) {
-        const msg = `Sauce Labs Visual: unable to fetch build for customId ${SAUCE_VISUAL_CUSTOM_ID}: ${e}`;
+        const msg = `Sauce Labs Visual: unable to fetch build for customId ${customId}: ${e}`;
         log.error(msg);
         throw new SevereServiceError(msg);
       }
