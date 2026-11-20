@@ -71,6 +71,10 @@ export interface SauceVisualServiceOptions
   defaultBranch?: string;
   failOnFailures?: boolean;
   tags?: string[];
+  /**
+   * Seconds to keep the build open after it's finished. Requires SAUCE_VISUAL_CUSTOM_ID.
+   */
+  buildFinishDelay?: number;
 }
 
 export type RunnerSettings = NightwatchTestSettingGeneric & {

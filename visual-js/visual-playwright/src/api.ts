@@ -1,5 +1,6 @@
 import type { Page } from 'playwright-core';
 import {
+  BuildMode,
   BuildStatus,
   downloadDomScript,
   getApi as getVisualApi,
@@ -7,6 +8,7 @@ import {
   getVisualResults,
   RegionIn,
   removeDomScriptFile,
+  validateBuildFinishDelay,
   VisualEnvOpts,
 } from '@saucelabs/visual';
 import { backOff } from 'exponential-backoff';
@@ -20,6 +22,20 @@ import {
 } from './utils';
 
 const clientVersion = 'PKG_VERSION';
+
+/**
+ * A finished build rejects new snapshots, so refuse to join one rather than fail every check.
+ */
+const assertBuildIsRunning = (
+  build: { mode: BuildMode } | null | undefined,
+) => {
+  if (build?.mode === BuildMode.Completed) {
+    const msg =
+      'Sauce Labs Visual: cannot add more screenshots since the build is already completed';
+    console.error(msg);
+    throw new Error(msg);
+  }
+};
 
 export class VisualPlaywright {
   constructor(public client: string = `visual-playwright/${clientVersion}`) {}
@@ -51,6 +67,7 @@ export class VisualPlaywright {
 
   public async getBuildIdForCustomId(customId: string) {
     const build = await this.api.buildByCustomId(customId);
+    assertBuildIsRunning(build);
     return build?.id ?? null;
   }
 
@@ -81,9 +98,13 @@ export class VisualPlaywright {
     return build.id;
   }
 
-  public async finishBuild(id: string) {
+  /**
+   * @param delay Seconds to keep the build open after it's finished.
+   */
+  public async finishBuild(id: string, delay?: number) {
     return await this.api.finishBuild({
       uuid: id,
+      delay,
     });
   }
 
@@ -433,9 +454,27 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   public async setup() {
     await downloadDomScript(this.api);
 
-    const { buildId: passedBuildId, customId } = getOpts();
+    const { buildId: passedBuildId, customId, buildFinishDelay } = getOpts();
     let buildId = passedBuildId;
     let customBuildId = null;
+
+    // With a finish delay and no buildId, throw if the customId's build is completed, then
+    // go through createBuild: it creates the build, or joins it if it's running.
+    if (
+      validateBuildFinishDelay(buildFinishDelay, customId) !== undefined &&
+      !buildId
+    ) {
+      await this.getBuildIdForCustomId(customId!);
+      setOpts({
+        buildId: await this.createBuild(),
+        externalBuildId: false,
+      });
+      return;
+    }
+
+    if (buildId) {
+      assertBuildIsRunning(await this.api.build(buildId));
+    }
 
     if (!buildId && customId) {
       customBuildId = await this.getBuildIdForCustomId(customId);
@@ -464,13 +503,24 @@ ${e instanceof Error ? e.message : JSON.stringify(e)}
   public async teardown() {
     await removeDomScriptFile();
 
-    const { buildId, externalBuildId } = getOpts();
+    const { buildId, externalBuildId, buildFinishDelay } = getOpts();
     // Only finish the build automatically if we created it during globalSetup (if it's not external).
     if (!externalBuildId && buildId) {
-      const finishedBuild = await this.finishBuild(buildId);
+      const delay = buildFinishDelay ?? undefined;
+      const finishedBuild = await this.finishBuild(buildId, delay);
 
       if (!finishedBuild) {
         throw new Error('Failed to finalize build.');
+      }
+
+      // The build stays open during the delay, so its result isn't final yet.
+      if (delay !== undefined) {
+        console.info(
+          `Your Sauce Visual Build stays open for ${delay}s for other runs sharing its customId:
+  ${finishedBuild.url}
+`,
+        );
+        return;
       }
 
       await this.waitForBuildResult(finishedBuild.id);

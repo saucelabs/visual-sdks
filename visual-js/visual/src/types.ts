@@ -64,4 +64,8 @@ export interface VisualEnvOpts {
   defaultBranch: string | null;
   customId: string | null;
   tags: string[] | null;
+  /**
+   * Seconds to keep the build open after it's finished. Requires `customId`.
+   */
+  buildFinishDelay?: number | null;
 }

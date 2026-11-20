@@ -39,6 +39,10 @@ export interface SauceConfig {
     | `${DiffingMethodSensitivity}`;
   baselineOverride?: VisualBaselineOverride;
   tags?: string[];
+  /**
+   * Seconds to keep the build open after it's finished. Requires SAUCE_VISUAL_CUSTOM_ID.
+   */
+  buildFinishDelay?: number;
 }
 
 export interface HasSauceConfig {

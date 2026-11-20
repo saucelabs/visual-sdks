@@ -24,6 +24,7 @@ import {
   DiffingMethodToleranceIn,
   DiffingMethodSensitivity,
   parseTags,
+  validateBuildFinishDelay,
 } from '@saucelabs/visual';
 import {
   HasSauceConfig,
@@ -123,6 +124,8 @@ class CypressSauceVisual {
   private buildId: string | undefined;
   // A build can be managed externally (e.g by CLI) or by the Sauce Visual Cypress plugin
   private isBuildExternal = false;
+  // Seconds to keep the build open after it's finished
+  private buildFinishDelay: number | undefined;
   private diffingMethod: DiffingMethod | undefined;
   private diffingOptions: DiffingOptionsIn | undefined;
   private diffingMethodTolerance?: DiffingMethodToleranceIn;
@@ -175,6 +178,18 @@ class CypressSauceVisual {
   }
 
   async useExistingBuildOrCreate(config: HasSauceConfig) {
+    this.buildFinishDelay = validateBuildFinishDelay(
+      config.saucelabs?.buildFinishDelay,
+      SAUCE_VISUAL_CUSTOM_ID,
+    );
+    // With a finish delay and no buildId, throw if the customId's build is completed, then
+    // go through createBuild: it creates the build, or joins it if it's running.
+    if (this.buildFinishDelay !== undefined && !SAUCE_VISUAL_BUILD_ID) {
+      await this.getEffectiveBuild();
+      await this.createBuild(config);
+      return;
+    }
+
     this.buildId = await this.getEffectiveBuild();
 
     if (this.buildId) {
@@ -282,7 +297,10 @@ Sauce Labs Visual: Unable to create new build.
     }
 
     try {
-      const { url } = await this.api.finishBuild({ uuid: this.buildId });
+      const { url } = await this.api.finishBuild({
+        uuid: this.buildId,
+        delay: this.buildFinishDelay,
+      });
       logger.info(buildUrl(url, { reviewReady: true }));
     } catch (e) {
       const msg = `Sauce Labs Visual: unable to finish build: ${errorMsg(e)}`;

@@ -14,4 +14,5 @@ export const DEFAULT_OPTS: VisualOpts = {
   buildName: 'Storybook Build',
   customId: null,
   tags: null,
+  buildFinishDelay: null,
 };
