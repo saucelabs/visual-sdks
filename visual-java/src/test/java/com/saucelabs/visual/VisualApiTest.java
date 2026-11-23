@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,9 +16,21 @@ import com.saucelabs.visual.graphql.*;
 import com.saucelabs.visual.graphql.type.BuildStatus;
 import com.saucelabs.visual.graphql.type.Diff;
 import com.saucelabs.visual.graphql.type.DiffStatus;
+import com.saucelabs.visual.graphql.type.DiffingOptionsIn;
 import com.saucelabs.visual.graphql.type.DiffsConnection;
+import com.saucelabs.visual.graphql.type.IgnoreSelectorIn;
 import com.saucelabs.visual.graphql.type.RegionIn;
+import com.saucelabs.visual.graphql.type.ScrollOption;
+import com.saucelabs.visual.graphql.type.SelectorIn;
+import com.saucelabs.visual.graphql.type.SelectorType;
 import com.saucelabs.visual.graphql.type.SnapshotUpload;
+import com.saucelabs.visual.model.FullPageScreenshotConfig;
+import com.saucelabs.visual.spi.NativeFullPageRequest;
+import com.saucelabs.visual.spi.NativeIgnoreRegion;
+import com.saucelabs.visual.spi.NativePlatform;
+import com.saucelabs.visual.spi.NativeRect;
+import com.saucelabs.visual.spi.NativeScrollOption;
+import com.saucelabs.visual.spi.NativeSelector;
 import com.saucelabs.visual.utils.BulkDriverHelper;
 import com.saucelabs.visual.utils.EnvironmentVariables;
 import com.saucelabs.visual.utils.ImageHelpers;
@@ -265,6 +278,16 @@ class VisualApiTest {
   }
 
   @Test
+  void systemBarInfoIsFetchedOnceTest() throws ReflectiveOperationException {
+    when(mockDriver.executeScript("mobile: deviceScreenInfo"))
+        .thenReturn(mapOf("scale", 3L, "statusBarSize", mapOf("width", 414L, "height", 48L)));
+
+    assertEquals(3.0, getNativeDevicePixelRatio(mobileCaps("iOS", null)));
+    assertEquals(1, getSystemBarIgnoreRegions(mobileCaps("iOS", null)).size());
+    verify(mockDriver, times(1)).executeScript("mobile: deviceScreenInfo");
+  }
+
+  @Test
   void getNativeDevicePixelRatioAndroidDefaultsWithoutQueryingDeviceTest()
       throws ReflectiveOperationException {
     assertEquals(1.0, getNativeDevicePixelRatio(mobileCaps("Android", null)));
@@ -353,7 +376,79 @@ class VisualApiTest {
     assertEquals((int) Math.round(715 * dpr), dims.getHeight());
   }
 
+  @Test
+  void buildNativeFullPageRequestConvertsConfigTest() throws ReflectiveOperationException {
+    when(mockDriver.executeScript("mobile: getSystemBars"))
+        .thenReturn(mapOf("statusBar", mapOf("height", 63L)));
+    SelectorIn clip = new SelectorIn();
+    clip.setType(SelectorType.XPATH);
+    clip.setValue("//clip");
+    FullPageScreenshotConfig config =
+        new FullPageScreenshotConfig.Builder()
+            .withScrollLimit(4)
+            .withDelayAfterScrollMs(250)
+            .withScrollOption(ScrollOption.START_FROM_CURRENT_LOCATION)
+            .withNativeClipSelector(clip)
+            .build();
+
+    NativeFullPageRequest request =
+        (NativeFullPageRequest)
+            invoke(
+                api,
+                "buildNativeFullPageRequest",
+                new Class<?>[] {Capabilities.class, FullPageScreenshotConfig.class, List.class},
+                mobileCaps("Android", null),
+                config,
+                Collections.singletonList(ignoreSelector("//ad", null)));
+
+    assertEquals(NativePlatform.ANDROID, request.getPlatform());
+    assertEquals(4, request.getScrollLimit());
+    assertEquals(250, request.getDelayAfterScrollMs());
+    assertEquals(NativeScrollOption.START_FROM_CURRENT_LOCATION, request.getScrollOption());
+    assertEquals(NativeSelector.xpath("//clip"), request.getClipSelector());
+    assertEquals(
+        Collections.singletonList(NativeSelector.xpath("//ad")), request.getIgnoreSelectors());
+    assertEquals(mapOf("height", 63L), request.getSystemBarInfo().get("statusBar"));
+  }
+
+  @Test
+  void toIgnoreRegionsMapsBackToSelectorsTest() throws ReflectiveOperationException {
+    DiffingOptionsIn diffingOptions = new DiffingOptionsIn();
+    List<IgnoreSelectorIn> selectors =
+        Arrays.asList(ignoreSelector("//a", "Named"), ignoreSelector("//b", null));
+    selectors.get(0).setDiffingOptions(diffingOptions);
+    List<NativeIgnoreRegion> regions =
+        Arrays.asList(
+            new NativeIgnoreRegion(0, new NativeRect(1.4, 2.6, 30, 40)),
+            new NativeIgnoreRegion(1, new NativeRect(0, 100, 10, 10)),
+            new NativeIgnoreRegion(7, new NativeRect(0, 0, 1, 1)));
+
+    Method method = VisualApi.class.getDeclaredMethod("toIgnoreRegions", List.class, List.class);
+    method.setAccessible(true);
+    List<RegionIn> result = (List<RegionIn>) method.invoke(null, regions, selectors);
+
+    assertEquals(2, result.size());
+    assertEquals("Named", result.get(0).getName());
+    assertEquals(1, result.get(0).getX());
+    assertEquals(3, result.get(0).getY());
+    assertEquals(30, result.get(0).getWidth());
+    assertEquals(40, result.get(0).getHeight());
+    assertEquals(diffingOptions, result.get(0).getDiffingOptions());
+    // Unnamed selectors are named after their value
+    assertEquals("//b", result.get(1).getName());
+  }
+
   // --- Test helpers for the private methods above ---
+
+  private static IgnoreSelectorIn ignoreSelector(String xpath, String name) {
+    SelectorIn selector = new SelectorIn();
+    selector.setType(SelectorType.XPATH);
+    selector.setValue(xpath);
+    IgnoreSelectorIn ignoreSelector = new IgnoreSelectorIn();
+    ignoreSelector.setSelector(selector);
+    ignoreSelector.setName(name);
+    return ignoreSelector;
+  }
 
   private static Capabilities mobileCaps(String platformName, String browserName) {
     MutableCapabilities caps = new MutableCapabilities();

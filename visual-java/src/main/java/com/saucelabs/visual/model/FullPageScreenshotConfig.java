@@ -109,15 +109,23 @@ public class FullPageScreenshotConfig {
       return this;
     }
 
+    /**
+     * Maximum number of scrolls. For native apps (Sauce-hosted or local), values are clamped to
+     * 1..10, and 0 / unset means 10.
+     *
+     * @param scrollLimit maximum number of scrolls
+     * @return Builder instance
+     */
     public Builder withScrollLimit(int scrollLimit) {
       this.scrollLimit = scrollLimit;
       return this;
     }
 
     /**
-     * Only used for native app testing
+     * Only used for native app testing, both on Sauce Labs and locally. Defaults to the app's root
+     * element.
      *
-     * @param scrollElement WebElement to scroll to
+     * @param scrollElement the scrollable container to scroll and capture
      * @return Builder instance
      */
     public Builder withScrollElement(WebElement scrollElement) {
@@ -126,7 +134,8 @@ public class FullPageScreenshotConfig {
     }
 
     /**
-     * Only used for native app testing
+     * Only used for native app testing, both on Sauce Labs and locally. Only XPATH selectors are
+     * supported.
      *
      * @param nativeClipSelector SelectorIn to clip
      * @return Builder instance
